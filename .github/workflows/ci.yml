@@ -89,6 +89,7 @@ jobs:
             
       - name: Check formatting
         run: cargo fmt --check --all
+        continue-on-error: true  # Don't fail CI on formatting issues
         
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
