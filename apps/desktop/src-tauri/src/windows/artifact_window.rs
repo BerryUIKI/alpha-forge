@@ -1,0 +1,1 @@
+// Artifact window management. Placeholder.

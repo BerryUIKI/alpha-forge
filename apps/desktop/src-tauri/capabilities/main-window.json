@@ -1,0 +1,6 @@
+{
+  "identifier": "main-window",
+  "description": "Main application window capabilities",
+  "windows": ["main"],
+  "permissions": ["core:default", "opener:default", "shell:allow-open", "store:default"]
+}

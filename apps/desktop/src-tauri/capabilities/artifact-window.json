@@ -1,0 +1,6 @@
+{
+  "identifier": "artifact-window",
+  "description": "Artifact window capabilities — minimal permissions",
+  "windows": ["artifact-*"],
+  "permissions": ["core:default"]
+}

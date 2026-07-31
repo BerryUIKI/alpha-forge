@@ -1,0 +1,1 @@
+// Artifact security isolation. Placeholder.

@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "cargo check",
+      "type": "shell",
+      "command": "cargo check --workspace",
+      "group": "build",
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "cargo test",
+      "type": "shell",
+      "command": "cargo test --workspace",
+      "group": "test",
+      "problemMatcher": "$rustc"
+    },
+    {
+      "label": "pnpm typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "group": "build"
+    },
+    {
+      "label": "pnpm lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "group": "build"
+    }
+  ]
+}

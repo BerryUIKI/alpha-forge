@@ -1,0 +1,1 @@
+// News provider adapters. Placeholder.

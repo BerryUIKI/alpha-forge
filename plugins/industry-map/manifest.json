@@ -1,0 +1,13 @@
+{
+  "id": "industry-map",
+  "name": "Industry Map",
+  "version": "0.1.0",
+  "entry": "index.html",
+  "inputSchema": "schema.json",
+  "permissions": [],
+  "window": {
+    "width": 1100,
+    "height": 760,
+    "resizable": true
+  }
+}

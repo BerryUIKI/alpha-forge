@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+target/
+build/
+out/
+
+# Tauri
+src-tauri/gen/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# pnpm
+.pnpm-debug.log
+
+# Rust
+*.rs.bk
+
+# Vite
+.vite/
+
+# Misc
+*.tgz
+*.gz

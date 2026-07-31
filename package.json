@@ -1,0 +1,38 @@
+{
+  "name": "investment-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop-first AI workspace for investment research",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @investment-os/desktop tauri dev",
+    "dev:web": "pnpm --filter @investment-os/desktop dev",
+    "build": "pnpm --filter @investment-os/desktop build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "pnpm -r typecheck",
+    "typecheck:run": "pnpm -r exec tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "tauri": "pnpm --filter @investment-os/desktop tauri"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "eslint-plugin-react-hooks": "^5",
+    "eslint-plugin-react-refresh": "^0.4",
+    "prettier": "^3",
+    "typescript": "^5.7",
+    "typescript-eslint": "^8",
+    "vitest": "^3",
+    "@testing-library/react": "^16",
+    "@testing-library/jest-dom": "^6",
+    "jsdom": "^25"
+  }
+}

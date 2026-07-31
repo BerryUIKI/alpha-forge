@@ -1,0 +1,15 @@
+// Service layer for Investment OS.
+//
+// Services own business logic and coordination between repositories.
+// They handle:
+// - Validation
+// - Business rules
+// - Cross-entity coordination
+//
+// Rules:
+// - Tauri commands should stay thin
+// - Services should not contain UI logic
+// - Services should not expose database details
+
+pub mod settings_service;
+pub mod workspace_service;
