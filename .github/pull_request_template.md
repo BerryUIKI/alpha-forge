@@ -12,6 +12,18 @@
 
 ---
 
+## ⚠️ Branch Protection Notice
+
+**Main branch is protected. Direct pushes are blocked.**
+
+This PR will be merged after:
+- ✅ At least 1 approval
+- ✅ All conversations resolved
+- ✅ All checks pass
+- ✅ Linear history maintained
+
+---
+
 ## Type of Change
 
 - [ ] Feature
