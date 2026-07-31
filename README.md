@@ -98,7 +98,8 @@ Key boundaries:
 | [SECURITY.md](docs/SECURITY.md) | Credential storage, window permissions, input validation |
 | [UI_GUIDELINES.md](docs/UI_GUIDELINES.md) | Design system, required UI states, navigation patterns |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local setup, dev commands, agent workflow, troubleshooting |
-| [ROADMAP.md](docs/ROADMAP.md) | 12-phase development roadmap |
+| [ROADMAP.md](docs/ROADMAP.md) | 12-phase development roadmap (technical phases) |
+| [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | Product milestones with deliverables and acceptance criteria |
 | [GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) | Branch strategy, commit conventions, PR process |
 | [PROJECT_BOOTSTRAP.md](docs/PROJECT_BOOTSTRAP.md) | Full initialization plan with 10 implementation phases |
 | [DECISIONS/](docs/DECISIONS/) | Architecture Decision Records (3 ADRs) |
