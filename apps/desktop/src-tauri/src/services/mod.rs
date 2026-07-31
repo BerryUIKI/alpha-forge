@@ -12,6 +12,7 @@
 // - Services should not expose database details
 
 pub mod settings_service;
+pub mod system_service;
 pub mod workspace_service;
 
 #[cfg(test)]
