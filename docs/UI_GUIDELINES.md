@@ -120,5 +120,5 @@ Artifact windows:
 - **Currency:** Default to CNY (¥). Configurable per account.
 - **Percentages:** One decimal place for most metrics. Two for precision-sensitive values.
 - **Dates:** ISO 8601 in data; locale-appropriate in UI.
-- **Stock prices:** Increase = Red (涨), Decrease = Green (跌) — Chinese market convention.
+- **Stock prices:** Increase = Red, Decrease = Green — Chinese market convention (opposite to Western markets).
 - **Timestamps:** Relative ("2 hours ago") with absolute on hover.
