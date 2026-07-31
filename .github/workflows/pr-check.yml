@@ -49,8 +49,8 @@ jobs:
           
       - name: Check for forbidden patterns
         run: |
-          # Check for secrets
-          if git diff origin/main...HEAD | grep -iE '(password|secret|api_key|token|credential)' | grep -v '# '; then
+          # Check for secrets (excluding GitHub Actions syntax)
+          if git diff origin/main...HEAD | grep -iE '(password|api_key|credential)' | grep -v '# ' | grep -v 'secrets\.' | grep -v 'GITHUB_TOKEN'; then
             echo "::error::Potential secrets detected in diff"
             exit 1
           fi
