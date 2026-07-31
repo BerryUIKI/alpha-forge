@@ -1,23 +1,71 @@
-// Agent Tauri commands — Phase 1 placeholder.
-// Will be connected to the agent runtime in later phases.
+// Agent Tauri commands — Phase 2.
 
-use crate::agent::task::{AgentTask, TaskStatus};
+use tauri::State;
+
+use crate::app::state::AppState;
 use crate::error::AppError;
+use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput};
 
 #[tauri::command]
-pub async fn create_task(input: String) -> Result<AgentTask, AppError> {
-    // Phase 1: return a stub task that is always "completed"
-    let task_id = uuid::Uuid::new_v4().to_string();
+pub async fn create_agent_task(
+    workspace_id: String,
+    title: String,
+    description: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<AgentTask, AppError> {
+    let input = CreateAgentTaskInput {
+        workspace_id,
+        title,
+        description,
+    };
 
-    Ok(AgentTask {
-        id: task_id,
-        status: TaskStatus::Completed,
-        input,
-    })
+    state.agent_service.create_task(input).await
 }
 
 #[tauri::command]
-pub async fn list_tasks() -> Result<Vec<AgentTask>, AppError> {
-    // Phase 1: return empty list
-    Ok(Vec::new())
+pub async fn get_agent_task(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<AgentTask>, AppError> {
+    state.agent_service.get_task(&id).await
+}
+
+#[tauri::command]
+pub async fn list_agent_tasks(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<AgentTask>, AppError> {
+    state.agent_service.list_tasks(&workspace_id).await
+}
+
+#[tauri::command]
+pub async fn get_task_events(
+    task_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<AgentTaskEvent>, AppError> {
+    state.agent_service.get_task_events(&task_id).await
+}
+
+#[tauri::command]
+pub async fn queue_agent_task(
+    task_id: String,
+    state: State<'_, AppState>,
+) -> Result<AgentTask, AppError> {
+    state.agent_service.queue_task(&task_id).await
+}
+
+#[tauri::command]
+pub async fn start_agent_task(
+    task_id: String,
+    state: State<'_, AppState>,
+) -> Result<AgentTask, AppError> {
+    state.agent_service.start_task(&task_id).await
+}
+
+#[tauri::command]
+pub async fn cancel_agent_task(
+    task_id: String,
+    state: State<'_, AppState>,
+) -> Result<AgentTask, AppError> {
+    state.agent_service.cancel_task(&task_id).await
 }
