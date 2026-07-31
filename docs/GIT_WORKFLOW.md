@@ -132,6 +132,38 @@ Avoid:
 
 ## Pull Request Rules
 
+### Minimal PR Principle
+
+Every PR should be **minimal, focused, and reviewable**.
+
+See [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) for detailed guidelines.
+
+**Key Rules**:
+
+1. **Single Purpose**: Each PR solves ONE problem
+2. **Under 800 Lines**: PR should be reviewable in < 60 minutes
+3. **Related Changes**: All changes should belong together
+4. **Clear Scope**: Document what's included and excluded
+
+### Sub-Branch Strategy
+
+For large features, use sub-branches:
+
+```text
+feature/agent-runtime              (Parent)
+├── feature/agent-runtime/domain   (Sub-branch 1)
+├── feature/agent-runtime/runtime  (Sub-branch 2)
+└── feature/agent-runtime/tests    (Sub-branch 3)
+```
+
+**Sub-Branch Rules**:
+- Sub-branch PRs merge to parent branch (not directly to main)
+- Sub-branch PRs still require review
+- After all sub-branches merged, parent PR merges to main
+- Maintains linear history on parent
+
+### PR Creation Process
+
 When a feature is complete:
 
 1. Verify the branch.
@@ -145,19 +177,25 @@ PR description should include:
 ```markdown
 ## Summary
 
-What changed.
+What changed (2-3 sentences).
 
-## Implementation
+## Scope
 
-Important technical decisions.
+**Included:**
+- What's in this PR
+
+**NOT Included:**
+- What's in separate PRs
 
 ## Testing
 
 Commands executed and results.
 
-## Risks
+## Checklist
 
-Known limitations.
+- [ ] All checks pass
+- [ ] Tests written
+- [ ] Docs updated
 ```
 
 ---
@@ -176,3 +214,10 @@ git rebase main
 
 Never delete user changes.
 Never overwrite uncommitted work.
+
+---
+
+## See Also
+
+- [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) — Detailed PR guidelines
+- [CONTRIBUTING.md](../CONTRIBUTING.md) — Contribution workflow
