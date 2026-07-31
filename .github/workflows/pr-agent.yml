@@ -1,0 +1,150 @@
+# PR-Agent - AI-powered code review automation
+# Uses OpenAI-compatible API from api.sfkey.cn
+# 
+# Commands:
+#   /review     - AI code review with security, performance, and quality analysis
+#   /describe   - Generate PR description, title suggestions, and labels
+#   /improve    - Code improvement suggestions
+#   /ask "..."  - Ask questions about the PR
+#   /test       - Generate test suggestions
+#   /update_changelog - Update CHANGELOG.md
+
+name: PR-Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  pull_request_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  # ====================
+  # PR-Agent Review Job
+  # ====================
+  pr-agent:
+    name: PR-Agent Review
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.draft == false &&
+      (
+        github.event.action == 'opened' ||
+        github.event.action == 'reopened' ||
+        github.event.action == 'ready_for_review' ||
+        contains(github.event.comment.body, '/review') ||
+        contains(github.event.comment.body, '/describe') ||
+        contains(github.event.comment.body, '/improve') ||
+        contains(github.event.comment.body, '/ask') ||
+        contains(github.event.comment.body, '/test') ||
+        contains(github.event.comment.body, '/update_changelog')
+      )
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine command
+        id: command
+        run: |
+          # Default command for PR open events
+          COMMAND="review"
+          
+          # Check for explicit commands in comments
+          if [[ "${{ github.event_name }}" == "issue_comment" ]] || \
+             [[ "${{ github.event_name }}" == "pull_request_comment" ]]; then
+            COMMENT="${{ github.event.comment.body }}"
+            
+            if echo "$COMMENT" | grep -qE '^/review'; then
+              COMMAND="review"
+            elif echo "$COMMENT" | grep -qE '^/describe'; then
+              COMMAND="describe"
+            elif echo "$COMMENT" | grep -qE '^/improve'; then
+              COMMAND="improve"
+            elif echo "$COMMENT" | grep -qE '^/ask'; then
+              # Extract the question
+              COMMAND="ask"
+            elif echo "$COMMENT" | grep -qE '^/test'; then
+              COMMAND="test"
+            elif echo "$COMMENT" | grep -qE '^/update_changelog'; then
+              COMMAND="update_changelog"
+            fi
+          fi
+          
+          echo "command=$COMMAND" >> $GITHUB_OUTPUT
+          echo "Running PR-Agent command: $COMMAND"
+
+      - name: Run PR-Agent
+        uses: the-pr-agent/pr-agent@main
+        env:
+          # ===== OpenAI API Configuration =====
+          # API Key - MUST be set in GitHub Secrets as OPENAI_KEY
+          # Go to: Repository → Settings → Secrets and variables → Actions → New repository secret
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          
+          # API Base URL - Custom OpenAI-compatible endpoint
+          # For api.sfkey.cn, use: https://api.sfkey.cn/v1
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+          
+          # ===== GitHub Configuration =====
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB.BASE_URL: "https://api.github.com"
+          
+          # ===== Model Configuration =====
+          # Primary model
+          CONFIG.MODEL: "gpt-4o"
+          # Fallback model
+          CONFIG.FALLBACK_MODELS: '["gpt-4o-mini"]'
+          
+          # ===== Token Limits =====
+          CONFIG.MAX_MODEL_TOKENS: "128000"
+          CONFIG.MAX_DESCRIPTION_TOKENS: "500"
+          CONFIG.MAX_COMMITS_TOKENS: "500"
+          
+          # ===== AI Parameters =====
+          CONFIG.TEMPERATURE: "0.2"
+          CONFIG.SEED: "-1"
+          CONFIG.AI_TIMEOUT: "180"
+          
+          # ===== Response Language =====
+          CONFIG.RESPONSE_LANGUAGE: "en-US"
+          
+          # ===== Repository Context =====
+          CONFIG.REPO_CONTEXT_FILES: '["AGENTS.md"]'
+          CONFIG.REPO_CONTEXT_FROM_DEFAULT_BRANCH: "true"
+          CONFIG.REPO_CONTEXT_MAX_LINES: "800"
+          
+          # ===== Review Settings =====
+          PR_REVIEWER.REQUIRE_SCORE_REVIEW: "true"
+          PR_REVIEWER.REQUIRE_TESTS_REVIEW: "true"
+          PR_REVIEWER.REQUIRE_SECURITY_REVIEW: "true"
+          PR_REVIEWER.NUM_MAX_FINDINGS: "5"
+          PR_REVIEWER.PERSISTENT_COMMENT: "true"
+          
+          # ===== Description Settings =====
+          PR_DESCRIPTION.PUBLISH_LABELS: "true"
+          PR_DESCRIPTION.GENERATE_AI_TITLE: "false"
+          PR_DESCRIPTION.ENABLE_PR_DIAGRAM: "true"
+          PR_DESCRIPTION.ENABLE_SEMANTIC_FILES_TYPES: "true"
+          
+          # ===== Code Suggestions =====
+          PR_CODE_SUGGESTIONS.FOCUS_ONLY_ON_PROBLEMS: "true"
+          PR_CODE_SUGGESTIONS.DEMAND_CODE_SUGGESTIONS_SELF_REVIEW: "true"
+          PR_CODE_SUGGESTIONS.SUGGESTIONS_SCORE_THRESHOLD: "0"
+          
+          # ===== Output Settings =====
+          CONFIG.PUBLISH_OUTPUT: "true"
+          CONFIG.PUBLISH_OUTPUT_PROGRESS: "true"
+          CONFIG.VERBOSITY_LEVEL: "0"
+          
+        with:
+          # The PR URL to analyze
+          pr_url: ${{ github.event.pull_request.html_url || format('{0}/pull/{1}', github.server_url, github.event.issue.number) }}

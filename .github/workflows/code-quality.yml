@@ -1,0 +1,138 @@
+# Code Quality workflow for AlphaForge
+# Runs code quality checks on pull requests
+
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ====================
+  # Code Coverage
+  # ====================
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run tests with coverage
+        run: pnpm test --coverage
+        continue-on-error: true
+        
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ====================
+  # Bundle Size Check
+  # ====================
+  bundle-size:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build
+        run: pnpm build
+        
+      - name: Check bundle size
+        run: |
+          DIST_SIZE=$(du -sb apps/desktop/dist | cut -f1)
+          MAX_SIZE=5242880  # 5MB
+          
+          echo "Bundle size: $DIST_SIZE bytes ($((DIST_SIZE / 1024)) KB)"
+          
+          if [ "$DIST_SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::warning::Bundle size exceeds 5MB limit"
+          else
+            echo "✅ Bundle size within limits"
+          fi
+
+  # ====================
+  # Complexity Check
+  # ====================
+  complexity:
+    name: Code Complexity
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Check file sizes
+        run: |
+          echo "### Largest TypeScript files:"
+          find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | grep -v dist | xargs wc -l 2>/dev/null | sort -rn | head -10
+          
+          echo ""
+          echo "### Largest Rust files:"
+          find . -name "*.rs" | grep -v target | xargs wc -l 2>/dev/null | sort -rn | head -10
+          
+      - name: Check for long functions
+        run: |
+          echo "Checking for potentially complex code..."
+          
+          # Check for files over 500 lines
+          LARGE_FILES=$(find . -name "*.ts" -o -name "*.tsx" -o -name "*.rs" | grep -v node_modules | grep -v target | xargs wc -l 2>/dev/null | awk '$1 > 500 {print}')
+          
+          if [ -n "$LARGE_FILES" ]; then
+            echo "::warning::Found files over 500 lines. Consider refactoring:"
+            echo "$LARGE_FILES"
+          else
+            echo "✅ No files exceed 500 lines"
+          fi
+
+  # ====================
+  # TODO/FIXME Check
+  # ====================
+  todos:
+    name: TODO/FIXME Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Find TODOs and FIXMEs
+        run: |
+          echo "### TODOs:"
+          grep -rn "TODO" --include="*.ts" --include="*.tsx" --include="*.rs" . 2>/dev/null | grep -v node_modules | grep -v target || echo "No TODOs found"
+          
+          echo ""
+          echo "### FIXMEs:"
+          grep -rn "FIXME" --include="*.ts" --include="*.tsx" --include="*.rs" . 2>/dev/null | grep -v node_modules | grep -v target || echo "No FIXMEs found"

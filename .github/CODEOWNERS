@@ -1,0 +1,41 @@
+# CODEOWNERS - Repository ownership
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything
+* @BerryUIKI
+
+# Documentation
+/docs/ @BerryUIKI
+/README*.md @BerryUIKI
+/CHANGELOG.md @BerryUIKI
+/AGENTS.md @BerryUIKI
+
+# Frontend
+/apps/desktop/src/ @BerryUIKI
+/packages/ @BerryUIKI
+
+# Backend
+/apps/desktop/src-tauri/ @BerryUIKI
+/crates/ @BerryUIKI
+
+# CI/CD
+/.github/ @BerryUIKI
+/scripts/ @BerryUIKI
+
+# Database
+/apps/desktop/src-tauri/migrations/ @BerryUIKI
+/apps/desktop/src-tauri/src/database/ @BerryUIKI
+
+# Security
+/apps/desktop/src-tauri/src/security/ @BerryUIKI
+/apps/desktop/src-tauri/capabilities/ @BerryUIKI
+/SECURITY.md @BerryUIKI
+
+# Plugins
+/plugins/ @BerryUIKI
+
+# Build configuration
+/package.json @BerryUIKI
+/Cargo.toml @BerryUIKI
+/pnpm-workspace.yaml @BerryUIKI
+/vite.config.ts @BerryUIKI

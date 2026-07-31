@@ -1,0 +1,119 @@
+# Release workflow for AlphaForge
+# Creates GitHub releases on version tags
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  # ====================
+  # Create Release
+  # ====================
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+      - name: Extract changelog
+        id: changelog
+        run: |
+          # Extract changelog section for this version
+          CHANGELOG=$(sed -n "/^## \[${{ steps.version.outputs.version }}\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
+          
+          # If no changelog entry, use default
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="Release v${{ steps.version.outputs.version }}"
+          fi
+          
+          # Write to file for multiline string support
+          echo "$CHANGELOG" > /tmp/release_notes.md
+          
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const releaseNotes = fs.readFileSync('/tmp/release_notes.md', 'utf8');
+            const version = '${{ steps.version.outputs.version }}';
+            
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${version}`,
+              name: `AlphaForge v${version}`,
+              body: releaseNotes,
+              draft: false,
+              prerelease: version.includes('-'),
+              generate_release_notes: false
+            });
+            
+            console.log(`Created release: ${release.data.html_url}`);
+
+  # ====================
+  # Build Release Artifacts
+  # ====================
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.platform }}
+    needs: release
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "AlphaForge ${{ github.ref_name }}"
+          releaseBody: "See CHANGELOG.md for details"
+          releaseDraft: false
+          prerelease: false
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alphaforge-${{ matrix.platform }}
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/
+          retention-days: 30

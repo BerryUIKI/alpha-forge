@@ -1,0 +1,211 @@
+# PR Auto-Check Workflow
+# Runs automated checks on pull requests
+
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  # ====================
+  # PR Validation
+  # ====================
+  validate:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Check PR title format
+        if: github.event.pull_request.draft == false
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          
+          # Check conventional commit format
+          if ! echo "$TITLE" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|build|ci|revert)(\(.+\))?!?: .+'; then
+            echo "::error::PR title must follow Conventional Commits format"
+            echo "Expected: feat: description, fix(scope): description, etc."
+            echo "Got: $TITLE"
+            exit 1
+          fi
+          echo "✅ PR title format is valid: $TITLE"
+          
+      - name: Check for large PRs
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD | wc -l)
+          CHANGED_LINES=$(git diff --stat origin/main...HEAD | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
+          
+          echo "Changed files: $CHANGED_FILES"
+          echo "Changed lines: $CHANGED_LINES"
+          
+          if [ "$CHANGED_FILES" -gt 50 ]; then
+            echo "::warning::Large PR detected ($CHANGED_FILES files changed). Consider splitting into smaller PRs."
+          fi
+          
+      - name: Check for forbidden patterns
+        run: |
+          # Check for secrets
+          if git diff origin/main...HEAD | grep -iE '(password|secret|api_key|token|credential)' | grep -v '# '; then
+            echo "::error::Potential secrets detected in diff"
+            exit 1
+          fi
+          
+          # Check for .env files
+          if git diff --name-only origin/main...HEAD | grep -E '\.env$|\.env\.'; then
+            echo "::error::.env files should not be committed"
+            exit 1
+          fi
+          
+          echo "✅ No forbidden patterns detected"
+
+  # ====================
+  # Branch Protection Check
+  # ====================
+  branch-check:
+    name: Branch Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check branch
+        run: |
+          HEAD_REF="${{ github.head_ref }}"
+          
+          # Check branch naming convention
+          if ! echo "$HEAD_REF" | grep -qE '^(feature|fix|docs|refactor|test|chore)/.+'; then
+            echo "::warning::Branch name '$HEAD_REF' doesn't follow convention"
+            echo "Recommended: feature/description, fix/bug-description, docs/topic"
+          fi
+          
+          # Check for direct main branch PR
+          if [ "${{ github.base_ref }}" == "main" ]; then
+            echo "✅ PR targets main branch correctly"
+          fi
+
+  # ====================
+  # Size Label
+  # ====================
+  size-label:
+    name: Size Label
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get PR size
+        id: size
+        run: |
+          ADDITIONS=$(git diff --numstat origin/main...HEAD | awk '{sum+=$1} END {print sum}')
+          DELETIONS=$(git diff --numstat origin/main...HEAD | awk '{sum+=$2} END {print sum}')
+          TOTAL=$(( ADDITIONS + DELETIONS ))
+          
+          echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+          echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          
+          # Determine size label
+          if [ "$TOTAL" -lt 100 ]; then
+            echo "label=size/XS" >> $GITHUB_OUTPUT
+          elif [ "$TOTAL" -lt 300 ]; then
+            echo "label=size/S" >> $GITHUB_OUTPUT
+          elif [ "$TOTAL" -lt 800 ]; then
+            echo "label=size/M" >> $GITHUB_OUTPUT
+          elif [ "$TOTAL" -lt 1500 ]; then
+            echo "label=size/L" >> $GITHUB_OUTPUT
+          else
+            echo "label=size/XL" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Apply size label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            const sizeLabel = '${{ steps.size.outputs.label }}';
+            
+            // Remove existing size labels
+            const existingLabels = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber
+            });
+            
+            for (const label of existingLabels.data) {
+              if (label.name.startsWith('size/')) {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  name: label.name
+                });
+              }
+            }
+            
+            // Add new size label
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: prNumber,
+              labels: [sizeLabel]
+            });
+
+  # ====================
+  # Welcome Message
+  # ====================
+  welcome:
+    name: Welcome
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Add welcome comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            const author = context.payload.pull_request.user.login;
+            
+            const message = `## 👋 Welcome, @${author}!
+            
+            Thank you for opening this Pull Request!
+            
+            ### 📋 Checklist before review:
+            - [ ] PR follows the [Minimal PR Principle](https://github.com/BerryUIKI/alpha-forge/blob/main/docs/PR_BEST_PRACTICES.md)
+            - [ ] Conventional Commit format in title
+            - [ ] All CI checks pass
+            - [ ] Documentation updated (if applicable)
+            - [ ] No secrets or sensitive data
+            
+            ### 🔒 Branch Protection
+            **Main branch is protected.** This PR requires:
+            - ✅ At least 1 approval
+            - ✅ All CI checks passing
+            - ✅ Linear history (squash and merge recommended)
+            
+            ---
+            _Automated by AlphaForge CI_
+            `;
+            
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: message
+            });

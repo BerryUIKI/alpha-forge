@@ -1,0 +1,107 @@
+# Auto-labeler configuration for PRs
+# https://github.com/actions/labeler
+
+# Frontend changes
+frontend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/desktop/src/**/*'
+      - 'packages/**/*.ts'
+      - 'packages/**/*.tsx'
+      - '*.tsx'
+      - '*.ts'
+
+# Backend changes  
+backend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/desktop/src-tauri/**/*.rs'
+      - 'crates/**/*.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+# Rust specific
+rust:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+# TypeScript specific
+typescript:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.ts'
+      - '**/*.tsx'
+
+# Documentation
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*.md'
+      - 'README*.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'AGENTS.md'
+
+# Database/Schema
+database:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/desktop/src-tauri/migrations/**/*.sql'
+      - 'apps/desktop/src-tauri/src/database/**/*'
+
+# CI/CD
+ci:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/labeler.yml'
+      - 'scripts/*.sh'
+
+# Plugins
+plugins:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'plugins/**/*'
+
+# Tests
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.test.ts'
+      - '**/*.test.tsx'
+      - '**/*.spec.ts'
+      - '**/*.spec.tsx'
+      - '**/tests/**/*.rs'
+
+# Security sensitive
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/desktop/src-tauri/src/security/**/*'
+      - 'apps/desktop/src-tauri/capabilities/**/*'
+      - '.env.example'
+
+# UI/Styling
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'apps/desktop/src/styles/**/*'
+      - 'apps/desktop/src/components/**/*'
+      - 'tailwind.config.*'
+      - '**/*.css'
+
+# Configuration
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+      - '.prettierrc'
+      - '.editorconfig'
+      - 'eslint.config.*'
+      - 'vitest.config.*'

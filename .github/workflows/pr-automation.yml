@@ -1,0 +1,170 @@
+# PR Automation - Smart automation for pull requests
+# Provides intelligent review assistance and automation
+
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  # ====================
+  # Auto-Review Reminder
+  # ====================
+  review-reminder:
+    name: Review Reminder
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Check review status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            
+            // Get PR details
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            
+            // Check if waiting for review for more than 24 hours
+            const createdAt = new Date(pr.data.created_at);
+            const now = new Date();
+            const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
+            
+            if (hoursSinceCreation > 24 && pr.data.requested_reviewers.length > 0) {
+              const reviewers = pr.data.requested_reviewers.map(r => `@${r.login}`).join(' ');
+              
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: `⏰ This PR has been waiting for review for over 24 hours.\n\nReviewers: ${reviewers}`
+              });
+            }
+
+  # ====================
+  # Merge Readiness Check
+  # ====================
+  merge-check:
+    name: Merge Readiness
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    
+    steps:
+      - name: Check merge readiness
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            
+            // Get PR details
+            const pr = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            
+            // Get reviews
+            const reviews = await github.rest.pulls.listReviews({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+            
+            // Get check runs
+            const checkRuns = await github.rest.check.listForRef({
+              owner,
+              repo,
+              ref: pr.data.head.sha
+            });
+            
+            // Check merge requirements
+            const hasApproval = reviews.data.some(r => r.state === 'APPROVED');
+            const allChecksPassed = checkRuns.data.check_runs.every(c => c.conclusion === 'success' || c.status !== 'completed');
+            const noConflicts = pr.data.mergeable !== false;
+            
+            const isReadyToMerge = hasApproval && allChecksPassed && noConflicts && !pr.data.draft;
+            
+            // Create status check
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: pr.data.head.sha,
+              state: isReadyToMerge ? 'success' : 'pending',
+              target_url: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
+              description: isReadyToMerge ? 'Ready to merge' : 'Not ready to merge',
+              context: 'pr-automation/merge-readiness'
+            });
+
+  # ====================
+  # Auto-Assignment
+  # ====================
+  auto-assign:
+    name: Auto-Assign
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Auto-assign reviewers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            const author = context.payload.pull_request.user.login;
+            
+            // Don't auto-assign to the author if they're the only contributor
+            if (author === 'BerryUIKI') {
+              console.log('Author is the owner, skipping auto-assignment');
+              return;
+            }
+            
+            // Request review from owner
+            await github.rest.pulls.requestReviewers({
+              owner,
+              repo,
+              pull_number: prNumber,
+              reviewers: ['BerryUIKI']
+            });
+
+  # ====================
+  # Stale PR Detection
+  # ====================
+  stale-check:
+    name: Stale PR Check
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Check for stale PR
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: 'This PR has been inactive for 30 days. Please update or close it.'
+          stale-pr-label: 'stale'
+          days-before-pr-stale: 30
+          days-before-pr-close: -1  # Don't auto-close, just label
