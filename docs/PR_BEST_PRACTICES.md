@@ -1,5 +1,37 @@
 # Pull Request Best Practices
 
+## Branch Protection Rules
+
+**Main branch is protected. Direct pushes are BLOCKED.**
+
+| Rule | Status | Description |
+|------|--------|-------------|
+| 🔒 **Direct Push** | ❌ Blocked | All changes must use Pull Request |
+| ✅ **PR Required** | Mandatory | At least 1 approval needed |
+| 🔄 **Linear History** | Enforced | No merge commits allowed |
+| 💬 **Conversation Resolution** | Required | All discussions must be resolved |
+| ⚠️ **Admins Included** | Yes | Even repository admins must use PR |
+
+**What This Means**:
+
+- You CANNOT push directly to `main` branch
+- You MUST create a feature branch and submit a PR
+- All PRs need at least 1 approval before merging
+- GitHub will reject any direct push attempts
+
+**Attempting Direct Push?**
+
+```bash
+$ git push origin main
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: - Changes must be made through a pull request.
+! [remote rejected] main -> main (protected branch hook declined)
+```
+
+✅ This is expected behavior. Use the PR process below.
+
+---
+
 ## Minimal PR Principle
 
 Every PR should be **minimal, focused, and reviewable**.

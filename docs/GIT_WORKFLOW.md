@@ -6,12 +6,26 @@
 
 `main` is the stable branch.
 
-Rules:
+**Protected Branch Rules** (enforced by GitHub):
 
-- Never develop directly on `main`.
+- 🔒 **Direct pushes are BLOCKED** — All changes must go through Pull Request
+- ✅ **Pull Request required** — At least 1 approval needed
+- 🔄 **Linear history** — No merge commits, use squash or rebase
+- 💬 **Conversation resolution** — All discussions must be resolved before merge
+- ⚠️ **Administrators included** — Even admins must follow PR process
+
+**Additional Rules**:
+
 - Never commit feature work directly to `main`.
 - `main` should always represent a buildable and stable state.
 - Only merge completed, reviewed, and verified changes into `main`.
+
+**Why This Matters**:
+
+- Ensures all changes are reviewed
+- Maintains clean commit history
+- Protects against accidental pushes
+- Creates audit trail for all modifications
 
 ### Development Branches
 

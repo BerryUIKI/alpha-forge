@@ -1,6 +1,6 @@
 # AlphaForge (Investment OS)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
 [![Made with Tauri](https://img.shields.io/badge/Made%20with-Tauri-24C8DB.svg)](https://tauri.app)
@@ -11,21 +11,30 @@
 
 ---
 
-## 核心产品循环
+## 🎯 什么是 AlphaForge？
+
+AlphaForge 是一个**AI 原生投资研究工作空间**，旨在将原始信息转化为结构化的投资知识。
+
+### 核心产品循环
 
 ```text
 信息 → 知识 → 论点 → 决策 → 验证 → 复盘 → 改进
 ```
 
-AlphaForge 将原始信息转化为结构化的投资知识，将研究转化为可验证的投资论点和明智的决策。
+AlphaForge 帮助您：
+- 📊 **高效研究** — AI 辅助文档分析和信息收集
+- 💡 **构建论点** — 跟踪投资论点及其证据和置信度
+- 📈 **做出明智决策** — 结构化的研究工作流，而非聊天机器人式交互
+- ✅ **验证结果** — 跟踪论点表现并从结果中学习
 
 > **⚠️ 重要说明**：这是一个**研究工作空间**，而非交易终端。它不执行交易，也不做出自主的投资决策。
 
 ---
 
-## 目录
+## 📋 目录
 
 - [项目状态](#项目状态)
+- [功能特性](#功能特性)
 - [截图](#截图)
 - [技术栈](#技术栈)
 - [快速开始](#快速开始)
@@ -33,12 +42,13 @@ AlphaForge 将原始信息转化为结构化的投资知识，将研究转化为
 - [文档](#文档)
 - [贡献指南](#贡献指南)
 - [路线图](#路线图)
+- [安全](#安全)
 - [当前限制](#当前限制)
 - [许可证](#许可证)
 
 ---
 
-## 项目状态
+## 📊 项目状态
 
 **阶段 1.5 — 应用基础**（进行中）
 
@@ -47,31 +57,57 @@ AlphaForge 将原始信息转化为结构化的投资知识，将研究转化为
 | M0 | ✅ 完成 | 项目基础 |
 | M1 | ✅ 完成 | 桌面运行时基础 |
 | M1.5 | 🚧 进行中 | 应用基础 |
-| M2-M7 | 📋 计划中 | Agent 运行时 → 插件生态 |
-| M8 | 📅 未来 | 商业化 |
+| M2 | 📋 计划中 | Agent 运行时 |
+| M3 | 📋 计划中 | Artifact 智能系统 |
+| M4 | 📋 计划中 | 研究工作空间 |
+| M5 | 📋 计划中 | 投资知识系统 |
+| M6 | 📋 计划中 | 投资组合智能 |
+| M7 | 📋 计划中 | 插件生态 |
+| M8 | 📅 未来 | 生产与商业化 |
 
 详细里程碑请参阅 [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md)。
 
-## 技术栈
+---
 
-| 层级 | 技术 |
-|------|------|
-| 桌面外壳 | Tauri 2 |
-| 后端 | Rust, Tokio, SQLx, SQLite |
-| 前端 | React 19, TypeScript, Vite 6 |
-| UI | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide |
-| AI | OpenAI API（未来） |
-| 质量 | ESLint, Prettier, Vitest, Rustfmt, Clippy |
+## ✨ 功能特性
+
+### 当前版本 (M0-M1.5)
+- ✅ Tauri 2 桌面应用外壳
+- ✅ React 19 + TypeScript + Vite 基础架构
+- ✅ Rust 后端与 SQLite 持久化
+- ✅ IPC 通信层
+- ✅ 完整文档（17+ 文档）
+
+### 计划中 (M2+)
+- 📋 AI 驱动的研究助手
+- 📋 投资论点跟踪
+- 📋 交互式 Artifact（图表、表格、可视化）
+- 📋 文档分析与语义搜索
+- 📋 投资组合-论点对齐
+- 📋 插件生态
 
 ---
 
-## 截图
+## 🖼️ 截图
 
 > **注意**：AlphaForge 处于早期开发阶段（M1.5）。随着 UI 开发的进展，将添加截图。
 
 ---
 
-## 快速开始
+## 🛠️ 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| **桌面外壳** | Tauri 2 |
+| **后端** | Rust, Tokio, SQLx, SQLite |
+| **前端** | React 19, TypeScript, Vite 6 |
+| **UI** | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide |
+| **AI** | OpenAI API（计划中） |
+| **质量** | ESLint, Prettier, Vitest, Rustfmt, Clippy |
+
+---
+
+## 🚀 快速开始
 
 ### 环境要求
 
@@ -82,76 +118,116 @@ AlphaForge 将原始信息转化为结构化的投资知识，将研究转化为
 ### 开发命令
 
 ```bash
-pnpm install          # 安装所有依赖
+# 安装依赖
+pnpm install
+
+# 前端开发
 pnpm dev:web          # 启动 Vite 开发服务器（仅前端）
-pnpm typecheck        # TypeScript 类型检查（所有包）
-pnpm lint             # ESLint 检查
-pnpm format:check     # Prettier 格式检查
-pnpm format           # Prettier 自动修复
-pnpm test             # Vitest 测试
-```
+pnpm typecheck        # TypeScript 类型检查
+pnpm lint             # ESLint
+pnpm test             # Vitest
 
-### Tauri 开发（需要本地 Rust 环境）
-
-```bash
-pnpm tauri dev        # 启动完整的 Tauri 桌面应用
+# 桌面开发（需要 Rust）
+pnpm tauri dev        # 启动完整 Tauri 桌面应用
 pnpm tauri build      # 生产构建
-```
 
-### Rust 命令（需要本地 Rust 环境）
-
-```bash
+# Rust 命令（需要 Rust）
 cargo check --workspace
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --workspace
 ```
 
-## 架构
+---
+
+## 🏗️ 架构
 
 详细架构文档请参阅 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 
-关键边界：
+### 关键边界
 
-- **React** 负责页面、组件、交互、前端状态。
-- **Rust** 负责 Agent 运行时、SQLite、文件系统、网络、凭证。
-- **Tauri** 负责窗口、IPC、权限、操作系统集成。
+```
+┌─────────────────────────────────────────┐
+│            Tauri 2 Desktop              │
+│  ┌────────────┐       ┌──────────────┐  │
+│  │   React    │◄─────►│    Rust      │  │
+│  │ Frontend   │  IPC  │   Backend    │  │
+│  └────────────┘       └──────────────┘  │
+│                            │             │
+│                        ┌───┴───┐         │
+│                        │SQLite │         │
+│                        └───────┘         │
+└─────────────────────────────────────────┘
+```
 
-## 文档
+**React** 负责：
+- 页面、组件、交互
+- 前端状态
+- 用户界面
 
-| 文档 | 用途 |
-|------|------|
-| [AGENTS.md](AGENTS.md) | Agent 编码标准和规则（最高优先级） |
-| [PRODUCT.md](docs/PRODUCT.md) | 产品定位、目标用户、MVP 范围 |
-| [VISION.md](docs/VISION.md) | 长期方向和设计理念 |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | 系统边界、组件职责、IPC 流程 |
-| [SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md) | 九大子系统 — 目的、输入、输出、依赖关系 |
-| [DATA_MODEL.md](docs/DATA_MODEL.md) | 概念实体、关系、生命周期 |
-| [AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Agent 任务生命周期、工具使用、结构化输出、事件 |
-| [ARTIFACT_SYSTEM.md](docs/ARTIFACT_SYSTEM.md) | Artifact 概念、渲染模型、权限模型 |
-| [PLUGIN_SPEC.md](docs/PLUGIN_SPEC.md) | 插件清单、版本控制、权限、生命周期 |
-| [SECURITY.md](SECURITY.md) | 安全策略、凭证存储、漏洞报告 |
-| [UI_GUIDELINES.md](docs/UI_GUIDELINES.md) | 设计系统、必需的 UI 状态、导航模式 |
-| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | 本地设置、开发命令、Agent 工作流、故障排除 |
-| [ROADMAP.md](docs/ROADMAP.md) | 12 阶段开发路线图（技术阶段） |
-| [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | 产品里程碑、交付物和验收标准 |
-| [GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) | 分支策略、提交约定、PR 流程 |
-| [PROJECT_BOOTSTRAP.md](docs/PROJECT_BOOTSTRAP.md) | 完整初始化计划（10 个实施阶段） |
-| [DECISIONS/](docs/DECISIONS/) | 架构决策记录（3 个 ADR） |
+**Rust** 负责：
+- Agent 运行时
+- SQLite 数据库
+- 文件系统与网络访问
+- 凭证管理
 
-## 当前限制
-
-1. **沙盒中的 Rust 编译**：WorkBuddy 沙盒阻止原生二进制执行。`cargo check`、`cargo test`、`cargo clippy` 必须在本地运行。
-2. **`pnpm tauri dev`**：依赖 Rust 编译。必须在本地运行。
-3. **无应用图标**：目前只有占位符目录。发布构建前需要图标。
-4. **无真实 AI 集成**：Agent 命令返回占位符。真实集成在第 7 阶段。
-5. **尚未编写测试**：Vitest 框架已配置但尚无测试文件。
+**Tauri** 负责：
+- 桌面窗口
+- IPC 通信
+- 权限与安全
+- 操作系统集成
 
 ---
 
-## 贡献指南
+## 📚 文档
 
-我们欢迎各种形式的贡献！详情请参阅[贡献指南](CONTRIBUTING.md)。
+### 核心文档
+
+| 文档 | 用途 |
+|------|------|
+| [AGENTS.md](AGENTS.md) | Agent 编码标准（**必读**） |
+| [PRODUCT.md](docs/PRODUCT.md) | 产品定位和 MVP 范围 |
+| [VISION.md](docs/VISION.md) | 长期方向 |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | 系统架构 |
+| [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | 产品里程碑 |
+
+### 技术文档
+
+| 文档 | 用途 |
+|------|------|
+| [AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Agent 任务生命周期 |
+| [ARTIFACT_SYSTEM.md](docs/ARTIFACT_SYSTEM.md) | Artifact 渲染 |
+| [PLUGIN_SPEC.md](docs/PLUGIN_SPEC.md) | 插件开发 |
+| [DATA_MODEL.md](docs/DATA_MODEL.md) | 实体关系 |
+| [SECURITY.md](SECURITY.md) | 安全策略 |
+
+### 开发指南
+
+| 文档 | 用途 |
+|------|------|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 |
+| [GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) | Git 和 PR 工作流 |
+| [PR_BEST_PRACTICES.md](docs/PR_BEST_PRACTICES.md) | PR 指南 |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | 本地设置指南 |
+
+---
+
+## 🤝 贡献指南
+
+我们欢迎各种形式的贡献！
+
+### 🔒 分支保护说明
+
+**主分支受保护。直接推送被阻止。**
+
+所有变更必须通过 Pull Request：
+1. 创建功能分支
+2. 进行变更并提交
+3. 创建 Pull Request
+4. 获得至少 1 个批准
+5. 合并到 main
+
+详细工作流程请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ### 快速开始
 
@@ -163,31 +239,79 @@ cargo test --workspace
 
 ---
 
-## 路线图
+## 🗺️ 路线图
 
-AlphaForge 正在分 9 个里程碑开发：
+### 开发时间线
 
 ```
 M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
 ✅    ✅    🚧     📋    📋    📋    📋    📋    📋    📅
 ```
 
-- **M0-M1**：基础设施（已完成）
-- **M1.5**：应用基础（当前）
-- **M2-M7**：智能功能（计划中）
-- **M8**：商业化（未来）
+### 阶段概览
 
-详细里程碑请参阅 [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md)。
+**基础 (M0-M1.5)**：
+- 项目设置
+- 桌面运行时
+- 应用基础
+
+**智能 (M2-M3)**：
+- Agent 运行时
+- AI 集成
+- Artifact 系统
+
+**功能 (M4-M6)**：
+- 研究工作空间
+- 论点跟踪
+- 投资组合分析
+
+**扩展性 (M7-M8)**：
+- 插件生态
+- 生产发布
+
+详情请参阅 [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md)。
 
 ---
 
-## 许可证
+## 🔐 安全
 
-本项目采用 MIT 许可证 - 详情请查看 [LICENSE](LICENSE) 文件。
+安全是重中之重。请参阅 [SECURITY.md](SECURITY.md) 了解：
+- 漏洞报告流程
+- 安全架构
+- 凭证管理
+- 权限模型
+
+**报告**：请通过 GitHub Security 私下报告安全问题。
 
 ---
 
-## 致谢
+## ⚠️ 当前限制
+
+1. **沙盒中的 Rust 编译**：`cargo check/test/clippy` 必须在本地运行
+2. **`pnpm tauri dev`**：需要本地 Rust 编译
+3. **无应用图标**：目前只有占位符
+4. **无真实 AI 集成**：Agent 命令返回占位符
+5. **尚未编写测试**：框架已配置，但没有测试文件
+
+---
+
+## 📄 许可证
+
+本项目采用 **GNU Affero General Public License v3.0 (AGPLv3)** 许可证 - 详情请查看 [LICENSE](LICENSE) 文件。
+
+### 为什么选择 AGPLv3？
+
+AGPLv3 确保：
+- ✅ 所有修改必须回馈社区
+- ✅ 网络使用（SaaS）触发 copyleft 要求
+- ✅ 用户始终可以访问源代码
+- ✅ 允许在适当许可下进行商业使用
+
+这保护了 AlphaForge 的开源性质，同时允许可持续开发。
+
+---
+
+## 🙏 致谢
 
 AlphaForge 的实现离不开以下开源项目：
 
@@ -199,6 +323,17 @@ AlphaForge 的实现离不开以下开源项目：
 
 ---
 
+## 📞 联系方式
+
+- **Issues**: [GitHub Issues](https://github.com/BerryUIKI/alpha-forge/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/BerryUIKI/alpha-forge/discussions)
+
+---
+
 <p align="center">
-  用 ❤️ 构建 by AlphaForge 团队
+  <strong>AlphaForge 团队用 ❤️ 构建</strong>
+</p>
+
+<p align="center">
+  <sub>将信息转化为投资智能</sub>
 </p>
