@@ -12,3 +12,6 @@
 
 pub mod settings_repository;
 pub mod workspace_repository;
+
+#[cfg(test)]
+mod workspace_repository_test;

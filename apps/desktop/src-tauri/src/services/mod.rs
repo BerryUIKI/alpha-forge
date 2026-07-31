@@ -13,3 +13,6 @@
 
 pub mod settings_service;
 pub mod workspace_service;
+
+#[cfg(test)]
+mod workspace_service_test;
