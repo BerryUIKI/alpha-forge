@@ -1,29 +1,56 @@
-# Investment OS
+# AlphaForge (Investment OS)
 
-Desktop-first AI workspace for investment research.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![Made with Tauri](https://img.shields.io/badge/Made%20with-Tauri-24C8DB.svg)](https://tauri.app)
+
+**Desktop-first AI workspace for investment research** 🚀
+
+[English](README.md) | [简体中文](README-zh_CN.md) | [日本語](README-ja.md)
+
+---
+
+## Core Product Loop
 
 ```text
 Information → Knowledge → Thesis → Decision → Validation → Review → Improvement
 ```
 
-Investment OS transforms raw information into structured investment knowledge, turning research into testable theses and informed decisions.
+AlphaForge transforms raw information into structured investment knowledge, turning research into testable theses and informed decisions.
 
-**This is a research workspace, not a brokerage terminal.** It does not execute trades or make autonomous investment decisions.
+> **⚠️ Important**: This is a **research workspace**, not a brokerage terminal. It does not execute trades or make autonomous investment decisions.
+
+---
+
+## Table of Contents
+
+- [Status](#status)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Architecture](#architecture)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [Current Limitations](#current-limitations)
+- [License](#license)
+
+---
 
 ## Status
 
-**Phase 1 — Technical Foundation** (in progress)
+**Phase 1.5 — Application Foundation** (in progress)
 
-- [x] Repository structure
-- [x] pnpm workspace with 13 packages
-- [x] Tauri 2 + React + TypeScript + Vite foundation
-- [x] TypeScript strict mode — passes `pnpm typecheck`
-- [x] ESLint + Prettier configured — passes
-- [x] Vitest test framework configured
-- [x] Rust module structure with `AppError`, `AppState`, IPC commands
-- [x] SQLite migration system (SQLx)
-- [ ] Rust compilation (`cargo check`) — blocked by sandbox (see Limitations)
-- [ ] `pnpm tauri dev` — requires local Rust compilation
+| Milestone | Status | Description |
+|-----------|--------|-------------|
+| M0 | ✅ Complete | Project Foundation |
+| M1 | ✅ Complete | Desktop Runtime Foundation |
+| M1.5 | 🚧 In Progress | Application Foundation |
+| M2-M7 | 📋 Planned | Agent Runtime → Plugin Ecosystem |
+| M8 | 📅 Future | Production & Commercialization |
+
+See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ## Tech Stack
 
@@ -35,6 +62,26 @@ Investment OS transforms raw information into structured investment knowledge, t
 | UI | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide |
 | AI | OpenAI API (future) |
 | Quality | ESLint, Prettier, Vitest, Rustfmt, Clippy |
+
+---
+
+## Screenshots
+
+> **Note**: AlphaForge is in early development (M1.5). Screenshots will be added as UI development progresses.
+
+<!-- TODO: Add actual screenshots when UI is implemented -->
+<!--
+### Main Window
+![Main Window](docs/assets/screenshot-main.png)
+
+### Research Workspace
+![Research Workspace](docs/assets/screenshot-research.png)
+
+### Agent Task Progress
+![Agent Task](docs/assets/screenshot-task.png)
+-->
+
+---
 
 ## Getting Started
 
@@ -95,7 +142,7 @@ Key boundaries:
 | [AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Agent task lifecycle, tool usage, structured output, events |
 | [ARTIFACT_SYSTEM.md](docs/ARTIFACT_SYSTEM.md) | Artifact concept, rendering model, permission model |
 | [PLUGIN_SPEC.md](docs/PLUGIN_SPEC.md) | Plugin manifest, versioning, permissions, lifecycle |
-| [SECURITY.md](docs/SECURITY.md) | Credential storage, window permissions, input validation |
+| [SECURITY.md](SECURITY.md) | Security policy, credential storage, vulnerability reporting |
 | [UI_GUIDELINES.md](docs/UI_GUIDELINES.md) | Design system, required UI states, navigation patterns |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local setup, dev commands, agent workflow, troubleshooting |
 | [ROADMAP.md](docs/ROADMAP.md) | 12-phase development roadmap (technical phases) |
@@ -112,6 +159,58 @@ Key boundaries:
 4. **No real AI integration**: Agent commands return stubs. Real integration in Phase 7.
 5. **No tests written yet**: Vitest framework configured but no test files.
 
+---
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Start
+
+1. Read [AGENTS.md](AGENTS.md) (**required** for all contributors)
+2. Check [CONTRIBUTING.md](CONTRIBUTING.md) for workflow
+3. Fork, branch, and submit a PR
+
+All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## Roadmap
+
+AlphaForge is being developed in 9 milestones:
+
+```
+M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
+✅    ✅    🚧     📋    📋    📋    📋    📋    📋    📅
+```
+
+- **M0-M1**: Foundation (Complete)
+- **M1.5**: Application Foundation (Current)
+- **M2-M7**: Intelligence & Features (Planned)
+- **M8**: Production & Commercialization (Future)
+
+See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
+
+---
+
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+AlphaForge is made possible by these open source projects:
+
+- [Tauri](https://tauri.app) - Desktop application framework
+- [React](https://react.dev) - UI library
+- [Rust](https://www.rust-lang.org) - Systems programming language
+- [shadcn/ui](https://ui.shadcn.com) - UI component library
+- [Tailwind CSS](https://tailwindcss.com) - CSS framework
+
+---
+
+<p align="center">
+  Built with ❤️ by the AlphaForge team
+</p>
