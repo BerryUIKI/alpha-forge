@@ -22,4 +22,18 @@ export const optionsApi = {
   async calculateOptionPrice(params: CalculateGreeksParams): Promise<number> {
     return invoke<number>('calculate_option_price', { params });
   },
+
+  async calculatePortfolioGreeks(params: { workspaceId: string }): Promise<{
+    net_delta: number;
+    net_gamma: number;
+    net_theta: number;
+    net_vega: number;
+    net_rho: number;
+    delta_dollars: number;
+    gamma_dollars: number;
+    theta_dollars: number;
+    vega_dollars: number;
+  }> {
+    return invoke('calculate_portfolio_greeks', { params });
+  },
 };
