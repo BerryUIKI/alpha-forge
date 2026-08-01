@@ -4,12 +4,12 @@
 
 use sqlx::SqlitePool;
 
+use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
-use crate::database::repositories::agent_task_repository::AgentTaskRepository;
+use crate::services::agent_service::AgentService;
 use crate::services::settings_service::SettingsService;
 use crate::services::workspace_service::WorkspaceService;
-use crate::services::agent_service::AgentService;
 
 pub struct AppState {
     pub db_pool: SqlitePool,

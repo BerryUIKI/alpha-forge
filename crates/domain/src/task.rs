@@ -5,12 +5,14 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// Status of an agent task throughout its lifecycle.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum TaskStatus {
     /// Task record exists, not yet queued for execution
+    #[default]
     Created,
     /// Task is waiting for an available execution slot
     Queued,
@@ -26,12 +28,6 @@ pub enum TaskStatus {
     Cancelled,
 }
 
-impl Default for TaskStatus {
-    fn default() -> Self {
-        Self::Created
-    }
-}
-
 impl TaskStatus {
     /// Check if the task is in a terminal state
     pub fn is_terminal(&self) -> bool {
@@ -44,6 +40,20 @@ impl TaskStatus {
     /// Check if the task can be cancelled
     pub fn is_cancellable(&self) -> bool {
         !self.is_terminal()
+    }
+}
+
+impl fmt::Display for TaskStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TaskStatus::Created => write!(f, "created"),
+            TaskStatus::Queued => write!(f, "queued"),
+            TaskStatus::Running => write!(f, "running"),
+            TaskStatus::WaitingForInput => write!(f, "waiting_for_input"),
+            TaskStatus::Completed => write!(f, "completed"),
+            TaskStatus::Failed => write!(f, "failed"),
+            TaskStatus::Cancelled => write!(f, "cancelled"),
+        }
     }
 }
 

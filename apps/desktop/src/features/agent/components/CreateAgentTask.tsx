@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { useCreateAgentTask } from "../hooks/useAgentTasks";
 
 interface CreateAgentTaskProps {
   workspaceId: string;
@@ -15,7 +16,6 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
   const [error, setError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const { useCreateAgentTask } = require("../hooks/useAgentTasks");
   const createMutation = useCreateAgentTask();
 
   const handleSubmit = async (e: React.FormEvent) => {

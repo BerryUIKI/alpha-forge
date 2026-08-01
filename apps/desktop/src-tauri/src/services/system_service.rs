@@ -1,5 +1,6 @@
 // System service — handles system-level operations.
 
+use tauri::Manager;
 use crate::error::AppError;
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +30,10 @@ impl SystemService {
 
         Ok(SystemInfo {
             app_name: "Investment OS".to_string(),
-            app_version: config.version.clone().unwrap_or_else(|| "unknown".to_string()),
+            app_version: config
+                .version
+                .clone()
+                .unwrap_or_else(|| "unknown".to_string()),
             platform: std::env::consts::OS.to_string(),
             architecture: std::env::consts::ARCH.to_string(),
         })
@@ -41,7 +45,7 @@ impl SystemService {
         // - Database connectivity
         // - Required services status
         // - Critical resources availability
-        
+
         Ok("ok".to_string())
     }
 

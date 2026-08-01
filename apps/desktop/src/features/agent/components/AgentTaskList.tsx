@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
+import { useAgentTasks } from "../hooks/useAgentTasks";
 
 interface AgentTaskListProps {
   workspaceId: string;
@@ -13,8 +14,6 @@ interface AgentTaskListProps {
 }
 
 export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps) {
-  // Import hooks dynamically to avoid circular dependencies
-  const { useAgentTasks } = require("../hooks/useAgentTasks");
   const { isLoading, error, data: tasks, refetch } = useAgentTasks(workspaceId);
 
   if (isLoading) {

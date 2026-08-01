@@ -1,6 +1,6 @@
 // Task status badge component.
 
-import { Badge } from "@investment-os/ui/components/ui/badge";
+import { Badge } from "@investment-os/ui";
 import type { TaskStatus } from "@/lib/desktop-api/agent";
 
 const statusConfig: Record<TaskStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {

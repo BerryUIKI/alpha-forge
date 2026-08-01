@@ -17,13 +17,11 @@ impl SettingsRepository {
 
     /// Gets a setting value by key.
     pub async fn get(&self, key: &str) -> Result<Option<String>, AppError> {
-        let value = sqlx::query_scalar::<_, String>(
-            "SELECT value FROM app_settings WHERE key = ?",
-        )
-        .bind(key)
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| AppError::Internal(format!("Failed to get setting '{}': {}", key, e)))?;
+        let value = sqlx::query_scalar::<_, String>("SELECT value FROM app_settings WHERE key = ?")
+            .bind(key)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to get setting '{}': {}", key, e)))?;
 
         Ok(value)
     }
@@ -50,7 +48,9 @@ impl SettingsRepository {
             .bind(key)
             .execute(&self.pool)
             .await
-            .map_err(|e| AppError::Internal(format!("Failed to delete setting '{}': {}", key, e)))?;
+            .map_err(|e| {
+                AppError::Internal(format!("Failed to delete setting '{}': {}", key, e))
+            })?;
 
         Ok(())
     }

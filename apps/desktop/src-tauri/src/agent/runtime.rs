@@ -11,7 +11,7 @@ use tokio::time::sleep;
 
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
-use domain::task::{AgentTask, TaskEventType, TaskStatus};
+use domain::task::{AgentTask, TaskEventType};
 
 /// Result of agent execution
 #[derive(Debug, Clone)]
@@ -51,15 +51,30 @@ impl LocalDemoRuntime {
         let repo = self.repo.lock().await;
 
         // Step 1: Progress - Analyzing
-        repo.create_event(&task_id, TaskEventType::TaskProgress, Some("Analyzing request...".to_string())).await?;
+        repo.create_event(
+            &task_id,
+            TaskEventType::TaskProgress,
+            Some("Analyzing request...".to_string()),
+        )
+        .await?;
         sleep(Duration::from_secs(2)).await;
 
         // Step 2: Progress - Processing
-        repo.create_event(&task_id, TaskEventType::TaskProgress, Some("Processing data...".to_string())).await?;
+        repo.create_event(
+            &task_id,
+            TaskEventType::TaskProgress,
+            Some("Processing data...".to_string()),
+        )
+        .await?;
         sleep(Duration::from_secs(2)).await;
 
         // Step 3: Progress - Generating output
-        repo.create_event(&task_id, TaskEventType::TaskProgress, Some("Generating output...".to_string())).await?;
+        repo.create_event(
+            &task_id,
+            TaskEventType::TaskProgress,
+            Some("Generating output...".to_string()),
+        )
+        .await?;
         sleep(Duration::from_secs(1)).await;
 
         // Return success

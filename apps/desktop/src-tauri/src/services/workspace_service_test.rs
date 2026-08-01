@@ -2,13 +2,13 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::SqlitePool;
     use sqlx::sqlite::SqlitePoolOptions;
+    use sqlx::SqlitePool;
 
     use crate::database::repositories::workspace_repository::WorkspaceRepository;
+    use crate::error::AppError;
     use crate::services::workspace_service::WorkspaceService;
     use domain::workspace::CreateWorkspaceInput;
-    use crate::error::AppError;
 
     async fn setup_test_db() -> SqlitePool {
         let pool = SqlitePoolOptions::new()
@@ -40,7 +40,10 @@ mod tests {
             name: "My Research Workspace".to_string(),
         };
 
-        let workspace = service.create(input).await.expect("Failed to create workspace");
+        let workspace = service
+            .create(input)
+            .await
+            .expect("Failed to create workspace");
 
         assert!(!workspace.id.is_empty());
         assert_eq!(workspace.name, "My Research Workspace");
@@ -84,9 +87,7 @@ mod tests {
         let service = create_service(pool);
 
         let long_name = "a".repeat(201);
-        let input = CreateWorkspaceInput {
-            name: long_name,
-        };
+        let input = CreateWorkspaceInput { name: long_name };
 
         let result = service.create(input).await;
 
@@ -112,8 +113,18 @@ mod tests {
         let pool = setup_test_db().await;
         let service = create_service(pool);
 
-        service.create(CreateWorkspaceInput { name: "Workspace 1".to_string() }).await.unwrap();
-        service.create(CreateWorkspaceInput { name: "Workspace 2".to_string() }).await.unwrap();
+        service
+            .create(CreateWorkspaceInput {
+                name: "Workspace 1".to_string(),
+            })
+            .await
+            .unwrap();
+        service
+            .create(CreateWorkspaceInput {
+                name: "Workspace 2".to_string(),
+            })
+            .await
+            .unwrap();
 
         let workspaces = service.list().await.expect("Failed to list workspaces");
 
@@ -125,9 +136,17 @@ mod tests {
         let pool = setup_test_db().await;
         let service = create_service(pool);
 
-        let created = service.create(CreateWorkspaceInput { name: "Test".to_string() }).await.unwrap();
+        let created = service
+            .create(CreateWorkspaceInput {
+                name: "Test".to_string(),
+            })
+            .await
+            .unwrap();
 
-        let retrieved = service.get(&created.id).await.expect("Failed to get workspace");
+        let retrieved = service
+            .get(&created.id)
+            .await
+            .expect("Failed to get workspace");
 
         assert!(retrieved.is_some());
         assert_eq!(retrieved.unwrap().name, "Test");
@@ -138,7 +157,10 @@ mod tests {
         let pool = setup_test_db().await;
         let service = create_service(pool);
 
-        let result = service.get("non-existent-id").await.expect("Failed to get workspace");
+        let result = service
+            .get("non-existent-id")
+            .await
+            .expect("Failed to get workspace");
 
         assert!(result.is_none());
     }
@@ -158,9 +180,17 @@ mod tests {
         let pool = setup_test_db().await;
         let service = create_service(pool);
 
-        let created = service.create(CreateWorkspaceInput { name: "Test".to_string() }).await.unwrap();
+        let created = service
+            .create(CreateWorkspaceInput {
+                name: "Test".to_string(),
+            })
+            .await
+            .unwrap();
 
-        service.delete(&created.id).await.expect("Failed to delete workspace");
+        service
+            .delete(&created.id)
+            .await
+            .expect("Failed to delete workspace");
 
         let retrieved = service.get(&created.id).await.unwrap();
         assert!(retrieved.is_none());

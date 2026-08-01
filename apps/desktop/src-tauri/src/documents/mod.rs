@@ -1,3 +1,3 @@
-pub mod parser;
 pub mod chunker;
 pub mod indexer;
+pub mod parser;

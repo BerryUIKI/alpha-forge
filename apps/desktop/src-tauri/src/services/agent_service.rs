@@ -84,7 +84,9 @@ impl AgentService {
         }
 
         // Update status
-        self.repo.update_status(task_id, TaskStatus::Running).await?;
+        self.repo
+            .update_status(task_id, TaskStatus::Running)
+            .await?;
 
         // Create event
         self.repo
@@ -128,9 +130,7 @@ impl AgentService {
 
     /// Fails a task with an error message.
     pub async fn fail_task(&self, task_id: &str, error: String) -> Result<AgentTask, AppError> {
-        self.repo
-            .update_status(task_id, TaskStatus::Failed)
-            .await?;
+        self.repo.update_status(task_id, TaskStatus::Failed).await?;
 
         self.repo
             .create_event(task_id, TaskEventType::TaskFailed, Some(error))

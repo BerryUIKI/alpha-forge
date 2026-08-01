@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::SqlitePool;
     use sqlx::sqlite::SqlitePoolOptions;
+    use sqlx::SqlitePool;
 
     use crate::database::repositories::workspace_repository::WorkspaceRepository;
 
@@ -28,7 +28,8 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        let workspace = repo.create("test-uuid", "My Test Workspace")
+        let workspace = repo
+            .create("test-uuid", "My Test Workspace")
             .await
             .expect("Failed to create workspace");
 
@@ -51,8 +52,12 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        repo.create("uuid-1", "Workspace 1").await.expect("Failed to create workspace 1");
-        repo.create("uuid-2", "Workspace 2").await.expect("Failed to create workspace 2");
+        repo.create("uuid-1", "Workspace 1")
+            .await
+            .expect("Failed to create workspace 1");
+        repo.create("uuid-2", "Workspace 2")
+            .await
+            .expect("Failed to create workspace 2");
 
         let workspaces = repo.list().await.expect("Failed to list workspaces");
 
@@ -64,9 +69,14 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        repo.create("test-uuid", "Test Workspace").await.expect("Failed to create workspace");
+        repo.create("test-uuid", "Test Workspace")
+            .await
+            .expect("Failed to create workspace");
 
-        let workspace = repo.get("test-uuid").await.expect("Failed to get workspace");
+        let workspace = repo
+            .get("test-uuid")
+            .await
+            .expect("Failed to get workspace");
 
         assert!(workspace.is_some());
         assert_eq!(workspace.unwrap().name, "Test Workspace");
@@ -77,7 +87,10 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        let workspace = repo.get("non-existent").await.expect("Failed to get workspace");
+        let workspace = repo
+            .get("non-existent")
+            .await
+            .expect("Failed to get workspace");
 
         assert!(workspace.is_none());
     }
@@ -87,9 +100,14 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        repo.create("test-uuid", "Original Name").await.expect("Failed to create workspace");
+        repo.create("test-uuid", "Original Name")
+            .await
+            .expect("Failed to create workspace");
 
-        let updated = repo.update("test-uuid", "Updated Name").await.expect("Failed to update workspace");
+        let updated = repo
+            .update("test-uuid", "Updated Name")
+            .await
+            .expect("Failed to update workspace");
 
         assert_eq!(updated.name, "Updated Name");
     }
@@ -109,11 +127,18 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = WorkspaceRepository::new(pool);
 
-        repo.create("test-uuid", "Test Workspace").await.expect("Failed to create workspace");
+        repo.create("test-uuid", "Test Workspace")
+            .await
+            .expect("Failed to create workspace");
 
-        repo.delete("test-uuid").await.expect("Failed to delete workspace");
+        repo.delete("test-uuid")
+            .await
+            .expect("Failed to delete workspace");
 
-        let workspace = repo.get("test-uuid").await.expect("Failed to get workspace");
+        let workspace = repo
+            .get("test-uuid")
+            .await
+            .expect("Failed to get workspace");
         assert!(workspace.is_none());
     }
 

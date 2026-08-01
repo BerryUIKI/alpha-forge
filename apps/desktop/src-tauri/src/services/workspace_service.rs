@@ -48,7 +48,9 @@ impl WorkspaceService {
     /// Gets a workspace by ID.
     pub async fn get(&self, id: &str) -> Result<Option<Workspace>, AppError> {
         if id.trim().is_empty() {
-            return Err(AppError::Validation("Workspace ID cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Workspace ID cannot be empty".to_string(),
+            ));
         }
 
         self.repo.get(id).await
@@ -62,11 +64,13 @@ impl WorkspaceService {
     ) -> Result<Workspace, AppError> {
         // Validate ID
         if id.trim().is_empty() {
-            return Err(AppError::Validation("Workspace ID cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Workspace ID cannot be empty".to_string(),
+            ));
         }
 
         // Validate name if provided
-        let name = input.name.map(|n| n.trim()).filter(|n| !n.is_empty());
+        let name = input.name.as_ref().map(|n| n.trim()).filter(|n| !n.is_empty());
 
         let name = match name {
             Some(n) if n.len() > 200 => {
@@ -88,7 +92,9 @@ impl WorkspaceService {
     /// Deletes a workspace.
     pub async fn delete(&self, id: &str) -> Result<(), AppError> {
         if id.trim().is_empty() {
-            return Err(AppError::Validation("Workspace ID cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Workspace ID cannot be empty".to_string(),
+            ));
         }
 
         self.repo.delete(id).await

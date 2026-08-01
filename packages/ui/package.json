@@ -7,7 +7,14 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "class-variance-authority": "^0.7",
+    "clsx": "^2",
+    "tailwind-merge": "^2",
+    "react": "^19"
+  },
   "devDependencies": {
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "@types/react": "^19"
   }
 }

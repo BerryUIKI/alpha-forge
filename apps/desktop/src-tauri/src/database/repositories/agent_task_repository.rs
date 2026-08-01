@@ -41,7 +41,8 @@ impl AgentTaskRepository {
         .map_err(|e| AppError::Internal(format!("Failed to create agent task: {}", e)))?;
 
         // Create initial event
-        self.create_event(&id, TaskEventType::TaskCreated, None).await?;
+        self.create_event(&id, TaskEventType::TaskCreated, None)
+            .await?;
 
         Ok(AgentTask {
             id,

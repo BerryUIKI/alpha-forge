@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::SqlitePool;
     use sqlx::sqlite::SqlitePoolOptions;
+    use sqlx::SqlitePool;
 
     async fn setup_test_db() -> SqlitePool {
         let pool = SqlitePoolOptions::new()
@@ -27,7 +27,7 @@ mod tests {
 
         // Check that app_settings table exists
         let result: Option<(String,)> = sqlx::query_as(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='app_settings'"
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='app_settings'",
         )
         .fetch_optional(&pool)
         .await
@@ -43,7 +43,7 @@ mod tests {
 
         // Check that workspaces table exists
         let result: Option<(String,)> = sqlx::query_as(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='workspaces'"
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='workspaces'",
         )
         .fetch_optional(&pool)
         .await
@@ -57,33 +57,39 @@ mod tests {
     async fn test_app_settings_table_has_correct_columns() {
         let pool = setup_test_db().await;
 
-        let columns: Vec<(i32, String, String, i32, Option<String>)> = sqlx::query_as(
-            "PRAGMA table_info(app_settings)"
-        )
-        .fetch_all(&pool)
-        .await
-        .expect("Failed to query table info");
+        let columns: Vec<(i32, String, String, i32, Option<String>)> =
+            sqlx::query_as("PRAGMA table_info(app_settings)")
+                .fetch_all(&pool)
+                .await
+                .expect("Failed to query table info");
 
         assert!(columns.iter().any(|(_, name, _, _, _)| name == "key"));
         assert!(columns.iter().any(|(_, name, _, _, _)| name == "value"));
-        assert!(columns.iter().any(|(_, name, _, _, _)| name == "created_at"));
-        assert!(columns.iter().any(|(_, name, _, _, _)| name == "updated_at"));
+        assert!(columns
+            .iter()
+            .any(|(_, name, _, _, _)| name == "created_at"));
+        assert!(columns
+            .iter()
+            .any(|(_, name, _, _, _)| name == "updated_at"));
     }
 
     #[tokio::test]
     async fn test_workspaces_table_has_correct_columns() {
         let pool = setup_test_db().await;
 
-        let columns: Vec<(i32, String, String, i32, Option<String>)> = sqlx::query_as(
-            "PRAGMA table_info(workspaces)"
-        )
-        .fetch_all(&pool)
-        .await
-        .expect("Failed to query table info");
+        let columns: Vec<(i32, String, String, i32, Option<String>)> =
+            sqlx::query_as("PRAGMA table_info(workspaces)")
+                .fetch_all(&pool)
+                .await
+                .expect("Failed to query table info");
 
         assert!(columns.iter().any(|(_, name, _, _, _)| name == "id"));
         assert!(columns.iter().any(|(_, name, _, _, _)| name == "name"));
-        assert!(columns.iter().any(|(_, name, _, _, _)| name == "created_at"));
-        assert!(columns.iter().any(|(_, name, _, _, _)| name == "updated_at"));
+        assert!(columns
+            .iter()
+            .any(|(_, name, _, _, _)| name == "created_at"));
+        assert!(columns
+            .iter()
+            .any(|(_, name, _, _, _)| name == "updated_at"));
     }
 }

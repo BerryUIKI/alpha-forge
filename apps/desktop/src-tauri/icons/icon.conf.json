@@ -1,0 +1,6 @@
+{
+  "iconPath": "icons/icon32.png",
+  "windows": {
+    "iconPath": "icons/icon.ico"
+  }
+}
