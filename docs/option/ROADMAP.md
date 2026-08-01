@@ -35,10 +35,10 @@ Establish the foundation for option analysis with comprehensive documentation, d
 
 #### Documentation
 - [x] `docs/option/PRODUCT.md` - Product specification
-- [ ] `docs/option/ARCHITECTURE.md` - System design
-- [ ] `docs/option/DATA_MODEL.md` - Entity definitions
-- [ ] `docs/option/API_SPEC.md` - IPC commands
-- [ ] `docs/option/USE_CASES.md` - User stories
+- [x] `docs/option/ARCHITECTURE.md` - System design
+- [x] `docs/option/DATA_MODEL.md` - Entity definitions
+- [x] `docs/option/API_SPEC.md` - IPC commands
+- [x] `docs/option/USE_CASES.md` - User stories
 
 #### Rust Backend
 - [ ] Domain models in `crates/domain/src/option.rs`
