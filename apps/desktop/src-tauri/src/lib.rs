@@ -35,6 +35,9 @@ pub fn run() {
                 match app::bootstrap::init_database(&handle).await {
                     Ok(pool) => {
                         let state = AppState::new(pool, handle.clone());
+                        if let Err(error) = state.plugin_service.sync_bundled_plugins().await {
+                            tracing::error!(?error, "bundled plugin synchronization failed");
+                        }
                         handle.manage(state);
                         info!("app state initialized");
                     }
@@ -124,6 +127,10 @@ pub fn run() {
             commands::portfolio::get_portfolio_theme_exposure,
             commands::portfolio::get_portfolio_thesis_alignment,
             commands::portfolio::generate_portfolio_review,
+            // Plugin commands
+            commands::plugins::list_plugins,
+            commands::plugins::set_plugin_enabled,
+            commands::plugins::create_plugin_artifact,
             // Artifacts commands
             commands::artifacts::create_artifact,
             commands::artifacts::get_artifact,

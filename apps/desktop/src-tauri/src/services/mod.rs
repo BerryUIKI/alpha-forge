@@ -15,6 +15,7 @@ pub mod agent_service;
 pub mod artifact_service;
 pub mod thesis_service;
 pub mod knowledge_graph_service;
+pub mod plugin_service;
 pub mod portfolio_service;
 pub mod settings_service;
 pub mod system_service;
@@ -25,6 +26,9 @@ mod agent_service_test;
 
 #[cfg(test)]
 mod workspace_service_test;
+
+#[cfg(test)]
+mod plugin_service_test;
 pub mod research_project_service;
 pub mod research_document_service;
 pub mod research_report_service;

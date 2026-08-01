@@ -22,6 +22,8 @@ export type ArtifactType =
   | "industry_map"
   | "valuation_model"
   | "risk_dashboard"
+  | "earnings_analysis"
+  | "macro_dashboard"
   | string; // Custom types
 
 /**

@@ -34,6 +34,8 @@ impl From<ArtifactRow> for Artifact {
             "industry_map" => ArtifactType::IndustryMap,
             "valuation_model" => ArtifactType::ValuationModel,
             "risk_dashboard" => ArtifactType::RiskDashboard,
+            "earnings_analysis" => ArtifactType::EarningsAnalysis,
+            "macro_dashboard" => ArtifactType::MacroDashboard,
             other => ArtifactType::Custom(other.to_string()),
         };
 
@@ -82,6 +84,8 @@ impl ArtifactRepository {
             ArtifactType::IndustryMap => "industry_map",
             ArtifactType::ValuationModel => "valuation_model",
             ArtifactType::RiskDashboard => "risk_dashboard",
+            ArtifactType::EarningsAnalysis => "earnings_analysis",
+            ArtifactType::MacroDashboard => "macro_dashboard",
             ArtifactType::Custom(ref s) => s,
         };
 

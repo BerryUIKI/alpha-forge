@@ -50,7 +50,7 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**Phase 3 — Artifact Intelligence System** (in progress)
+**Phase 7 — Plugin Ecosystem** (complete)
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -58,11 +58,11 @@ AlphaForge helps you:
 | M1 | ✅ Complete | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Application Foundation |
 | M2 | ✅ Complete | Agent Runtime |
-| M3 | 🚧 In Progress | Artifact Intelligence System |
-| M4 | 📋 Planned | Research Workspace |
-| M5 | 📋 Planned | Investment Knowledge System |
-| M6 | 📋 Planned | Portfolio Intelligence |
-| M7 | 📋 Planned | Plugin Ecosystem |
+| M3 | ✅ Complete | Artifact Intelligence System |
+| M4 | ✅ Complete | Research Workspace |
+| M5 | ✅ Complete | Investment Knowledge System |
+| M6 | ✅ Complete | Portfolio Intelligence |
+| M7 | ✅ Complete | Plugin Ecosystem |
 | M8 | 📅 Future | Production & Commercialization |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
@@ -71,7 +71,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ## ✨ Features
 
-### Current (M0-M3)
+### Current (M0-M7)
 - ✅ Tauri 2 desktop application shell
 - ✅ React 19 + TypeScript + Vite foundation
 - ✅ Rust backend with SQLite persistence
@@ -84,14 +84,12 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - ✅ Artifact persistence layer
 - ✅ Artifact runtime manager
 - ✅ Artifact window lifecycle
+- ✅ Research workspace, thesis, knowledge graph, and portfolio workflows
+- ✅ Validated internal plugin registry and predefined artifact renderers
 
-### Planned (M3+)
-- 📋 Artifact renderers (comparison tables, timelines, etc.)
-- 📋 AI-powered research assistance
-- 📋 Investment thesis tracking
-- 📋 Document analysis and semantic search
-- 📋 Portfolio-thesis alignment
-- 📋 Plugin ecosystem
+### Planned (M8)
+- 📅 Production authentication, licensing, and subscription decisions
+- 📅 Optional cloud backup and release signing
 
 ---
 
@@ -252,7 +250,7 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ```
 M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
-✅    ✅    ✅      ✅    📋    📋    📋    📋    📋    📅
+✅    ✅    ✅      ✅    ✅    ✅    ✅    ✅    ✅    📅
 ```
 
 ### Phase Overview
@@ -262,19 +260,15 @@ M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
 - Desktop runtime
 - Application foundation
 
-**Intelligence (M2-M3)**:
-- ✅ Agent runtime (M2)
-- 📋 AI integration (Future)
-- 📋 Artifact system (M3)
+**Intelligence (M2-M3)**: ✅ Complete
+- Agent runtime and artifact system
 
-**Features (M4-M6)**:
-- Research workspace
-- Thesis tracking
-- Portfolio analysis
+**Features (M4-M6)**: ✅ Complete
+- Research workspace, thesis tracking, and portfolio analysis
 
 **Extensibility (M7-M8)**:
-- Plugin ecosystem
-- Production release
+- ✅ Plugin ecosystem
+- 📅 Production release
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for details.
 
@@ -294,11 +288,10 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 
 ## ⚠️ Current Limitations
 
-1. **Rust compilation in sandbox**: `cargo check/test/clippy` must run locally
-2. **`pnpm tauri dev`**: Requires local Rust compilation
-3. **No application icons**: Placeholder only
-4. **No real AI integration**: Agent commands return stubs
-5. **No tests written**: Framework configured, no test files
+1. **No production authentication or billing**: M8 requires product and provider decisions.
+2. **No cloud backup**: Optional M8 scope is not implemented.
+3. **No release signing or installer packaging**: Requires platform certificates and release ownership.
+4. **No real AI-provider integration**: Agent commands remain locally scoped.
 
 ---
 

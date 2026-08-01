@@ -22,6 +22,8 @@ pub async fn create_artifact(
         "industry_map" => ArtifactType::IndustryMap,
         "valuation_model" => ArtifactType::ValuationModel,
         "risk_dashboard" => ArtifactType::RiskDashboard,
+        "earnings_analysis" => ArtifactType::EarningsAnalysis,
+        "macro_dashboard" => ArtifactType::MacroDashboard,
         other => ArtifactType::Custom(other.to_string()),
     };
 

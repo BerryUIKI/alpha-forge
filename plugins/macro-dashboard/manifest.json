@@ -1,0 +1,9 @@
+{
+  "id": "macro-dashboard",
+  "name": "Macro Dashboard",
+  "version": "0.1.0",
+  "entry": "src/index.ts",
+  "inputSchema": "schema.json",
+  "permissions": [],
+  "window": { "width": 1100, "height": 760, "resizable": true }
+}

@@ -2,7 +2,7 @@
   "id": "industry-map",
   "name": "Industry Map",
   "version": "0.1.0",
-  "entry": "index.html",
+  "entry": "src/index.ts",
   "inputSchema": "schema.json",
   "permissions": [],
   "window": {

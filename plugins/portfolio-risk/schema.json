@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["portfolioName", "totalRiskScore", "risks"],
+  "properties": {
+    "portfolioName": { "type": "string", "minLength": 1 },
+    "totalRiskScore": { "type": "number", "minimum": 0, "maximum": 100 },
+    "risks": { "type": "array", "minItems": 1 }
+  }
+}

@@ -12,6 +12,7 @@ use crate::artifacts::manager::ArtifactManager;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
 use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRepository;
+use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::research_project_repository::ResearchProjectRepository;
@@ -22,6 +23,7 @@ use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
+use crate::services::plugin_service::PluginService;
 use crate::services::portfolio_service::PortfolioService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_project_service::ResearchProjectService;
@@ -43,6 +45,7 @@ pub struct AppState {
     pub thesis_service: ThesisService,
     pub knowledge_graph_service: KnowledgeGraphService,
     pub portfolio_service: PortfolioService,
+    pub plugin_service: PluginService,
     pub system_service: SystemService,
     pub task_executor: Arc<TaskExecutor>,
     pub artifact_manager: Arc<ArtifactManager>,
@@ -63,6 +66,7 @@ impl AppState {
         let thesis_repo_for_knowledge_graph = ThesisRepository::new(db_pool.clone());
         let knowledge_graph_repo = KnowledgeGraphRepository::new(db_pool.clone());
         let portfolio_repo = PortfolioRepository::new(db_pool.clone());
+        let plugin_repo = PluginRepository::new(db_pool.clone());
 
         // Create services
         let settings_service = SettingsService::new(settings_repo);
@@ -75,6 +79,7 @@ impl AppState {
         let thesis_service = ThesisService::new(thesis_repo);
         let knowledge_graph_service = KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
         let portfolio_service = PortfolioService::new(portfolio_repo);
+        let plugin_service = PluginService::new(plugin_repo);
         let system_service = SystemService::new(app_handle.clone());
 
         // Create task executor
@@ -96,6 +101,7 @@ impl AppState {
             thesis_service,
             knowledge_graph_service,
             portfolio_service,
+            plugin_service,
             system_service,
             task_executor,
             artifact_manager,

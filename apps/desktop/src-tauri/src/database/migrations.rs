@@ -27,6 +27,7 @@ pub async fn run(pool: &SqlitePool) -> Result<(), AppError> {
     apply_knowledge_graph(pool).await?;
     apply_portfolio_management(pool).await?;
     apply_portfolio_theme_links(pool).await?;
+    apply_plugin_registry(pool).await?;
 
     info!("migrations complete");
 
@@ -187,5 +188,13 @@ async fn apply_portfolio_theme_links(pool: &SqlitePool) -> Result<(), AppError> 
     if already > 0 { return Ok(()); }
     sqlx::raw_sql(include_str!("../../migrations/0011_portfolio_theme_links.sql")).execute(pool).await.map_err(|e| AppError::Internal(format!("portfolio theme migration failed: {e}")))?;
     sqlx::query("INSERT INTO _migrations (name) VALUES ('0011_portfolio_theme_links')").execute(pool).await.map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
+    Ok(())
+}
+
+async fn apply_plugin_registry(pool: &SqlitePool) -> Result<(), AppError> {
+    let already = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _migrations WHERE name = '0012_plugin_registry'").fetch_one(pool).await.map_err(|e| AppError::Internal(format!("migration check failed: {e}")))?;
+    if already > 0 { return Ok(()); }
+    sqlx::raw_sql(include_str!("../../migrations/0012_plugin_registry.sql")).execute(pool).await.map_err(|e| AppError::Internal(format!("plugin registry migration failed: {e}")))?;
+    sqlx::query("INSERT INTO _migrations (name) VALUES ('0012_plugin_registry')").execute(pool).await.map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
     Ok(())
 }

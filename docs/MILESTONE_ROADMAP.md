@@ -22,7 +22,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M4 | ✅ Complete | Week 15-18 | Research Workspace |
 | M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
-| M7 | 📋 Planned | Week 27-30 | Plugin Ecosystem |
+| M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
 | M8 | 📅 Future | TBD | Production & Commercialization |
 
 ---
@@ -520,9 +520,9 @@ User reviews insights
 
 ---
 
-## M7 — Plugin Ecosystem 📋
+## M7 — Plugin Ecosystem ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Make AlphaForge extensible.
@@ -530,11 +530,11 @@ Make AlphaForge extensible.
 ### Deliverables
 
 #### Plugin SDK
-- [ ] Plugin manifest specification
-- [ ] Permission model
-- [ ] Input/output schemas
-- [ ] Artifact renderer API
-- [ ] Lifecycle management
+- [x] Plugin manifest specification — strict internal manifest validation and safe relative-path checks
+- [x] Permission model — declared permissions are persisted and checked against the validated manifest
+- [x] Input/output schemas — bundled JSON Schemas validate payloads before a plugin artifact is created
+- [x] Artifact renderer API — plugin IDs map only to predefined artifact renderers; no generated HTML is evaluated
+- [x] Lifecycle management — bundled manifests synchronize at startup; users can enable or disable a registered plugin
 
 #### Official Plugins
 1. **company-comparison** — Compare multiple companies side-by-side
@@ -570,6 +570,8 @@ Plugin executes
     ↓
 Artifact rendered
 ```
+
+**Current boundary**: The five official plugins are bundled alongside the existing internal `portfolio-risk` and `research-timeline` tools. Dynamic plugin installation and arbitrary code execution are intentionally unsupported. A validated payload becomes a completed artifact rendered by a predefined component; no plugin source code is evaluated.
 
 ---
 

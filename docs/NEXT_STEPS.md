@@ -1,8 +1,8 @@
 # AlphaForge Next Steps Strategy
 
 **Generated**: 2026-08-01
-**Current State**: M6 Portfolio Intelligence (Complete) ✅
-**Next Milestone**: M7 Plugin Ecosystem
+**Current State**: M7 Plugin Ecosystem (Complete) ✅
+**Next Milestone**: M8 Production & Commercialization
 
 ---
 
@@ -17,6 +17,7 @@
 - ✅ M4: Research Workspace (Core Complete)
 - ✅ M5: Investment Knowledge System
 - ✅ M6: Portfolio Intelligence
+- ✅ M7: Plugin Ecosystem
 
 ### In Progress
 - No active implementation milestone
@@ -37,11 +38,12 @@
 
 ## 🎯 Short-Term Goals (Current Sprint)
 
-### 1. Prepare M7 Plugin Ecosystem
+### 1. Scope M8 Production & Commercialization
 **Priority**: High
-**Timeline**: Next milestone
+**Timeline**: To be defined
 
-M5 and M6 are complete. Use the roadmap to scope M7 as a separate feature branch and PR series.
+M7 is complete. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
+Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals before opening an M8 feature branch.
 
 ---
 
@@ -116,12 +118,11 @@ M5 and M6 are complete. Use the roadmap to scope M7 as a separate feature branch
 
 ## 📈 Success Metrics
 
-### M4 Completion Criteria
-- [ ] 20+ new tests passing
-- [ ] Document import working
-- [ ] Search functionality operational
-- [ ] Research workflow automated
-- [ ] Documentation complete
+### M8 Decision Gate
+- [ ] Select an authentication approach and identity provider
+- [ ] Define licensing, entitlement, and subscription requirements
+- [ ] Decide whether cloud backup is in scope and document its privacy model
+- [ ] Assign release-signing identities and supported platforms
 
 ### Quality Gates
 - All tests passing
@@ -135,47 +136,14 @@ M5 and M6 are complete. Use the roadmap to scope M7 as a separate feature branch
 
 ### Immediate (This Week)
 
-1. **Merge Issue Template Updates**
-   ```bash
-   git checkout dev
-   git pull origin dev
-   git merge feature/m3-artifact-system
-   git push origin dev
-   ```
+1. **Commit and review M7**
+   - Preserve the focused plugin changes as a small PR.
+   - Review the migration, permission boundary, and plugin payload validation.
 
-2. **Create M4 Planning Issue**
-   - Use milestone template
-   - Define detailed deliverables
-   - Estimate timeline
-
-3. **Set Up CI/CD**
-   - Configure GitHub Actions
-   - Add test automation
-   - Set up coverage reporting
-
-### Next 2 Weeks
-
-1. **M3 Polish**
-   - Add artifact renderer tests
-   - Create usage examples
-   - Write integration guide
-
-2. **M4 Foundation**
-   - Design data models
-   - Plan API structure
-   - Create initial migration
-
-### Next Month
-
-1. **M4 Implementation**
-   - Implement project management
-   - Build document import
-   - Create search functionality
-
-2. **Testing & Documentation**
-   - Write comprehensive tests
-   - Update all documentation
-   - Create user guides
+2. **Create the M8 product decision record**
+   - Select authentication and billing providers.
+   - Confirm cloud backup, privacy, and data-retention scope.
+   - Assign signing and installer release owners.
 
 ---
 
@@ -200,13 +168,13 @@ M5 and M6 are complete. Use the roadmap to scope M7 as a separate feature branch
 
 ## 🎉 Conclusion
 
-**M6 Complete**: AlphaForge now supports portfolio tracking, traceable investment knowledge, and transparent portfolio review.
+**M7 Complete**: AlphaForge supports validated internal plugins, controlled artifact rendering, and the documented official plugin set.
 
-**Next Milestone**: M7 Plugin Ecosystem will extend AlphaForge through validated internal plugins.
+**Next Milestone**: M8 Production & Commercialization.
 
-**Focus Areas**: Scope M7 on its own feature branch, preserve the M6 verification baseline, and address documented technical debt separately.
+**Focus Areas**: Establish the commercial and security decisions before implementing external authentication, billing, backup, or release infrastructure.
 
-**Timeline**: Follow the M7 roadmap estimate after planning is complete.
+**Timeline**: To be defined after the M8 decision gate.
 
 ---
 
