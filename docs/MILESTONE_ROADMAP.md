@@ -317,7 +317,7 @@ Artifact closes cleanly
 
 ## M4 — Research Workspace ✅
 
-**Status**: Core workflow complete. Advanced document ingestion and semantic search remain deferred enhancements.
+**Status**: Complete
 
 ### Goal
 Turn AlphaForge into a complete AI research environment.
