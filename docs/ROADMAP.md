@@ -129,6 +129,7 @@ Build portfolio management and analysis.
 - [x] Artifact route traversal prevention.
 - [ ] Plugin sandbox enforcement.
 - [x] Startup and task-event logs use stable error codes and contextual messages without raw local paths or underlying error strings.
+- [x] Shell access disabled by default: the shell plugin and shell permissions are removed from the application.
 - [ ] Security audit.
 
 ## Phase 12 — Production Readiness

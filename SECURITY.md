@@ -94,6 +94,8 @@ We credit reporters who follow this process (unless they prefer to remain anonym
    - Avoid shell access unless necessary
    - Validate file paths before filesystem access
 
+The shell plugin is not registered, and no application window receives shell permissions. External links use the narrower opener capability.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly

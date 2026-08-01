@@ -139,9 +139,8 @@ impl OptionService {
   "identifier": "main-window",
   "permissions": [
     "core:default",
-    "shell:allow-open",
-    "dialog:allow-open",
-    "fs:allow-read-text-file"
+    "opener:default",
+    "store:default"
   ]
 }
 
