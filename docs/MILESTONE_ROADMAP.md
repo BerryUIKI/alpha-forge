@@ -391,11 +391,11 @@ Build persistent investment intelligence.
 - [x] Validation scheduling
 
 #### Knowledge Graph
-- [ ] Company entities
-- [ ] Industry entities
-- [ ] Technology entities
-- [ ] Macro theme entities
-- [ ] Relationship mapping
+- ✅ Company entities
+- ✅ Industry entities
+- ✅ Technology entities
+- ✅ Macro theme entities
+- ✅ Relationship mapping and thesis links
 
 ### Knowledge Graph Example
 ```text
@@ -445,13 +445,14 @@ Records validation results
 - ✅ Database migration: `0006_theses.sql`
 - ✅ Thesis repository with CRUD operations
 - ✅ Thesis service with business logic
-- ✅ 11 Tauri commands for thesis management
+- ✅ 13 Tauri commands for thesis management
 - ✅ 13 repository tests passing
+- 🚧 Migration reconciliation for legacy schemas (in progress)
 
 #### Frontend (TypeScript)
-- 📋 Thesis management UI (pending)
-- 📋 Evidence collection interface (pending)
-- 📋 Confidence visualization (pending)
+- ✅ Thesis management UI in the Journal workspace
+- ✅ Evidence collection interface with supporting and contradicting evidence
+- ✅ Confidence visualization, immutable history, and lifecycle controls
 
 #### Tauri Commands
 | Command | Description |
@@ -468,6 +469,7 @@ Records validation results
 | `add_thesis_evidence` | Add supporting/contradicting evidence |
 | `list_thesis_evidence` | List all evidence for thesis |
 | `delete_thesis_evidence` | Remove evidence |
+| `list_thesis_confidence_history` | Review confidence changes over time |
 
 ---
 

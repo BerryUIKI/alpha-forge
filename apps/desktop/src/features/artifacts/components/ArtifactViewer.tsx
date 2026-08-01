@@ -1,7 +1,7 @@
 // Generic artifact viewer component.
 
 import { useArtifact } from "../hooks/useArtifacts";
-import { artifactRegistry } from "./registry";
+import { artifactRegistry } from "../renderers/registry";
 
 interface ArtifactViewerProps {
   artifactId: string;

@@ -101,6 +101,14 @@ pub fn run() {
             commands::thesis::add_thesis_evidence,
             commands::thesis::list_thesis_evidence,
             commands::thesis::delete_thesis_evidence,
+            commands::thesis::list_thesis_confidence_history,
+            // Knowledge graph commands
+            commands::knowledge_graph::create_knowledge_entity,
+            commands::knowledge_graph::list_knowledge_entities,
+            commands::knowledge_graph::create_knowledge_relationship,
+            commands::knowledge_graph::list_knowledge_relationships,
+            commands::knowledge_graph::link_thesis_knowledge_entity,
+            commands::knowledge_graph::list_thesis_knowledge_links,
             // Journal commands
             commands::journal::list_journal_entries,
             // Portfolio commands

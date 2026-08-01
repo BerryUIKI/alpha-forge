@@ -57,6 +57,15 @@ pub struct ThesisEvidence {
     pub created_at: DateTime<Utc>,
 }
 
+/// Immutable confidence snapshot used to review how a thesis evolved over time.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThesisConfidenceSnapshot {
+    pub id: String,
+    pub thesis_id: String,
+    pub confidence: i32,
+    pub recorded_at: DateTime<Utc>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EvidenceDirection {

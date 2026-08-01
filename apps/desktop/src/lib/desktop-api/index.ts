@@ -8,6 +8,8 @@ import * as journalApi from "./journal";
 import * as portfolioApi from "./portfolio";
 import * as settingsApi from "./settings";
 import * as workspaceApi from "./workspace";
+import * as thesisApi from "./thesis";
+import * as knowledgeGraphApi from "./knowledge-graph";
 
 export const desktopApi = {
   agent: agentApi,
@@ -17,6 +19,8 @@ export const desktopApi = {
   portfolio: portfolioApi,
   settings: settingsApi,
   workspace: workspaceApi,
+  thesis: thesisApi,
+  knowledgeGraph: knowledgeGraphApi,
 } as const;
 
 export type DesktopApi = typeof desktopApi;

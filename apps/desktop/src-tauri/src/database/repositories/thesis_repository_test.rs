@@ -49,6 +49,14 @@ mod tests {
                 FOREIGN KEY (thesis_id) REFERENCES investment_theses(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE thesis_confidence_history (
+                id TEXT PRIMARY KEY NOT NULL,
+                thesis_id TEXT NOT NULL,
+                confidence INTEGER NOT NULL,
+                recorded_at TEXT NOT NULL,
+                FOREIGN KEY (thesis_id) REFERENCES investment_theses(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE research_sources (
                 id TEXT PRIMARY KEY NOT NULL,
                 document_id TEXT NOT NULL,
@@ -392,5 +400,32 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(thesis_low.confidence, 0);
+    }
+
+    #[tokio::test]
+    async fn test_confidence_history_records_initial_and_updated_values() {
+        let pool = setup_test_db().await;
+        let repo = ThesisRepository::new(pool);
+        let thesis = repo
+            .create_thesis(CreateThesisInput {
+                workspace_id: "test-workspace".to_string(),
+                title: "Confidence history".to_string(),
+                thesis: "Content".to_string(),
+                confidence: Some(40),
+            })
+            .await
+            .unwrap();
+
+        repo.update_confidence(UpdateConfidenceInput {
+            thesis_id: thesis.id.clone(),
+            confidence: 65,
+        })
+        .await
+        .unwrap();
+
+        let history = repo.list_confidence_history(&thesis.id).await.unwrap();
+        assert_eq!(history.len(), 2);
+        assert_eq!(history[0].confidence, 65);
+        assert_eq!(history[1].confidence, 40);
     }
 }

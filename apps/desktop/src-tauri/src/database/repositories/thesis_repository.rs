@@ -6,7 +6,7 @@ use sqlx::SqlitePool;
 use crate::error::AppError;
 use domain::thesis::{
     AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis, ThesisEvidence,
-    ThesisStatus, UpdateConfidenceInput,
+    ThesisConfidenceSnapshot, ThesisStatus, UpdateConfidenceInput,
 };
 
 pub struct ThesisRepository {
@@ -45,6 +45,8 @@ impl ThesisRepository {
         .execute(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to create thesis: {}", e)))?;
+
+        self.record_confidence_snapshot(&id, confidence).await?;
 
         Ok(InvestmentThesis {
             id,
@@ -126,10 +128,12 @@ impl ThesisRepository {
             .bind(confidence)
             .bind(&input.thesis_id)
             .execute(&self.pool)
-            .await
-            .map_err(|e| {
-                AppError::Internal(format!("Failed to update thesis confidence: {}", e))
-            })?;
+        .await
+        .map_err(|e| {
+            AppError::Internal(format!("Failed to update thesis confidence: {}", e))
+        })?;
+        self.record_confidence_snapshot(&input.thesis_id, confidence)
+            .await?;
         Ok(())
     }
 
@@ -227,6 +231,41 @@ impl ThesisRepository {
             .map_err(|e| AppError::Internal(format!("Failed to delete evidence: {}", e)))?;
         Ok(())
     }
+
+    /// List confidence snapshots, newest first, for thesis review.
+    pub async fn list_confidence_history(
+        &self,
+        thesis_id: &str,
+    ) -> Result<Vec<ThesisConfidenceSnapshot>, AppError> {
+        let rows = sqlx::query_as::<_, ConfidenceSnapshotRow>(
+            "SELECT id, thesis_id, confidence, recorded_at FROM thesis_confidence_history WHERE thesis_id = ? ORDER BY recorded_at DESC",
+        )
+        .bind(thesis_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to list confidence history: {e}")))?;
+
+        Ok(rows.into_iter().map(Into::into).collect())
+    }
+
+    async fn record_confidence_snapshot(
+        &self,
+        thesis_id: &str,
+        confidence: i32,
+    ) -> Result<(), AppError> {
+        sqlx::query(
+            "INSERT INTO thesis_confidence_history (id, thesis_id, confidence, recorded_at) VALUES (?, ?, ?, ?)",
+        )
+        .bind(uuid::Uuid::new_v4().to_string())
+        .bind(thesis_id)
+        .bind(confidence)
+        .bind(Utc::now().to_rfc3339())
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to record confidence history: {e}")))?;
+
+        Ok(())
+    }
 }
 
 // Database row types
@@ -279,6 +318,25 @@ struct EvidenceRow {
     evidence: String,
     source_id: Option<String>,
     created_at: String,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+struct ConfidenceSnapshotRow {
+    id: String,
+    thesis_id: String,
+    confidence: i32,
+    recorded_at: String,
+}
+
+impl From<ConfidenceSnapshotRow> for ThesisConfidenceSnapshot {
+    fn from(row: ConfidenceSnapshotRow) -> Self {
+        Self {
+            id: row.id,
+            thesis_id: row.thesis_id,
+            confidence: row.confidence,
+            recorded_at: row.recorded_at.parse().unwrap_or_else(|_| Utc::now()),
+        }
+    }
 }
 
 impl From<EvidenceRow> for ThesisEvidence {

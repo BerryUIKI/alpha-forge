@@ -5,7 +5,8 @@ use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
 use domain::thesis::{
-    AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis, ThesisEvidence,
+    AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis,
+    ThesisConfidenceSnapshot, ThesisEvidence,
     UpdateConfidenceInput,
 };
 
@@ -116,7 +117,11 @@ pub async fn add_thesis_evidence(
     let dir = match direction.as_str() {
         "supporting" => EvidenceDirection::Supporting,
         "contradicting" => EvidenceDirection::Contradicting,
-        _ => EvidenceDirection::Supporting,
+        _ => {
+            return Err(AppError::Validation(
+                "Evidence direction must be 'supporting' or 'contradicting'".to_string(),
+            ));
+        }
     };
 
     state
@@ -144,4 +149,12 @@ pub async fn delete_thesis_evidence(
     state: State<'_, AppState>,
 ) -> Result<(), AppError> {
     state.thesis_service.delete_evidence(&id).await
+}
+
+#[tauri::command]
+pub async fn list_thesis_confidence_history(
+    thesis_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<ThesisConfidenceSnapshot>, AppError> {
+    state.thesis_service.list_confidence_history(&thesis_id).await
 }

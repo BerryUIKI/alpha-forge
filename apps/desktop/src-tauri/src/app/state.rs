@@ -11,6 +11,7 @@ use crate::agent::executor::{ExecutorConfig, TaskExecutor};
 use crate::artifacts::manager::ArtifactManager;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
+use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::research_project_repository::ResearchProjectRepository;
 use crate::database::repositories::research_report_repository::ResearchReportRepository;
@@ -19,6 +20,7 @@ use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
+use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_project_service::ResearchProjectService;
 use crate::services::research_report_service::ResearchReportService;
@@ -37,6 +39,7 @@ pub struct AppState {
     pub research_document_service: ResearchDocumentService,
     pub research_report_service: ResearchReportService,
     pub thesis_service: ThesisService,
+    pub knowledge_graph_service: KnowledgeGraphService,
     pub system_service: SystemService,
     pub task_executor: Arc<TaskExecutor>,
     pub artifact_manager: Arc<ArtifactManager>,
@@ -54,6 +57,8 @@ impl AppState {
         let research_document_repo = ResearchDocumentRepository::new(db_pool.clone());
         let research_report_repo = ResearchReportRepository::new(db_pool.clone());
         let thesis_repo = ThesisRepository::new(db_pool.clone());
+        let thesis_repo_for_knowledge_graph = ThesisRepository::new(db_pool.clone());
+        let knowledge_graph_repo = KnowledgeGraphRepository::new(db_pool.clone());
 
         // Create services
         let settings_service = SettingsService::new(settings_repo);
@@ -64,6 +69,7 @@ impl AppState {
         let research_document_service = ResearchDocumentService::new(research_document_repo);
         let research_report_service = ResearchReportService::new(research_report_repo);
         let thesis_service = ThesisService::new(thesis_repo);
+        let knowledge_graph_service = KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
         let system_service = SystemService::new(app_handle.clone());
 
         // Create task executor
@@ -83,6 +89,7 @@ impl AppState {
             research_document_service,
             research_report_service,
             thesis_service,
+            knowledge_graph_service,
             system_service,
             task_executor,
             artifact_manager,

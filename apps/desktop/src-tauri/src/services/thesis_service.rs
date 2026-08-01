@@ -3,7 +3,8 @@
 use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::error::AppError;
 use domain::thesis::{
-    AddEvidenceInput, CreateThesisInput, InvestmentThesis, ThesisEvidence, ThesisStatus,
+    AddEvidenceInput, CreateThesisInput, InvestmentThesis, ThesisConfidenceSnapshot,
+    ThesisEvidence, ThesisStatus,
     UpdateConfidenceInput,
 };
 
@@ -204,5 +205,13 @@ impl ThesisService {
     /// Remove evidence from a thesis.
     pub async fn delete_evidence(&self, id: &str) -> Result<(), AppError> {
         self.repo.delete_evidence(id).await
+    }
+
+    /// Retrieve immutable confidence review history for a thesis.
+    pub async fn list_confidence_history(
+        &self,
+        thesis_id: &str,
+    ) -> Result<Vec<ThesisConfidenceSnapshot>, AppError> {
+        self.repo.list_confidence_history(thesis_id).await
     }
 }

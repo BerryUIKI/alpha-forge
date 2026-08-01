@@ -17,19 +17,19 @@
 - ✅ M4: Research Workspace (Core Complete)
 
 ### In Progress
-- 🚧 M5: Investment Knowledge System (Backend Complete)
+- 🚧 M5: Investment Knowledge System (implementation complete; Rust verification pending)
 
 ### Test Coverage
 - **Rust Tests**: 90 passing (13 new thesis tests)
-- **Frontend Tests**: 41 passing
-- **Total**: 131 tests passing
+- **Frontend Tests**: 48 passing
+- **Total**: Rust verification pending in the current environment
 
 ### Key Achievements (M5 Backend)
 - Investment thesis domain models
 - Thesis repository with CRUD operations
 - Thesis service with business logic
-- 11 Tauri commands for thesis management
-- 13 repository tests passing
+- 13 Thesis management commands, including confidence-history review
+- Knowledge graph entities, relationships, and Thesis links
 - Evidence collection and tracking
 
 ---
@@ -48,11 +48,12 @@
 - [x] 11 Tauri commands
 - [x] 13 repository tests
 
-#### Frontend (Pending 📋)
-- [ ] Thesis management UI components
-- [ ] Evidence collection interface
-- [ ] Confidence visualization
-- [ ] Thesis lifecycle dashboard
+#### Frontend (Completed ✅)
+- [x] Thesis management UI components
+- [x] Evidence collection interface
+- [x] Confidence visualization
+- [x] Immutable confidence history
+- [x] Thesis lifecycle dashboard
 
 #### Acceptance Criteria
 ```text

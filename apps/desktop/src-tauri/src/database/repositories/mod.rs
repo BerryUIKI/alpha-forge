@@ -13,6 +13,7 @@
 pub mod agent_task_repository;
 pub mod artifact_repository;
 pub mod thesis_repository;
+pub mod knowledge_graph_repository;
 pub mod research_project_repository;
 pub mod settings_repository;
 pub mod workspace_repository;
