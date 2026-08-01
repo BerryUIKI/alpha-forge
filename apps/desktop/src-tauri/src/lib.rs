@@ -36,13 +36,13 @@ pub fn run() {
                     Ok(pool) => {
                         let state = AppState::new(pool, handle.clone());
                         if let Err(error) = state.plugin_service.sync_bundled_plugins().await {
-                            tracing::error!(?error, "bundled plugin synchronization failed");
+                            tracing::error!(error_code = error.code(), "bundled plugin synchronization failed");
                         }
                         handle.manage(state);
                         info!("app state initialized");
                     }
-                    Err(e) => {
-                        tracing::error!(?e, "database initialization failed");
+                    Err(error) => {
+                        tracing::error!(error_code = error.code(), "database initialization failed");
                     }
                 }
             });

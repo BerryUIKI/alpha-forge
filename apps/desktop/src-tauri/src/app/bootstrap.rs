@@ -22,7 +22,7 @@ pub async fn init_database(app_handle: &tauri::AppHandle) -> Result<SqlitePool, 
     let db_path = app_dir.join("investment_os.db");
     let db_url = format!("sqlite:{}?mode=rwc", db_path.display());
 
-    info!(path = %db_path.display(), "opening database");
+    info!("opening application database");
 
     let pool = database::connection::create_pool(&db_url).await?;
 

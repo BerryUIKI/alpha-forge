@@ -128,7 +128,7 @@ Build portfolio management and analysis.
 - [x] Artifact route validation: UUID artifact IDs, safe type segments, bounded window sizes, and recoverable invalid-route errors.
 - [x] Artifact route traversal prevention.
 - [ ] Plugin sandbox enforcement.
-- [ ] Log redaction.
+- [x] Startup and task-event logs use stable error codes and contextual messages without raw local paths or underlying error strings.
 - [ ] Security audit.
 
 ## Phase 12 — Production Readiness

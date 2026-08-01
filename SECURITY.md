@@ -16,6 +16,7 @@ AlphaForge is a desktop-first AI workspace for investment research. Our security
 - Secrets are never exposed to the React frontend
 - Credential access requires explicit user permission
 - The Rust credential adapter validates credential names, bounds values, and redacts platform-specific keychain errors
+- Startup and task-event diagnostics use stable error codes and contextual messages rather than raw paths or underlying error strings
 
 ### 2. Data Privacy
 - All data is stored locally in SQLite
