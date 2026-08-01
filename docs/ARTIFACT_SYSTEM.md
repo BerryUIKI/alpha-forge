@@ -102,7 +102,7 @@ Artifact windows run with **minimal permissions** — significantly less than th
 | Tauri core | Full | Default only |
 | Shell access | Not registered | None |
 | Filesystem | Controlled | None |
-| Network | Controlled | None |
+| Network | Rust services only; no frontend HTTP plugin | None |
 | Store (persistence) | Full | None |
 | API keys | Never exposed | Never exposed |
 

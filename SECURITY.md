@@ -95,6 +95,7 @@ We credit reporters who follow this process (unless they prefer to remain anonym
    - Validate file paths before filesystem access
 
 The shell plugin is not registered, and no application window receives shell permissions. External links use the narrower opener capability.
+The frontend HTTP plugin is also not registered. Network requests remain owned by Rust services, where providers and request policies can be validated centrally.
 
 5. **Secure dependencies**
    - Run `npm audit` regularly
