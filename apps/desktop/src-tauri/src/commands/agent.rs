@@ -59,7 +59,13 @@ pub async fn start_agent_task(
     task_id: String,
     state: State<'_, AppState>,
 ) -> Result<AgentTask, AppError> {
-    state.agent_service.start_task(&task_id).await
+    // Start task in service layer
+    let task = state.agent_service.start_task(&task_id).await?;
+
+    // Start background execution via executor
+    state.task_executor.start_task(task.clone()).await?;
+
+    Ok(task)
 }
 
 #[tauri::command]
@@ -67,5 +73,9 @@ pub async fn cancel_agent_task(
     task_id: String,
     state: State<'_, AppState>,
 ) -> Result<AgentTask, AppError> {
+    // Cancel in executor first
+    state.task_executor.cancel_task(&task_id).await?;
+
+    // Then update in service layer
     state.agent_service.cancel_task(&task_id).await
 }
