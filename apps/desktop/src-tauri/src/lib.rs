@@ -88,8 +88,21 @@ pub fn run() {
             commands::research::get_research_report,
             commands::research::list_research_reports,
             commands::research::delete_research_report,
+            // Thesis commands
+            commands::thesis::create_thesis,
+            commands::thesis::get_thesis,
+            commands::thesis::list_theses,
+            commands::thesis::activate_thesis,
+            commands::thesis::start_thesis_validation,
+            commands::thesis::complete_thesis_validation,
+            commands::thesis::update_thesis_confidence,
+            commands::thesis::close_thesis,
+            commands::thesis::delete_thesis,
+            commands::thesis::add_thesis_evidence,
+            commands::thesis::list_thesis_evidence,
+            commands::thesis::delete_thesis_evidence,
             // Journal commands
-            commands::journal::list_theses,
+            commands::journal::list_journal_entries,
             // Portfolio commands
             commands::portfolio::list_portfolio_accounts,
             // Artifacts commands

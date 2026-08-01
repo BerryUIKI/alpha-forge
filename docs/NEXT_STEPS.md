@@ -1,8 +1,8 @@
 # AlphaForge Next Steps Strategy
 
 **Generated**: 2026-08-01
-**Current State**: M3 Artifact Intelligence System Complete ✅
-**Next Milestone**: M4 Research Workspace
+**Current State**: M5 Investment Knowledge System (In Progress) 🚧
+**Next Milestone**: Complete M5, then M6 Portfolio Intelligence
 
 ---
 
@@ -14,140 +14,89 @@
 - ✅ M1.5: Application Foundation
 - ✅ M2: Agent Runtime
 - ✅ M3: Artifact Intelligence System
+- ✅ M4: Research Workspace (Core Complete)
+
+### In Progress
+- 🚧 M5: Investment Knowledge System (Backend Complete)
 
 ### Test Coverage
-- **Rust Tests**: 77 passing
+- **Rust Tests**: 90 passing (13 new thesis tests)
 - **Frontend Tests**: 41 passing
-- **Total**: 118 tests passing
+- **Total**: 131 tests passing
 
-### Key Achievements (M3)
-- Artifact persistence layer (repository + service)
-- Artifact runtime manager (window lifecycle)
-- 5 built-in artifact renderers
-- 11 Tauri commands
-- Complete frontend integration
-
----
-
-## 🎯 Short-Term Goals (Week 11-12)
-
-### 1. M3 Polish & Documentation
-**Priority**: High
-**Timeline**: 2 weeks
-
-#### Tasks
-- [ ] Add artifact renderer tests
-- [ ] Create artifact usage examples
-- [ ] Write artifact integration guide
-- [ ] Add E2E tests for artifact workflow
-- [ ] Performance profiling for artifact rendering
-
-#### Deliverables
-- Artifact developer guide
-- Example artifact data schemas
-- Performance benchmarks
-
-### 2. CI/CD Enhancement
-**Priority**: High
-**Timeline**: 1 week
-
-#### Tasks
-- [ ] Set up automated testing on PR
-- [ ] Add test coverage reporting
-- [ ] Configure branch protection rules
-- [ ] Set up automated releases
-
-#### Deliverables
-- CI pipeline configuration
-- Coverage reports
-- Release automation
-
-### 3. Developer Experience
-**Priority**: Medium
-**Timeline**: 1 week
-
-#### Tasks
-- [ ] Improve error messages
-- [ ] Add development debugging tools
-- [ ] Create artifact creation wizard
-- [ ] Improve hot reload for development
-
-#### Deliverables
-- Better error handling
-- Dev tools documentation
-- Artifact creation guide
+### Key Achievements (M5 Backend)
+- Investment thesis domain models
+- Thesis repository with CRUD operations
+- Thesis service with business logic
+- 11 Tauri commands for thesis management
+- 13 repository tests passing
+- Evidence collection and tracking
 
 ---
 
-## 🚀 Medium-Term Goals (Week 13-18)
+## 🎯 Short-Term Goals (Current Sprint)
 
-### M4: Research Workspace
+### 1. Complete M5 Investment Knowledge System
 **Priority**: High
-**Timeline**: 4 weeks
+**Timeline**: 1-2 weeks
 
-#### Core Features
-1. **Project Management**
-   - Research project CRUD operations
-   - Project templates
-   - Project-level artifact organization
+#### Backend (Completed ✅)
+- [x] Domain models: `InvestmentThesis`, `ThesisEvidence`
+- [x] Database migration: `0006_theses.sql`
+- [x] Thesis repository with full CRUD
+- [x] Thesis service with validation logic
+- [x] 11 Tauri commands
+- [x] 13 repository tests
 
-2. **Document Intelligence**
-   - PDF parsing and indexing
-   - Web source extraction
-   - Document version control
-   - Semantic search
-
-3. **Research Workflow**
-   ```
-   Collect Sources → Analyze Documents → Generate Thesis → Create Report → Persist Knowledge
-   ```
-
-#### Technical Requirements
-- PDF processing library (Rust)
-- Full-text search (SQLite FTS5)
-- Document storage system
-- Source provenance tracking
-
-#### Deliverables
-- Project management API
-- Document import pipeline
-- Search functionality
-- Research workflow automation
+#### Frontend (Pending 📋)
+- [ ] Thesis management UI components
+- [ ] Evidence collection interface
+- [ ] Confidence visualization
+- [ ] Thesis lifecycle dashboard
 
 #### Acceptance Criteria
 ```text
-User creates research project
+User creates investment thesis
     ↓
-Adds documents and sources
+Links to workspace
     ↓
-Agent assists with analysis
+Collects supporting/contradicting evidence
     ↓
-User generates report
+Tracks confidence over time
     ↓
-All artifacts persisted
+Records validation results
 ```
 
 ---
 
-## 🎨 Long-Term Vision (Week 19-30)
+## 🚀 Medium-Term Goals (Next 4-6 Weeks)
 
-### M5: Investment Knowledge System (Week 19-22)
-- Investment thesis management
-- Evidence collection and tracking
-- Knowledge graph visualization
-- Thesis validation scheduling
+### M6: Portfolio Intelligence
+**Priority**: High
+**Timeline**: 4 weeks
 
-### M6: Portfolio Intelligence (Week 23-26)
-- Portfolio tracking integration
-- Risk concentration analysis
-- Theme exposure mapping
-- Thesis-portfolio alignment
+#### Core Features
+1. **Portfolio Management**
+   - Account management
+   - Holdings tracking
+   - Transaction import
+   - Allocation analysis
 
-### M7: Plugin Ecosystem (Week 27-30)
-- Plugin SDK development
-- Plugin marketplace
-- Community plugin support
-- Plugin security model
+2. **AI Analysis**
+   - Risk concentration analysis
+   - Theme exposure mapping
+   - Thesis alignment checking
+   - Historical review automation
+
+#### Important Constraints
+```text
+✓ Portfolio tracking and analysis
+✓ Research-thesis alignment
+✓ Risk visualization
+✗ NO automated trading
+✗ NO autonomous investment decisions
+✗ NO trade execution
+```
 
 ### M8: Production & Commercialization (TBD)
 - User authentication

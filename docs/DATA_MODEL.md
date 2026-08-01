@@ -52,18 +52,18 @@ Conceptual entities and their relationships. The database schema implements thes
 
 **Purpose.** A testable claim about an investment opportunity. The central artifact of the research workflow.
 
-**Attributes.** Title, thesis statement, confidence level (0-100), status (draft/active/validated/invalidated), validation date, outcome.
+**Attributes.** Title, thesis statement, confidence level (0-100), status (draft/active/validating/validated/closed), validation date, outcome.
 
-**Relationships.** Has many evidence entries. May reference research documents and sources. Independent of portfolio positions (a thesis can exist without a position).
+**Relationships.** Belongs to one workspace. Has many evidence entries. May reference research documents and sources. Independent of portfolio positions (a thesis can exist without a position).
 
 **Lifecycle.**
 
 ```text
-Draft → Active → Validated → (outcome recorded)
-              → Invalidated → (outcome recorded)
+Draft → Active → Validating → Validated → (outcome recorded)
+                         → Closed → (outcome recorded)
 ```
 
-**State transitions.** Draft theses are private works-in-progress. Active theses are published for tracking. Validated theses have been confirmed by evidence or market outcome. Invalidated theses have been disproven.
+**State transitions.** Draft theses are private works-in-progress. Active theses are published for tracking. Validating theses are under active review. Validated theses have been confirmed by evidence or market outcome. Closed theses have been completed or discontinued.
 
 ---
 

@@ -373,9 +373,9 @@ All artifacts persisted
 
 ---
 
-## M5 — Investment Knowledge System 📋
+## M5 — Investment Knowledge System 🚧
 
-**Status**: Planned
+**Status**: In Progress
 
 ### Goal
 Build persistent investment intelligence.
@@ -383,12 +383,12 @@ Build persistent investment intelligence.
 ### Deliverables
 
 #### Thesis Management
-- [ ] Investment thesis CRUD
-- [ ] Evidence collection
-- [ ] Counter-evidence tracking
-- [ ] Confidence scoring
-- [ ] Review history
-- [ ] Validation scheduling
+- [x] Investment thesis CRUD
+- [x] Evidence collection
+- [x] Counter-evidence tracking
+- [x] Confidence scoring
+- [x] Review history
+- [x] Validation scheduling
 
 #### Knowledge Graph
 - [ ] Company entities
@@ -437,6 +437,37 @@ Tracks confidence over time
     ↓
 Records validation results
 ```
+
+### Implementation
+
+#### Backend (Rust)
+- ✅ Domain models: `InvestmentThesis`, `ThesisEvidence`, `ThesisStatus`, `EvidenceDirection`
+- ✅ Database migration: `0006_theses.sql`
+- ✅ Thesis repository with CRUD operations
+- ✅ Thesis service with business logic
+- ✅ 11 Tauri commands for thesis management
+- ✅ 13 repository tests passing
+
+#### Frontend (TypeScript)
+- 📋 Thesis management UI (pending)
+- 📋 Evidence collection interface (pending)
+- 📋 Confidence visualization (pending)
+
+#### Tauri Commands
+| Command | Description |
+|---------|-------------|
+| `create_thesis` | Create a new investment thesis |
+| `get_thesis` | Get thesis by ID |
+| `list_theses` | List all theses in workspace |
+| `activate_thesis` | Activate a draft thesis |
+| `start_thesis_validation` | Begin validation process |
+| `complete_thesis_validation` | Record validation outcome |
+| `update_thesis_confidence` | Update confidence score |
+| `close_thesis` | Close a thesis |
+| `delete_thesis` | Delete a thesis |
+| `add_thesis_evidence` | Add supporting/contradicting evidence |
+| `list_thesis_evidence` | List all evidence for thesis |
+| `delete_thesis_evidence` | Remove evidence |
 
 ---
 
