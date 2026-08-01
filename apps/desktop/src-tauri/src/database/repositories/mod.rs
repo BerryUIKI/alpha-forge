@@ -31,3 +31,6 @@ mod artifact_repository_test;
 
 #[cfg(test)]
 mod workspace_repository_test;
+pub mod research_document_repository;
+pub mod research_source_repository;
+pub mod research_note_repository;

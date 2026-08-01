@@ -80,7 +80,10 @@ pub fn run() {
             commands::research::archive_research_project,
             commands::research::complete_research_project,
             commands::research::delete_research_project,
+            commands::research::create_research_document,
+            commands::research::get_research_document,
             commands::research::list_research_documents,
+            commands::research::delete_research_document,
             // Journal commands
             commands::journal::list_theses,
             // Portfolio commands
