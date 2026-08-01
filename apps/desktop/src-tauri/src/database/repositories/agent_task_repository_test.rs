@@ -21,15 +21,19 @@ mod tests {
             .await
             .expect("Failed to run initial migration");
 
-        sqlx::query(include_str!("../../../migrations/0002_agent_tasks_enhancement.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run agent tasks migration");
+        sqlx::query(include_str!(
+            "../../../migrations/0002_agent_tasks_enhancement.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run agent tasks migration");
 
-        sqlx::query(include_str!("../../../migrations/0003_fix_status_constraint.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run status constraint fix");
+        sqlx::query(include_str!(
+            "../../../migrations/0003_fix_status_constraint.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run status constraint fix");
 
         pool
     }
@@ -115,7 +119,10 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = create_repo(pool);
 
-        let result = repo.get("non-existent-id").await.expect("Failed to get task");
+        let result = repo
+            .get("non-existent-id")
+            .await
+            .expect("Failed to get task");
 
         assert!(result.is_none());
     }
@@ -227,7 +234,9 @@ mod tests {
         let pool = setup_test_db().await;
         let repo = create_repo(pool);
 
-        let result = repo.update_status("non-existent-id", TaskStatus::Queued).await;
+        let result = repo
+            .update_status("non-existent-id", TaskStatus::Queued)
+            .await;
 
         assert!(result.is_err());
     }
@@ -246,7 +255,11 @@ mod tests {
         let task = repo.create(input).await.expect("Failed to create task");
 
         let event = repo
-            .create_event(&task.id, TaskEventType::TaskQueued, Some("test payload".to_string()))
+            .create_event(
+                &task.id,
+                TaskEventType::TaskQueued,
+                Some("test payload".to_string()),
+            )
             .await
             .expect("Failed to create event");
 
