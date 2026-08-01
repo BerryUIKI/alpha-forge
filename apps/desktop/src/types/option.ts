@@ -208,6 +208,34 @@ export interface AnalyzeStrategyParams {
   daysToExpiration?: number;
 }
 
+// ============================================
+// API Request/Response Types
+// ============================================
+
+export interface FetchChainParams {
+  symbol: string;
+  workspaceId: string;
+  provider?: 'live' | 'demo' | 'file';
+}
+
+export interface CalculateGreeksParams {
+  optionType: 'call' | 'put';
+  underlyingPrice: number;
+  strike: number;
+  expirationYears: number;
+  riskFreeRate: number;
+  volatility: number;
+  dividendYield?: number;
+}
+
+export interface GreeksResponse {
+  delta: number;
+  gamma: number;
+  theta: number;
+  vega: number;
+  rho: number;
+}
+
 export interface CalculatePayoffParams {
   strategyId: string;
   underlyingPrice: number;
@@ -467,7 +495,7 @@ export const StrategyLegSchema = z.object({
   id: z.string().uuid(),
   strategyId: z.string().uuid(),
   optionContractId: z.string().uuid(),
-  quantity: z.number().int().nonzero(),
+  quantity: z.number().int(),
   positionType: PositionTypeSchema,
   premium: z.number().nonnegative(),
   strike: z.number().positive(),
