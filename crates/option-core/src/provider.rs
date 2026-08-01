@@ -3,7 +3,7 @@
 use crate::OptionError;
 use crate::Result;
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use domain::option::{DataSource, OptionChain, OptionContract, OptionType};
 
 /// Provider trait for fetching option data
@@ -100,7 +100,7 @@ impl DemoProvider {
         symbol: &str,
         option_type: OptionType,
         strike: f64,
-        underlying_price: f64,
+        _underlying_price: f64,
     ) -> OptionContract {
         let now = Utc::now();
 

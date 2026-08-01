@@ -1,12 +1,15 @@
 // Option service — orchestrates option analysis operations
 
-use std::sync::Arc;
-use domain::option::{OptionChain, OptionContract, OptionType, DataSource};
-use option_core::{black_scholes_price, calculate_greeks, calculate_implied_volatility, GreeksValues, DemoProvider, OptionsDataProvider, ProviderFactory};
-use crate::database::repositories::{
-    OptionChainRepository, OptionContractRepository, GreeksRepository
-};
+use crate::database::repositories::greeks_repository::GreeksRepository;
+use crate::database::repositories::option_chain_repository::OptionChainRepository;
+use crate::database::repositories::option_contract_repository::OptionContractRepository;
 use crate::error::AppError;
+use domain::option::{DataSource, OptionChain, OptionType};
+use option_core::{
+    black_scholes_price, calculate_greeks, calculate_implied_volatility, DemoProvider,
+    GreeksValues, OptionsDataProvider, ProviderFactory,
+};
+use std::sync::Arc;
 
 pub struct OptionService {
     chain_repo: Arc<OptionChainRepository>,
@@ -20,20 +23,31 @@ impl OptionService {
         contract_repo: Arc<OptionContractRepository>,
         greeks_repo: Arc<GreeksRepository>,
     ) -> Self {
-        Self { chain_repo, contract_repo, greeks_repo }
+        Self {
+            chain_repo,
+            contract_repo,
+            greeks_repo,
+        }
     }
 
     /// Fetch option chain from provider
-    pub async fn fetch_chain(&self, symbol: &str, workspace_id: &str, source: DataSource) -> Result<OptionChain, AppError> {
-        let provider = ProviderFactory::create(source)
+    pub async fn fetch_chain(
+        &self,
+        symbol: &str,
+        workspace_id: &str,
+        source: DataSource,
+    ) -> Result<OptionChain, AppError> {
+        let provider =
+            ProviderFactory::create(source).map_err(|e| AppError::Internal(e.to_string()))?;
+
+        let chain = provider
+            .fetch_chain(symbol, workspace_id)
+            .await
             .map_err(|e| AppError::Internal(e.to_string()))?;
-        
-        let chain = provider.fetch_chain(symbol, workspace_id).await
-            .map_err(|e| AppError::Internal(e.to_string()))?;
-        
+
         // Save chain to database
         self.chain_repo.create(&chain).await?;
-        
+
         Ok(chain)
     }
 
@@ -48,8 +62,16 @@ impl OptionService {
         volatility: f64,
         dividend_yield: f64,
     ) -> Result<GreeksValues, AppError> {
-        calculate_greeks(option_type, underlying_price, strike, expiration_years, risk_free_rate, volatility, dividend_yield)
-            .map_err(|e| AppError::Internal(e.to_string()))
+        calculate_greeks(
+            option_type,
+            underlying_price,
+            strike,
+            expiration_years,
+            risk_free_rate,
+            volatility,
+            dividend_yield,
+        )
+        .map_err(|e| AppError::Internal(e.to_string()))
     }
 
     /// Calculate option price using Black-Scholes
@@ -63,8 +85,16 @@ impl OptionService {
         volatility: f64,
         dividend_yield: f64,
     ) -> Result<f64, AppError> {
-        black_scholes_price(option_type, underlying_price, strike, expiration_years, risk_free_rate, volatility, dividend_yield)
-            .map_err(|e| AppError::Internal(e.to_string()))
+        black_scholes_price(
+            option_type,
+            underlying_price,
+            strike,
+            expiration_years,
+            risk_free_rate,
+            volatility,
+            dividend_yield,
+        )
+        .map_err(|e| AppError::Internal(e.to_string()))
     }
 
     /// Calculate implied volatility
@@ -78,7 +108,17 @@ impl OptionService {
         dividend_yield: f64,
         market_price: f64,
     ) -> Result<f64, AppError> {
-        calculate_implied_volatility(option_type, underlying_price, strike, expiration_years, risk_free_rate, dividend_yield, market_price, 100, 0.0001)
-            .map_err(|e| AppError::Internal(e.to_string()))
+        calculate_implied_volatility(
+            option_type,
+            underlying_price,
+            strike,
+            expiration_years,
+            risk_free_rate,
+            dividend_yield,
+            market_price,
+            100,
+            0.0001,
+        )
+        .map_err(|e| AppError::Internal(e.to_string()))
     }
 }

@@ -93,7 +93,8 @@ impl TaskExecutor {
         let cancel_token_clone = cancel_token.clone();
         let task_clone = task.clone();
         let handle = tokio::spawn(async move {
-            let result = Self::execute_task(task_clone, repo.clone(), app, cancel_token_clone.clone()).await;
+            let result =
+                Self::execute_task(task_clone, repo.clone(), app, cancel_token_clone.clone()).await;
 
             // Remove from running tasks
             {
@@ -122,7 +123,7 @@ impl TaskExecutor {
     /// Cancels a running task.
     pub async fn cancel_task(&self, task_id: &str) -> Result<(), AppError> {
         let running = self.running_tasks.read().await;
-        
+
         if let Some(running_task) = running.get(task_id) {
             running_task.cancel_token.cancel();
             Ok(())
@@ -170,7 +171,11 @@ impl TaskExecutor {
             {
                 let repo_guard = repo.lock().await;
                 repo_guard
-                    .create_event(&task_id, TaskEventType::TaskProgress, Some(step.to_string()))
+                    .create_event(
+                        &task_id,
+                        TaskEventType::TaskProgress,
+                        Some(step.to_string()),
+                    )
                     .await?;
             }
 
@@ -193,7 +198,11 @@ impl TaskExecutor {
         {
             let repo_guard = repo.lock().await;
             repo_guard
-                .create_event(&task_id, TaskEventType::TaskCompleted, Some(output.to_string()))
+                .create_event(
+                    &task_id,
+                    TaskEventType::TaskCompleted,
+                    Some(output.to_string()),
+                )
                 .await?;
         }
         events::emit_completion(&app, &task_id, Some(output));

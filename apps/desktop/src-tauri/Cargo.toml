@@ -22,6 +22,7 @@ domain = { path = "../../../crates/domain" }
 agent-core = { path = "../../../crates/agent-core" }
 artifact-core = { path = "../../../crates/artifact-core" }
 provider-core = { path = "../../../crates/provider-core" }
+option-core = { path = "../../../crates/option-core" }
 shared = { path = "../../../crates/shared" }
 
 tokio.workspace = true

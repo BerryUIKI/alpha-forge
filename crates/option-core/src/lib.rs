@@ -3,6 +3,8 @@
 //! Provides option pricing models, Greeks calculations, and strategy analysis
 //! for the Investment OS Option Analysis Platform.
 
+#![allow(clippy::too_many_arguments)]
+
 pub mod greeks;
 pub mod pricing;
 pub mod provider;

@@ -56,7 +56,7 @@ pub fn calculate_greeks(
 }
 
 /// Calculate Delta (∂V/∂S)
-fn calculate_delta(option_type: OptionType, d1: f64, q: f64, t: f64) -> Result<f64> {
+fn calculate_delta(option_type: OptionType, d1: f64, q: f64, _t: f64) -> Result<f64> {
     match option_type {
         OptionType::Call => Ok((1.0 - q) * norm_cdf(d1)),
         OptionType::Put => Ok((1.0 - q) * (norm_cdf(d1) - 1.0)),
@@ -108,7 +108,7 @@ fn calculate_theta(
 }
 
 /// Calculate Vega (∂V/∂σ) - per 1% IV change
-fn calculate_vega(s: f64, t: f64, sigma: f64, q: f64, d1: f64) -> Result<f64> {
+fn calculate_vega(s: f64, t: f64, _sigma: f64, q: f64, d1: f64) -> Result<f64> {
     let vega = s * (1.0 - q) * norm_pdf(d1) * t.sqrt();
     Ok(vega / 100.0) // Convert to per 1% change
 }

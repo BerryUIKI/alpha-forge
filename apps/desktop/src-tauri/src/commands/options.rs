@@ -1,10 +1,10 @@
 // Option IPC commands
 
-use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::option::{OptionChain, OptionType, DataSource};
+use domain::option::{DataSource, OptionChain, OptionType};
 use serde::{Deserialize, Serialize};
+use tauri::State;
 
 #[derive(Debug, Deserialize)]
 pub struct FetchChainParams {
@@ -44,8 +44,11 @@ pub async fn fetch_option_chain(
         Some("file") => DataSource::File,
         _ => DataSource::Demo,
     };
-    
-    state.option_service.fetch_chain(&params.symbol, &params.workspace_id, source).await
+
+    state
+        .option_service
+        .fetch_chain(&params.symbol, &params.workspace_id, source)
+        .await
 }
 
 /// Calculate Greeks for an option
@@ -59,7 +62,7 @@ pub async fn calculate_greeks(
         "put" => OptionType::Put,
         _ => return Err(AppError::InvalidParams("Invalid option type".to_string())),
     };
-    
+
     let greeks = state.option_service.calculate_greeks(
         option_type,
         params.underlying_price,
@@ -69,7 +72,7 @@ pub async fn calculate_greeks(
         params.volatility,
         params.dividend_yield.unwrap_or(0.0),
     )?;
-    
+
     Ok(GreeksResponse {
         delta: greeks.delta,
         gamma: greeks.gamma,
@@ -90,7 +93,7 @@ pub async fn calculate_option_price(
         "put" => OptionType::Put,
         _ => return Err(AppError::InvalidParams("Invalid option type".to_string())),
     };
-    
+
     state.option_service.calculate_price(
         option_type,
         params.underlying_price,

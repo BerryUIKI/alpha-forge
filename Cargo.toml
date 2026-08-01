@@ -6,7 +6,7 @@ members = [
   "crates/agent-core",
   "crates/artifact-core",
   "crates/provider-core",
-  "crates/shared",
+  "crates/shared", "crates/option-core",
 ]
 
 [workspace.package]

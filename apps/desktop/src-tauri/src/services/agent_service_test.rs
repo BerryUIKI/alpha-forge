@@ -23,15 +23,19 @@ mod tests {
             .await
             .expect("Failed to run initial migration");
 
-        sqlx::query(include_str!("../../migrations/0002_agent_tasks_enhancement.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run agent tasks migration");
+        sqlx::query(include_str!(
+            "../../migrations/0002_agent_tasks_enhancement.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run agent tasks migration");
 
-        sqlx::query(include_str!("../../migrations/0003_fix_status_constraint.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run status constraint fix");
+        sqlx::query(include_str!(
+            "../../migrations/0003_fix_status_constraint.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run status constraint fix");
 
         pool
     }
@@ -148,10 +152,16 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         // Queue the task
-        let queued_task = service.queue_task(&task.id).await.expect("Failed to queue task");
+        let queued_task = service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
 
         assert_eq!(queued_task.status, TaskStatus::Queued);
         assert_eq!(queued_task.id, task.id);
@@ -183,8 +193,14 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
-        service.queue_task(&task.id).await.expect("Failed to queue task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
 
         // Try to queue again (should fail)
         let result = service.queue_task(&task.id).await;
@@ -208,11 +224,20 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
-        service.queue_task(&task.id).await.expect("Failed to queue task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
 
         // Start the task
-        let started_task = service.start_task(&task.id).await.expect("Failed to start task");
+        let started_task = service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
 
         assert_eq!(started_task.status, TaskStatus::Running);
     }
@@ -229,7 +254,10 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         // Try to start without queuing
         let result = service.start_task(&task.id).await;
@@ -253,12 +281,24 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
-        service.queue_task(&task.id).await.expect("Failed to queue task");
-        service.start_task(&task.id).await.expect("Failed to start task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
 
         // Complete the task
-        let completed_task = service.complete_task(&task.id).await.expect("Failed to complete task");
+        let completed_task = service
+            .complete_task(&task.id)
+            .await
+            .expect("Failed to complete task");
 
         assert_eq!(completed_task.status, TaskStatus::Completed);
     }
@@ -275,7 +315,10 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         // Try to complete without running
         let result = service.complete_task(&task.id).await;
@@ -295,7 +338,10 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         // Fail the task
         let failed_task = service
@@ -318,11 +364,20 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
-        service.queue_task(&task.id).await.expect("Failed to queue task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
 
         // Cancel the task
-        let cancelled_task = service.cancel_task(&task.id).await.expect("Failed to cancel task");
+        let cancelled_task = service
+            .cancel_task(&task.id)
+            .await
+            .expect("Failed to cancel task");
 
         assert_eq!(cancelled_task.status, TaskStatus::Cancelled);
     }
@@ -339,10 +394,22 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
-        service.queue_task(&task.id).await.expect("Failed to queue task");
-        service.start_task(&task.id).await.expect("Failed to start task");
-        service.complete_task(&task.id).await.expect("Failed to complete task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
+        service
+            .complete_task(&task.id)
+            .await
+            .expect("Failed to complete task");
 
         // Try to cancel completed task
         let result = service.cancel_task(&task.id).await;
@@ -361,7 +428,10 @@ mod tests {
             title: "Test Task".to_string(),
             description: Some("Test description".to_string()),
         };
-        let created_task = service.create_task(input).await.expect("Failed to create task");
+        let created_task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         let retrieved_task = service
             .get_task(&created_task.id)
@@ -380,7 +450,10 @@ mod tests {
         let pool = setup_test_db().await;
         let service = create_service(pool);
 
-        let result = service.get_task("non-existent-id").await.expect("Failed to get task");
+        let result = service
+            .get_task("non-existent-id")
+            .await
+            .expect("Failed to get task");
 
         assert!(result.is_none());
     }
@@ -398,10 +471,16 @@ mod tests {
                 title: format!("Task {}", i),
                 description: None,
             };
-            service.create_task(input).await.expect("Failed to create task");
+            service
+                .create_task(input)
+                .await
+                .expect("Failed to create task");
         }
 
-        let tasks = service.list_tasks(&workspace_id).await.expect("Failed to list tasks");
+        let tasks = service
+            .list_tasks(&workspace_id)
+            .await
+            .expect("Failed to list tasks");
 
         assert_eq!(tasks.len(), 3);
     }
@@ -412,7 +491,10 @@ mod tests {
         let workspace_id = create_test_workspace(&pool).await;
         let service = create_service(pool);
 
-        let tasks = service.list_tasks(&workspace_id).await.expect("Failed to list tasks");
+        let tasks = service
+            .list_tasks(&workspace_id)
+            .await
+            .expect("Failed to list tasks");
 
         assert_eq!(tasks.len(), 0);
     }
@@ -429,11 +511,20 @@ mod tests {
             title: "Test Task".to_string(),
             description: None,
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
 
         // Queue and start to create events
-        service.queue_task(&task.id).await.expect("Failed to queue task");
-        service.start_task(&task.id).await.expect("Failed to start task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
 
         // Get events
         let events = service
@@ -457,23 +548,38 @@ mod tests {
             title: "Full Lifecycle Task".to_string(),
             description: Some("Testing complete lifecycle".to_string()),
         };
-        let task = service.create_task(input).await.expect("Failed to create task");
+        let task = service
+            .create_task(input)
+            .await
+            .expect("Failed to create task");
         assert_eq!(task.status, TaskStatus::Created);
 
         // Queue
-        let task = service.queue_task(&task.id).await.expect("Failed to queue task");
+        let task = service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
         assert_eq!(task.status, TaskStatus::Queued);
 
         // Start
-        let task = service.start_task(&task.id).await.expect("Failed to start task");
+        let task = service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
         assert_eq!(task.status, TaskStatus::Running);
 
         // Complete
-        let task = service.complete_task(&task.id).await.expect("Failed to complete task");
+        let task = service
+            .complete_task(&task.id)
+            .await
+            .expect("Failed to complete task");
         assert_eq!(task.status, TaskStatus::Completed);
 
         // Verify events
-        let events = service.get_task_events(&task.id).await.expect("Failed to get events");
+        let events = service
+            .get_task_events(&task.id)
+            .await
+            .expect("Failed to get events");
         assert!(events.len() >= 4); // created, queued, started, completed
     }
 }

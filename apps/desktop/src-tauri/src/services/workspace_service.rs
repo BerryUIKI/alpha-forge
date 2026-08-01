@@ -70,7 +70,11 @@ impl WorkspaceService {
         }
 
         // Validate name if provided
-        let name = input.name.as_ref().map(|n| n.trim()).filter(|n| !n.is_empty());
+        let name = input
+            .name
+            .as_ref()
+            .map(|n| n.trim())
+            .filter(|n| !n.is_empty());
 
         let name = match name {
             Some(n) if n.len() > 200 => {

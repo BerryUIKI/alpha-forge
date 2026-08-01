@@ -121,11 +121,11 @@ mod tests {
         };
 
         // ITM scenario
-        let payoff_itm = calculate_payoff_at_expiry(&[leg.clone()], 110.0).unwrap();
+        let payoff_itm = calculate_payoff_at_expiry(std::slice::from_ref(&leg), 110.0).unwrap();
         assert_eq!(payoff_itm, 5.0); // (110 - 100) - 5 = 5
 
         // OTM scenario
-        let payoff_otm = calculate_payoff_at_expiry(&[leg], 90.0).unwrap();
+        let payoff_otm = calculate_payoff_at_expiry(std::slice::from_ref(&leg), 90.0).unwrap();
         assert_eq!(payoff_otm, -5.0); // 0 - 5 = -5
     }
 }

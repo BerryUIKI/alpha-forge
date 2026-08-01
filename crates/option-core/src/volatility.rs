@@ -51,7 +51,7 @@ pub fn calculate_implied_volatility(
             return Err(OptionError::IvConvergenceFailed);
         }
 
-        sigma = sigma - diff / vega;
+        sigma -= diff / vega;
 
         // Ensure sigma stays positive
         if sigma <= 0.0 {
@@ -64,7 +64,7 @@ pub fn calculate_implied_volatility(
 
 /// Approximate vega for IV calculation
 fn calculate_vega_approx(
-    option_type: OptionType,
+    _option_type: OptionType,
     s: f64,
     k: f64,
     t: f64,

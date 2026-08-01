@@ -1,8 +1,8 @@
 // System service — handles system-level operations.
 
-use tauri::Manager;
 use crate::error::AppError;
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 
 /// System information structure.
 #[derive(Debug, Clone, Serialize, Deserialize)]

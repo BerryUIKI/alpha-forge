@@ -13,8 +13,8 @@ pub mod services;
 pub mod telemetry;
 pub mod windows;
 
-use tauri::Manager;
 use app::state::AppState;
+use tauri::Manager;
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -81,6 +81,10 @@ pub fn run() {
             commands::portfolio::list_portfolio_accounts,
             // Artifacts commands
             commands::artifacts::list_artifacts,
+            // Options commands
+            commands::options::fetch_option_chain,
+            commands::options::calculate_greeks,
+            commands::options::calculate_option_price,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");

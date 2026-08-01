@@ -16,6 +16,9 @@ pub enum AppError {
 
     #[error("timeout: {0}")]
     Timeout(String),
+
+    #[error("invalid parameters: {0}")]
+    InvalidParams(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -50,6 +53,11 @@ impl AppError {
             },
             AppError::Timeout(msg) => AppErrorResponse {
                 code: "TIMEOUT".into(),
+                message: msg.clone(),
+                recoverable: true,
+            },
+            AppError::InvalidParams(msg) => AppErrorResponse {
+                code: "INVALID_PARAMS".into(),
                 message: msg.clone(),
                 recoverable: true,
             },
