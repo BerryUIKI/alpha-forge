@@ -30,6 +30,7 @@ AlphaForge is a desktop-first AI workspace for investment research. Our security
 - Agent-generated content is rendered in isolated WebViews
 - Artifacts cannot access main application privileges
 - Input validation prevents injection attacks
+- Artifact routes require a UUID identifier, a safe type segment, and bounded window dimensions before a WebView is created
 
 ### 5. Input Validation
 - All IPC inputs are validated with Zod (TypeScript) and Serde (Rust)
@@ -161,6 +162,7 @@ LOG_LEVEL=info       # Logging level
 3. **Artifact Windows**
    - Isolation implemented but not battle-tested
    - Need penetration testing before production
+   - Route validation prevents path traversal in artifact window URLs; it does not replace a full production security audit
 
 ### Future Enhancements
 

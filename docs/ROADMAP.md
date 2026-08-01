@@ -121,12 +121,12 @@ Build portfolio management and analysis.
 - [ ] Theme allocation tracking.
 - [ ] Risk dashboards (via portfolio-risk plugin).
 
-## Phase 11 — Security Hardening
+## Phase 11 — Security Hardening 🚧
 
 - [ ] OS keychain credential storage.
 - [ ] URL allowlist enforcement.
-- [ ] Path normalization and validation.
-- [ ] Directory traversal prevention.
+- [x] Artifact route validation: UUID artifact IDs, safe type segments, bounded window sizes, and recoverable invalid-route errors.
+- [x] Artifact route traversal prevention.
 - [ ] Plugin sandbox enforcement.
 - [ ] Log redaction.
 - [ ] Security audit.

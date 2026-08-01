@@ -7,6 +7,11 @@ use tokio::sync::RwLock;
 
 use crate::error::AppError;
 
+const MIN_ARTIFACT_WINDOW_WIDTH: f64 = 320.0;
+const MAX_ARTIFACT_WINDOW_WIDTH: f64 = 1600.0;
+const MIN_ARTIFACT_WINDOW_HEIGHT: f64 = 240.0;
+const MAX_ARTIFACT_WINDOW_HEIGHT: f64 = 1200.0;
+
 /// Unique identifier for an artifact window.
 pub type WindowId = String;
 
@@ -50,6 +55,7 @@ impl ArtifactManager {
 
     /// Opens an artifact in a new window.
     pub async fn open_artifact(&self, config: ArtifactWindowConfig) -> Result<String, AppError> {
+        validate_artifact_window_config(&config)?;
         let window_label = format!("artifact-{}", config.artifact_id);
 
         // Check if window already exists
@@ -72,10 +78,13 @@ impl ArtifactManager {
         );
 
         // Create window
-        let window = WebviewWindowBuilder::new(
+        let artifact_url = artifact_url
+            .parse()
+            .map_err(|_| AppError::Validation("Artifact route is invalid".to_string()))?;
+        let _window = WebviewWindowBuilder::new(
             &self.app_handle,
             &window_label,
-            WebviewUrl::App(artifact_url.parse().unwrap())
+            WebviewUrl::App(artifact_url)
         )
         .title(&config.title)
         .inner_size(config.width, config.height)
@@ -177,6 +186,34 @@ impl ArtifactManager {
     }
 }
 
+fn validate_artifact_window_config(config: &ArtifactWindowConfig) -> Result<(), AppError> {
+    uuid::Uuid::parse_str(&config.artifact_id)
+        .map_err(|_| AppError::Validation("Artifact id must be a UUID".to_string()))?;
+    if !is_route_segment(&config.artifact_type) {
+        return Err(AppError::Validation(
+            "Artifact type must be a safe route segment".to_string(),
+        ));
+    }
+    if !config.width.is_finite()
+        || !config.height.is_finite()
+        || !(MIN_ARTIFACT_WINDOW_WIDTH..=MAX_ARTIFACT_WINDOW_WIDTH).contains(&config.width)
+        || !(MIN_ARTIFACT_WINDOW_HEIGHT..=MAX_ARTIFACT_WINDOW_HEIGHT).contains(&config.height)
+    {
+        return Err(AppError::Validation(
+            "Artifact window dimensions are outside the allowed range".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn is_route_segment(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_')
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,5 +237,36 @@ mod tests {
         };
         assert_eq!(config.artifact_id, "test-123");
         assert_eq!(config.artifact_type, "comparison_table");
+    }
+
+    #[test]
+    fn validates_safe_artifact_window_configuration() {
+        let config = ArtifactWindowConfig {
+            artifact_id: "2a707687-3fc5-4b02-81ba-043830213244".to_string(),
+            artifact_type: "comparison_table".to_string(),
+            title: "Comparison".to_string(),
+            width: 1024.0,
+            height: 768.0,
+        };
+        assert!(validate_artifact_window_config(&config).is_ok());
+    }
+
+    #[test]
+    fn rejects_unsafe_artifact_routes_and_window_sizes() {
+        let unsafe_route = ArtifactWindowConfig {
+            artifact_id: "2a707687-3fc5-4b02-81ba-043830213244".to_string(),
+            artifact_type: "../settings".to_string(),
+            title: "Unsafe".to_string(),
+            width: 1024.0,
+            height: 768.0,
+        };
+        assert!(validate_artifact_window_config(&unsafe_route).is_err());
+
+        let invalid_size = ArtifactWindowConfig {
+            artifact_type: "timeline".to_string(),
+            width: 1.0,
+            ..unsafe_route
+        };
+        assert!(validate_artifact_window_config(&invalid_size).is_err());
     }
 }
