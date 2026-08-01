@@ -105,6 +105,10 @@ Research provenance links must use HTTPS, a public hostname, and no credentials 
 
 PDF import exists to turn user-selected research files into local searchable content. The Rust command opens the native file picker, accepts only a selected PDF up to 25 MB, and extracts text before persistence. React receives only the resulting document; it cannot submit a filesystem path, read arbitrary files, or retain the selected path. Invalid, unreadable, or non-text PDFs return a recoverable validation error.
 
+### Web Source Import Boundary
+
+Web source import exists to record public research pages with provenance. React submits only a URL to a Rust command; the WebView never receives general network access. Rust requires a public HTTPS hostname, resolves and rejects restricted network ranges, uses a 15-second timeout, accepts only HTML or plain text up to 5 MB, and validates every redirect (maximum three) before saving extracted text and a source record.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly

@@ -3,6 +3,7 @@
 use tauri::State;
 use crate::app::state::AppState;
 use crate::documents::pdf_import::select_and_extract_pdf;
+use crate::documents::web_import::fetch_web_page;
 use crate::error::AppError;
 use domain::research::{CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport, ResearchSearchMatch, ResearchSource};
 
@@ -70,6 +71,14 @@ pub async fn import_research_pdf(project_id: String, state: State<'_, AppState>)
         source_url: None,
         file_path: None,
     }).await.map(Some)
+}
+
+#[tauri::command]
+pub async fn import_research_web_page(project_id: String, url: String, state: State<'_, AppState>) -> Result<ResearchDocument, AppError> {
+    let page = fetch_web_page(&url).await?;
+    let document = state.research_document_service.create_document(CreateDocumentInput { project_id, document_type: DocumentType::WebPage, title: page.title.clone(), content: Some(page.content), source_url: Some(page.url.clone()), file_path: None }).await?;
+    state.research_source_service.create_source(document.id.clone(), Some(page.url), Some(page.title)).await?;
+    Ok(document)
 }
 
 #[tauri::command]

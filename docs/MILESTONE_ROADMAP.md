@@ -334,10 +334,10 @@ Turn AlphaForge into a complete AI research environment.
 #### Document Intelligence
 - [x] Local content parsing, chunking, and lexical query-ranking primitives
 - [x] PDF parsing through a Rust-owned native picker (25 MB limit; extracted text only)
-- [ ] Web source extraction (deferred)
+- [x] Web source extraction through bounded Rust-side HTTPS retrieval
 - [ ] Semantic search (deferred)
 
-The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, split content into deterministic chunks, and rank matching chunks lexically through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. They do not fetch remote URLs or produce embedding-based semantic matches; those capabilities require separate provider, privacy, and sandbox decisions.
+The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, retrieve validated public HTTPS pages in Rust, split content into deterministic chunks, and rank matching chunks lexically through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. Web imports accept HTML or plain text only, cap responses at 5 MB, use a 15-second timeout, validate every redirect (maximum three), and preserve source provenance. Embedding-based semantic matches remain deferred pending separate provider, privacy, and sandbox decisions.
 
 #### Research Workflow
 ```text

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { createResearchNote, createResearchReport, createResearchSource, importResearchPdf, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
+import { createResearchNote, createResearchReport, createResearchSource, importResearchPdf, importResearchWebPage, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -47,5 +47,11 @@ describe("research desktop API", () => {
     mockInvoke.mockResolvedValueOnce(null);
     await expect(importResearchPdf("project-1")).resolves.toBeNull();
     expect(mockInvoke).toHaveBeenCalledWith("import_research_pdf", { projectId: "project-1" });
+  });
+
+  it("imports a web page through Rust", async () => {
+    mockInvoke.mockResolvedValueOnce({ id: "document-1" });
+    await importResearchWebPage("project-1", "https://example.com/research");
+    expect(mockInvoke).toHaveBeenCalledWith("import_research_web_page", { projectId: "project-1", url: "https://example.com/research" });
   });
 });
