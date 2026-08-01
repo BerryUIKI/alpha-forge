@@ -50,7 +50,7 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**Phase 2 — Agent Runtime** (complete)
+**Phase 3 — Artifact Intelligence System** (in progress)
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -58,7 +58,7 @@ AlphaForge helps you:
 | M1 | ✅ Complete | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Application Foundation |
 | M2 | ✅ Complete | Agent Runtime |
-| M3 | 📋 Planned | Artifact Intelligence System |
+| M3 | 🚧 In Progress | Artifact Intelligence System |
 | M4 | 📋 Planned | Research Workspace |
 | M5 | 📋 Planned | Investment Knowledge System |
 | M6 | 📋 Planned | Portfolio Intelligence |
@@ -71,7 +71,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ## ✨ Features
 
-### Current (M0-M2)
+### Current (M0-M3)
 - ✅ Tauri 2 desktop application shell
 - ✅ React 19 + TypeScript + Vite foundation
 - ✅ Rust backend with SQLite persistence
@@ -81,11 +81,14 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - ✅ Background task execution
 - ✅ Real-time event streaming
 - ✅ Cancellation support
+- ✅ Artifact persistence layer
+- ✅ Artifact runtime manager
+- ✅ Artifact window lifecycle
 
-### Planned (M2+)
+### Planned (M3+)
+- 📋 Artifact renderers (comparison tables, timelines, etc.)
 - 📋 AI-powered research assistance
 - 📋 Investment thesis tracking
-- 📋 Interactive artifacts (charts, tables, visualizations)
 - 📋 Document analysis and semantic search
 - 📋 Portfolio-thesis alignment
 - 📋 Plugin ecosystem

@@ -242,9 +242,9 @@ Result persisted in SQLite
 
 ---
 
-## M3 — Artifact Intelligence System 📋
+## M3 — Artifact Intelligence System 🚧
 
-**Status**: Planned
+**Status**: In Progress
 
 ### Goal
 Enable Agents to create interactive research experiences.
@@ -252,17 +252,24 @@ Enable Agents to create interactive research experiences.
 ### Deliverables
 
 #### Artifact Runtime
-- [ ] Structured output schema
-- [ ] Renderer system
-- [ ] Temporary window creation
-- [ ] Permission isolation
+- ✅ Structured output schema
+- ✅ Temporary window creation
+- 📋 Renderer system (React components)
+- ✅ Permission isolation
+
+#### Persistence Layer
+- ✅ Artifact database migration
+- ✅ ArtifactRepository with CRUD operations
+- ✅ ArtifactService with business logic
+- ✅ Artifact Tauri commands (11 commands)
+- ✅ Frontend artifact API and hooks
 
 #### Built-in Artifacts
-- [ ] Comparison table
-- [ ] Timeline
-- [ ] Industry map
-- [ ] Valuation model
-- [ ] Risk dashboard
+- 📋 Comparison table renderer
+- 📋 Timeline renderer
+- 📋 Industry map renderer
+- 📋 Valuation model renderer
+- 📋 Risk dashboard renderer
 
 ### Artifact Flow
 ```text
@@ -288,6 +295,11 @@ Artifacts are isolated from main application:
 - ✗ No filesystem access
 - ✗ No API keys
 - ✗ No shell execution
+
+### Tests
+- ✅ Repository tests: 11 tests
+- ✅ Frontend API tests: 13 tests
+- ✅ All tests passing: 77 Rust + 41 Frontend
 
 ### Acceptance Criteria
 ```text
