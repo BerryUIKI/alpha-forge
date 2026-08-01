@@ -90,7 +90,7 @@ export function PortfolioRiskPage() {
       <div className="border rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-4">Concentration Risks</h2>
         <p className="text-gray-600">
-          Alerts for positions with >50% risk contribution.
+          Alerts for positions with greater than 50% risk contribution.
         </p>
       </div>
     </div>
