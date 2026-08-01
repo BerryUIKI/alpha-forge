@@ -84,6 +84,10 @@ pub fn run() {
             commands::research::get_research_document,
             commands::research::list_research_documents,
             commands::research::delete_research_document,
+            commands::research::create_research_report,
+            commands::research::get_research_report,
+            commands::research::list_research_reports,
+            commands::research::delete_research_report,
             // Journal commands
             commands::journal::list_theses,
             // Portfolio commands
