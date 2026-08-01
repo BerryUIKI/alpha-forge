@@ -41,6 +41,19 @@ pub enum ArtifactType {
     Custom(String),
 }
 
+impl fmt::Display for ArtifactType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArtifactType::ComparisonTable => write!(f, "comparison_table"),
+            ArtifactType::Timeline => write!(f, "timeline"),
+            ArtifactType::IndustryMap => write!(f, "industry_map"),
+            ArtifactType::ValuationModel => write!(f, "valuation_model"),
+            ArtifactType::RiskDashboard => write!(f, "risk_dashboard"),
+            ArtifactType::Custom(s) => write!(f, "{}", s),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Artifact {
     pub id: ArtifactId,

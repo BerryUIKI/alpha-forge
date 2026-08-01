@@ -8,6 +8,7 @@ use sqlx::SqlitePool;
 use tauri::AppHandle;
 
 use crate::agent::executor::{ExecutorConfig, TaskExecutor};
+use crate::artifacts::manager::ArtifactManager;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
@@ -26,6 +27,7 @@ pub struct AppState {
     pub artifact_service: ArtifactService,
     pub system_service: SystemService,
     pub task_executor: Arc<TaskExecutor>,
+    pub artifact_manager: Arc<ArtifactManager>,
 }
 
 impl AppState {
@@ -48,6 +50,9 @@ impl AppState {
         let executor_config = ExecutorConfig::default();
         let task_executor = Arc::new(TaskExecutor::new(agent_task_repo_for_executor, app_handle.clone(), executor_config));
 
+        // Create artifact manager
+        let artifact_manager = Arc::new(ArtifactManager::new(app_handle.clone()));
+
         Self {
             db_pool,
             settings_service,
@@ -56,6 +61,7 @@ impl AppState {
             artifact_service,
             system_service,
             task_executor,
+            artifact_manager,
         }
     }
 }

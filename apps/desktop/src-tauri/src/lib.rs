@@ -90,6 +90,7 @@ pub fn run() {
             commands::artifacts::start_viewing_artifact,
             commands::artifacts::close_artifact,
             commands::artifacts::delete_artifact,
+            commands::artifacts::list_open_artifacts,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");

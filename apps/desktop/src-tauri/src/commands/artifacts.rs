@@ -3,6 +3,7 @@
 use tauri::State;
 
 use crate::app::state::AppState;
+use crate::artifacts::manager::ArtifactWindowConfig;
 use crate::error::AppError;
 use domain::artifact::{Artifact, ArtifactType, CreateArtifactInput};
 
@@ -89,6 +90,28 @@ pub async fn start_viewing_artifact(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<Artifact, AppError> {
+    // Get artifact first
+    let artifact = state
+        .artifact_service
+        .get_artifact(&id)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Artifact '{}' not found", id)))?;
+
+    // Open artifact window
+    let window_config = ArtifactWindowConfig {
+        artifact_id: id.clone(),
+        artifact_type: artifact.artifact_type.to_string(),
+        title: format!("Artifact: {}", artifact.artifact_type),
+        width: 1024.0,
+        height: 768.0,
+    };
+
+    state
+        .artifact_manager
+        .open_artifact(window_config)
+        .await?;
+
+    // Update status to viewing
     state.artifact_service.start_viewing(&id).await
 }
 
@@ -97,6 +120,10 @@ pub async fn close_artifact(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<Artifact, AppError> {
+    // Close artifact window
+    state.artifact_manager.close_artifact(&id).await?;
+
+    // Update status
     state.artifact_service.close_artifact(&id).await
 }
 
@@ -106,4 +133,11 @@ pub async fn delete_artifact(
     state: State<'_, AppState>,
 ) -> Result<(), AppError> {
     state.artifact_service.delete_artifact(&id).await
+}
+
+#[tauri::command]
+pub async fn list_open_artifacts(
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, AppError> {
+    Ok(state.artifact_manager.list_open_artifacts().await)
 }
