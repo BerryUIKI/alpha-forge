@@ -31,4 +31,6 @@ mod workspace_service_test;
 mod plugin_service_test;
 pub mod research_project_service;
 pub mod research_document_service;
+pub mod research_note_service;
 pub mod research_report_service;
+pub mod research_source_service;

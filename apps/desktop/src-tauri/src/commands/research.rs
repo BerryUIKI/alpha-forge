@@ -3,7 +3,7 @@
 use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::research::{CreateDocumentInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchProject, ResearchReport};
+use domain::research::{CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport, ResearchSource};
 
 // Project commands
 #[tauri::command]
@@ -56,6 +56,31 @@ pub async fn list_research_documents(project_id: String, state: State<'_, AppSta
 #[tauri::command]
 pub async fn delete_research_document(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.research_document_service.delete_document(&id).await
+}
+
+#[tauri::command]
+pub async fn create_research_source(document_id: String, url: Option<String>, title: Option<String>, state: State<'_, AppState>) -> Result<ResearchSource, AppError> {
+    state.research_source_service.create_source(document_id, url, title).await
+}
+
+#[tauri::command]
+pub async fn list_research_sources(document_id: String, state: State<'_, AppState>) -> Result<Vec<ResearchSource>, AppError> {
+    state.research_source_service.list_sources(&document_id).await
+}
+
+#[tauri::command]
+pub async fn create_research_note(document_id: String, content: String, state: State<'_, AppState>) -> Result<ResearchNote, AppError> {
+    state.research_note_service.create_note(CreateNoteInput { document_id, content }).await
+}
+
+#[tauri::command]
+pub async fn list_research_notes(document_id: String, state: State<'_, AppState>) -> Result<Vec<ResearchNote>, AppError> {
+    state.research_note_service.list_notes(&document_id).await
+}
+
+#[tauri::command]
+pub async fn delete_research_note(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
+    state.research_note_service.delete_note(&id).await
 }
 
 // Report commands

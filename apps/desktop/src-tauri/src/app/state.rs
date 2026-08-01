@@ -15,8 +15,10 @@ use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRep
 use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
+use crate::database::repositories::research_note_repository::ResearchNoteRepository;
 use crate::database::repositories::research_project_repository::ResearchProjectRepository;
 use crate::database::repositories::research_report_repository::ResearchReportRepository;
+use crate::database::repositories::research_source_repository::ResearchSourceRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
@@ -28,8 +30,10 @@ use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::plugin_service::PluginService;
 use crate::services::portfolio_service::PortfolioService;
 use crate::services::research_document_service::ResearchDocumentService;
+use crate::services::research_note_service::ResearchNoteService;
 use crate::services::research_project_service::ResearchProjectService;
 use crate::services::research_report_service::ResearchReportService;
+use crate::services::research_source_service::ResearchSourceService;
 use crate::services::settings_service::SettingsService;
 use crate::services::system_service::SystemService;
 use crate::services::thesis_service::ThesisService;
@@ -44,7 +48,9 @@ pub struct AppState {
     pub artifact_service: ArtifactService,
     pub research_project_service: ResearchProjectService,
     pub research_document_service: ResearchDocumentService,
+    pub research_note_service: ResearchNoteService,
     pub research_report_service: ResearchReportService,
+    pub research_source_service: ResearchSourceService,
     pub thesis_service: ThesisService,
     pub knowledge_graph_service: KnowledgeGraphService,
     pub portfolio_service: PortfolioService,
@@ -64,7 +70,9 @@ impl AppState {
         let artifact_repo = ArtifactRepository::new(db_pool.clone());
         let research_project_repo = ResearchProjectRepository::new(db_pool.clone());
         let research_document_repo = ResearchDocumentRepository::new(db_pool.clone());
+        let research_note_repo = ResearchNoteRepository::new(db_pool.clone());
         let research_report_repo = ResearchReportRepository::new(db_pool.clone());
+        let research_source_repo = ResearchSourceRepository::new(db_pool.clone());
         let thesis_repo = ThesisRepository::new(db_pool.clone());
         let thesis_repo_for_knowledge_graph = ThesisRepository::new(db_pool.clone());
         let knowledge_graph_repo = KnowledgeGraphRepository::new(db_pool.clone());
@@ -78,7 +86,9 @@ impl AppState {
         let artifact_service = ArtifactService::new(artifact_repo);
         let research_project_service = ResearchProjectService::new(research_project_repo);
         let research_document_service = ResearchDocumentService::new(research_document_repo);
+        let research_note_service = ResearchNoteService::new(research_note_repo);
         let research_report_service = ResearchReportService::new(research_report_repo);
+        let research_source_service = ResearchSourceService::new(research_source_repo);
         let thesis_service = ThesisService::new(thesis_repo);
         let knowledge_graph_service =
             KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
@@ -110,7 +120,9 @@ impl AppState {
             artifact_service,
             research_project_service,
             research_document_service,
+            research_note_service,
             research_report_service,
+            research_source_service,
             thesis_service,
             knowledge_graph_service,
             portfolio_service,

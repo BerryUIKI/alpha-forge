@@ -1,7 +1,34 @@
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { desktopApi } from "@/lib/desktop-api";
+
 export function ResearchPage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Research</h1>
-    </div>
-  );
+  const client = useQueryClient();
+  const [workspaceId, setWorkspaceId] = useState("");
+  const [projectId, setProjectId] = useState("");
+  const [documentId, setDocumentId] = useState("");
+  const [projectTitle, setProjectTitle] = useState("");
+  const [documentTitle, setDocumentTitle] = useState("");
+  const [noteContent, setNoteContent] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceTitle, setSourceTitle] = useState("");
+  const [error, setError] = useState("");
+  const workspaces = useQuery({ queryKey: ["workspaces"], queryFn: desktopApi.workspace.listWorkspaces });
+  const projects = useQuery({ queryKey: ["research", "projects", workspaceId], queryFn: () => desktopApi.research.listResearchProjects(workspaceId), enabled: Boolean(workspaceId) });
+  const documents = useQuery({ queryKey: ["research", "documents", projectId], queryFn: () => desktopApi.research.listResearchDocuments(projectId), enabled: Boolean(projectId) });
+  const notes = useQuery({ queryKey: ["research", "notes", documentId], queryFn: () => desktopApi.research.listResearchNotes(documentId), enabled: Boolean(documentId) });
+  const sources = useQuery({ queryKey: ["research", "sources", documentId], queryFn: () => desktopApi.research.listResearchSources(documentId), enabled: Boolean(documentId) });
+  const refresh = (key: string, id: string) => client.invalidateQueries({ queryKey: ["research", key, id] });
+  const createProject = useMutation({ mutationFn: () => desktopApi.research.createResearchProject(workspaceId, projectTitle), onSuccess: () => { setProjectTitle(""); refresh("projects", workspaceId); } });
+  const createDocument = useMutation({ mutationFn: () => desktopApi.research.createResearchDocument(projectId, documentTitle), onSuccess: () => { setDocumentTitle(""); refresh("documents", projectId); } });
+  const createNote = useMutation({ mutationFn: () => desktopApi.research.createResearchNote(documentId, noteContent), onSuccess: () => { setNoteContent(""); refresh("notes", documentId); } });
+  const createSource = useMutation({ mutationFn: () => desktopApi.research.createResearchSource(documentId, sourceUrl, sourceTitle), onSuccess: () => { setSourceUrl(""); setSourceTitle(""); refresh("sources", documentId); } });
+  async function run(action: () => Promise<unknown>) { try { setError(""); await action(); } catch { setError("Unable to save the research item. Check the required fields and try again."); } }
+  return <div className="space-y-6 p-6"><div><h1 className="text-2xl font-bold">Research</h1><p className="text-sm text-muted-foreground">Capture projects, source provenance, and document annotations.</p></div>
+    {error && <p className="text-sm text-destructive">{error}</p>}
+    <label className="block max-w-md text-sm font-medium">Workspace<select className="mt-1 w-full rounded border bg-background p-2" value={workspaceId} onChange={event => { setWorkspaceId(event.target.value); setProjectId(""); setDocumentId(""); }}><option value="">Select a workspace</option>{workspaces.data?.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+    {workspaceId && <section className="space-y-3 rounded-lg border p-4"><h2 className="font-semibold">Projects</h2><form className="flex gap-2" onSubmit={event => { event.preventDefault(); run(() => createProject.mutateAsync()); }}><input aria-label="Project title" className="flex-1 rounded border bg-background p-2" placeholder="Project title" value={projectTitle} onChange={event => setProjectTitle(event.target.value)} /><button className="rounded border px-3" disabled={!projectTitle.trim() || createProject.isPending}>Create</button></form><div className="flex flex-wrap gap-2">{projects.data?.map(item => <button key={item.id} className="rounded border px-3 py-1 text-sm" onClick={() => { setProjectId(item.id); setDocumentId(""); }}>{item.title}</button>)}</div></section>}
+    {projectId && <section className="space-y-3 rounded-lg border p-4"><h2 className="font-semibold">Documents</h2><form className="flex gap-2" onSubmit={event => { event.preventDefault(); run(() => createDocument.mutateAsync()); }}><input aria-label="Document title" className="flex-1 rounded border bg-background p-2" placeholder="Document title" value={documentTitle} onChange={event => setDocumentTitle(event.target.value)} /><button className="rounded border px-3" disabled={!documentTitle.trim() || createDocument.isPending}>Add</button></form><div className="flex flex-wrap gap-2">{documents.data?.map(item => <button key={item.id} className="rounded border px-3 py-1 text-sm" onClick={() => setDocumentId(item.id)}>{item.title}</button>)}</div></section>}
+    {documentId && <section className="grid gap-4 rounded-lg border p-4 md:grid-cols-2"><div className="space-y-3"><h2 className="font-semibold">Notes</h2><form className="space-y-2" onSubmit={event => { event.preventDefault(); run(() => createNote.mutateAsync()); }}><textarea aria-label="Note content" className="w-full rounded border bg-background p-2" value={noteContent} onChange={event => setNoteContent(event.target.value)} /><button className="rounded border px-3 py-1" disabled={!noteContent.trim() || createNote.isPending}>Add note</button></form><ul className="space-y-2">{notes.data?.map(item => <li key={item.id} className="rounded bg-muted p-2 text-sm">{item.content}</li>)}</ul></div><div className="space-y-3"><h2 className="font-semibold">Sources</h2><form className="space-y-2" onSubmit={event => { event.preventDefault(); run(() => createSource.mutateAsync()); }}><input aria-label="Source URL" className="w-full rounded border bg-background p-2" placeholder="https://example.com" value={sourceUrl} onChange={event => setSourceUrl(event.target.value)} /><input aria-label="Source title" className="w-full rounded border bg-background p-2" placeholder="Source title (optional)" value={sourceTitle} onChange={event => setSourceTitle(event.target.value)} /><button className="rounded border px-3 py-1" disabled={createSource.isPending}>Add source</button></form><ul className="space-y-2">{sources.data?.map(item => <li key={item.id} className="rounded bg-muted p-2 text-sm">{item.url ? <a className="underline" href={item.url} target="_blank" rel="noreferrer">{item.title || item.url}</a> : item.title || "Untitled source"}</li>)}</ul></div></section>}
+  </div>;
 }

@@ -38,11 +38,11 @@
 
 ## 🎯 Short-Term Goals (Current Sprint)
 
-### 1. Scope M8 Production & Commercialization
+### 1. Scope M8 Production & Commercialization (Deferred)
 **Priority**: High
 **Timeline**: To be defined
 
-M7 is complete. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
+M7 is complete. M8 is temporarily deferred. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
 Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals before opening an M8 feature branch.
 
 ---
@@ -136,11 +136,10 @@ Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals befor
 
 ### Immediate (This Week)
 
-1. **Commit and review M7**
-   - Preserve the focused plugin changes as a small PR.
-   - Review the migration, permission boundary, and plugin payload validation.
+1. **Maintain completed milestone documentation**
+   - Keep M3–M7 status and acceptance notes aligned with delivered behavior.
 
-2. **Create the M8 product decision record**
+2. **Complete the M8 product decision record**
    - Select authentication and billing providers.
    - Confirm cloud backup, privacy, and data-retention scope.
    - Assign signing and installer release owners.

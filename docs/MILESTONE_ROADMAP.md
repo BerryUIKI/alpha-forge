@@ -256,7 +256,7 @@ Enable Agents to create interactive research experiences.
 #### Artifact Runtime
 - ✅ Structured output schema
 - ✅ Temporary window creation
-- ✅ Renderer registry and React component system
+- ✅ Renderer system (predefined React components)
 - ✅ Permission isolation
 
 #### Persistence Layer
@@ -315,9 +315,9 @@ Artifact closes cleanly
 
 ---
 
-## M4 — Research Workspace 📋
+## M4 — Research Workspace ✅
 
-**Status**: Planned
+**Status**: Core workflow complete. Advanced document ingestion and semantic search remain deferred enhancements.
 
 ### Goal
 Turn AlphaForge into a complete AI research environment.
@@ -325,17 +325,17 @@ Turn AlphaForge into a complete AI research environment.
 ### Deliverables
 
 #### Research Projects
-- [ ] Project CRUD operations
-- [ ] Document management
-- [ ] Source management
-- [ ] Notes system
-- [ ] Report generation
+- [x] Project CRUD operations
+- [x] Document management
+- [x] Source management with recorded provenance
+- [x] Notes system
+- [x] Report persistence
 
 #### Document Intelligence
-- [ ] PDF parsing
-- [ ] Web source extraction
-- [ ] Local document indexing
-- [ ] Semantic search
+- [x] Local content parsing and indexing primitives
+- [ ] PDF parsing (deferred)
+- [ ] Web source extraction (deferred)
+- [ ] Semantic search (deferred)
 
 #### Research Workflow
 ```text
@@ -376,7 +376,7 @@ All artifacts persisted
 
 ## M5 — Investment Knowledge System 🚧
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Goal
 Build persistent investment intelligence.
@@ -448,7 +448,7 @@ Records validation results
 - ✅ Thesis service with business logic
 - ✅ 13 Tauri commands for thesis management
 - ✅ 13 repository tests passing
-- 🚧 Migration reconciliation for legacy schemas (in progress)
+- ✅ Migration reconciliation for legacy schemas
 
 #### Frontend (TypeScript)
 - ✅ Thesis management UI in the Journal workspace
@@ -702,13 +702,12 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M1.5 — Application Foundation** 🚧
+**M8 — Production & Commercialization** is intentionally deferred pending the decisions in [M8 Decision Record](M8_DECISION_RECORD.md). Security hardening continues as focused maintenance work.
 
 ### Next Milestones
-1. Complete workspace persistence
-2. Expand desktop API
-3. Build UI foundation
-4. Establish testing framework
+1. Resolve M8 product and release decisions
+2. Complete the M8 decision gate before commercial infrastructure work
+3. Continue focused security and quality improvements
 
 ### Long-term Vision
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.
