@@ -99,6 +99,8 @@ The frontend HTTP plugin is also not registered. Network requests remain owned b
 
 The OpenAI research adapter reads only the `openai.api_key` credential from the OS keychain. It never accepts an API key over IPC, and its Responses API requests use bounded output plus a strict research-output schema.
 
+Research provenance links must use HTTPS, a public hostname, and no credentials or custom port. Local hostnames and literal IP addresses are rejected before persistence.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly

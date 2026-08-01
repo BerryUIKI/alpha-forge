@@ -5,6 +5,7 @@ use crate::documents::chunker::chunk_text;
 use crate::documents::indexer::rank_chunks;
 use crate::documents::parser::{extract_text, ContentFormat};
 use crate::error::AppError;
+use crate::security::url_policy::normalize_optional_research_url;
 use domain::research::{CreateDocumentInput, DocumentType, ResearchDocument, ResearchSearchMatch};
 
 pub struct ResearchDocumentService { repo: ResearchDocumentRepository }
@@ -12,8 +13,9 @@ pub struct ResearchDocumentService { repo: ResearchDocumentRepository }
 impl ResearchDocumentService {
     pub fn new(repo: ResearchDocumentRepository) -> Self { Self { repo } }
 
-    pub async fn create_document(&self, input: CreateDocumentInput) -> Result<ResearchDocument, AppError> {
+    pub async fn create_document(&self, mut input: CreateDocumentInput) -> Result<ResearchDocument, AppError> {
         if input.title.trim().is_empty() { return Err(AppError::Validation("Document title cannot be empty".to_string())); }
+        input.source_url = normalize_optional_research_url(input.source_url)?;
         self.repo.create(input).await
     }
 

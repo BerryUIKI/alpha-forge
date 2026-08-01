@@ -327,7 +327,7 @@ Turn AlphaForge into a complete AI research environment.
 #### Research Projects
 - [x] Project CRUD operations
 - [x] Document management
-- [x] Source management with recorded provenance
+- [x] Source management with recorded provenance and validated public HTTPS links
 - [x] Notes system
 - [x] Report persistence
 
