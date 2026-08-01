@@ -376,7 +376,7 @@ All artifacts persisted
 
 ---
 
-## M5 — Investment Knowledge System 🚧
+## M5 — Investment Knowledge System ✅
 
 **Status**: Complete
 
@@ -641,12 +641,12 @@ User reviews later
 ```
 
 ### Technical Requirements
-- [ ] Workspace persistence (M1.5)
-- [ ] Agent task execution (M2)
-- [ ] Progress event streaming (M2)
-- [ ] Structured output (M2)
-- [ ] Artifact rendering (M3)
-- [ ] Result persistence (M3)
+- [x] Workspace persistence (M1.5)
+- [x] Agent task execution (M2)
+- [x] Progress event streaming (M2)
+- [x] Structured output (M2)
+- [x] Artifact rendering (M3)
+- [x] Result persistence (M3)
 
 ---
 
