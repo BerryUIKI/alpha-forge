@@ -6,6 +6,9 @@ import { JournalPage } from "@/pages/journal/JournalPage";
 import { PortfolioPage } from "@/pages/portfolio/PortfolioPage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
+import { OptionsDashboard } from "@/pages/options/OptionsDashboard";
+import { OptionChainPage } from "@/pages/options/OptionChainPage";
+import { GreeksPage } from "@/pages/options/GreeksPage";
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +22,9 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: <PortfolioPage /> },
       { path: "artifacts", element: <ArtifactsPage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "options", element: <OptionsDashboard /> },
+      { path: "options/chain", element: <OptionChainPage /> },
+      { path: "options/greeks", element: <GreeksPage /> },
     ],
   },
 ]);
