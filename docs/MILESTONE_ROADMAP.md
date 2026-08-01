@@ -18,8 +18,8 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M1 | ✅ Complete | Week 3-4 | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Week 5-6 | Application Foundation |
 | M2 | ✅ Complete | Week 7-10 | Agent Runtime |
-| M3 | 📋 Planned | Week 11-14 | Artifact Intelligence System |
-| M4 | 📋 Planned | Week 15-18 | Research Workspace |
+| M3 | ✅ Complete | Week 11-14 | Artifact Intelligence System |
+| M4 | 🚧 In Progress | Week 15-18 | Research Workspace (Core Complete) |
 | M5 | 📋 Planned | Week 19-22 | Investment Knowledge System |
 | M6 | 📋 Planned | Week 23-26 | Portfolio Intelligence |
 | M7 | 📋 Planned | Week 27-30 | Plugin Ecosystem |
