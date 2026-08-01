@@ -3,6 +3,9 @@ contact_links:
   - name: 📖 Documentation
     url: https://github.com/BerryUIKI/alpha-forge/tree/main/docs
     about: Check the comprehensive documentation suite
+  - name: 🗺️ Roadmap
+    url: https://github.com/BerryUIKI/alpha-forge/blob/main/docs/MILESTONE_ROADMAP.md
+    about: View the project roadmap and milestone planning
   - name: 💬 Discussions
     url: https://github.com/BerryUIKI/alpha-forge/discussions
     about: Ask questions and discuss with the community
