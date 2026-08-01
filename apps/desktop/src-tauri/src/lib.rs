@@ -74,6 +74,12 @@ pub fn run() {
             commands::agent::start_agent_task,
             commands::agent::cancel_agent_task,
             // Research commands
+            commands::research::create_research_project,
+            commands::research::get_research_project,
+            commands::research::list_research_projects,
+            commands::research::archive_research_project,
+            commands::research::complete_research_project,
+            commands::research::delete_research_project,
             commands::research::list_research_documents,
             // Journal commands
             commands::journal::list_theses,

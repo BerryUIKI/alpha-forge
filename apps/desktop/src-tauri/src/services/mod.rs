@@ -22,3 +22,4 @@ mod agent_service_test;
 
 #[cfg(test)]
 mod workspace_service_test;
+pub mod research_project_service;
