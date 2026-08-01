@@ -31,16 +31,17 @@ impl AppState {
         let settings_repo = SettingsRepository::new(db_pool.clone());
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
         let agent_task_repo = AgentTaskRepository::new(db_pool.clone());
+        let agent_task_repo_for_executor = AgentTaskRepository::new(db_pool.clone());
 
         // Create services
         let settings_service = SettingsService::new(settings_repo);
         let workspace_service = WorkspaceService::new(workspace_repo);
-        let agent_service = AgentService::new(agent_task_repo.clone());
-        let system_service = SystemService::new(app_handle);
+        let agent_service = AgentService::new(agent_task_repo);
+        let system_service = SystemService::new(app_handle.clone());
 
         // Create task executor
         let executor_config = ExecutorConfig::default();
-        let task_executor = Arc::new(TaskExecutor::new(agent_task_repo, app_handle.clone(), executor_config));
+        let task_executor = Arc::new(TaskExecutor::new(agent_task_repo_for_executor, app_handle.clone(), executor_config));
 
         Self {
             db_pool,

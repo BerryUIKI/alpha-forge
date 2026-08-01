@@ -14,7 +14,7 @@ use tokio_util::sync::CancellationToken;
 use crate::agent::events;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
-use domain::task::{AgentTask, TaskEventType, TaskStatus};
+use domain::task::{AgentTask, TaskEventType};
 
 /// Configuration for the task executor.
 #[derive(Debug, Clone)]
@@ -91,8 +91,9 @@ impl TaskExecutor {
 
         // Start background task
         let cancel_token_clone = cancel_token.clone();
+        let task_clone = task.clone();
         let handle = tokio::spawn(async move {
-            let result = Self::execute_task(task, repo.clone(), app, cancel_token_clone.clone()).await;
+            let result = Self::execute_task(task_clone, repo.clone(), app, cancel_token_clone.clone()).await;
 
             // Remove from running tasks
             {
@@ -151,7 +152,7 @@ impl TaskExecutor {
             "Generating output...",
         ];
 
-        for (i, step) in steps.iter().enumerate() {
+        for (_i, step) in steps.iter().enumerate() {
             // Check for cancellation
             if cancel_token.is_cancelled() {
                 let repo_guard = repo.lock().await;
