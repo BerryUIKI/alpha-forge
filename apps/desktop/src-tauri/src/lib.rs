@@ -80,7 +80,16 @@ pub fn run() {
             // Portfolio commands
             commands::portfolio::list_portfolio_accounts,
             // Artifacts commands
+            commands::artifacts::create_artifact,
+            commands::artifacts::get_artifact,
             commands::artifacts::list_artifacts,
+            commands::artifacts::list_task_artifacts,
+            commands::artifacts::start_artifact_generation,
+            commands::artifacts::complete_artifact_generation,
+            commands::artifacts::fail_artifact_generation,
+            commands::artifacts::start_viewing_artifact,
+            commands::artifacts::close_artifact,
+            commands::artifacts::delete_artifact,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");

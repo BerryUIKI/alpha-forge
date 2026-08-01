@@ -9,9 +9,11 @@ use tauri::AppHandle;
 
 use crate::agent::executor::{ExecutorConfig, TaskExecutor};
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
+use crate::database::repositories::artifact_repository::ArtifactRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::services::agent_service::AgentService;
+use crate::services::artifact_service::ArtifactService;
 use crate::services::settings_service::SettingsService;
 use crate::services::system_service::SystemService;
 use crate::services::workspace_service::WorkspaceService;
@@ -21,6 +23,7 @@ pub struct AppState {
     pub settings_service: SettingsService,
     pub workspace_service: WorkspaceService,
     pub agent_service: AgentService,
+    pub artifact_service: ArtifactService,
     pub system_service: SystemService,
     pub task_executor: Arc<TaskExecutor>,
 }
@@ -32,11 +35,13 @@ impl AppState {
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
         let agent_task_repo = AgentTaskRepository::new(db_pool.clone());
         let agent_task_repo_for_executor = AgentTaskRepository::new(db_pool.clone());
+        let artifact_repo = ArtifactRepository::new(db_pool.clone());
 
         // Create services
         let settings_service = SettingsService::new(settings_repo);
         let workspace_service = WorkspaceService::new(workspace_repo);
         let agent_service = AgentService::new(agent_task_repo);
+        let artifact_service = ArtifactService::new(artifact_repo);
         let system_service = SystemService::new(app_handle.clone());
 
         // Create task executor
@@ -48,6 +53,7 @@ impl AppState {
             settings_service,
             workspace_service,
             agent_service,
+            artifact_service,
             system_service,
             task_executor,
         }

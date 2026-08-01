@@ -2,6 +2,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 pub type ArtifactId = String;
 
@@ -14,6 +15,19 @@ pub enum ArtifactStatus {
     Viewing,
     Closed,
     Failed,
+}
+
+impl fmt::Display for ArtifactStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArtifactStatus::Pending => write!(f, "pending"),
+            ArtifactStatus::Generating => write!(f, "generating"),
+            ArtifactStatus::Completed => write!(f, "completed"),
+            ArtifactStatus::Viewing => write!(f, "viewing"),
+            ArtifactStatus::Closed => write!(f, "closed"),
+            ArtifactStatus::Failed => write!(f, "failed"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
