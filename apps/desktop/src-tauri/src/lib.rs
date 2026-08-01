@@ -47,11 +47,18 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // System commands
+            commands::system::get_system_info,
+            commands::system::get_config_dir,
+            commands::system::get_data_dir,
+            commands::system::check_database_health,
             // Settings commands
             commands::settings::health_check,
             commands::settings::get_app_info,
             commands::settings::get_setting,
             commands::settings::set_setting,
+            commands::settings::delete_setting,
+            commands::settings::list_settings,
             // Workspace commands
             commands::workspace::create_workspace,
             commands::workspace::list_workspaces,

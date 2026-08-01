@@ -54,4 +54,16 @@ impl SettingsRepository {
 
         Ok(())
     }
+
+    /// Lists all settings.
+    pub async fn list(&self) -> Result<Vec<(String, String)>, AppError> {
+        let rows = sqlx::query_as::<_, (String, String)>(
+            "SELECT key, value FROM app_settings ORDER BY key",
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to list settings: {}", e)))?;
+
+        Ok(rows)
+    }
 }
