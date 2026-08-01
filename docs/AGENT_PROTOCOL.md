@@ -1,5 +1,8 @@
 # Agent Protocol
 
+**Status**: M2 Complete
+**Last Updated**: 2026-08-01
+
 ## Role of the Agent
 
 The agent is a research assistant, not a decision-maker. It collects information, structures knowledge, identifies patterns, and surfaces contradictions. It never makes autonomous investment decisions or executes trades.
@@ -34,7 +37,16 @@ Created → Queued → Running → Waiting For Input → Completed
 - `Running → Failed`: Unrecoverable error occurs.
 - `Any non-terminal → Cancelled`: User cancels the task.
 
-## Execution Model
+## Execution Model (M2)
+
+### Background Task Execution
+
+Tasks execute in background Tokio tasks with:
+
+- **Concurrent execution** (default: 5 tasks max)
+- **CancellationToken** for graceful cancellation
+- **Timeout enforcement** (default: 5 minutes)
+- **Progress event streaming** via Tauri events
 
 ### Async, Non-Blocking
 
@@ -49,111 +61,110 @@ User submits task
           → Task completes → final artifact
 ```
 
-### Concurrency
+### Event Streaming
 
-- Maximum concurrent tasks: configurable, default 2.
-- Additional tasks are queued.
-- Each task has a configurable timeout (default 5 minutes).
-- Tasks track token and cost budgets.
+Real-time task updates are emitted to the frontend via Tauri events:
 
-### Cancellation
+| Event Name | When Fired |
+|------------|------------|
+| `task:progress` | Progress updates during execution |
+| `task:completed` | Task finished successfully |
+| `task:failed` | Task encountered an error |
+| `task:cancelled` | Task was cancelled by user |
 
-Cancellation is cooperative — the agent checks a cancellation token between steps. Long-running operations (API calls) are wrapped with timeouts.
-
-## Tool Usage
-
-Agents use tools to interact with the system and external services. Tools are registered capabilities that the agent can invoke during task execution.
-
-### Principles
-
-- **Least privilege.** Agents receive only the tools needed for the current task.
-- **Explicit approval.** Destructive or external actions require user confirmation.
-- **Auditable.** Every tool invocation is logged as a task event.
-- **Deterministic.** Tool inputs and outputs are validated against schemas.
-
-### Planned Tools (Future Phases)
-
-- `search_research` — Search local research documents.
-- `fetch_web` — Retrieve web content (allowlist-constrained).
-- `fetch_market_data` — Query market data providers.
-- `create_note` — Create a research note.
-- `create_thesis` — Create an investment thesis draft.
-- `add_evidence` — Attach evidence to a thesis.
-- `generate_artifact` — Produce a structured artifact.
-
-## Structured Output
-
-Agent output must use explicit schemas. Free-form Markdown is not acceptable as the primary output format.
-
-Example research output schema:
-
-```json
-{
-  "summary": "string",
-  "claims": [
-    {
-      "claim": "string",
-      "confidence": "number (0-100)",
-      "evidence": ["string"],
-      "sources": ["string (source ID)"]
-    }
-  ],
-  "risks": ["string"],
-  "companies": ["string (ticker)"],
-  "themes": ["string"],
-  "portfolioImpact": ["string"],
-  "confidence": "number (0-100)"
-}
-```
-
-Validation: TypeScript validates with Zod; Rust validates with Serde.
-
-## Context Management
-
-The agent maintains context within a task but not across tasks (in MVP). Each task starts with:
-
-- The user's input.
-- Relevant research documents (manually selected or auto-retrieved).
-- Current portfolio summary (if relevant).
-- Tool definitions.
-
-Future phases will add long-term context: prior task summaries, thesis history, persistent user preferences.
-
-## Error Handling
-
-- **Transient errors** (API rate limit, network timeout): Retry with exponential backoff, up to configurable max retries.
-- **Permanent errors** (invalid input, auth failure): Fail immediately with a clear, user-facing message.
-- **Partial results:** If a task produces some output before failing, consider saving partial results.
-- **Error messages:** Must be actionable. "API error" is not sufficient; "OpenAI API rate limit exceeded — retrying in 30 seconds" is.
-
-## Human Approval Boundaries
-
-The agent may autonomously:
-
-- Search and retrieve information.
-- Structure and summarize data.
-- Draft theses and notes.
-- Generate artifacts.
-
-The agent must NOT, without explicit user approval:
-
-- Make external API calls that incur cost beyond a configurable budget.
-- Modify or delete existing research documents, theses, or portfolio data.
-- Share data externally.
-- Execute any action marked as destructive.
-
-## Structured Event Protocol
-
-All agent activity is communicated through typed events:
+### Cancellation Flow
 
 ```text
-task.started       { task_id }
-task.thinking      { task_id, message }
-task.tool_call     { task_id, tool_name, input }
-task.tool_result   { task_id, tool_name, output }
-task.streaming     { task_id, chunk }
-task.progress      { task_id, percent, message }
-task.completed     { task_id, output }
-task.failed        { task_id, error_code, error_message }
-task.cancelled     { task_id }
+User calls cancel_agent_task
+    ↓
+Executor cancels CancellationToken
+    ↓
+Background task receives cancellation signal
+    ↓
+Task cleans up and stops
+    ↓
+Event emitted: task:cancelled
+    ↓
+Status updated in database
 ```
+
+---
+
+## Architecture (M2)
+
+### TaskExecutor
+
+**File**: `apps/desktop/src-tauri/src/agent/executor.rs`
+
+Responsibilities:
+- Manages concurrent task execution
+- Handles cancellation via CancellationToken
+- Emits progress events to frontend
+- Enforces timeout limits
+
+### Event System
+
+**File**: `apps/desktop/src-tauri/src/agent/events.rs`
+
+Functions:
+- `emit_task_event`: Generic event emission
+- `emit_progress`: Progress updates
+- `emit_completion`: Task completion
+- `emit_failure`: Error reporting
+- `emit_cancellation`: User cancellation
+
+---
+
+## API
+
+### Tauri Commands
+
+```rust
+// Start task execution in background
+start_agent_task(task_id: String) -> Result<AgentTask, AppError>
+
+// Cancel a running task
+cancel_agent_task(task_id: String) -> Result<AgentTask, AppError>
+```
+
+### Frontend Integration
+
+Listen for task events:
+
+```typescript
+import { listen } from '@tauri-apps/api/event';
+
+// Listen for progress updates
+const unlisten = await listen('task:progress', (event) => {
+  console.log('Task progress:', event.payload);
+});
+
+// Listen for completion
+await listen('task:completed', (event) => {
+  console.log('Task completed:', event.payload);
+});
+```
+
+---
+
+## Concurrency Controls
+
+### Maximum Concurrent Tasks
+
+Default: 5 tasks
+
+Configurable via `ExecutorConfig::max_concurrent`.
+
+### Task Timeout
+
+Default: 300 seconds (5 minutes)
+
+Configurable via `ExecutorConfig::default_timeout_secs`.
+
+### Execution Slot
+
+Before starting a task, the executor checks:
+1. Task is not already running
+2. Concurrency limit not reached
+
+If limits are hit, returns validation error.
