@@ -332,10 +332,12 @@ Turn AlphaForge into a complete AI research environment.
 - [x] Report persistence
 
 #### Document Intelligence
-- [x] Local content parsing and indexing primitives
+- [x] Local content parsing, chunking, and lexical query-ranking primitives
 - [ ] PDF parsing (deferred)
 - [ ] Web source extraction (deferred)
 - [ ] Semantic search (deferred)
+
+The current local primitives normalize plain text and HTML supplied to the app, split it into deterministic chunks, and rank matching chunks lexically. They do not fetch remote URLs, parse PDFs, or produce embedding-based semantic matches; those capabilities require separate provider, privacy, and sandbox decisions.
 
 #### Research Workflow
 ```text
