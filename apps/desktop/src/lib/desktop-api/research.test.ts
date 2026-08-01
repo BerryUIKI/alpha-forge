@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { createResearchNote, createResearchReport, createResearchSource, importResearchPdf, importResearchWebPage, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
+import { createResearchNote, createResearchReport, createResearchSource, importResearchPdf, importResearchWebPage, listResearchNotes, listResearchSources, searchResearchDocument, semanticSearchResearchDocument } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -53,5 +53,11 @@ describe("research desktop API", () => {
     mockInvoke.mockResolvedValueOnce({ id: "document-1" });
     await importResearchWebPage("project-1", "https://example.com/research");
     expect(mockInvoke).toHaveBeenCalledWith("import_research_web_page", { projectId: "project-1", url: "https://example.com/research" });
+  });
+
+  it("uses the semantic search command when requested", async () => {
+    mockInvoke.mockResolvedValueOnce([]);
+    await semanticSearchResearchDocument("document-1", "revenue growth");
+    expect(mockInvoke).toHaveBeenCalledWith("semantic_search_research_document", { id: "document-1", query: "revenue growth" });
   });
 });

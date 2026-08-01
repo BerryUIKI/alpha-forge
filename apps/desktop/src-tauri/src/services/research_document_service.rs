@@ -2,7 +2,7 @@
 
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::documents::chunker::chunk_text;
-use crate::documents::indexer::rank_chunks;
+use crate::documents::indexer::{rank_chunks, semantic_rank_chunks};
 use crate::documents::parser::{extract_text, ContentFormat};
 use crate::error::AppError;
 use crate::security::url_policy::normalize_optional_research_url;
@@ -24,6 +24,14 @@ impl ResearchDocumentService {
     pub async fn delete_document(&self, id: &str) -> Result<(), AppError> { self.repo.delete(id).await }
 
     pub async fn search_document(&self, id: &str, query: &str) -> Result<Vec<ResearchSearchMatch>, AppError> {
+        self.search_document_with(id, query, false).await
+    }
+
+    pub async fn semantic_search_document(&self, id: &str, query: &str) -> Result<Vec<ResearchSearchMatch>, AppError> {
+        self.search_document_with(id, query, true).await
+    }
+
+    async fn search_document_with(&self, id: &str, query: &str, semantic: bool) -> Result<Vec<ResearchSearchMatch>, AppError> {
         let normalized_query = query.trim();
         if normalized_query.is_empty() { return Err(AppError::Validation("Search query cannot be empty".to_string())); }
         if normalized_query.len() > 200 { return Err(AppError::Validation("Search query is too long".to_string())); }
@@ -31,6 +39,8 @@ impl ResearchDocumentService {
         let content = document.content.as_deref().unwrap_or_default();
         let format = match document.document_type { DocumentType::WebPage => ContentFormat::Html, _ => ContentFormat::PlainText };
         let text = extract_text(content, format)?;
-        Ok(rank_chunks(&chunk_text(&text, 800), normalized_query, 20).into_iter().map(|item| ResearchSearchMatch { ordinal: item.ordinal, content: item.content, score: item.score }).collect())
+        let chunks = chunk_text(&text, 800);
+        let matches = if semantic { semantic_rank_chunks(&chunks, normalized_query, 20) } else { rank_chunks(&chunks, normalized_query, 20) };
+        Ok(matches.into_iter().map(|item| ResearchSearchMatch { ordinal: item.ordinal, content: item.content, score: item.score }).collect())
     }
 }

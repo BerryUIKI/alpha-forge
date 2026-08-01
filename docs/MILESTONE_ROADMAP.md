@@ -335,9 +335,9 @@ Turn AlphaForge into a complete AI research environment.
 - [x] Local content parsing, chunking, and lexical query-ranking primitives
 - [x] PDF parsing through a Rust-owned native picker (25 MB limit; extracted text only)
 - [x] Web source extraction through bounded Rust-side HTTPS retrieval
-- [ ] Semantic search (deferred)
+- [x] Local semantic ranking for related investment terms
 
-The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, retrieve validated public HTTPS pages in Rust, split content into deterministic chunks, and rank matching chunks lexically through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. Web imports accept HTML or plain text only, cap responses at 5 MB, use a 15-second timeout, validate every redirect (maximum three), and preserve source provenance. Embedding-based semantic matches remain deferred pending separate provider, privacy, and sandbox decisions.
+The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, retrieve validated public HTTPS pages in Rust, split content into deterministic chunks, and rank matching chunks through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. Web imports accept HTML or plain text only, cap responses at 5 MB, use a 15-second timeout, validate every redirect (maximum three), and preserve source provenance. Semantic mode is local and explainable: it expands a curated investment vocabulary (for example, revenue/sales and earnings/profit), while exact matches retain the highest score. It does not send content to an external embedding provider or generate investment recommendations.
 
 #### Research Workflow
 ```text

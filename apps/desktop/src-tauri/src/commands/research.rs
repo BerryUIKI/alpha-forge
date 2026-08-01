@@ -87,6 +87,11 @@ pub async fn search_research_document(id: String, query: String, state: State<'_
 }
 
 #[tauri::command]
+pub async fn semantic_search_research_document(id: String, query: String, state: State<'_, AppState>) -> Result<Vec<ResearchSearchMatch>, AppError> {
+    state.research_document_service.semantic_search_document(&id, &query).await
+}
+
+#[tauri::command]
 pub async fn create_research_source(document_id: String, url: Option<String>, title: Option<String>, state: State<'_, AppState>) -> Result<ResearchSource, AppError> {
     state.research_source_service.create_source(document_id, url, title).await
 }

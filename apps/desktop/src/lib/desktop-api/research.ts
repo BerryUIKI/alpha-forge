@@ -14,6 +14,7 @@ export function listResearchDocuments(projectId: string): Promise<ResearchDocume
 export function importResearchPdf(projectId: string): Promise<ResearchDocument | null> { return invoke("import_research_pdf", { projectId }); }
 export function importResearchWebPage(projectId: string, url: string): Promise<ResearchDocument> { return invoke("import_research_web_page", { projectId, url }); }
 export function searchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("search_research_document", { id, query }); }
+export function semanticSearchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("semantic_search_research_document", { id, query }); }
 export function createResearchReport(projectId: string, title: string, content: string, reportType: ResearchReport["report_type"] = "analysis"): Promise<ResearchReport> { return invoke("create_research_report", { projectId, title, content, reportType }); }
 export function listResearchReports(projectId: string): Promise<ResearchReport[]> { return invoke("list_research_reports", { projectId }); }
 export function createResearchSource(documentId: string, url?: string, title?: string): Promise<ResearchSource> { return invoke("create_research_source", { documentId, url: url || null, title: title || null }); }
