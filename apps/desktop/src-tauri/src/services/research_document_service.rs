@@ -29,7 +29,7 @@ impl ResearchDocumentService {
         if normalized_query.len() > 200 { return Err(AppError::Validation("Search query is too long".to_string())); }
         let document = self.repo.get(id).await?.ok_or_else(|| AppError::NotFound("Research document not found".to_string()))?;
         let content = document.content.as_deref().unwrap_or_default();
-        let format = match document.document_type { DocumentType::WebPage => ContentFormat::Html, DocumentType::Pdf => ContentFormat::Pdf, _ => ContentFormat::PlainText };
+        let format = match document.document_type { DocumentType::WebPage => ContentFormat::Html, _ => ContentFormat::PlainText };
         let text = extract_text(content, format)?;
         Ok(rank_chunks(&chunk_text(&text, 800), normalized_query, 20).into_iter().map(|item| ResearchSearchMatch { ordinal: item.ordinal, content: item.content, score: item.score }).collect())
     }

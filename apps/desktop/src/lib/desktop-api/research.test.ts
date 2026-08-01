@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { createResearchNote, createResearchReport, createResearchSource, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
+import { createResearchNote, createResearchReport, createResearchSource, importResearchPdf, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -41,5 +41,11 @@ describe("research desktop API", () => {
     mockInvoke.mockResolvedValueOnce([]);
     await expect(searchResearchDocument("document-1", "revenue growth")).resolves.toEqual([]);
     expect(mockInvoke).toHaveBeenCalledWith("search_research_document", { id: "document-1", query: "revenue growth" });
+  });
+
+  it("starts a native PDF import for a project", async () => {
+    mockInvoke.mockResolvedValueOnce(null);
+    await expect(importResearchPdf("project-1")).resolves.toBeNull();
+    expect(mockInvoke).toHaveBeenCalledWith("import_research_pdf", { projectId: "project-1" });
   });
 });

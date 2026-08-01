@@ -98,6 +98,7 @@ pub fn run() {
             commands::research::get_research_document,
             commands::research::list_research_documents,
             commands::research::delete_research_document,
+            commands::research::import_research_pdf,
             commands::research::search_research_document,
             commands::research::create_research_source,
             commands::research::list_research_sources,

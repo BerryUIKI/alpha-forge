@@ -11,6 +11,7 @@ export function createResearchProject(workspaceId: string, title: string, descri
 export function listResearchProjects(workspaceId: string): Promise<ResearchProject[]> { return invoke("list_research_projects", { workspaceId }); }
 export function createResearchDocument(projectId: string, title: string, content?: string): Promise<ResearchDocument> { return invoke("create_research_document", { projectId, documentType: "note", title, content: content || null, sourceUrl: null, filePath: null }); }
 export function listResearchDocuments(projectId: string): Promise<ResearchDocument[]> { return invoke("list_research_documents", { projectId }); }
+export function importResearchPdf(projectId: string): Promise<ResearchDocument | null> { return invoke("import_research_pdf", { projectId }); }
 export function searchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("search_research_document", { id, query }); }
 export function createResearchReport(projectId: string, title: string, content: string, reportType: ResearchReport["report_type"] = "analysis"): Promise<ResearchReport> { return invoke("create_research_report", { projectId, title, content, reportType }); }
 export function listResearchReports(projectId: string): Promise<ResearchReport[]> { return invoke("list_research_reports", { projectId }); }

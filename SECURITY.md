@@ -101,6 +101,10 @@ The OpenAI research adapter reads only the `openai.api_key` credential from the 
 
 Research provenance links must use HTTPS, a public hostname, and no credentials or custom port. Local hostnames and literal IP addresses are rejected before persistence.
 
+### PDF Import Boundary
+
+PDF import exists to turn user-selected research files into local searchable content. The Rust command opens the native file picker, accepts only a selected PDF up to 25 MB, and extracts text before persistence. React receives only the resulting document; it cannot submit a filesystem path, read arbitrary files, or retain the selected path. Invalid, unreadable, or non-text PDFs return a recoverable validation error.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly

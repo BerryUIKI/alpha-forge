@@ -2,6 +2,7 @@
 
 use tauri::State;
 use crate::app::state::AppState;
+use crate::documents::pdf_import::select_and_extract_pdf;
 use crate::error::AppError;
 use domain::research::{CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport, ResearchSearchMatch, ResearchSource};
 
@@ -56,6 +57,19 @@ pub async fn list_research_documents(project_id: String, state: State<'_, AppSta
 #[tauri::command]
 pub async fn delete_research_document(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.research_document_service.delete_document(&id).await
+}
+
+#[tauri::command]
+pub async fn import_research_pdf(project_id: String, state: State<'_, AppState>) -> Result<Option<ResearchDocument>, AppError> {
+    let Some(pdf) = select_and_extract_pdf().await? else { return Ok(None); };
+    state.research_document_service.create_document(CreateDocumentInput {
+        project_id,
+        document_type: DocumentType::Pdf,
+        title: pdf.title,
+        content: Some(pdf.content),
+        source_url: None,
+        file_path: None,
+    }).await.map(Some)
 }
 
 #[tauri::command]
