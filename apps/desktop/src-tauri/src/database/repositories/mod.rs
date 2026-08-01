@@ -15,4 +15,7 @@ pub mod settings_repository;
 pub mod workspace_repository;
 
 #[cfg(test)]
+mod agent_task_repository_test;
+
+#[cfg(test)]
 mod workspace_repository_test;

@@ -25,8 +25,8 @@ impl AgentTaskRepository {
 
         sqlx::query(
             r#"
-            INSERT INTO agent_tasks (id, workspace_id, title, description, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO agent_tasks (id, workspace_id, title, description, status, input, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&id)
@@ -34,6 +34,7 @@ impl AgentTaskRepository {
         .bind(&input.title)
         .bind(&input.description)
         .bind(status_str)
+        .bind(&input.title)  // Use title as input for backward compatibility
         .bind(now)
         .bind(now)
         .execute(&self.pool)
