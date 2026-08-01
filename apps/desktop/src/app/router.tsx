@@ -9,6 +9,7 @@ import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { OptionsDashboard } from "@/pages/options/OptionsDashboard";
 import { OptionChainPage } from "@/pages/options/OptionChainPage";
 import { GreeksPage } from "@/pages/options/GreeksPage";
+import { PortfolioRiskPage } from "@/pages/options/PortfolioRiskPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: "options", element: <OptionsDashboard /> },
       { path: "options/chain", element: <OptionChainPage /> },
       { path: "options/greeks", element: <GreeksPage /> },
+      { path: "options/portfolio", element: <PortfolioRiskPage /> },
     ],
   },
 ]);
