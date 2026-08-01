@@ -34,3 +34,4 @@ mod workspace_repository_test;
 pub mod research_document_repository;
 pub mod research_source_repository;
 pub mod research_note_repository;
+pub mod research_report_repository;

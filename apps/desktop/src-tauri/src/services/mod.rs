@@ -24,3 +24,4 @@ mod agent_service_test;
 mod workspace_service_test;
 pub mod research_project_service;
 pub mod research_document_service;
+pub mod research_report_service;

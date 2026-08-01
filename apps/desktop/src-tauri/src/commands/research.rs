@@ -3,7 +3,7 @@
 use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::research::{CreateDocumentInput, CreateProjectInput, DocumentType, ResearchDocument, ResearchProject};
+use domain::research::{CreateDocumentInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchProject, ResearchReport};
 
 // Project commands
 #[tauri::command]
@@ -56,4 +56,26 @@ pub async fn list_research_documents(project_id: String, state: State<'_, AppSta
 #[tauri::command]
 pub async fn delete_research_document(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.research_document_service.delete_document(&id).await
+}
+
+// Report commands
+#[tauri::command]
+pub async fn create_research_report(project_id: String, title: String, content: String, report_type: String, state: State<'_, AppState>) -> Result<ResearchReport, AppError> {
+    let r_type = match report_type.as_str() { "analysis" => ReportType::Analysis, "summary" => ReportType::Summary, "thesis" => ReportType::Thesis, "recommendation" => ReportType::Recommendation, _ => ReportType::Analysis };
+    state.research_report_service.create_report(CreateReportInput { project_id, title, content, report_type: r_type }).await
+}
+
+#[tauri::command]
+pub async fn get_research_report(id: String, state: State<'_, AppState>) -> Result<Option<ResearchReport>, AppError> {
+    state.research_report_service.get_report(&id).await
+}
+
+#[tauri::command]
+pub async fn list_research_reports(project_id: String, state: State<'_, AppState>) -> Result<Vec<ResearchReport>, AppError> {
+    state.research_report_service.list_reports(&project_id).await
+}
+
+#[tauri::command]
+pub async fn delete_research_report(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
+    state.research_report_service.delete_report(&id).await
 }

@@ -20,7 +20,24 @@ impl ResearchSourceRepository {
     }
 
     pub async fn list_by_document(&self, document_id: &str) -> Result<Vec<ResearchSource>, AppError> {
-        sqlx::query_as("SELECT id, document_id, url, title, retrieved_at, created_at FROM research_sources WHERE document_id = ? ORDER BY created_at DESC")
-            .bind(document_id).fetch_all(&self.pool).await.map_err(|e| AppError::Internal(format!("Failed to list sources: {}", e)))
+        let rows = sqlx::query_as::<_, SourceRow>("SELECT id, document_id, url, title, retrieved_at, created_at FROM research_sources WHERE document_id = ? ORDER BY created_at DESC")
+            .bind(document_id).fetch_all(&self.pool).await.map_err(|e| AppError::Internal(format!("Failed to list sources: {}", e)))?;
+        Ok(rows.into_iter().map(|r| r.into()).collect())
+    }
+}
+
+#[derive(sqlx::FromRow)]
+struct SourceRow { id: String, document_id: String, url: Option<String>, title: Option<String>, retrieved_at: Option<String>, created_at: String }
+
+impl From<SourceRow> for ResearchSource {
+    fn from(row: SourceRow) -> Self {
+        ResearchSource {
+            id: row.id,
+            document_id: row.document_id,
+            url: row.url,
+            title: row.title,
+            retrieved_at: row.retrieved_at.and_then(|s| s.parse().ok()),
+            created_at: row.created_at.parse().unwrap_or_else(|_| Utc::now()),
+        }
     }
 }
