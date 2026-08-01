@@ -137,7 +137,11 @@ LOG_LEVEL=info       # Logging level
 // src-tauri/tauri.conf.json
 {
   "security": {
-    "csp": "default-src 'self'; script-src 'self'",
+    "csp": {
+      "default-src": "'self' asset:",
+      "connect-src": "ipc: http://ipc.localhost",
+      "object-src": "'none'"
+    },
     "dangerousDisableAssetCspModification": false
   }
 }
@@ -145,10 +149,11 @@ LOG_LEVEL=info       # Logging level
 
 ### Content Security Policy
 
-- Scripts: Only from same origin
-- Styles: Inline styles allowed (Tailwind)
-- Images: Data URIs and same origin
-- Connect: Restricted to allowed domains
+- Scripts: Only from the packaged application origin
+- Styles: Packaged styles plus Tailwind-compatible inline styles
+- Images and media: Packaged assets, data/blob URLs, and Tauri's local asset protocol
+- Connect: Tauri IPC only (`ipc:` and `http://ipc.localhost`); remote browser fetches are blocked
+- Plugins and artifacts: No frames, forms, embedded objects, or remote scripts
 
 ## Known Security Considerations
 
