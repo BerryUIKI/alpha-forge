@@ -1,0 +1,13 @@
+{
+  "id": "strategy-payoff",
+  "name": "Strategy Payoff Diagram",
+  "version": "0.1.0",
+  "entry": "index.html",
+  "inputSchema": "schema.json",
+  "permissions": [],
+  "window": {
+    "width": 1000,
+    "height": 700,
+    "resizable": true
+  }
+}

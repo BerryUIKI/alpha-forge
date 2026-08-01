@@ -1,0 +1,13 @@
+{
+  "id": "option-chain",
+  "name": "Option Chain Viewer",
+  "version": "0.1.0",
+  "entry": "index.html",
+  "inputSchema": "schema.json",
+  "permissions": [],
+  "window": {
+    "width": 1200,
+    "height": 800,
+    "resizable": true
+  }
+}

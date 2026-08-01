@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["chainId", "symbol", "underlyingPrice", "contracts"],
+  "properties": {
+    "chainId": { "type": "string" },
+    "symbol": { "type": "string" },
+    "underlyingPrice": { "type": "number" },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "strike": { "type": "number" },
+          "type": { "enum": ["call", "put"] },
+          "bid": { "type": "number" },
+          "ask": { "type": "number" }
+        }
+      }
+    }
+  }
+}
