@@ -20,6 +20,8 @@ use crate::database::repositories::research_report_repository::ResearchReportRep
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
+use crate::error::AppError;
+use crate::providers::ai::OpenAiResearchProvider;
 use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
@@ -32,6 +34,7 @@ use crate::services::settings_service::SettingsService;
 use crate::services::system_service::SystemService;
 use crate::services::thesis_service::ThesisService;
 use crate::services::workspace_service::WorkspaceService;
+use provider_core::ResearchProvider;
 
 pub struct AppState {
     pub db_pool: SqlitePool,
@@ -52,7 +55,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(db_pool: SqlitePool, app_handle: AppHandle) -> Self {
+    pub fn new(db_pool: SqlitePool, app_handle: AppHandle) -> Result<Self, AppError> {
         // Create repositories
         let settings_repo = SettingsRepository::new(db_pool.clone());
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
@@ -77,19 +80,29 @@ impl AppState {
         let research_document_service = ResearchDocumentService::new(research_document_repo);
         let research_report_service = ResearchReportService::new(research_report_repo);
         let thesis_service = ThesisService::new(thesis_repo);
-        let knowledge_graph_service = KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
+        let knowledge_graph_service =
+            KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
         let portfolio_service = PortfolioService::new(portfolio_repo);
         let plugin_service = PluginService::new(plugin_repo);
         let system_service = SystemService::new(app_handle.clone());
 
         // Create task executor
         let executor_config = ExecutorConfig::default();
-        let task_executor = Arc::new(TaskExecutor::new(agent_task_repo_for_executor, app_handle.clone(), executor_config));
+        let provider: Arc<dyn ResearchProvider> =
+            Arc::new(OpenAiResearchProvider::new().map_err(|_| {
+                AppError::Internal("could not initialize the OpenAI research provider".to_string())
+            })?);
+        let task_executor = Arc::new(TaskExecutor::new(
+            agent_task_repo_for_executor,
+            app_handle.clone(),
+            executor_config,
+            provider,
+        ));
 
         // Create artifact manager
         let artifact_manager = Arc::new(ArtifactManager::new(app_handle.clone()));
 
-        Self {
+        Ok(Self {
             db_pool,
             settings_service,
             workspace_service,
@@ -105,6 +118,6 @@ impl AppState {
             system_service,
             task_executor,
             artifact_manager,
-        }
+        })
     }
 }

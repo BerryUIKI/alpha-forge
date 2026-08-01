@@ -200,9 +200,9 @@ Create the core intelligence engine of AlphaForge.
 #### Provider Integration
 - ✅ Typed provider contract and validated structured research-output parser
 - ✅ OpenAI Responses API adapter with keychain-only credential lookup, bounded output, and strict structured output
-- 📋 Agent executor provider selection and runtime routing (Future)
-- 📋 Structured output parsing (Future)
-- 📋 Error handling and fallback (Future)
+- ✅ Agent executor routes tasks through the configured provider with timeout and cancellation handling
+- ✅ Structured research output is persisted as a task-completion event
+- ✅ Safe provider failure messages are persisted and streamed without exposing credentials or raw provider responses
 
 ### Task Lifecycle
 ```text

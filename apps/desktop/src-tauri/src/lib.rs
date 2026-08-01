@@ -13,8 +13,8 @@ pub mod services;
 pub mod telemetry;
 pub mod windows;
 
-use tauri::Manager;
 use app::state::AppState;
+use tauri::Manager;
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -31,16 +31,29 @@ pub fn run() {
 
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
-                    Ok(pool) => {
-                        let state = AppState::new(pool, handle.clone());
-                        if let Err(error) = state.plugin_service.sync_bundled_plugins().await {
-                            tracing::error!(error_code = error.code(), "bundled plugin synchronization failed");
+                    Ok(pool) => match AppState::new(pool, handle.clone()) {
+                        Ok(state) => {
+                            if let Err(error) = state.plugin_service.sync_bundled_plugins().await {
+                                tracing::error!(
+                                    error_code = error.code(),
+                                    "bundled plugin synchronization failed"
+                                );
+                            }
+                            handle.manage(state);
+                            info!("app state initialized");
                         }
-                        handle.manage(state);
-                        info!("app state initialized");
-                    }
+                        Err(error) => {
+                            tracing::error!(
+                                error_code = error.code(),
+                                "app state initialization failed"
+                            );
+                        }
+                    },
                     Err(error) => {
-                        tracing::error!(error_code = error.code(), "database initialization failed");
+                        tracing::error!(
+                            error_code = error.code(),
+                            "database initialization failed"
+                        );
                     }
                 }
             });
