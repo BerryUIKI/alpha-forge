@@ -6,10 +6,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
+use tauri::AppHandle;
 use tokio::sync::{Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
+use crate::agent::events;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
 use domain::task::{AgentTask, TaskEventType, TaskStatus};
@@ -41,15 +43,17 @@ struct RunningTask {
 /// Agent task executor.
 pub struct TaskExecutor {
     repo: Arc<Mutex<AgentTaskRepository>>,
+    app: AppHandle,
     config: ExecutorConfig,
     running_tasks: Arc<RwLock<HashMap<String, RunningTask>>>,
 }
 
 impl TaskExecutor {
     /// Creates a new task executor.
-    pub fn new(repo: AgentTaskRepository, config: ExecutorConfig) -> Self {
+    pub fn new(repo: AgentTaskRepository, app: AppHandle, config: ExecutorConfig) -> Self {
         Self {
             repo: Arc::new(Mutex::new(repo)),
+            app,
             config,
             running_tasks: Arc::new(RwLock::new(HashMap::new())),
         }
@@ -83,11 +87,12 @@ impl TaskExecutor {
         let task_id = task.id.clone();
         let repo = self.repo.clone();
         let running_tasks = self.running_tasks.clone();
+        let app = self.app.clone();
 
         // Start background task
         let cancel_token_clone = cancel_token.clone();
         let handle = tokio::spawn(async move {
-            let result = Self::execute_task(task, repo.clone(), cancel_token_clone.clone()).await;
+            let result = Self::execute_task(task, repo.clone(), app, cancel_token_clone.clone()).await;
 
             // Remove from running tasks
             {
@@ -132,10 +137,11 @@ impl TaskExecutor {
     async fn execute_task(
         task: AgentTask,
         repo: Arc<Mutex<AgentTaskRepository>>,
+        app: AppHandle,
         cancel_token: CancellationToken,
     ) -> Result<(), AppError> {
         let task_id = task.id.clone();
-        
+
         // Simulate task execution with progress events
         // In production, this would call the agent runtime
         let steps = vec![
@@ -152,10 +158,14 @@ impl TaskExecutor {
                 repo_guard
                     .create_event(&task_id, TaskEventType::TaskCancelled, None)
                     .await?;
+                events::emit_cancellation(&app, &task_id);
                 return Ok(());
             }
 
-            // Emit progress
+            // Emit progress to frontend
+            events::emit_progress(&app, &task_id, step);
+
+            // Persist event
             {
                 let repo_guard = repo.lock().await;
                 repo_guard
@@ -171,16 +181,21 @@ impl TaskExecutor {
                     repo_guard
                         .create_event(&task_id, TaskEventType::TaskCancelled, None)
                         .await?;
+                    events::emit_cancellation(&app, &task_id);
                     return Ok(());
                 }
             };
         }
 
         // Task completed
-        let repo_guard = repo.lock().await;
-        repo_guard
-            .create_event(&task_id, TaskEventType::TaskCompleted, None)
-            .await?;
+        let output = r#"{"summary": "Task completed successfully"}"#;
+        {
+            let repo_guard = repo.lock().await;
+            repo_guard
+                .create_event(&task_id, TaskEventType::TaskCompleted, Some(output.to_string()))
+                .await?;
+        }
+        events::emit_completion(&app, &task_id, Some(output));
 
         Ok(())
     }

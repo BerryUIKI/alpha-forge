@@ -40,7 +40,7 @@ impl AppState {
 
         // Create task executor
         let executor_config = ExecutorConfig::default();
-        let task_executor = Arc::new(TaskExecutor::new(agent_task_repo, executor_config));
+        let task_executor = Arc::new(TaskExecutor::new(agent_task_repo, app_handle.clone(), executor_config));
 
         Self {
             db_pool,
