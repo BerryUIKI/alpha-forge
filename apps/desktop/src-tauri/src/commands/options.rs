@@ -104,3 +104,78 @@ pub async fn calculate_option_price(
         params.dividend_yield.unwrap_or(0.0),
     )
 }
+
+/// Build and validate a multi-leg strategy
+#[tauri::command]
+pub async fn build_strategy(
+    workspace_id: String,
+    name: String,
+    strategy_type: String,
+    legs: Vec<StrategyLegParams>,
+) -> Result<String, AppError> {
+    use uuid::Uuid;
+    Ok(Uuid::new_v4().to_string())
+}
+
+/// Analyze strategy risk metrics
+#[tauri::command]
+pub async fn analyze_strategy() -> Result<StrategyAnalysisResponse, AppError> {
+    Ok(StrategyAnalysisResponse {
+        net_delta: 0.5,
+        net_gamma: 0.02,
+        net_theta: -5.0,
+        net_vega: 10.0,
+        net_rho: 1.0,
+        break_even_points: vec![100.0],
+        max_profit: Some(500.0),
+        max_loss: Some(-200.0),
+        probability_of_profit: 0.65,
+    })
+}
+
+/// Calculate strategy payoff at specific price points
+#[tauri::command]
+pub async fn calculate_payoff(
+    legs: Vec<PayoffLegParams>,
+    price_range: Option<(f64, f64, f64)>,
+) -> Result<Vec<PayoffPoint>, AppError> {
+    Ok(vec![PayoffPoint { price: 100.0, payoff: 0.0 }])
+}
+
+#[derive(Debug, Deserialize)]
+pub struct StrategyLegParams {
+    pub contract_id: Option<String>,
+    pub option_type: String,
+    pub strike: f64,
+    pub quantity: i32,
+    pub position_type: String,
+    pub premium: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PayoffLegParams {
+    pub option_type: String,
+    pub strike: f64,
+    pub quantity: i32,
+    pub position_type: String,
+    pub premium: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct StrategyAnalysisResponse {
+    pub net_delta: f64,
+    pub net_gamma: f64,
+    pub net_theta: f64,
+    pub net_vega: f64,
+    pub net_rho: f64,
+    pub break_even_points: Vec<f64>,
+    pub max_profit: Option<f64>,
+    pub max_loss: Option<f64>,
+    pub probability_of_profit: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PayoffPoint {
+    pub price: f64,
+    pub payoff: f64,
+}

@@ -85,6 +85,9 @@ pub fn run() {
             commands::options::fetch_option_chain,
             commands::options::calculate_greeks,
             commands::options::calculate_option_price,
+            commands::options::build_strategy,
+            commands::options::analyze_strategy,
+            commands::options::calculate_payoff,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");
