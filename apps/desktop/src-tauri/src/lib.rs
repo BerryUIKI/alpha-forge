@@ -57,6 +57,8 @@ pub fn run() {
             commands::settings::get_app_info,
             commands::settings::get_setting,
             commands::settings::set_setting,
+            commands::settings::delete_setting,
+            commands::settings::list_settings,
             // Workspace commands
             commands::workspace::create_workspace,
             commands::workspace::list_workspaces,

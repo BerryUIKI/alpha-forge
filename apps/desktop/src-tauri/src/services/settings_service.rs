@@ -55,4 +55,9 @@ impl SettingsService {
 
         self.repo.delete(key).await
     }
+
+    /// Lists all settings.
+    pub async fn list(&self) -> Result<Vec<(String, String)>, AppError> {
+        self.repo.list().await
+    }
 }

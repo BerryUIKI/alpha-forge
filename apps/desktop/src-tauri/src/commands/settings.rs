@@ -45,3 +45,13 @@ pub async fn set_setting(
 ) -> Result<(), AppError> {
     state.settings_service.set(&key, &value).await
 }
+
+#[tauri::command]
+pub async fn delete_setting(key: String, state: State<'_, AppState>) -> Result<(), AppError> {
+    state.settings_service.delete(&key).await
+}
+
+#[tauri::command]
+pub async fn list_settings(state: State<'_, AppState>) -> Result<Vec<(String, String)>, AppError> {
+    state.settings_service.list().await
+}
