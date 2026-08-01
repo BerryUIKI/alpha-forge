@@ -69,25 +69,24 @@ impl WorkspaceRepository {
     pub async fn update(&self, id: &str, name: &str) -> Result<Workspace, AppError> {
         let now = Utc::now();
 
-        let rows_affected = sqlx::query(
-            "UPDATE workspaces SET name = ?, updated_at = ? WHERE id = ?",
-        )
-        .bind(name)
-        .bind(now)
-        .bind(id)
-        .execute(&self.pool)
-        .await
-        .map_err(|e| AppError::Internal(format!("Failed to update workspace: {}", e)))?
-        .rows_affected();
+        let rows_affected =
+            sqlx::query("UPDATE workspaces SET name = ?, updated_at = ? WHERE id = ?")
+                .bind(name)
+                .bind(now)
+                .bind(id)
+                .execute(&self.pool)
+                .await
+                .map_err(|e| AppError::Internal(format!("Failed to update workspace: {}", e)))?
+                .rows_affected();
 
         if rows_affected == 0 {
             return Err(AppError::NotFound(format!("Workspace '{}' not found", id)));
         }
 
         // Fetch the updated workspace
-        self.get(id).await?.ok_or_else(|| {
-            AppError::Internal("Workspace updated but not found".to_string())
-        })
+        self.get(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Workspace updated but not found".to_string()))
     }
 
     /// Deletes a workspace.

@@ -18,7 +18,9 @@ impl SettingsService {
     pub async fn get(&self, key: &str) -> Result<Option<String>, AppError> {
         // Validate key is not empty
         if key.trim().is_empty() {
-            return Err(AppError::Validation("Setting key cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Setting key cannot be empty".to_string(),
+            ));
         }
 
         self.repo.get(key).await
@@ -28,7 +30,9 @@ impl SettingsService {
     pub async fn set(&self, key: &str, value: &str) -> Result<(), AppError> {
         // Validate key is not empty
         if key.trim().is_empty() {
-            return Err(AppError::Validation("Setting key cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Setting key cannot be empty".to_string(),
+            ));
         }
 
         // Validate value length (reasonable limit)
@@ -44,7 +48,9 @@ impl SettingsService {
     /// Deletes a setting by key.
     pub async fn delete(&self, key: &str) -> Result<(), AppError> {
         if key.trim().is_empty() {
-            return Err(AppError::Validation("Setting key cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Setting key cannot be empty".to_string(),
+            ));
         }
 
         self.repo.delete(key).await

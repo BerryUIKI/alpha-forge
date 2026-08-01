@@ -5,17 +5,16 @@
   "description": "Desktop-first AI workspace for investment research",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @investment-os/desktop tauri dev",
-    "dev:web": "pnpm --filter @investment-os/desktop dev",
-    "build": "pnpm --filter @investment-os/desktop build",
+    "dev": "cd apps/desktop && npm run tauri dev",
+    "dev:web": "cd apps/desktop && npm run dev",
+    "build": "cd apps/desktop && npm run build",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "pnpm -r typecheck",
-    "typecheck:run": "pnpm -r exec tsc --noEmit",
+    "typecheck": "npm run typecheck -w @investment-os/desktop",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "tauri": "pnpm --filter @investment-os/desktop tauri"
+    "tauri": "cd apps/desktop && npm run tauri"
   },
   "engines": {
     "node": ">=22",

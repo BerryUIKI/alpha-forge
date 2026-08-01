@@ -1,6 +1,7 @@
 // Application bootstrap logic.
 // Runs once at startup: database init, migration, logging setup.
 
+use tauri::Manager;
 use tracing::info;
 
 use crate::database;

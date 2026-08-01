@@ -13,8 +13,8 @@ pub mod services;
 pub mod telemetry;
 pub mod windows;
 
+use tauri::Manager;
 use app::state::AppState;
-use error::AppError;
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -59,8 +59,13 @@ pub fn run() {
             commands::workspace::update_workspace,
             commands::workspace::delete_workspace,
             // Agent commands
-            commands::agent::create_task,
-            commands::agent::list_tasks,
+            commands::agent::create_agent_task,
+            commands::agent::get_agent_task,
+            commands::agent::list_agent_tasks,
+            commands::agent::get_task_events,
+            commands::agent::queue_agent_task,
+            commands::agent::start_agent_task,
+            commands::agent::cancel_agent_task,
             // Research commands
             commands::research::list_research_documents,
             // Journal commands
