@@ -24,5 +24,3 @@ export function ThemeToggle() {
     </Button>
   );
 }
-
-export { ThemeToggle };

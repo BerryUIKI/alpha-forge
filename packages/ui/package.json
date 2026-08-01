@@ -8,13 +8,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-toast": "^1.2",
     "class-variance-authority": "^0.7",
     "clsx": "^2",
-    "tailwind-merge": "^2",
-    "react": "^19"
+    "lucide-react": "^0.400",
+    "react": "^19",
+    "tailwind-merge": "^2"
   },
   "devDependencies": {
-    "typescript": "^5.7",
-    "@types/react": "^19"
+    "@types/react": "^19",
+    "typescript": "^5.7"
   }
 }

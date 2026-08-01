@@ -7,7 +7,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@investment-os/ui";
+} from "./toast";
 import { useToast } from "./use-toast";
 
 export function Toaster() {

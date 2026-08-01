@@ -190,12 +190,18 @@ importers:
 
   packages/ui:
     dependencies:
+      '@radix-ui/react-toast':
+        specifier: ^1.2
+        version: 1.2.23(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       class-variance-authority:
         specifier: ^0.7
         version: 0.7.1
       clsx:
         specifier: ^2
         version: 2.1.1
+      lucide-react:
+        specifier: ^0.400
+        version: 0.400.0(react@19.2.8)
       react:
         specifier: ^19
         version: 19.2.8
