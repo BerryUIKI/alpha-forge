@@ -9,7 +9,11 @@ build/
 out/
 
 # Tauri
-src-tauri/gen/
+**/src-tauri/gen/
+apps/desktop/src-tauri/gen/
+
+# ZCode temporary files
+.zcode/
 
 # IDE
 .idea/

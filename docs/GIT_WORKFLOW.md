@@ -2,49 +2,127 @@
 
 ## Branch Strategy
 
-### Main Branch
+Investment OS follows a **triadic branching model** with three main branch types:
 
-`main` is the stable branch.
+```
+main (production)
+  ↑
+  │ PR (requires approval + testing)
+  │
+dev (integration)
+  ↑
+  │ PR (requires review)
+  │
+feature/* (development)
+```
+
+### Branch Types
+
+#### 1. `main` - Production Branch
+
+`main` is the **stable production branch**.
 
 **Protected Branch Rules** (enforced by GitHub):
 
 - 🔒 **Direct pushes are BLOCKED** — All changes must go through Pull Request
 - ✅ **Pull Request required** — At least 1 approval needed
 - 🔄 **Linear history** — No merge commits, use squash or rebase
+- 🧪 **Status checks required** — All CI tests must pass
 - 💬 **Conversation resolution** — All discussions must be resolved before merge
 - ⚠️ **Administrators included** — Even admins must follow PR process
 
 **Additional Rules**:
 
 - Never commit feature work directly to `main`.
-- `main` should always represent a buildable and stable state.
-- Only merge completed, reviewed, and verified changes into `main`.
+- `main` should always represent a buildable, tested, and stable state.
+- Only merge completed, reviewed, and verified changes from `dev`.
+- Each merge to `main` should be a release candidate.
 
 **Why This Matters**:
 
-- Ensures all changes are reviewed
-- Maintains clean commit history
-- Protects against accidental pushes
-- Creates audit trail for all modifications
+- Ensures production stability
+- Maintains clean release history
+- Protects against untested changes
+- Creates audit trail for all production deployments
 
-### Development Branches
+---
 
-All work must happen on dedicated branches.
+#### 2. `dev` - Integration Branch
 
-Branch naming convention:
+`dev` is the **development integration branch**.
+
+**Purpose**:
+
+- Integrates completed features from multiple developers
+- Serves as the base branch for all new feature development
+- Allows testing and validation before production release
+- Aggregates changes for the next release
+
+**Protected Branch Rules** (enforced by GitHub):
+
+- 🔒 **Direct pushes are BLOCKED** — All changes must go through Pull Request
+- ✅ **Pull Request required** — At least 1 approval recommended
+- 🔄 **Linear history** — No merge commits, use squash or rebase
+- 🧪 **Status checks recommended** — CI tests should pass
+
+**Workflow Rules**:
+
+1. **All feature branches must branch from `dev`**
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/my-new-feature
+   ```
+
+2. **Feature branches PR back to `dev`**
+   - Not directly to `main`
+   - Requires code review
+   - Should pass CI tests
+
+3. **`dev` is regularly merged to `main`**
+   - After a set of features is validated
+   - Before a release
+   - Requires full review and testing
+
+4. **Keep `dev` up-to-date with `main`**
+   - If hotfixes are applied to `main`, sync back to `dev`
+   - Avoid long-lived divergence
+
+**What Goes in `dev`**:
+
+- ✅ Completed features
+- ✅ Bug fixes
+- ✅ Documentation updates
+- ✅ Refactoring
+- ✅ Test improvements
+
+**What Does NOT Go in `dev`**:
+
+- ❌ Broken code
+- ❌ Half-finished features
+- ❌ Unreviewed changes
+- ❌ Experimental work (use separate branches)
+
+---
+
+#### 3. Feature Branches
+
+All development work happens on **dedicated feature branches**.
+
+**Branch Naming Convention**:
 
 ```
 feature/<short-description>
 fix/<short-description>
 docs/<short-description>
 refactor/<short-description>
+test/<short-description>
+chore/<short-description>
 ```
 
-Examples:
+**Examples**:
 
 ```
-feature/project-foundation
-feature/tauri-foundation
 feature/agent-runtime
 feature/artifact-system
 feature/research-workspace
@@ -52,6 +130,165 @@ fix/ipc-connection-error
 fix/sqlite-migration-issue
 docs/update-architecture
 refactor/rust-error-handling
+test/add-agent-coverage
+```
+
+**Branch Creation Rules**:
+
+1. **Always branch from `dev`**:
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/my-feature
+   ```
+
+2. **Keep branches focused and short-lived**:
+   - One feature per branch
+   - Complete within 1-2 weeks
+   - Delete after merging
+
+3. **Rebase regularly on `dev`**:
+   ```bash
+   git checkout feature/my-feature
+   git fetch origin
+   git rebase origin/dev
+   ```
+
+---
+
+## Complete Workflow Example
+
+### Step 1: Start New Feature
+
+```bash
+# Ensure dev is up-to-date
+git checkout dev
+git pull origin dev
+
+# Create feature branch
+git checkout -b feature/agent-runtime
+```
+
+### Step 2: Develop and Commit
+
+```bash
+# Make changes
+git add .
+git commit -m "feat: add agent task domain models"
+
+# Run checks before push
+pnpm lint && pnpm typecheck && pnpm test
+cargo fmt --check && cargo clippy && cargo test
+
+# Push to remote
+git push origin feature/agent-runtime
+```
+
+### Step 3: Create Pull Request to `dev`
+
+1. Create PR: `feature/agent-runtime` → `dev`
+2. Fill in PR template:
+   - Summary of changes
+   - Testing performed
+   - Checklist completed
+3. Request review
+4. Address feedback
+5. Ensure CI passes
+
+### Step 4: Merge to `dev`
+
+After approval:
+
+```bash
+# Squash and merge via GitHub UI
+# Or command-line:
+git checkout dev
+git merge --squash feature/agent-runtime
+git push origin dev
+```
+
+### Step 5: Delete Feature Branch
+
+```bash
+# Delete local branch
+git branch -d feature/agent-runtime
+
+# Delete remote branch
+git push origin --delete feature/agent-runtime
+```
+
+### Step 6: Release to `main`
+
+When `dev` is stable and tested:
+
+```bash
+# Create PR: dev → main
+# Via GitHub UI with release notes
+
+# After approval and CI passes:
+# Squash and merge to main
+
+# Tag release
+git checkout main
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+---
+
+## Branch Protection Matrix
+
+| Branch    | Direct Push | PR Required | Approvals | CI Required | Target    |
+|-----------|-------------|-------------|-----------|-------------|-----------|
+| `main`    | ❌ Blocked  | ✅ Required | 1+        | ✅ Required | N/A       |
+| `dev`     | ❌ Blocked  | ✅ Required | 1+        | ⚠️ Recommended | N/A    |
+| `feature/*` | ✅ Allowed | ❌ Optional | Optional  | ⚠️ Recommended | `dev`   |
+| `fix/*`     | ✅ Allowed | ❌ Optional | Optional  | ⚠️ Recommended | `dev`   |
+| `docs/*`    | ✅ Allowed | ❌ Optional | Optional  | ❌ Optional    | `dev`   |
+
+---
+
+## Sub-Branch Strategy
+
+For **large features** that need multiple PRs, use sub-branches:
+
+```
+dev
+ ↑
+ │
+feature/agent-runtime (Parent)
+ ├── feature/agent-runtime/domain   → PR to parent
+ ├── feature/agent-runtime/runtime  → PR to parent
+ └── feature/agent-runtime/tests    → PR to parent
+```
+
+**Sub-Branch Rules**:
+
+- Sub-branches PR to the parent branch (not directly to `dev`)
+- Sub-branches still require code review
+- After all sub-branches merge, parent PRs to `dev`
+- Maintains clean history on the parent branch
+
+**Example Workflow**:
+
+```bash
+# Create parent branch from dev
+git checkout dev
+git checkout -b feature/agent-runtime
+
+# Create sub-branch
+git checkout -b feature/agent-runtime/domain
+
+# Work on domain models...
+git commit -m "feat: add agent task domain models"
+git push origin feature/agent-runtime/domain
+
+# PR: feature/agent-runtime/domain → feature/agent-runtime
+# After merge, continue with next sub-branch...
+
+git checkout feature/agent-runtime
+git checkout -b feature/agent-runtime/runtime
+# ... and so on
 ```
 
 ---
@@ -60,13 +297,13 @@ refactor/rust-error-handling
 
 ### Commit Messages
 
-Use Conventional Commits:
+Use **Conventional Commits**:
 
 ```
 <type>: <description>
 ```
 
-Allowed types:
+**Allowed Types**:
 
 ```
 feat      New feature
@@ -80,19 +317,19 @@ build     Build system or external dependencies
 ci        CI configuration
 ```
 
-Good examples:
+**Good Examples**:
 
 ```
-feat: add react application shell
-feat: add rust ipc commands
-chore: initialize tauri desktop application
-chore: initialize sqlite migration system
-docs: update architecture documentation
-test: add ipc integration tests
-fix: resolve sqlite migration startup failure
+feat: add agent runtime foundation
+feat: implement artifact system
+fix: resolve IPC connection timeout
+docs: update agent protocol documentation
+test: add integration tests for agent service
+chore: update dependencies
+refactor: simplify agent state machine
 ```
 
-Avoid:
+**Avoid**:
 
 ```
 update files
@@ -106,7 +343,7 @@ asdf
 
 Before every commit, run relevant checks:
 
-Frontend changes:
+**Frontend Changes**:
 
 ```bash
 pnpm lint
@@ -114,33 +351,33 @@ pnpm typecheck
 pnpm test
 ```
 
-Rust changes:
+**Rust Changes**:
 
 ```bash
 cargo fmt
-cargo clippy
+cargo clippy --all-targets --all-features -- -D warnings
 cargo test
 ```
 
-Do not commit known broken code unless explicitly requested.
+**Do not commit known broken code** unless explicitly requested.
 
 ### Commit Timing
 
 Create a commit when:
 
-1. **A complete milestone is finished** — after verifying the application works.
+1. **A complete milestone is finished** — after verifying the application works
 2. **A logical subsystem is complete** — frontend API layer, Rust IPC layer, SQLite setup, etc.
-3. **Before risky changes** — large refactors, dependency upgrades, architecture changes.
+3. **Before risky changes** — large refactors, dependency upgrades, architecture changes
 
-Preferred frequency:
+**Preferred Frequency**:
 
-- Several meaningful commits per phase.
-- Each commit should leave the repository buildable whenever practical.
+- Several meaningful commits per feature
+- Each commit should leave the repository buildable whenever practical
 
-Avoid:
+**Avoid**:
 
-- One giant commit after many unrelated changes.
-- Hundreds of tiny commits for trivial edits.
+- One giant commit after many unrelated changes
+- Hundreds of tiny commits for trivial edits
 
 ---
 
@@ -150,8 +387,6 @@ Avoid:
 
 Every PR should be **minimal, focused, and reviewable**.
 
-See [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) for detailed guidelines.
-
 **Key Rules**:
 
 1. **Single Purpose**: Each PR solves ONE problem
@@ -159,34 +394,19 @@ See [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) for detailed guidelines.
 3. **Related Changes**: All changes should belong together
 4. **Clear Scope**: Document what's included and excluded
 
-### Sub-Branch Strategy
-
-For large features, use sub-branches:
-
-```text
-feature/agent-runtime              (Parent)
-├── feature/agent-runtime/domain   (Sub-branch 1)
-├── feature/agent-runtime/runtime  (Sub-branch 2)
-└── feature/agent-runtime/tests    (Sub-branch 3)
-```
-
-**Sub-Branch Rules**:
-- Sub-branch PRs merge to parent branch (not directly to main)
-- Sub-branch PRs still require review
-- After all sub-branches merged, parent PR merges to main
-- Maintains linear history on parent
+See [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) for detailed guidelines.
 
 ### PR Creation Process
 
 When a feature is complete:
 
-1. Verify the branch.
-2. Run all relevant checks.
-3. Review changed files.
-4. Update documentation if architecture changed.
-5. Create a Pull Request.
+1. Verify the branch works locally
+2. Run all relevant checks
+3. Review changed files
+4. Update documentation if architecture changed
+5. Create a Pull Request
 
-PR description should include:
+**PR Description Template**:
 
 ```markdown
 ## Summary
@@ -212,6 +432,21 @@ Commands executed and results.
 - [ ] Docs updated
 ```
 
+### PR Review Guidelines
+
+**For Reviewers**:
+
+- Review within 24 hours when possible
+- Focus on correctness, maintainability, and architecture alignment
+- Run the code locally for significant changes
+- Be constructive and specific in feedback
+
+**For Authors**:
+
+- Respond to all comments
+- Make changes in new commits (not amend) for clarity
+- Keep PR updated with the target branch
+
 ---
 
 ## Forbidden Actions
@@ -222,12 +457,100 @@ Never execute without explicit user permission:
 git reset --hard
 git clean -fd
 git push --force
+git push --force-with-lease
 git branch -D
 git rebase main
+git merge --no-ff main
 ```
 
-Never delete user changes.
-Never overwrite uncommitted work.
+**Never**:
+
+- Delete user changes
+- Overwrite uncommitted work
+- Push directly to `main` or `dev`
+- Skip code review
+
+---
+
+## Sync Strategy
+
+### Regular Sync (Recommended Daily)
+
+Keep your feature branch up-to-date:
+
+```bash
+# On feature branch
+git fetch origin
+git rebase origin/dev
+
+# Resolve conflicts if any
+git add .
+git rebase --continue
+
+# Force push (safe after rebase)
+git push --force-with-lease origin feature/my-feature
+```
+
+### Hotfix Sync (When Main Has Urgent Fixes)
+
+If `main` receives hotfixes:
+
+```bash
+# Sync dev with main
+git checkout dev
+git pull origin dev
+git pull origin main --rebase
+git push origin dev
+
+# Then sync your feature branches
+git checkout feature/my-feature
+git rebase origin/dev
+```
+
+---
+
+## Summary Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        WORKFLOW                              │
+└─────────────────────────────────────────────────────────────┘
+
+1. Branch from dev
+   ┌──────┐
+   │ dev  │ ← git checkout -b feature/my-feature
+   └──────┘
+      ↓
+2. Develop & Commit
+   ┌────────────────────┐
+   │ feature/my-feature │ ← Multiple commits
+   └────────────────────┘   ← Run tests before each commit
+      ↓
+3. Push & Create PR
+   ┌────────────────────┐
+   │ feature/my-feature │ → PR to dev
+   └────────────────────┘   ← Requires review
+      ↓
+4. Merge to dev
+   ┌──────┐
+   │ dev  │ ← Squash merge
+   └──────┘   ← Delete feature branch
+      ↓
+5. Test & Validate
+   ┌──────┐
+   │ dev  │ ← Run full test suite
+   └──────┘   ← Validate integration
+      ↓
+6. Release to main
+   ┌──────┐
+   │ main │ ← PR from dev
+   └──────┘   ← Requires approval + CI
+      ↓
+7. Tag Release
+   ┌──────┐
+   │ main │ → git tag v1.0.0
+   └──────┘
+```
 
 ---
 
@@ -235,3 +558,4 @@ Never overwrite uncommitted work.
 
 - [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) — Detailed PR guidelines
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Contribution workflow
+- [README.md](../README.md) — Project overview
