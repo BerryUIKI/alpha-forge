@@ -128,7 +128,7 @@ All tests passing
 - [ ] Database migrations tested with rollback
 - [ ] Repository layer has > 80% test coverage
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -260,7 +260,7 @@ IPC commands functional
 - [ ] Demo provider creates realistic chains
 - [ ] > 90% test coverage on `option-core`
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -388,7 +388,7 @@ IPC integration functional
 - [ ] Accessibility standards met (ARIA)
 - [ ] Component tests passing (> 70% coverage)
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -548,7 +548,7 @@ Reopen from artifacts page
 - [ ] E2E workflow tests passing
 - [ ] Performance acceptable (diagram renders < 500ms)
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -693,7 +693,7 @@ Compare outcomes visually
 - [ ] All tests passing
 - [ ] Performance benchmarks met
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -824,7 +824,7 @@ Historical Greeks tracked
 - [ ] Integration with equity portfolio works
 - [ ] All tests passing
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Branch merged to `integration/option`
 
 ---
 
@@ -1002,11 +1002,13 @@ Ready for dev branch integration
 - [ ] Demo recording completed
 - [ ] Security review passed
 - [ ] Code review completed
-- [ ] Branch ready for PR to `dev`
+- [ ] Branch ready for PR to `integration/option` (NOT directly to `dev`)
 
 ---
 
-## Integration to `dev` Branch
+## Final Integration to `dev` Branch
+
+> ⚠️ **Important**: This section describes the FINAL step, performed only ONCE after all 7 phases are complete and validated on `integration/option`. During phases 1-7, all PRs go to `integration/option`, never directly to `dev`.
 
 ### Pre-Integration Checklist
 
@@ -1018,9 +1020,11 @@ Ready for dev branch integration
 - [ ] Documentation complete and reviewed
 - [ ] No regressions in existing features
 - [ ] Merge conflicts resolved
-- [ ] Integration testing on `dev/option`
+- [ ] Integration testing on `integration/option`
 
-### PR to `dev` Requirements
+See [INTEGRATION_PLAN.md](./INTEGRATION_PLAN.md) for the full integration procedure.
+
+### Final PR: `integration/option` → `dev` Requirements
 
 1. **PR Description**:
    - Summary of all changes
@@ -1092,7 +1096,7 @@ Each phase is considered complete when:
 - ✅ Documentation updated
 - ✅ Code review approved
 - ✅ Demo recording created (for major phases)
-- ✅ Branch merged to `dev/option`
+- ✅ Branch merged to `integration/option`
 
 ### Final Success Criteria
 
