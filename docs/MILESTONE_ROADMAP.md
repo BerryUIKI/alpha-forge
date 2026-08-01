@@ -198,6 +198,7 @@ Create the core intelligence engine of AlphaForge.
 - 📋 Calculation tools (Future)
 
 #### Provider Integration
+- ✅ Typed provider contract and validated structured research-output parser
 - 📋 OpenAI API integration (Future)
 - 📋 Structured output parsing (Future)
 - 📋 Error handling and fallback (Future)
