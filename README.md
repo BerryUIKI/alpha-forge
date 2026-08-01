@@ -50,14 +50,14 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**Phase 1.5 — Application Foundation** (in progress)
+**Phase 2 — Agent Runtime** (complete)
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
 | M0 | ✅ Complete | Project Foundation |
 | M1 | ✅ Complete | Desktop Runtime Foundation |
-| M1.5 | 🚧 In Progress | Application Foundation |
-| M2 | 📋 Planned | Agent Runtime |
+| M1.5 | ✅ Complete | Application Foundation |
+| M2 | ✅ Complete | Agent Runtime |
 | M3 | 📋 Planned | Artifact Intelligence System |
 | M4 | 📋 Planned | Research Workspace |
 | M5 | 📋 Planned | Investment Knowledge System |
@@ -71,12 +71,16 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ## ✨ Features
 
-### Current (M0-M1.5)
+### Current (M0-M2)
 - ✅ Tauri 2 desktop application shell
 - ✅ React 19 + TypeScript + Vite foundation
 - ✅ Rust backend with SQLite persistence
 - ✅ IPC communication layer
 - ✅ Comprehensive documentation (17+ documents)
+- ✅ Agent task lifecycle management
+- ✅ Background task execution
+- ✅ Real-time event streaming
+- ✅ Cancellation support
 
 ### Planned (M2+)
 - 📋 AI-powered research assistance
@@ -245,20 +249,20 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ```
 M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
-✅    ✅    🚧     📋    📋    📋    📋    📋    📋    📅
+✅    ✅    ✅      ✅    📋    📋    📋    📋    📋    📅
 ```
 
 ### Phase Overview
 
-**Foundation (M0-M1.5)**:
+**Foundation (M0-M1.5)**: ✅ Complete
 - Project setup
 - Desktop runtime
 - Application foundation
 
 **Intelligence (M2-M3)**:
-- Agent runtime
-- AI integration
-- Artifact system
+- ✅ Agent runtime (M2)
+- 📋 AI integration (Future)
+- 📋 Artifact system (M3)
 
 **Features (M4-M6)**:
 - Research workspace
