@@ -123,7 +123,7 @@ Build portfolio management and analysis.
 
 ## Phase 11 — Security Hardening 🚧
 
-- [ ] OS keychain credential storage.
+- [x] OS keychain credential storage with validated credential names, bounded values, idempotent deletion, and redacted platform errors.
 - [ ] URL allowlist enforcement.
 - [x] Artifact route validation: UUID artifact IDs, safe type segments, bounded window sizes, and recoverable invalid-route errors.
 - [x] Artifact route traversal prevention.

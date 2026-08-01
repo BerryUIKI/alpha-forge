@@ -15,6 +15,7 @@ AlphaForge is a desktop-first AI workspace for investment research. Our security
 - API keys and credentials are stored in the OS keychain (not in plaintext)
 - Secrets are never exposed to the React frontend
 - Credential access requires explicit user permission
+- The Rust credential adapter validates credential names, bounds values, and redacts platform-specific keychain errors
 
 ### 2. Data Privacy
 - All data is stored locally in SQLite

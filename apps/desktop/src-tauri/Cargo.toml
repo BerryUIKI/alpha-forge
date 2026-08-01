@@ -38,3 +38,4 @@ uuid.workspace = true
 chrono.workspace = true
 reqwest.workspace = true
 csv.workspace = true
+keyring = "3"
