@@ -17,4 +17,7 @@ pub mod system_service;
 pub mod workspace_service;
 
 #[cfg(test)]
+mod agent_service_test;
+
+#[cfg(test)]
 mod workspace_service_test;
