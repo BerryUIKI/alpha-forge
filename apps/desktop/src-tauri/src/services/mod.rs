@@ -12,6 +12,7 @@
 // - Services should not expose database details
 
 pub mod agent_service;
+pub mod artifact_service;
 pub mod settings_service;
 pub mod system_service;
 pub mod workspace_service;

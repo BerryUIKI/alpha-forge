@@ -11,6 +11,7 @@
 // - Database models should remain separate from domain models
 
 pub mod agent_task_repository;
+pub mod artifact_repository;
 pub mod settings_repository;
 pub mod workspace_repository;
 
@@ -23,6 +24,9 @@ pub mod option_strategy_repository;
 
 #[cfg(test)]
 mod agent_task_repository_test;
+
+#[cfg(test)]
+mod artifact_repository_test;
 
 #[cfg(test)]
 mod workspace_repository_test;
