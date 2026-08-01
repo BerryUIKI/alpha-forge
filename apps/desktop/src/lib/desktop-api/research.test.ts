@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { createResearchNote, createResearchSource, listResearchNotes, listResearchSources } from "./research";
+import { createResearchNote, createResearchReport, createResearchSource, listResearchNotes, listResearchSources } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -27,5 +27,13 @@ describe("research desktop API", () => {
     mockInvoke.mockResolvedValueOnce({ id: "note-1" });
     await createResearchNote("document-1", "Evidence to review");
     expect(mockInvoke).toHaveBeenCalledWith("create_research_note", { documentId: "document-1", content: "Evidence to review" });
+  });
+
+  it("creates a report with its explicit type", async () => {
+    mockInvoke.mockResolvedValueOnce({ id: "report-1" });
+    await createResearchReport("project-1", "Quarterly review", "Findings", "summary");
+    expect(mockInvoke).toHaveBeenCalledWith("create_research_report", {
+      projectId: "project-1", title: "Quarterly review", content: "Findings", reportType: "summary",
+    });
   });
 });
