@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { createResearchNote, createResearchReport, createResearchSource, listResearchNotes, listResearchSources } from "./research";
+import { createResearchNote, createResearchReport, createResearchSource, listResearchNotes, listResearchSources, searchResearchDocument } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -35,5 +35,11 @@ describe("research desktop API", () => {
     expect(mockInvoke).toHaveBeenCalledWith("create_research_report", {
       projectId: "project-1", title: "Quarterly review", content: "Findings", reportType: "summary",
     });
+  });
+
+  it("searches a document with the supplied query", async () => {
+    mockInvoke.mockResolvedValueOnce([]);
+    await expect(searchResearchDocument("document-1", "revenue growth")).resolves.toEqual([]);
+    expect(mockInvoke).toHaveBeenCalledWith("search_research_document", { id: "document-1", query: "revenue growth" });
   });
 });

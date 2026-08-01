@@ -3,7 +3,7 @@
 use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::research::{CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport, ResearchSource};
+use domain::research::{CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport, ResearchSearchMatch, ResearchSource};
 
 // Project commands
 #[tauri::command]
@@ -56,6 +56,11 @@ pub async fn list_research_documents(project_id: String, state: State<'_, AppSta
 #[tauri::command]
 pub async fn delete_research_document(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.research_document_service.delete_document(&id).await
+}
+
+#[tauri::command]
+pub async fn search_research_document(id: String, query: String, state: State<'_, AppState>) -> Result<Vec<ResearchSearchMatch>, AppError> {
+    state.research_document_service.search_document(&id, &query).await
 }
 
 #[tauri::command]

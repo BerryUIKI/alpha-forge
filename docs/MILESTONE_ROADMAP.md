@@ -337,7 +337,7 @@ Turn AlphaForge into a complete AI research environment.
 - [ ] Web source extraction (deferred)
 - [ ] Semantic search (deferred)
 
-The current local primitives normalize plain text and HTML supplied to the app, split it into deterministic chunks, and rank matching chunks lexically. They do not fetch remote URLs, parse PDFs, or produce embedding-based semantic matches; those capabilities require separate provider, privacy, and sandbox decisions.
+The current local primitives normalize plain text and HTML supplied to the app, split it into deterministic chunks, and rank matching chunks lexically through the Research page. They do not fetch remote URLs, parse PDFs, or produce embedding-based semantic matches; those capabilities require separate provider, privacy, and sandbox decisions.
 
 #### Research Workflow
 ```text

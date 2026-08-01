@@ -1,8 +1,11 @@
 // Research document service — handles document business logic.
 
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
+use crate::documents::chunker::chunk_text;
+use crate::documents::indexer::rank_chunks;
+use crate::documents::parser::{extract_text, ContentFormat};
 use crate::error::AppError;
-use domain::research::{CreateDocumentInput, ResearchDocument};
+use domain::research::{CreateDocumentInput, DocumentType, ResearchDocument, ResearchSearchMatch};
 
 pub struct ResearchDocumentService { repo: ResearchDocumentRepository }
 
@@ -17,4 +20,15 @@ impl ResearchDocumentService {
     pub async fn get_document(&self, id: &str) -> Result<Option<ResearchDocument>, AppError> { self.repo.get(id).await }
     pub async fn list_documents(&self, project_id: &str) -> Result<Vec<ResearchDocument>, AppError> { self.repo.list_by_project(project_id).await }
     pub async fn delete_document(&self, id: &str) -> Result<(), AppError> { self.repo.delete(id).await }
+
+    pub async fn search_document(&self, id: &str, query: &str) -> Result<Vec<ResearchSearchMatch>, AppError> {
+        let normalized_query = query.trim();
+        if normalized_query.is_empty() { return Err(AppError::Validation("Search query cannot be empty".to_string())); }
+        if normalized_query.len() > 200 { return Err(AppError::Validation("Search query is too long".to_string())); }
+        let document = self.repo.get(id).await?.ok_or_else(|| AppError::NotFound("Research document not found".to_string()))?;
+        let content = document.content.as_deref().unwrap_or_default();
+        let format = match document.document_type { DocumentType::WebPage => ContentFormat::Html, DocumentType::Pdf => ContentFormat::Pdf, _ => ContentFormat::PlainText };
+        let text = extract_text(content, format)?;
+        Ok(rank_chunks(&chunk_text(&text, 800), normalized_query, 20).into_iter().map(|item| ResearchSearchMatch { ordinal: item.ordinal, content: item.content, score: item.score }).collect())
+    }
 }

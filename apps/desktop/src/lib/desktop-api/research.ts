@@ -5,11 +5,13 @@ export interface ResearchDocument { id: string; project_id: string; document_typ
 export interface ResearchSource { id: string; document_id: string; url: string | null; title: string | null; retrieved_at: string | null; created_at: string; }
 export interface ResearchNote { id: string; document_id: string; content: string; created_at: string; updated_at: string; }
 export interface ResearchReport { id: string; project_id: string; title: string; content: string; report_type: "analysis" | "summary" | "thesis" | "recommendation"; created_at: string; updated_at: string; }
+export interface ResearchSearchMatch { ordinal: number; content: string; score: number; }
 
 export function createResearchProject(workspaceId: string, title: string, description?: string): Promise<ResearchProject> { return invoke("create_research_project", { workspaceId, title, description: description || null }); }
 export function listResearchProjects(workspaceId: string): Promise<ResearchProject[]> { return invoke("list_research_projects", { workspaceId }); }
 export function createResearchDocument(projectId: string, title: string, content?: string): Promise<ResearchDocument> { return invoke("create_research_document", { projectId, documentType: "note", title, content: content || null, sourceUrl: null, filePath: null }); }
 export function listResearchDocuments(projectId: string): Promise<ResearchDocument[]> { return invoke("list_research_documents", { projectId }); }
+export function searchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("search_research_document", { id, query }); }
 export function createResearchReport(projectId: string, title: string, content: string, reportType: ResearchReport["report_type"] = "analysis"): Promise<ResearchReport> { return invoke("create_research_report", { projectId, title, content, reportType }); }
 export function listResearchReports(projectId: string): Promise<ResearchReport[]> { return invoke("list_research_reports", { projectId }); }
 export function createResearchSource(documentId: string, url?: string, title?: string): Promise<ResearchSource> { return invoke("create_research_source", { documentId, url: url || null, title: title || null }); }
