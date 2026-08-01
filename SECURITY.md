@@ -97,6 +97,8 @@ We credit reporters who follow this process (unless they prefer to remain anonym
 The shell plugin is not registered, and no application window receives shell permissions. External links use the narrower opener capability.
 The frontend HTTP plugin is also not registered. Network requests remain owned by Rust services, where providers and request policies can be validated centrally.
 
+The OpenAI research adapter reads only the `openai.api_key` credential from the OS keychain. It never accepts an API key over IPC, and its Responses API requests use bounded output plus a strict research-output schema.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly

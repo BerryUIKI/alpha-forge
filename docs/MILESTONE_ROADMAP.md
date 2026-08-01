@@ -199,7 +199,8 @@ Create the core intelligence engine of AlphaForge.
 
 #### Provider Integration
 - ✅ Typed provider contract and validated structured research-output parser
-- 📋 OpenAI API integration (Future)
+- ✅ OpenAI Responses API adapter with keychain-only credential lookup, bounded output, and strict structured output
+- 📋 Agent executor provider selection and runtime routing (Future)
 - 📋 Structured output parsing (Future)
 - 📋 Error handling and fallback (Future)
 
