@@ -1,13 +1,18 @@
 {
   "id": "strategy-payoff",
-  "name": "Strategy Payoff Diagram",
+  "name": "Strategy Payoff Analyzer",
   "version": "0.1.0",
-  "entry": "index.html",
-  "inputSchema": "schema.json",
-  "permissions": [],
+  "description": "Interactive payoff diagrams and risk metrics for option strategies",
+  "entryPoint": "./src/index.tsx",
+  "inputSchema": "./schema.json",
+  "permissions": [
+    "ipc:invoke:calculate_payoff",
+    "ipc:invoke:analyze_strategy"
+  ],
   "window": {
-    "width": 1000,
-    "height": 700,
-    "resizable": true
+    "width": 1200,
+    "height": 800,
+    "resizable": true,
+    "title": "Strategy Payoff Analysis"
   }
 }

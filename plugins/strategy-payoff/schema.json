@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["strategyId", "legs"],
+  "properties": {
+    "strategyId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "strategyType": {
+      "type": "string",
+      "enum": ["long_call", "long_put", "covered_call", "protective_put", "bull_call_spread", "bear_put_spread", "straddle", "strangle", "iron_condor", "butterfly", "custom"]
+    },
+    "legs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contractId": { "type": "string" },
+          "quantity": { "type": "integer" },
+          "positionType": { "type": "string", "enum": ["long", "short"] },
+          "strike": { "type": "number" },
+          "type": { "type": "string", "enum": ["call", "put"] },
+          "premium": { "type": "number" }
+        },
+        "required": ["quantity", "positionType", "strike", "type", "premium"]
+      }
+    },
+    "payoffData": {
+      "type": "object",
+      "properties": {
+        "breakEvenPoints": { "type": "array", "items": { "type": "number" } },
+        "maxProfit": { "type": "number" },
+        "maxLoss": { "type": "number" },
+        "probabilityOfProfit": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}
