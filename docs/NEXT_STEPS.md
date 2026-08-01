@@ -1,8 +1,8 @@
 # AlphaForge Next Steps Strategy
 
 **Generated**: 2026-08-01
-**Current State**: M5 Investment Knowledge System (In Progress) 🚧
-**Next Milestone**: Complete M5, then M6 Portfolio Intelligence
+**Current State**: M6 Portfolio Intelligence (Complete) ✅
+**Next Milestone**: M7 Plugin Ecosystem
 
 ---
 
@@ -15,14 +15,15 @@
 - ✅ M2: Agent Runtime
 - ✅ M3: Artifact Intelligence System
 - ✅ M4: Research Workspace (Core Complete)
+- ✅ M5: Investment Knowledge System
+- ✅ M6: Portfolio Intelligence
 
 ### In Progress
-- 🚧 M5: Investment Knowledge System (implementation complete; Rust verification pending)
+- No active implementation milestone
 
 ### Test Coverage
-- **Rust Tests**: 90 passing (13 new thesis tests)
-- **Frontend Tests**: 48 passing
-- **Total**: Rust verification pending in the current environment
+- **Frontend Tests**: 53 passing
+- **Rust Build**: `cargo check -p investment-os` passes (four unrelated warnings remain)
 
 ### Key Achievements (M5 Backend)
 - Investment thesis domain models
@@ -36,37 +37,11 @@
 
 ## 🎯 Short-Term Goals (Current Sprint)
 
-### 1. Complete M5 Investment Knowledge System
+### 1. Prepare M7 Plugin Ecosystem
 **Priority**: High
-**Timeline**: 1-2 weeks
+**Timeline**: Next milestone
 
-#### Backend (Completed ✅)
-- [x] Domain models: `InvestmentThesis`, `ThesisEvidence`
-- [x] Database migration: `0006_theses.sql`
-- [x] Thesis repository with full CRUD
-- [x] Thesis service with validation logic
-- [x] 11 Tauri commands
-- [x] 13 repository tests
-
-#### Frontend (Completed ✅)
-- [x] Thesis management UI components
-- [x] Evidence collection interface
-- [x] Confidence visualization
-- [x] Immutable confidence history
-- [x] Thesis lifecycle dashboard
-
-#### Acceptance Criteria
-```text
-User creates investment thesis
-    ↓
-Links to workspace
-    ↓
-Collects supporting/contradicting evidence
-    ↓
-Tracks confidence over time
-    ↓
-Records validation results
-```
+M5 and M6 are complete. Use the roadmap to scope M7 as a separate feature branch and PR series.
 
 ---
 
@@ -78,16 +53,16 @@ Records validation results
 
 #### Core Features
 1. **Portfolio Management**
-   - Account management
-   - Holdings tracking
-   - Transaction import
-   - Allocation analysis
+   - Account management — workspace-scoped accounts are implemented
+   - Holdings tracking — manual account positions are implemented
+   - Transaction import — validated CSV history import is implemented; it does not execute trades
+   - Allocation analysis — cost-basis allocation and exposure are implemented; live pricing is not yet integrated
 
 2. **AI Analysis**
-   - Risk concentration analysis
-   - Theme exposure mapping
-   - Thesis alignment checking
-   - Historical review automation
+   - Risk concentration analysis — transparent cost-basis concentration signals are implemented
+   - Theme exposure mapping — explicit knowledge-entity links and cost-basis exposure are implemented
+   - Thesis alignment checking — portfolio review exposes matching thesis coverage
+   - Historical review automation — on-demand review summarizes concentration and unaligned holdings
 
 #### Important Constraints
 ```text
@@ -225,13 +200,13 @@ Records validation results
 
 ## 🎉 Conclusion
 
-**M3 Complete**: AlphaForge now has a fully functional artifact system for interactive research visualizations.
+**M6 Complete**: AlphaForge now supports portfolio tracking, traceable investment knowledge, and transparent portfolio review.
 
-**Next Milestone**: M4 Research Workspace will transform AlphaForge into a complete AI research environment with document intelligence and automated workflows.
+**Next Milestone**: M7 Plugin Ecosystem will extend AlphaForge through validated internal plugins.
 
-**Focus Areas**: Polish M3, enhance CI/CD, and begin M4 foundation work.
+**Focus Areas**: Scope M7 on its own feature branch, preserve the M6 verification baseline, and address documented technical debt separately.
 
-**Timeline**: 6-8 weeks to complete M4 and prepare for M5.
+**Timeline**: Follow the M7 roadmap estimate after planning is complete.
 
 ---
 

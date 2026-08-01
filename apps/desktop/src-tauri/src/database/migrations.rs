@@ -25,6 +25,8 @@ pub async fn run(pool: &SqlitePool) -> Result<(), AppError> {
     apply_schema_reconciliation(pool).await?;
     apply_thesis_confidence_history(pool).await?;
     apply_knowledge_graph(pool).await?;
+    apply_portfolio_management(pool).await?;
+    apply_portfolio_theme_links(pool).await?;
 
     info!("migrations complete");
 
@@ -157,5 +159,33 @@ async fn apply_knowledge_graph(pool: &SqlitePool) -> Result<(), AppError> {
         .map_err(|e| AppError::Internal(format!("knowledge graph migration failed: {e}")))?;
     sqlx::query("INSERT INTO _migrations (name) VALUES ('0009_knowledge_graph')").execute(pool).await
         .map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
+    Ok(())
+}
+
+async fn apply_portfolio_management(pool: &SqlitePool) -> Result<(), AppError> {
+    let already = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM _migrations WHERE name = '0010_portfolio_management'",
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| AppError::Internal(format!("migration check failed: {e}")))?;
+    if already > 0 { return Ok(()); }
+    add_column_if_missing(pool, "portfolio_accounts", "workspace_id", "TEXT REFERENCES workspaces(id) ON DELETE CASCADE").await?;
+    sqlx::raw_sql(include_str!("../../migrations/0010_portfolio_management.sql"))
+        .execute(pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("portfolio migration failed: {e}")))?;
+    sqlx::query("INSERT INTO _migrations (name) VALUES ('0010_portfolio_management')")
+        .execute(pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
+    Ok(())
+}
+
+async fn apply_portfolio_theme_links(pool: &SqlitePool) -> Result<(), AppError> {
+    let already = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _migrations WHERE name = '0011_portfolio_theme_links'").fetch_one(pool).await.map_err(|e| AppError::Internal(format!("migration check failed: {e}")))?;
+    if already > 0 { return Ok(()); }
+    sqlx::raw_sql(include_str!("../../migrations/0011_portfolio_theme_links.sql")).execute(pool).await.map_err(|e| AppError::Internal(format!("portfolio theme migration failed: {e}")))?;
+    sqlx::query("INSERT INTO _migrations (name) VALUES ('0011_portfolio_theme_links')").execute(pool).await.map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
     Ok(())
 }

@@ -19,9 +19,9 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M1.5 | ✅ Complete | Week 5-6 | Application Foundation |
 | M2 | ✅ Complete | Week 7-10 | Agent Runtime |
 | M3 | ✅ Complete | Week 11-14 | Artifact Intelligence System |
-| M4 | 🚧 In Progress | Week 15-18 | Research Workspace (Core Complete) |
-| M5 | 📋 Planned | Week 19-22 | Investment Knowledge System |
-| M6 | 📋 Planned | Week 23-26 | Portfolio Intelligence |
+| M4 | ✅ Complete | Week 15-18 | Research Workspace |
+| M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
+| M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | 📋 Planned | Week 27-30 | Plugin Ecosystem |
 | M8 | 📅 Future | TBD | Production & Commercialization |
 
@@ -473,9 +473,9 @@ Records validation results
 
 ---
 
-## M6 — Portfolio Intelligence 📋
+## M6 — Portfolio Intelligence ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Connect research with actual investment decisions.
@@ -483,17 +483,17 @@ Connect research with actual investment decisions.
 ### Deliverables
 
 #### Portfolio Management
-- [ ] Account management
-- [ ] Holdings tracking
-- [ ] Transaction import
-- [ ] Allocation analysis
-- [ ] Exposure calculation
+- [x] Account management — workspace-scoped accounts with a desktop UI
+- [x] Holdings tracking — manual position capture and account-level review
+- [x] Transaction import — validated CSV import into immutable account history
+- [x] Allocation analysis — workspace cost-basis allocation by symbol
+- [x] Exposure calculation — per-symbol and cross-account concentration weights
 
 #### AI Analysis
-- [ ] Risk concentration analysis
-- [ ] Theme exposure mapping
-- [ ] Thesis alignment checking
-- [ ] Historical review automation
+- [x] Risk concentration analysis — transparent cost-basis thresholds (moderate 10%, high 25%)
+- [x] Theme exposure mapping — explicit symbol-to-knowledge-entity links with cost-basis aggregation
+- [x] Thesis alignment checking — transparent held-symbol matches against workspace thesis content
+- [x] Historical review automation — on-demand review summarizing concentration and unaligned symbols
 
 ### Important Constraints
 ```text

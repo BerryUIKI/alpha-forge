@@ -113,6 +113,17 @@ pub fn run() {
             commands::journal::list_journal_entries,
             // Portfolio commands
             commands::portfolio::list_portfolio_accounts,
+            commands::portfolio::create_portfolio_account,
+            commands::portfolio::create_portfolio_position,
+            commands::portfolio::list_portfolio_positions,
+            commands::portfolio::import_portfolio_transactions_csv,
+            commands::portfolio::list_portfolio_transactions,
+            commands::portfolio::get_portfolio_allocation,
+            commands::portfolio::get_portfolio_concentration_risks,
+            commands::portfolio::link_portfolio_theme,
+            commands::portfolio::get_portfolio_theme_exposure,
+            commands::portfolio::get_portfolio_thesis_alignment,
+            commands::portfolio::generate_portfolio_review,
             // Artifacts commands
             commands::artifacts::create_artifact,
             commands::artifacts::get_artifact,
