@@ -15,7 +15,7 @@ mod tests {
             .expect("Failed to create test database");
 
         // Run migrations
-        sqlx::query(include_str!("../../../../migrations/0001_initial.sql"))
+        sqlx::query(include_str!("../../migrations/0001_initial.sql"))
             .execute(&pool)
             .await
             .expect("Failed to run migrations");
