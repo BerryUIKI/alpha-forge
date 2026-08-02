@@ -33,7 +33,7 @@ This roadmap is the program entry point. Implementation agents must follow the l
 
 | Milestone/workstream | Supporting documents |
 |---|---|
-| All milestones | [Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md), [Git Workflow](GIT_WORKFLOW.md), [Architecture](ARCHITECTURE.md), [Security](SECURITY.md) |
+| All milestones | [Sequential Task Breakdown](milestones/SEQUENTIAL_TASK_BREAKDOWN.md), [Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md), [Git Workflow](GIT_WORKFLOW.md), [Architecture](ARCHITECTURE.md), [Security](SECURITY.md) |
 | M8 i18n | [i18n Index](i18n/README.md), [i18n Architecture](i18n/ARCHITECTURE.md), [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), [M8 Decision Record](M8_DECISION_RECORD.md) |
 | M9 Option | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md) |
 | M10 Goose | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md) |
@@ -839,6 +839,7 @@ Transform AlphaForge into the definitive AI-powered investment research platform
 - [Security Model](SECURITY.md)
 - [Development Guide](DEVELOPMENT.md)
 - [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md)
+- [Sequential Child-Agent Task Breakdown](milestones/SEQUENTIAL_TASK_BREAKDOWN.md)
 - [i18n Documentation](i18n/README.md)
 - [Option Documentation](option/README.md)
 - [Goose Integration Documentation](goose/README.md)

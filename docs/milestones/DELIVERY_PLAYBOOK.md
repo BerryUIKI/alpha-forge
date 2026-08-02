@@ -2,6 +2,8 @@
 
 This playbook turns [MILESTONE_ROADMAP.md](../MILESTONE_ROADMAP.md) into an execution contract for development agents. Workstream-specific plans may add stricter requirements but cannot weaken repository rules.
 
+The coordinator assigns work in the order defined by the [Sequential Child-Agent Task Breakdown](SEQUENTIAL_TASK_BREAKDOWN.md). Each child agent completes only its assigned task and stops after handoff.
+
 ## 1. Confirm the milestone is active
 
 Before implementation:

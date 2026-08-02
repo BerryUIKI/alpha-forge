@@ -203,6 +203,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | [Option module](docs/option/README.md) | Consolidated Option specifications and integration plan |
 | [Goose integration](docs/goose/README.md) | Post-MVP Goose boundaries and roadmap |
 | [Delivery playbook](docs/milestones/DELIVERY_PLAYBOOK.md) | Milestone execution and evidence rules |
+| [Sequential task breakdown](docs/milestones/SEQUENTIAL_TASK_BREAKDOWN.md) | One-task-at-a-time child-agent execution queue |
 
 ### Technical Documentation
 
