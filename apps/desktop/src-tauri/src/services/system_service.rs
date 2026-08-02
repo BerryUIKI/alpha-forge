@@ -1,7 +1,7 @@
 // System service — handles system-level operations.
 
 use crate::error::AppError;
-use reqwest::Client;
+use reqwest::{Client, Url};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use std::path::Path;
@@ -151,7 +151,7 @@ impl SystemService {
             update_available: is_newer_version(&release.tag_name, &current_version),
             current_version,
             latest_version: release.tag_name,
-            release_url: release.html_url,
+            release_url: validate_release_url(&release.html_url)?,
         })
     }
 }
@@ -184,9 +184,31 @@ fn is_newer_version(latest: &str, current: &str) -> bool {
     matches!((parse(latest), parse(current)), (Some(latest), Some(current)) if latest > current)
 }
 
+fn validate_release_url(input: &str) -> Result<String, AppError> {
+    let url = Url::parse(input).map_err(|_| {
+        AppError::Validation("GitHub Releases returned an invalid release URL.".to_string())
+    })?;
+    let is_official_release = url.scheme() == "https"
+        && url
+            .host_str()
+            .is_some_and(|host| host.eq_ignore_ascii_case("github.com"))
+        && url.port().is_none()
+        && url.username().is_empty()
+        && url.password().is_none()
+        && url.path().starts_with("/BerryUIKI/alpha-forge/releases/");
+
+    if !is_official_release {
+        return Err(AppError::Validation(
+            "GitHub Releases returned an untrusted release URL.".to_string(),
+        ));
+    }
+
+    Ok(url.to_string())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{export_database_to, is_newer_version};
+    use super::{export_database_to, is_newer_version, validate_release_url};
     use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -195,6 +217,26 @@ mod tests {
         assert!(is_newer_version("v0.2.0", "0.1.9"));
         assert!(!is_newer_version("v0.1.0", "0.1.0"));
         assert!(!is_newer_version("latest", "0.1.0"));
+    }
+
+    #[test]
+    fn accepts_only_official_https_release_pages() {
+        assert_eq!(
+            validate_release_url("https://github.com/BerryUIKI/alpha-forge/releases/tag/v0.2.0")
+                .unwrap(),
+            "https://github.com/BerryUIKI/alpha-forge/releases/tag/v0.2.0"
+        );
+        for url in [
+            "http://github.com/BerryUIKI/alpha-forge/releases/tag/v0.2.0",
+            "https://github.com.evil.example/BerryUIKI/alpha-forge/releases/tag/v0.2.0",
+            "https://github.com/other/project/releases/tag/v0.2.0",
+            "https://user:password@github.com/BerryUIKI/alpha-forge/releases/tag/v0.2.0",
+        ] {
+            assert!(
+                validate_release_url(url).is_err(),
+                "{url} should be rejected"
+            );
+        }
     }
 
     #[tokio::test]
