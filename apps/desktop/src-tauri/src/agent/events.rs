@@ -26,7 +26,7 @@ pub fn emit_task_event(app: &AppHandle, event: &AgentTaskEvent) {
     };
 
     // Emit event to frontend
-    if let Err(_) = app.emit(event_name, event) {
+    if app.emit(event_name, event).is_err() {
         tracing::error!("task event emission failed");
     }
 }

@@ -8,7 +8,7 @@ mod tests {
     use crate::database::repositories::agent_task_repository::AgentTaskRepository;
     use crate::error::AppError;
     use crate::services::agent_service::AgentService;
-    use domain::task::{CreateAgentTaskInput, TaskStatus};
+    use domain::task::{CreateAgentTaskInput, TaskEventType, TaskStatus};
 
     async fn setup_test_db() -> SqlitePool {
         let pool = SqlitePoolOptions::new()
@@ -215,6 +215,46 @@ mod tests {
         let started_task = service.start_task(&task.id).await.expect("Failed to start task");
 
         assert_eq!(started_task.status, TaskStatus::Running);
+    }
+
+    #[tokio::test]
+    async fn requeues_a_running_task_after_executor_admission_failure() {
+        let pool = setup_test_db().await;
+        let workspace_id = create_test_workspace(&pool).await;
+        let service = create_service(pool);
+        let task = service
+            .create_task(CreateAgentTaskInput {
+                workspace_id,
+                title: "Requeue task".to_string(),
+                description: None,
+            })
+            .await
+            .expect("Failed to create task");
+        service
+            .queue_task(&task.id)
+            .await
+            .expect("Failed to queue task");
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
+
+        let requeued = service
+            .requeue_running_task(&task.id)
+            .await
+            .expect("Failed to requeue task");
+
+        assert_eq!(requeued.status, TaskStatus::Queued);
+        assert_eq!(
+            service
+                .get_task_events(&task.id)
+                .await
+                .expect("Failed to get task events")
+                .last()
+                .expect("Task should have a queue event")
+                .event_type,
+            TaskEventType::TaskQueued
+        );
     }
 
     #[tokio::test]

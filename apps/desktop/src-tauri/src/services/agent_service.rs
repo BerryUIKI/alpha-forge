@@ -99,6 +99,32 @@ impl AgentService {
             .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
     }
 
+    /// Restores a task to the queue when the executor cannot admit it.
+    pub async fn requeue_running_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
+        let task = self
+            .repo
+            .get(task_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+
+        if task.status != TaskStatus::Running {
+            return Err(AppError::Validation(format!(
+                "Cannot requeue task in '{}' state",
+                task.status
+            )));
+        }
+
+        self.repo.update_status(task_id, TaskStatus::Queued).await?;
+        self.repo
+            .create_event(task_id, TaskEventType::TaskQueued, None)
+            .await?;
+
+        self.repo
+            .get(task_id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Task disappeared after requeue".to_string()))
+    }
+
     /// Completes a task.
     pub async fn complete_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
         let task = self

@@ -6,7 +6,6 @@ mod tests {
     use sqlx::SqlitePool;
 
     use crate::database::repositories::thesis_repository::ThesisRepository;
-    use crate::error::AppError;
     use domain::thesis::{
         AddEvidenceInput, CreateThesisInput, EvidenceDirection, ThesisStatus,
         UpdateConfidenceInput,

@@ -63,7 +63,16 @@ pub async fn start_agent_task(
     let task = state.agent_service.start_task(&task_id).await?;
 
     // Start background execution via executor
-    state.task_executor.start_task(task.clone()).await?;
+    if let Err(error) = state.task_executor.start_task(task.clone()).await {
+        if let Err(rollback_error) = state.agent_service.requeue_running_task(&task_id).await {
+            tracing::error!(
+                task_id = %task_id,
+                error_code = rollback_error.code(),
+                "failed to restore task to queue after executor admission failure"
+            );
+        }
+        return Err(error);
+    }
 
     Ok(task)
 }
