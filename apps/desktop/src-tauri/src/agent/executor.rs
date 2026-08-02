@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use tauri::AppHandle;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{oneshot, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
@@ -98,26 +98,40 @@ impl TaskExecutor {
         let app = self.app.clone();
         let provider = self.provider.clone();
         let timeout = Duration::from_secs(self.config.default_timeout_secs);
+        let (start_tx, start_rx) = oneshot::channel();
 
-        // Start background task
+        // Register the supervisor before allowing the task to execute. This prevents a
+        // fast completion from removing an entry before it has been inserted.
         let cancel_token_clone = cancel_token.clone();
         let task_clone = task.clone();
         let handle = tokio::spawn(async move {
-            let result = Self::execute_task(
+            if start_rx.await.is_err() {
+                return Ok(());
+            }
+
+            let execution = tokio::spawn(Self::execute_task(
                 task_clone,
                 repo.clone(),
-                app,
+                app.clone(),
                 provider,
                 timeout,
                 cancel_token_clone,
-            )
-            .await;
+            ));
+            let result = match execution.await {
+                Ok(result) => result,
+                Err(_) => {
+                    Self::record_failure(
+                        &repo,
+                        &app,
+                        &task_id,
+                        "The research task stopped unexpectedly. Retry the task later.",
+                    )
+                    .await
+                }
+            };
 
-            // Remove from running tasks
-            {
-                let mut running = running_tasks.write().await;
-                running.remove(&task_id);
-            }
+            let mut running = running_tasks.write().await;
+            running.remove(&task_id);
 
             result
         });
@@ -133,6 +147,7 @@ impl TaskExecutor {
                 },
             );
         }
+        let _ = start_tx.send(());
 
         Ok(())
     }
