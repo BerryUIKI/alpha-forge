@@ -14,7 +14,8 @@ use tokio_util::sync::CancellationToken;
 use crate::agent::events;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
-use domain::task::{AgentTask, TaskEventType};
+use domain::task::{AgentTask, TaskEventType, TaskStatus};
+use provider_core::{ProviderError, ResearchCompletionRequest, ResearchProvider};
 
 /// Configuration for the task executor.
 #[derive(Debug, Clone)]
@@ -36,7 +37,7 @@ impl Default for ExecutorConfig {
 
 /// Running task handle.
 struct RunningTask {
-    handle: JoinHandle<Result<(), AppError>>,
+    _handle: JoinHandle<Result<(), AppError>>,
     cancel_token: CancellationToken,
 }
 
@@ -45,16 +46,23 @@ pub struct TaskExecutor {
     repo: Arc<Mutex<AgentTaskRepository>>,
     app: AppHandle,
     config: ExecutorConfig,
+    provider: Arc<dyn ResearchProvider>,
     running_tasks: Arc<RwLock<HashMap<String, RunningTask>>>,
 }
 
 impl TaskExecutor {
     /// Creates a new task executor.
-    pub fn new(repo: AgentTaskRepository, app: AppHandle, config: ExecutorConfig) -> Self {
+    pub fn new(
+        repo: AgentTaskRepository,
+        app: AppHandle,
+        config: ExecutorConfig,
+        provider: Arc<dyn ResearchProvider>,
+    ) -> Self {
         Self {
             repo: Arc::new(Mutex::new(repo)),
             app,
             config,
+            provider,
             running_tasks: Arc::new(RwLock::new(HashMap::new())),
         }
     }
@@ -88,12 +96,22 @@ impl TaskExecutor {
         let repo = self.repo.clone();
         let running_tasks = self.running_tasks.clone();
         let app = self.app.clone();
+        let provider = self.provider.clone();
+        let timeout = Duration::from_secs(self.config.default_timeout_secs);
 
         // Start background task
         let cancel_token_clone = cancel_token.clone();
         let task_clone = task.clone();
         let handle = tokio::spawn(async move {
-            let result = Self::execute_task(task_clone, repo.clone(), app, cancel_token_clone.clone()).await;
+            let result = Self::execute_task(
+                task_clone,
+                repo.clone(),
+                app,
+                provider,
+                timeout,
+                cancel_token_clone,
+            )
+            .await;
 
             // Remove from running tasks
             {
@@ -110,7 +128,7 @@ impl TaskExecutor {
             running.insert(
                 task.id.clone(),
                 RunningTask {
-                    handle,
+                    _handle: handle,
                     cancel_token,
                 },
             );
@@ -122,9 +140,10 @@ impl TaskExecutor {
     /// Cancels a running task.
     pub async fn cancel_task(&self, task_id: &str) -> Result<(), AppError> {
         let running = self.running_tasks.read().await;
-        
+
         if let Some(running_task) = running.get(task_id) {
             running_task.cancel_token.cancel();
+            events::emit_cancellation(&self.app, task_id);
             Ok(())
         } else {
             Err(AppError::NotFound(format!(
@@ -139,65 +158,87 @@ impl TaskExecutor {
         task: AgentTask,
         repo: Arc<Mutex<AgentTaskRepository>>,
         app: AppHandle,
+        provider: Arc<dyn ResearchProvider>,
+        timeout: Duration,
         cancel_token: CancellationToken,
     ) -> Result<(), AppError> {
         let task_id = task.id.clone();
 
-        // Simulate task execution with progress events
-        // In production, this would call the agent runtime
-        let steps = vec![
-            "Initializing...",
-            "Analyzing request...",
-            "Processing data...",
-            "Generating output...",
-        ];
+        Self::record_progress(
+            &repo,
+            &app,
+            &task_id,
+            "Preparing structured research request...",
+        )
+        .await?;
 
-        for (_i, step) in steps.iter().enumerate() {
-            // Check for cancellation
-            if cancel_token.is_cancelled() {
-                let repo_guard = repo.lock().await;
-                repo_guard
-                    .create_event(&task_id, TaskEventType::TaskCancelled, None)
-                    .await?;
-                events::emit_cancellation(&app, &task_id);
-                return Ok(());
-            }
+        let request = research_request(&task);
+        let completion = tokio::select! {
+            _ = cancel_token.cancelled() => return Ok(()),
+            result = tokio::time::timeout(timeout, provider.complete_research(request)) => match result {
+                Ok(Ok(completion)) => completion,
+                Ok(Err(error)) => return Self::record_failure(&repo, &app, &task_id, provider_failure_message(error)).await,
+                Err(_) => return Self::record_failure(&repo, &app, &task_id, "The research task timed out before a result was returned.").await,
+            },
+        };
 
-            // Emit progress to frontend
-            events::emit_progress(&app, &task_id, step);
-
-            // Persist event
-            {
-                let repo_guard = repo.lock().await;
-                repo_guard
-                    .create_event(&task_id, TaskEventType::TaskProgress, Some(step.to_string()))
-                    .await?;
-            }
-
-            // Simulate work
-            tokio::select! {
-                _ = tokio::time::sleep(Duration::from_secs(1)) => {},
-                _ = cancel_token.cancelled() => {
-                    let repo_guard = repo.lock().await;
-                    repo_guard
-                        .create_event(&task_id, TaskEventType::TaskCancelled, None)
-                        .await?;
-                    events::emit_cancellation(&app, &task_id);
-                    return Ok(());
-                }
-            };
+        if cancel_token.is_cancelled() {
+            return Ok(());
         }
 
-        // Task completed
-        let output = r#"{"summary": "Task completed successfully"}"#;
+        let output = serde_json::to_string(&completion).map_err(|_| {
+            AppError::Internal("could not serialize structured research output".to_string())
+        })?;
         {
             let repo_guard = repo.lock().await;
             repo_guard
-                .create_event(&task_id, TaskEventType::TaskCompleted, Some(output.to_string()))
+                .update_status(&task_id, TaskStatus::Completed)
+                .await?;
+            repo_guard
+                .create_event(&task_id, TaskEventType::TaskCompleted, Some(output.clone()))
                 .await?;
         }
-        events::emit_completion(&app, &task_id, Some(output));
+        events::emit_completion(&app, &task_id, Some(&output));
 
+        Ok(())
+    }
+
+    async fn record_progress(
+        repo: &Arc<Mutex<AgentTaskRepository>>,
+        app: &AppHandle,
+        task_id: &str,
+        message: &str,
+    ) -> Result<(), AppError> {
+        let repo_guard = repo.lock().await;
+        repo_guard
+            .create_event(
+                task_id,
+                TaskEventType::TaskProgress,
+                Some(message.to_string()),
+            )
+            .await?;
+        events::emit_progress(app, task_id, message);
+        Ok(())
+    }
+
+    async fn record_failure(
+        repo: &Arc<Mutex<AgentTaskRepository>>,
+        app: &AppHandle,
+        task_id: &str,
+        message: &str,
+    ) -> Result<(), AppError> {
+        let repo_guard = repo.lock().await;
+        repo_guard
+            .update_status(task_id, TaskStatus::Failed)
+            .await?;
+        repo_guard
+            .create_event(
+                task_id,
+                TaskEventType::TaskFailed,
+                Some(message.to_string()),
+            )
+            .await?;
+        events::emit_failure(app, task_id, message);
         Ok(())
     }
 
@@ -205,5 +246,72 @@ impl TaskExecutor {
     pub async fn running_count(&self) -> usize {
         let running = self.running_tasks.read().await;
         running.len()
+    }
+}
+
+fn research_request(task: &AgentTask) -> ResearchCompletionRequest {
+    ResearchCompletionRequest {
+        system_prompt: "You are an investment research assistant. Provide factual, evidence-aware research only. Do not give buy, sell, or trade instructions, and do not claim certainty where evidence is incomplete.".to_string(),
+        user_prompt: format!(
+            "Research task title: {}\n\nTask details:\n{}",
+            task.title,
+            task.description.as_deref().unwrap_or("No additional task details were provided.")
+        ),
+        max_output_tokens: 2_048,
+    }
+}
+
+fn provider_failure_message(error: ProviderError) -> &'static str {
+    match error {
+        ProviderError::CredentialsUnavailable => {
+            "OpenAI credentials are unavailable. Add the openai.api_key credential in the OS keychain and retry."
+        }
+        ProviderError::RequestFailed => "The research provider request failed. Retry the task later.",
+        ProviderError::InvalidResponse => "The research provider returned an invalid structured result. Retry the task later.",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::Utc;
+
+    use super::{provider_failure_message, research_request};
+    use domain::task::{AgentTask, TaskStatus};
+    use provider_core::ProviderError;
+
+    fn task(description: Option<&str>) -> AgentTask {
+        AgentTask {
+            id: "task-1".to_string(),
+            workspace_id: "workspace-1".to_string(),
+            title: "Assess demand".to_string(),
+            description: description.map(str::to_string),
+            status: TaskStatus::Running,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn builds_a_bounded_research_request_from_task_details() {
+        let request = research_request(&task(Some("Compare demand drivers.")));
+
+        assert_eq!(request.max_output_tokens, 2_048);
+        assert!(request
+            .system_prompt
+            .contains("Do not give buy, sell, or trade instructions"));
+        assert!(request.user_prompt.contains("Assess demand"));
+        assert!(request.user_prompt.contains("Compare demand drivers."));
+    }
+
+    #[test]
+    fn omits_sensitive_provider_error_details_from_task_events() {
+        assert_eq!(
+            provider_failure_message(ProviderError::RequestFailed),
+            "The research provider request failed. Retry the task later."
+        );
+        assert!(
+            provider_failure_message(ProviderError::CredentialsUnavailable)
+                .contains("openai.api_key")
+        );
     }
 }

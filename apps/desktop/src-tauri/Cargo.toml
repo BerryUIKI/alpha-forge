@@ -14,9 +14,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
-tauri-plugin-shell = "2"
 tauri-plugin-store = "2"
-tauri-plugin-http = "2"
 
 domain = { path = "../../../crates/domain" }
 agent-core = { path = "../../../crates/agent-core" }
@@ -37,3 +35,7 @@ sqlx.workspace = true
 uuid.workspace = true
 chrono.workspace = true
 reqwest.workspace = true
+csv.workspace = true
+keyring = "3"
+pdf-extract = "0.12"
+rfd = "0.17"

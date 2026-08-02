@@ -5,6 +5,7 @@
 
 pub mod research;
 pub mod thesis;
+pub mod knowledge_graph;
 pub mod portfolio;
 pub mod artifact;
 pub mod task;

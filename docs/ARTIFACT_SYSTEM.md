@@ -100,9 +100,9 @@ Artifact windows run with **minimal permissions** — significantly less than th
 | Capability | Main Window | Artifact Window |
 |-----------|-------------|-----------------|
 | Tauri core | Full | Default only |
-| Shell access | `shell:allow-open` | None |
+| Shell access | Not registered | None |
 | Filesystem | Controlled | None |
-| Network | Controlled | None |
+| Network | Rust services only; no frontend HTTP plugin | None |
 | Store (persistence) | Full | None |
 | API keys | Never exposed | Never exposed |
 

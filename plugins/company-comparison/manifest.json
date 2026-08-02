@@ -2,7 +2,7 @@
   "id": "company-comparison",
   "name": "Company Comparison",
   "version": "0.1.0",
-  "entry": "index.html",
+  "entry": "src/index.ts",
   "inputSchema": "schema.json",
   "permissions": [],
   "window": {

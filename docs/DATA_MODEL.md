@@ -52,18 +52,18 @@ Conceptual entities and their relationships. The database schema implements thes
 
 **Purpose.** A testable claim about an investment opportunity. The central artifact of the research workflow.
 
-**Attributes.** Title, thesis statement, confidence level (0-100), status (draft/active/validated/invalidated), validation date, outcome.
+**Attributes.** Title, thesis statement, confidence level (0-100), immutable confidence history, status (draft/active/validating/validated/closed), validation date, outcome.
 
-**Relationships.** Has many evidence entries. May reference research documents and sources. Independent of portfolio positions (a thesis can exist without a position).
+**Relationships.** Belongs to one workspace. Has many evidence entries. May reference research documents and sources. Independent of portfolio positions (a thesis can exist without a position).
 
 **Lifecycle.**
 
 ```text
-Draft → Active → Validated → (outcome recorded)
-              → Invalidated → (outcome recorded)
+Draft → Active → Validating → Validated → (outcome recorded)
+                         → Closed → (outcome recorded)
 ```
 
-**State transitions.** Draft theses are private works-in-progress. Active theses are published for tracking. Validated theses have been confirmed by evidence or market outcome. Invalidated theses have been disproven.
+**State transitions.** Draft theses are private works-in-progress. Active theses are published for tracking. Validating theses are under active review. Validated theses have been confirmed by evidence or market outcome. Closed theses have been completed or discontinued.
 
 ---
 
@@ -76,6 +76,22 @@ Draft → Active → Validated → (outcome recorded)
 **Relationships.** Belongs to one thesis. Optionally linked to a source.
 
 **Lifecycle.** Created alongside thesis development. Immutable after creation (preserves the evidentiary record).
+
+### Thesis Confidence Snapshot
+
+**Purpose.** An immutable record of a thesis confidence assessment, supporting retrospective review of how conviction changed as evidence accumulated.
+
+**Relationships.** Belongs to one investment thesis.
+
+**Lifecycle.** Created when a thesis is created and whenever its confidence is updated. Never modified or deleted independently.
+
+### Knowledge Entity and Relationship
+
+**Purpose.** A workspace-scoped graph of companies, industries, technologies, and macro themes. Directed relationships explain how entities affect one another.
+
+**Relationships.** Entities may connect to other entities within the same workspace. A thesis may link to many entities, and an entity may support multiple theses.
+
+**Lifecycle.** Entities and relationships are created intentionally by the user or a validated workflow. Cross-workspace relationships and thesis links are rejected.
 
 ---
 
@@ -218,7 +234,11 @@ Workspace
   │     ├── Source
   │     └── Research Note
   ├── Investment Thesis
-  │     └── Evidence ───► Source
+  │     ├── Evidence ───► Source
+  │     └── Thesis Confidence Snapshot
+  ├── Knowledge Entity
+  │     └── Knowledge Relationship ───► Knowledge Entity
+  └── Investment Thesis ───► Knowledge Entity
   ├── Agent Task
   │     └── Agent Task Event
   │     └── Artifact ───► Plugin

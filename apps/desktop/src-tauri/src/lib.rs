@@ -13,8 +13,8 @@ pub mod services;
 pub mod telemetry;
 pub mod windows;
 
-use tauri::Manager;
 use app::state::AppState;
+use tauri::Manager;
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -25,21 +25,35 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(tauri_plugin_http::init())
         .setup(|app| {
             let handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
-                    Ok(pool) => {
-                        let state = AppState::new(pool, handle.clone());
-                        handle.manage(state);
-                        info!("app state initialized");
-                    }
-                    Err(e) => {
-                        tracing::error!(?e, "database initialization failed");
+                    Ok(pool) => match AppState::new(pool, handle.clone()) {
+                        Ok(state) => {
+                            if let Err(error) = state.plugin_service.sync_bundled_plugins().await {
+                                tracing::error!(
+                                    error_code = error.code(),
+                                    "bundled plugin synchronization failed"
+                                );
+                            }
+                            handle.manage(state);
+                            info!("app state initialized");
+                        }
+                        Err(error) => {
+                            tracing::error!(
+                                error_code = error.code(),
+                                "app state initialization failed"
+                            );
+                        }
+                    },
+                    Err(error) => {
+                        tracing::error!(
+                            error_code = error.code(),
+                            "database initialization failed"
+                        );
                     }
                 }
             });
@@ -84,14 +98,59 @@ pub fn run() {
             commands::research::get_research_document,
             commands::research::list_research_documents,
             commands::research::delete_research_document,
+            commands::research::import_research_pdf,
+            commands::research::import_research_web_page,
+            commands::research::search_research_document,
+            commands::research::semantic_search_research_document,
+            commands::research::create_research_source,
+            commands::research::list_research_sources,
+            commands::research::create_research_note,
+            commands::research::list_research_notes,
+            commands::research::delete_research_note,
             commands::research::create_research_report,
             commands::research::get_research_report,
             commands::research::list_research_reports,
             commands::research::delete_research_report,
+            // Thesis commands
+            commands::thesis::create_thesis,
+            commands::thesis::get_thesis,
+            commands::thesis::list_theses,
+            commands::thesis::activate_thesis,
+            commands::thesis::start_thesis_validation,
+            commands::thesis::complete_thesis_validation,
+            commands::thesis::update_thesis_confidence,
+            commands::thesis::close_thesis,
+            commands::thesis::delete_thesis,
+            commands::thesis::add_thesis_evidence,
+            commands::thesis::list_thesis_evidence,
+            commands::thesis::delete_thesis_evidence,
+            commands::thesis::list_thesis_confidence_history,
+            // Knowledge graph commands
+            commands::knowledge_graph::create_knowledge_entity,
+            commands::knowledge_graph::list_knowledge_entities,
+            commands::knowledge_graph::create_knowledge_relationship,
+            commands::knowledge_graph::list_knowledge_relationships,
+            commands::knowledge_graph::link_thesis_knowledge_entity,
+            commands::knowledge_graph::list_thesis_knowledge_links,
             // Journal commands
-            commands::journal::list_theses,
+            commands::journal::list_journal_entries,
             // Portfolio commands
             commands::portfolio::list_portfolio_accounts,
+            commands::portfolio::create_portfolio_account,
+            commands::portfolio::create_portfolio_position,
+            commands::portfolio::list_portfolio_positions,
+            commands::portfolio::import_portfolio_transactions_csv,
+            commands::portfolio::list_portfolio_transactions,
+            commands::portfolio::get_portfolio_allocation,
+            commands::portfolio::get_portfolio_concentration_risks,
+            commands::portfolio::link_portfolio_theme,
+            commands::portfolio::get_portfolio_theme_exposure,
+            commands::portfolio::get_portfolio_thesis_alignment,
+            commands::portfolio::generate_portfolio_review,
+            // Plugin commands
+            commands::plugins::list_plugins,
+            commands::plugins::set_plugin_enabled,
+            commands::plugins::create_plugin_artifact,
             // Artifacts commands
             commands::artifacts::create_artifact,
             commands::artifacts::get_artifact,

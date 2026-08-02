@@ -11,7 +11,7 @@ Every plugin must include a `manifest.json`:
   "id": "company-comparison",
   "name": "Company Comparison",
   "version": "0.1.0",
-  "entry": "index.html",
+  "entry": "src/index.ts",
   "inputSchema": "schema.json",
   "permissions": [],
   "window": {
@@ -29,7 +29,7 @@ Every plugin must include a `manifest.json`:
 | `id` | Yes | Unique plugin identifier. Used to route artifacts. |
 | `name` | Yes | Human-readable display name. |
 | `version` | Yes | SemVer version string. |
-| `entry` | Yes | Entry HTML file for the artifact WebView. |
+| `entry` | Yes | Declarative internal-plugin entry module. Plugin source is not evaluated at runtime. |
 | `inputSchema` | Yes | Path to a JSON Schema file defining valid artifact input. |
 | `permissions` | Yes | List of required capabilities (empty = no special permissions). |
 | `window` | Yes | Default window dimensions and behavior. |
@@ -51,10 +51,9 @@ Plugins declare required permissions in their manifest. All permissions are deni
 | Permission | Description |
 |-----------|-------------|
 | (none) | Plugin renders static structured data. No external access needed. |
-| `network:chart-data` | Plugin may fetch chart data from an allowed provider. |
-| `filesystem:export` | Plugin may trigger a save dialog for export (PDF, CSV). |
+| `network` | Declares a network capability. It is denied unless an internal runtime explicitly implements and checks it. |
 
-In the MVP, no permissions are granted beyond `core:default`. All plugins are internal and statically reviewed.
+In the MVP, all plugins are internal and statically reviewed. The bundled plugins declare no network permission and have no filesystem, shell, database, credential, or arbitrary HTML access.
 
 ## Input Schema
 
@@ -92,15 +91,15 @@ Validation fails (and the artifact does not render) if agent output does not mat
 ## Lifecycle
 
 ```text
-Registered → Loaded → Active → Unloaded
+Registered → Enabled or Disabled → Validated Artifact → Rendered
 ```
 
 | State | Trigger |
 |-------|---------|
 | **Registered** | Plugin manifest is discovered and validated at application startup. |
-| **Loaded** | Plugin code is loaded when the first artifact of its type is requested. |
-| **Active** | Plugin is rendering an artifact window. |
-| **Unloaded** | Plugin is unregistered or the application shuts down. |
+| **Enabled / Disabled** | A user controls whether a registered internal plugin may prepare artifacts. |
+| **Validated Artifact** | Rust and the desktop API validate the payload against the bundled schema. |
+| **Rendered** | A predefined React renderer displays the completed artifact. |
 
 ## Error Isolation
 
@@ -110,15 +109,17 @@ Registered → Loaded → Active → Unloaded
 
 ## MVP Plugins
 
-Five internal plugins are included in the initial release:
+The five official internal plugins are included in the initial release:
 
 | Plugin ID | Artifact Type |
 |-----------|--------------|
 | `company-comparison` | Side-by-side financial metric comparison table |
 | `valuation-model` | DCF and multiples-based company valuation |
-| `portfolio-risk` | Portfolio risk exposure and concentration analysis |
 | `industry-map` | Visual industry landscape and competitive positioning |
-| `research-timeline` | Chronological research and thesis development timeline |
+| `earnings-analyzer` | Validated earnings highlights |
+| `macro-dashboard` | Validated macro indicators |
+
+Additional internal tools: `portfolio-risk` (portfolio risk exposure) and `research-timeline` (chronological research timeline).
 
 All MVP plugins are internal — no third-party plugin loading is supported.
 

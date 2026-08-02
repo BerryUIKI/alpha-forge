@@ -6,6 +6,8 @@ export * from "./TimelineRenderer";
 export * from "./IndustryMapRenderer";
 export * from "./ValuationModelRenderer";
 export * from "./RiskDashboardRenderer";
+export * from "./EarningsAnalyzerRenderer";
+export * from "./MacroDashboardRenderer";
 
 // Register built-in renderers
 import { artifactRegistry } from "./registry";
@@ -14,6 +16,8 @@ import { TimelineRenderer } from "./TimelineRenderer";
 import { IndustryMapRenderer } from "./IndustryMapRenderer";
 import { ValuationModelRenderer } from "./ValuationModelRenderer";
 import { RiskDashboardRenderer } from "./RiskDashboardRenderer";
+import { EarningsAnalyzerRenderer } from "./EarningsAnalyzerRenderer";
+import { MacroDashboardRenderer } from "./MacroDashboardRenderer";
 
 // Auto-register built-in artifact renderers
 artifactRegistry.register("comparison_table", ComparisonTableRenderer, {
@@ -44,4 +48,16 @@ artifactRegistry.register("risk_dashboard", RiskDashboardRenderer, {
   type: "risk_dashboard",
   name: "Risk Dashboard",
   description: "Portfolio risk analysis and monitoring",
+});
+
+artifactRegistry.register("earnings_analysis", EarningsAnalyzerRenderer, {
+  type: "earnings_analysis",
+  name: "Earnings Analyzer",
+  description: "Summarize validated earnings highlights",
+});
+
+artifactRegistry.register("macro_dashboard", MacroDashboardRenderer, {
+  type: "macro_dashboard",
+  name: "Macro Dashboard",
+  description: "Display validated macro indicators",
 });

@@ -15,6 +15,8 @@ AlphaForge is a desktop-first AI workspace for investment research. Our security
 - API keys and credentials are stored in the OS keychain (not in plaintext)
 - Secrets are never exposed to the React frontend
 - Credential access requires explicit user permission
+- The Rust credential adapter validates credential names, bounds values, and redacts platform-specific keychain errors
+- Startup and task-event diagnostics use stable error codes and contextual messages rather than raw paths or underlying error strings
 
 ### 2. Data Privacy
 - All data is stored locally in SQLite
@@ -30,6 +32,7 @@ AlphaForge is a desktop-first AI workspace for investment research. Our security
 - Agent-generated content is rendered in isolated WebViews
 - Artifacts cannot access main application privileges
 - Input validation prevents injection attacks
+- Artifact routes require a UUID identifier, a safe type segment, and bounded window dimensions before a WebView is created
 
 ### 5. Input Validation
 - All IPC inputs are validated with Zod (TypeScript) and Serde (Rust)
@@ -91,6 +94,21 @@ We credit reporters who follow this process (unless they prefer to remain anonym
    - Avoid shell access unless necessary
    - Validate file paths before filesystem access
 
+The shell plugin is not registered, and no application window receives shell permissions. External links use the narrower opener capability.
+The frontend HTTP plugin is also not registered. Network requests remain owned by Rust services, where providers and request policies can be validated centrally.
+
+The OpenAI research adapter reads only the `openai.api_key` credential from the OS keychain. It never accepts an API key over IPC, and its Responses API requests use bounded output plus a strict research-output schema.
+
+Research provenance links must use HTTPS, a public hostname, and no credentials or custom port. Local hostnames and literal IP addresses are rejected before persistence.
+
+### PDF Import Boundary
+
+PDF import exists to turn user-selected research files into local searchable content. The Rust command opens the native file picker, accepts only a selected PDF up to 25 MB, and extracts text before persistence. React receives only the resulting document; it cannot submit a filesystem path, read arbitrary files, or retain the selected path. Invalid, unreadable, or non-text PDFs return a recoverable validation error.
+
+### Web Source Import Boundary
+
+Web source import exists to record public research pages with provenance. React submits only a URL to a Rust command; the WebView never receives general network access. Rust requires a public HTTPS hostname, resolves and rejects restricted network ranges, uses a 15-second timeout, accepts only HTML or plain text up to 5 MB, and validates every redirect (maximum three) before saving extracted text and a source record.
+
 5. **Secure dependencies**
    - Run `npm audit` regularly
    - Run `cargo audit` regularly
@@ -131,7 +149,11 @@ LOG_LEVEL=info       # Logging level
 // src-tauri/tauri.conf.json
 {
   "security": {
-    "csp": "default-src 'self'; script-src 'self'",
+    "csp": {
+      "default-src": "'self' asset:",
+      "connect-src": "ipc: http://ipc.localhost",
+      "object-src": "'none'"
+    },
     "dangerousDisableAssetCspModification": false
   }
 }
@@ -139,10 +161,11 @@ LOG_LEVEL=info       # Logging level
 
 ### Content Security Policy
 
-- Scripts: Only from same origin
-- Styles: Inline styles allowed (Tailwind)
-- Images: Data URIs and same origin
-- Connect: Restricted to allowed domains
+- Scripts: Only from the packaged application origin
+- Styles: Packaged styles plus Tailwind-compatible inline styles
+- Images and media: Packaged assets, data/blob URLs, and Tauri's local asset protocol
+- Connect: Tauri IPC only (`ipc:` and `http://ipc.localhost`); remote browser fetches are blocked
+- Plugins and artifacts: No frames, forms, embedded objects, or remote scripts
 
 ## Known Security Considerations
 
@@ -161,6 +184,7 @@ LOG_LEVEL=info       # Logging level
 3. **Artifact Windows**
    - Isolation implemented but not battle-tested
    - Need penetration testing before production
+   - Route validation prevents path traversal in artifact window URLs; it does not replace a full production security audit
 
 ### Future Enhancements
 

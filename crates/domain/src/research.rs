@@ -111,6 +111,14 @@ pub struct CreateNoteInput {
     pub content: String,
 }
 
+/// A ranked local text match returned from a research document.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResearchSearchMatch {
+    pub ordinal: usize,
+    pub content: String,
+    pub score: usize,
+}
+
 /// Research report - generated outputs.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResearchReport {

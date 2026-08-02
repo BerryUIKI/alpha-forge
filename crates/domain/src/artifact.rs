@@ -38,6 +38,8 @@ pub enum ArtifactType {
     IndustryMap,
     ValuationModel,
     RiskDashboard,
+    EarningsAnalysis,
+    MacroDashboard,
     Custom(String),
 }
 
@@ -49,6 +51,8 @@ impl fmt::Display for ArtifactType {
             ArtifactType::IndustryMap => write!(f, "industry_map"),
             ArtifactType::ValuationModel => write!(f, "valuation_model"),
             ArtifactType::RiskDashboard => write!(f, "risk_dashboard"),
+            ArtifactType::EarningsAnalysis => write!(f, "earnings_analysis"),
+            ArtifactType::MacroDashboard => write!(f, "macro_dashboard"),
             ArtifactType::Custom(s) => write!(f, "{}", s),
         }
     }

@@ -1,8 +1,8 @@
 # AlphaForge Next Steps Strategy
 
 **Generated**: 2026-08-01
-**Current State**: M3 Artifact Intelligence System Complete ✅
-**Next Milestone**: M4 Research Workspace
+**Current State**: M7 Plugin Ecosystem (Complete) ✅
+**Next Milestone**: M8 Production & Commercialization
 
 ---
 
@@ -14,140 +14,67 @@
 - ✅ M1.5: Application Foundation
 - ✅ M2: Agent Runtime
 - ✅ M3: Artifact Intelligence System
+- ✅ M4: Research Workspace (Core Complete)
+- ✅ M5: Investment Knowledge System
+- ✅ M6: Portfolio Intelligence
+- ✅ M7: Plugin Ecosystem
+
+### In Progress
+- No active implementation milestone
 
 ### Test Coverage
-- **Rust Tests**: 77 passing
-- **Frontend Tests**: 41 passing
-- **Total**: 118 tests passing
+- **Frontend Tests**: 53 passing
+- **Rust Build**: `cargo check -p investment-os` passes (four unrelated warnings remain)
 
-### Key Achievements (M3)
-- Artifact persistence layer (repository + service)
-- Artifact runtime manager (window lifecycle)
-- 5 built-in artifact renderers
-- 11 Tauri commands
-- Complete frontend integration
-
----
-
-## 🎯 Short-Term Goals (Week 11-12)
-
-### 1. M3 Polish & Documentation
-**Priority**: High
-**Timeline**: 2 weeks
-
-#### Tasks
-- [ ] Add artifact renderer tests
-- [ ] Create artifact usage examples
-- [ ] Write artifact integration guide
-- [ ] Add E2E tests for artifact workflow
-- [ ] Performance profiling for artifact rendering
-
-#### Deliverables
-- Artifact developer guide
-- Example artifact data schemas
-- Performance benchmarks
-
-### 2. CI/CD Enhancement
-**Priority**: High
-**Timeline**: 1 week
-
-#### Tasks
-- [ ] Set up automated testing on PR
-- [ ] Add test coverage reporting
-- [ ] Configure branch protection rules
-- [ ] Set up automated releases
-
-#### Deliverables
-- CI pipeline configuration
-- Coverage reports
-- Release automation
-
-### 3. Developer Experience
-**Priority**: Medium
-**Timeline**: 1 week
-
-#### Tasks
-- [ ] Improve error messages
-- [ ] Add development debugging tools
-- [ ] Create artifact creation wizard
-- [ ] Improve hot reload for development
-
-#### Deliverables
-- Better error handling
-- Dev tools documentation
-- Artifact creation guide
+### Key Achievements (M5 Backend)
+- Investment thesis domain models
+- Thesis repository with CRUD operations
+- Thesis service with business logic
+- 13 Thesis management commands, including confidence-history review
+- Knowledge graph entities, relationships, and Thesis links
+- Evidence collection and tracking
 
 ---
 
-## 🚀 Medium-Term Goals (Week 13-18)
+## 🎯 Short-Term Goals (Current Sprint)
 
-### M4: Research Workspace
+### 1. Scope M8 Production & Commercialization (Deferred)
+**Priority**: High
+**Timeline**: To be defined
+
+M7 is complete. M8 is temporarily deferred. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
+Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals before opening an M8 feature branch.
+
+---
+
+## 🚀 Medium-Term Goals (Next 4-6 Weeks)
+
+### M6: Portfolio Intelligence
 **Priority**: High
 **Timeline**: 4 weeks
 
 #### Core Features
-1. **Project Management**
-   - Research project CRUD operations
-   - Project templates
-   - Project-level artifact organization
+1. **Portfolio Management**
+   - Account management — workspace-scoped accounts are implemented
+   - Holdings tracking — manual account positions are implemented
+   - Transaction import — validated CSV history import is implemented; it does not execute trades
+   - Allocation analysis — cost-basis allocation and exposure are implemented; live pricing is not yet integrated
 
-2. **Document Intelligence**
-   - PDF parsing and indexing
-   - Web source extraction
-   - Document version control
-   - Semantic search
+2. **AI Analysis**
+   - Risk concentration analysis — transparent cost-basis concentration signals are implemented
+   - Theme exposure mapping — explicit knowledge-entity links and cost-basis exposure are implemented
+   - Thesis alignment checking — portfolio review exposes matching thesis coverage
+   - Historical review automation — on-demand review summarizes concentration and unaligned holdings
 
-3. **Research Workflow**
-   ```
-   Collect Sources → Analyze Documents → Generate Thesis → Create Report → Persist Knowledge
-   ```
-
-#### Technical Requirements
-- PDF processing library (Rust)
-- Full-text search (SQLite FTS5)
-- Document storage system
-- Source provenance tracking
-
-#### Deliverables
-- Project management API
-- Document import pipeline
-- Search functionality
-- Research workflow automation
-
-#### Acceptance Criteria
+#### Important Constraints
 ```text
-User creates research project
-    ↓
-Adds documents and sources
-    ↓
-Agent assists with analysis
-    ↓
-User generates report
-    ↓
-All artifacts persisted
+✓ Portfolio tracking and analysis
+✓ Research-thesis alignment
+✓ Risk visualization
+✗ NO automated trading
+✗ NO autonomous investment decisions
+✗ NO trade execution
 ```
-
----
-
-## 🎨 Long-Term Vision (Week 19-30)
-
-### M5: Investment Knowledge System (Week 19-22)
-- Investment thesis management
-- Evidence collection and tracking
-- Knowledge graph visualization
-- Thesis validation scheduling
-
-### M6: Portfolio Intelligence (Week 23-26)
-- Portfolio tracking integration
-- Risk concentration analysis
-- Theme exposure mapping
-- Thesis-portfolio alignment
-
-### M7: Plugin Ecosystem (Week 27-30)
-- Plugin SDK development
-- Plugin marketplace
-- Community plugin support
-- Plugin security model
 
 ### M8: Production & Commercialization (TBD)
 - User authentication
@@ -191,12 +118,11 @@ All artifacts persisted
 
 ## 📈 Success Metrics
 
-### M4 Completion Criteria
-- [ ] 20+ new tests passing
-- [ ] Document import working
-- [ ] Search functionality operational
-- [ ] Research workflow automated
-- [ ] Documentation complete
+### M8 Decision Gate
+- [ ] Select an authentication approach and identity provider
+- [ ] Define licensing, entitlement, and subscription requirements
+- [ ] Decide whether cloud backup is in scope and document its privacy model
+- [ ] Assign release-signing identities and supported platforms
 
 ### Quality Gates
 - All tests passing
@@ -210,47 +136,13 @@ All artifacts persisted
 
 ### Immediate (This Week)
 
-1. **Merge Issue Template Updates**
-   ```bash
-   git checkout dev
-   git pull origin dev
-   git merge feature/m3-artifact-system
-   git push origin dev
-   ```
+1. **Maintain completed milestone documentation**
+   - Keep M3–M7 status and acceptance notes aligned with delivered behavior.
 
-2. **Create M4 Planning Issue**
-   - Use milestone template
-   - Define detailed deliverables
-   - Estimate timeline
-
-3. **Set Up CI/CD**
-   - Configure GitHub Actions
-   - Add test automation
-   - Set up coverage reporting
-
-### Next 2 Weeks
-
-1. **M3 Polish**
-   - Add artifact renderer tests
-   - Create usage examples
-   - Write integration guide
-
-2. **M4 Foundation**
-   - Design data models
-   - Plan API structure
-   - Create initial migration
-
-### Next Month
-
-1. **M4 Implementation**
-   - Implement project management
-   - Build document import
-   - Create search functionality
-
-2. **Testing & Documentation**
-   - Write comprehensive tests
-   - Update all documentation
-   - Create user guides
+2. **Complete the M8 product decision record**
+   - Select authentication and billing providers.
+   - Confirm cloud backup, privacy, and data-retention scope.
+   - Assign signing and installer release owners.
 
 ---
 
@@ -275,13 +167,13 @@ All artifacts persisted
 
 ## 🎉 Conclusion
 
-**M3 Complete**: AlphaForge now has a fully functional artifact system for interactive research visualizations.
+**M7 Complete**: AlphaForge supports validated internal plugins, controlled artifact rendering, and the documented official plugin set.
 
-**Next Milestone**: M4 Research Workspace will transform AlphaForge into a complete AI research environment with document intelligence and automated workflows.
+**Next Milestone**: M8 Production & Commercialization.
 
-**Focus Areas**: Polish M3, enhance CI/CD, and begin M4 foundation work.
+**Focus Areas**: Establish the commercial and security decisions before implementing external authentication, billing, backup, or release infrastructure.
 
-**Timeline**: 6-8 weeks to complete M4 and prepare for M5.
+**Timeline**: To be defined after the M8 decision gate.
 
 ---
 

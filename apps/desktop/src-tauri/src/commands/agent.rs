@@ -76,6 +76,7 @@ pub async fn cancel_agent_task(
     // Cancel in executor first
     state.task_executor.cancel_task(&task_id).await?;
 
-    // Then update in service layer
-    state.agent_service.cancel_task(&task_id).await
+    // Then persist and stream the terminal task event.
+    let task = state.agent_service.cancel_task(&task_id).await?;
+    Ok(task)
 }

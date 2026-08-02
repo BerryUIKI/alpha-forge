@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["industry", "companies", "categories"],
+  "properties": {
+    "industry": { "type": "string", "minLength": 1 },
+    "companies": { "type": "array", "minItems": 1 },
+    "categories": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+  }
+}

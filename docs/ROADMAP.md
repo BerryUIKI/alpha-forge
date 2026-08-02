@@ -121,14 +121,17 @@ Build portfolio management and analysis.
 - [ ] Theme allocation tracking.
 - [ ] Risk dashboards (via portfolio-risk plugin).
 
-## Phase 11 — Security Hardening
+## Phase 11 — Security Hardening 🚧
 
-- [ ] OS keychain credential storage.
+- [x] OS keychain credential storage with validated credential names, bounded values, idempotent deletion, and redacted platform errors.
 - [ ] URL allowlist enforcement.
-- [ ] Path normalization and validation.
-- [ ] Directory traversal prevention.
+- [x] Artifact route validation: UUID artifact IDs, safe type segments, bounded window sizes, and recoverable invalid-route errors.
+- [x] Artifact route traversal prevention.
 - [ ] Plugin sandbox enforcement.
-- [ ] Log redaction.
+- [x] Startup and task-event logs use stable error codes and contextual messages without raw local paths or underlying error strings.
+- [x] Shell access disabled by default: the shell plugin and shell permissions are removed from the application.
+- [x] Frontend HTTP access disabled by default: the HTTP plugin is removed and network requests remain in Rust services.
+- [x] Production Content Security Policy restricts scripts, browser connections, framing, forms, and embedded objects to the packaged application boundary.
 - [ ] Security audit.
 
 ## Phase 12 — Production Readiness

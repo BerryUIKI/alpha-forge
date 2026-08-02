@@ -19,10 +19,10 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M1.5 | ✅ Complete | Week 5-6 | Application Foundation |
 | M2 | ✅ Complete | Week 7-10 | Agent Runtime |
 | M3 | ✅ Complete | Week 11-14 | Artifact Intelligence System |
-| M4 | 🚧 In Progress | Week 15-18 | Research Workspace (Core Complete) |
-| M5 | 📋 Planned | Week 19-22 | Investment Knowledge System |
-| M6 | 📋 Planned | Week 23-26 | Portfolio Intelligence |
-| M7 | 📋 Planned | Week 27-30 | Plugin Ecosystem |
+| M4 | ✅ Complete | Week 15-18 | Research Workspace |
+| M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
+| M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
+| M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
 | M8 | 📅 Future | TBD | Production & Commercialization |
 
 ---
@@ -198,9 +198,11 @@ Create the core intelligence engine of AlphaForge.
 - 📋 Calculation tools (Future)
 
 #### Provider Integration
-- 📋 OpenAI API integration (Future)
-- 📋 Structured output parsing (Future)
-- 📋 Error handling and fallback (Future)
+- ✅ Typed provider contract and validated structured research-output parser
+- ✅ OpenAI Responses API adapter with keychain-only credential lookup, bounded output, and strict structured output
+- ✅ Agent executor routes tasks through the configured provider with timeout and cancellation handling
+- ✅ Structured research output is persisted as a task-completion event
+- ✅ Safe provider failure messages are persisted and streamed without exposing credentials or raw provider responses
 
 ### Task Lifecycle
 ```text
@@ -242,9 +244,9 @@ Result persisted in SQLite
 
 ---
 
-## M3 — Artifact Intelligence System 🚧
+## M3 — Artifact Intelligence System ✅
 
-**Status**: In Progress
+**Status**: Complete
 
 ### Goal
 Enable Agents to create interactive research experiences.
@@ -254,7 +256,7 @@ Enable Agents to create interactive research experiences.
 #### Artifact Runtime
 - ✅ Structured output schema
 - ✅ Temporary window creation
-- 📋 Renderer system (React components)
+- ✅ Renderer system (predefined React components)
 - ✅ Permission isolation
 
 #### Persistence Layer
@@ -265,11 +267,11 @@ Enable Agents to create interactive research experiences.
 - ✅ Frontend artifact API and hooks
 
 #### Built-in Artifacts
-- 📋 Comparison table renderer
-- 📋 Timeline renderer
-- 📋 Industry map renderer
-- 📋 Valuation model renderer
-- 📋 Risk dashboard renderer
+- ✅ Comparison table renderer
+- ✅ Timeline renderer
+- ✅ Industry map renderer
+- ✅ Valuation model renderer
+- ✅ Risk dashboard renderer
 
 ### Artifact Flow
 ```text
@@ -296,10 +298,9 @@ Artifacts are isolated from main application:
 - ✗ No API keys
 - ✗ No shell execution
 
-### Tests
-- ✅ Repository tests: 11 tests
-- ✅ Frontend API tests: 13 tests
-- ✅ All tests passing: 77 Rust + 41 Frontend
+### Verification
+- ✅ Rust repository and artifact-runtime tests cover artifact persistence, safe window configuration, and renderer data flow
+- ✅ Frontend artifact API and renderer registry are covered by the workspace test suite
 
 ### Acceptance Criteria
 ```text
@@ -314,9 +315,9 @@ Artifact closes cleanly
 
 ---
 
-## M4 — Research Workspace 📋
+## M4 — Research Workspace ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Turn AlphaForge into a complete AI research environment.
@@ -324,17 +325,19 @@ Turn AlphaForge into a complete AI research environment.
 ### Deliverables
 
 #### Research Projects
-- [ ] Project CRUD operations
-- [ ] Document management
-- [ ] Source management
-- [ ] Notes system
-- [ ] Report generation
+- [x] Project CRUD operations
+- [x] Document management
+- [x] Source management with recorded provenance and validated public HTTPS links
+- [x] Notes system
+- [x] Report persistence
 
 #### Document Intelligence
-- [ ] PDF parsing
-- [ ] Web source extraction
-- [ ] Local document indexing
-- [ ] Semantic search
+- [x] Local content parsing, chunking, and lexical query-ranking primitives
+- [x] PDF parsing through a Rust-owned native picker (25 MB limit; extracted text only)
+- [x] Web source extraction through bounded Rust-side HTTPS retrieval
+- [x] Local semantic ranking for related investment terms
+
+The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, retrieve validated public HTTPS pages in Rust, split content into deterministic chunks, and rank matching chunks through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. Web imports accept HTML or plain text only, cap responses at 5 MB, use a 15-second timeout, validate every redirect (maximum three), and preserve source provenance. Semantic mode is local and explainable: it expands a curated investment vocabulary (for example, revenue/sales and earnings/profit), while exact matches retain the highest score. It does not send content to an external embedding provider or generate investment recommendations.
 
 #### Research Workflow
 ```text
@@ -373,9 +376,9 @@ All artifacts persisted
 
 ---
 
-## M5 — Investment Knowledge System 📋
+## M5 — Investment Knowledge System ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Build persistent investment intelligence.
@@ -383,19 +386,19 @@ Build persistent investment intelligence.
 ### Deliverables
 
 #### Thesis Management
-- [ ] Investment thesis CRUD
-- [ ] Evidence collection
-- [ ] Counter-evidence tracking
-- [ ] Confidence scoring
-- [ ] Review history
-- [ ] Validation scheduling
+- [x] Investment thesis CRUD
+- [x] Evidence collection
+- [x] Counter-evidence tracking
+- [x] Confidence scoring
+- [x] Review history
+- [x] Validation scheduling
 
 #### Knowledge Graph
-- [ ] Company entities
-- [ ] Industry entities
-- [ ] Technology entities
-- [ ] Macro theme entities
-- [ ] Relationship mapping
+- ✅ Company entities
+- ✅ Industry entities
+- ✅ Technology entities
+- ✅ Macro theme entities
+- ✅ Relationship mapping and thesis links
 
 ### Knowledge Graph Example
 ```text
@@ -438,11 +441,44 @@ Tracks confidence over time
 Records validation results
 ```
 
+### Implementation
+
+#### Backend (Rust)
+- ✅ Domain models: `InvestmentThesis`, `ThesisEvidence`, `ThesisStatus`, `EvidenceDirection`
+- ✅ Database migration: `0006_theses.sql`
+- ✅ Thesis repository with CRUD operations
+- ✅ Thesis service with business logic
+- ✅ 13 Tauri commands for thesis management
+- ✅ 13 repository tests passing
+- ✅ Migration reconciliation for legacy schemas
+
+#### Frontend (TypeScript)
+- ✅ Thesis management UI in the Journal workspace
+- ✅ Evidence collection interface with supporting and contradicting evidence
+- ✅ Confidence visualization, immutable history, and lifecycle controls
+
+#### Tauri Commands
+| Command | Description |
+|---------|-------------|
+| `create_thesis` | Create a new investment thesis |
+| `get_thesis` | Get thesis by ID |
+| `list_theses` | List all theses in workspace |
+| `activate_thesis` | Activate a draft thesis |
+| `start_thesis_validation` | Begin validation process |
+| `complete_thesis_validation` | Record validation outcome |
+| `update_thesis_confidence` | Update confidence score |
+| `close_thesis` | Close a thesis |
+| `delete_thesis` | Delete a thesis |
+| `add_thesis_evidence` | Add supporting/contradicting evidence |
+| `list_thesis_evidence` | List all evidence for thesis |
+| `delete_thesis_evidence` | Remove evidence |
+| `list_thesis_confidence_history` | Review confidence changes over time |
+
 ---
 
-## M6 — Portfolio Intelligence 📋
+## M6 — Portfolio Intelligence ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Connect research with actual investment decisions.
@@ -450,17 +486,17 @@ Connect research with actual investment decisions.
 ### Deliverables
 
 #### Portfolio Management
-- [ ] Account management
-- [ ] Holdings tracking
-- [ ] Transaction import
-- [ ] Allocation analysis
-- [ ] Exposure calculation
+- [x] Account management — workspace-scoped accounts with a desktop UI
+- [x] Holdings tracking — manual position capture and account-level review
+- [x] Transaction import — validated CSV import into immutable account history
+- [x] Allocation analysis — workspace cost-basis allocation by symbol
+- [x] Exposure calculation — per-symbol and cross-account concentration weights
 
 #### AI Analysis
-- [ ] Risk concentration analysis
-- [ ] Theme exposure mapping
-- [ ] Thesis alignment checking
-- [ ] Historical review automation
+- [x] Risk concentration analysis — transparent cost-basis thresholds (moderate 10%, high 25%)
+- [x] Theme exposure mapping — explicit symbol-to-knowledge-entity links with cost-basis aggregation
+- [x] Thesis alignment checking — transparent held-symbol matches against workspace thesis content
+- [x] Historical review automation — on-demand review summarizing concentration and unaligned symbols
 
 ### Important Constraints
 ```text
@@ -487,9 +523,9 @@ User reviews insights
 
 ---
 
-## M7 — Plugin Ecosystem 📋
+## M7 — Plugin Ecosystem ✅
 
-**Status**: Planned
+**Status**: Complete
 
 ### Goal
 Make AlphaForge extensible.
@@ -497,11 +533,11 @@ Make AlphaForge extensible.
 ### Deliverables
 
 #### Plugin SDK
-- [ ] Plugin manifest specification
-- [ ] Permission model
-- [ ] Input/output schemas
-- [ ] Artifact renderer API
-- [ ] Lifecycle management
+- [x] Plugin manifest specification — strict internal manifest validation and safe relative-path checks
+- [x] Permission model — declared permissions are persisted and checked against the validated manifest
+- [x] Input/output schemas — bundled JSON Schemas validate payloads before a plugin artifact is created
+- [x] Artifact renderer API — plugin IDs map only to predefined artifact renderers; no generated HTML is evaluated
+- [x] Lifecycle management — bundled manifests synchronize at startup; users can enable or disable a registered plugin
 
 #### Official Plugins
 1. **company-comparison** — Compare multiple companies side-by-side
@@ -537,6 +573,8 @@ Plugin executes
     ↓
 Artifact rendered
 ```
+
+**Current boundary**: The five official plugins are bundled alongside the existing internal `portfolio-risk` and `research-timeline` tools. Dynamic plugin installation and arbitrary code execution are intentionally unsupported. A validated payload becomes a completed artifact rendered by a predefined component; no plugin source code is evaluated.
 
 ---
 
@@ -603,12 +641,12 @@ User reviews later
 ```
 
 ### Technical Requirements
-- [ ] Workspace persistence (M1.5)
-- [ ] Agent task execution (M2)
-- [ ] Progress event streaming (M2)
-- [ ] Structured output (M2)
-- [ ] Artifact rendering (M3)
-- [ ] Result persistence (M3)
+- [x] Workspace persistence (M1.5)
+- [x] Agent task execution (M2)
+- [x] Progress event streaming (M2)
+- [x] Structured output (M2)
+- [x] Artifact rendering (M3)
+- [x] Result persistence (M3)
 
 ---
 
@@ -666,13 +704,12 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M1.5 — Application Foundation** 🚧
+**M8 — Production & Commercialization** is intentionally deferred pending the decisions in [M8 Decision Record](M8_DECISION_RECORD.md). Security hardening continues as focused maintenance work.
 
 ### Next Milestones
-1. Complete workspace persistence
-2. Expand desktop API
-3. Build UI foundation
-4. Establish testing framework
+1. Resolve M8 product and release decisions
+2. Complete the M8 decision gate before commercial infrastructure work
+3. Continue focused security and quality improvements
 
 ### Long-term Vision
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.
