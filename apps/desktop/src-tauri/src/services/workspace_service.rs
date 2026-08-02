@@ -70,7 +70,7 @@ impl WorkspaceService {
         }
 
         // Validate name if provided
-        let name = input.name.as_ref().map(|n| n.trim()).filter(|n| !n.is_empty());
+        let name = input.name.map(|n| n.trim().to_string()).filter(|n| !n.is_empty());
 
         let name = match name {
             Some(n) if n.len() > 200 => {
@@ -78,7 +78,7 @@ impl WorkspaceService {
                     "Workspace name cannot exceed 200 characters".to_string(),
                 ));
             }
-            Some(n) => n.to_string(),
+            Some(n) => n,
             None => {
                 return Err(AppError::Validation(
                     "Workspace name must be provided".to_string(),
