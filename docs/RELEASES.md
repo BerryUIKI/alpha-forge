@@ -12,7 +12,7 @@ This MVP is distributed as a macOS Apple Silicon DMG and a Windows NSIS EXE. @Be
 
 ## Update behavior
 
-The app checks GitHub Releases only when a user requests it from Settings. It opens the matching release page when a newer semantic version is available. It never downloads or installs an update automatically.
+The app checks GitHub Releases only when a user requests it from Settings. It opens a newer release only when GitHub returns an HTTPS page for this repository. It never downloads or installs an update automatically.
 
 ## Known distribution limits
 
