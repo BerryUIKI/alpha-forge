@@ -38,12 +38,11 @@
 
 ## 🎯 Short-Term Goals (Current Sprint)
 
-### 1. Scope M8 Production & Commercialization (Deferred)
+### 1. Complete M8 local-desktop release foundation
 **Priority**: High
 **Timeline**: To be defined
 
-M7 is complete. M8 is temporarily deferred. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
-Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals before opening an M8 feature branch.
+M7 is complete. The local-desktop M8 boundary is now recorded in the [M8 Decision Record](M8_DECISION_RECORD.md): no account, cloud backup, telemetry, billing, licensing, or activation in the MVP. Complete the remaining legal, security-contact, and release-owner checks before public production release.
 
 ---
 
@@ -76,12 +75,12 @@ Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals befor
 ✗ NO trade execution
 ```
 
-### M8: Production & Commercialization (TBD)
-- User authentication
-- Licensing system
-- Cloud backup (optional)
-- Application signing
-- Installer packaging
+### M8: Production & Commercialization (local MVP foundation)
+- Manual local backup export
+- Privacy notice and About surface
+- Manual GitHub Release update checks
+- DMG and Windows EXE packaging configuration
+- Authentication, licensing, billing, and cloud backup deferred
 
 ---
 
@@ -119,10 +118,10 @@ Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals befor
 ## 📈 Success Metrics
 
 ### M8 Decision Gate
-- [ ] Select an authentication approach and identity provider
-- [ ] Define licensing, entitlement, and subscription requirements
-- [ ] Decide whether cloud backup is in scope and document its privacy model
-- [ ] Assign release-signing identities and supported platforms
+- [x] Record a local-only identity approach
+- [x] Defer licensing, entitlement, and subscription enforcement
+- [x] Record the no-cloud-backup privacy model
+- [x] Assign @BerryUIKI as release-signing owner and select supported platforms
 
 ### Quality Gates
 - All tests passing
@@ -139,10 +138,10 @@ Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals befor
 1. **Maintain completed milestone documentation**
    - Keep M3–M7 status and acceptance notes aligned with delivered behavior.
 
-2. **Complete the M8 product decision record**
-   - Select authentication and billing providers.
-   - Confirm cloud backup, privacy, and data-retention scope.
-   - Assign signing and installer release owners.
+2. **Complete the remaining public-release gates**
+   - Publish the official privacy notice and support contact email.
+   - Assign a security incident contact.
+   - Run legal and release-security review before public production release.
 
 ---
 

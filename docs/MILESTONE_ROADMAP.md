@@ -578,20 +578,23 @@ Artifact rendered
 
 ---
 
-## M8 — Production & Commercialization 📅
+## M8 — Production & Commercialization 🚧
 
-**Status**: Future
+**Status**: Local-desktop MVP release foundation in progress. See [M8 Decision Record](M8_DECISION_RECORD.md).
 
 ### Goal
-Prepare AlphaForge as a commercial product.
+Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.
 
 ### Deliverables
 
 #### Infrastructure
-- [ ] User authentication
-- [ ] Licensing system
-- [ ] Subscription management
-- [ ] Cloud backup (optional)
+- [x] Record the local-only MVP decisions
+- [x] Add user-controlled local SQLite backup export
+- [x] Add privacy and manual-update controls in Settings
+- [ ] User authentication (deferred)
+- [ ] Licensing system (deferred)
+- [ ] Subscription management (deferred)
+- [ ] Cloud backup (deferred)
 
 #### Marketplace
 - [ ] Plugin marketplace
@@ -600,9 +603,9 @@ Prepare AlphaForge as a commercial product.
 
 #### Deployment
 - [ ] Application icons
-- [ ] Installer packaging (DMG, MSI, AppImage)
-- [ ] Auto-update infrastructure
-- [ ] Release automation
+- [x] Configure DMG and Windows EXE (NSIS) targets
+- [x] Document manual GitHub Release checks
+- [ ] Signing and release automation (release-owner operation)
 
 ### Release Readiness
 - [ ] Performance optimization

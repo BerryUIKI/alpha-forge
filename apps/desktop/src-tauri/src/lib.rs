@@ -66,6 +66,8 @@ pub fn run() {
             commands::system::get_config_dir,
             commands::system::get_data_dir,
             commands::system::check_database_health,
+            commands::system::export_local_backup,
+            commands::system::check_for_update,
             // Settings commands
             commands::settings::health_check,
             commands::settings::get_app_info,

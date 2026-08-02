@@ -9,6 +9,21 @@
     "beforeDevCommand": "pnpm dev:web",
     "beforeBuildCommand": "pnpm build:web"
   },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "publisher": "BerryUIKI",
+    "homepage": "https://github.com/BerryUIKI/alpha-forge",
+    "category": "Finance",
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  },
   "app": {
     "windows": [
       {
