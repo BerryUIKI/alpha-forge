@@ -90,6 +90,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 ### M8 release foundation
 - 🚧 Local SQLite backup export and an in-app privacy surface
 - 🚧 Manual GitHub Release update checks and DMG/Windows EXE packaging configuration
+- 🚧 Simplified-Chinese default locale with an English switch in Settings
 - 📅 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
 
 ---
