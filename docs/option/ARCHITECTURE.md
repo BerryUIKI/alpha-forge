@@ -46,10 +46,10 @@ The Option Analysis Platform extends AlphaForge's Investment OS with professiona
 - Keyboard navigation and accessibility
 
 **Owns**:
-- Pages: `src/pages/options/`
-- Feature components: `src/features/options/`
-- IPC client: `src/lib/desktop-api/options.ts`
-- Type definitions: `src/types/option.ts`
+- Pages: `apps/desktop/src/pages/options/`
+- Feature components: `apps/desktop/src/features/options/`
+- IPC client: `apps/desktop/src/lib/desktop-api/options.ts`
+- Type definitions: `apps/desktop/src/types/option.ts`
 - UI state (TanStack Query, Zustand)
 
 **Must NOT**:
@@ -234,7 +234,7 @@ alpha-forge/
 │       │       └── market_data/
 │       │           └── options_provider.rs # NEW: Data fetching
 │       └── migrations/
-│           └── 0003_options_support.sql    # NEW: Database schema
+│           └── 0004_options_support.sql    # HISTORICAL: current runner does not apply it
 │
 └── plugins/                                # Artifact plugins
     ├── option-chain/                       # NEW
@@ -635,17 +635,20 @@ pub struct CachedPricingEngine {
 }
 
 impl CachedPricingEngine {
-    pub fn price(&self, params: &PricingParams) -> f64 {
+    pub fn price(&self, params: &PricingParams) -> Result<f64, PricingError> {
         let key = params.to_key();
-        
-        let mut cache = self.cache.lock().unwrap();
+
+        let mut cache = self
+            .cache
+            .lock()
+            .map_err(|_| PricingError::CacheUnavailable)?;
         if let Some(&price) = cache.get(&key) {
-            return price;
+            return Ok(price);
         }
-        
+
         let price = self.engine.price(params);
         cache.put(key, price);
-        price
+        Ok(price)
     }
 }
 ```
@@ -1358,6 +1361,9 @@ pub fn calculate_greeks(contract: &OptionContract) -> Greeks {
 
 ## References
 
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
 - [Product Specification](./PRODUCT.md)
 - [Roadmap](./ROADMAP.md)
 - [Use Cases](./USE_CASES.md)

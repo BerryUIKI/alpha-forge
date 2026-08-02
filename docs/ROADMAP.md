@@ -1,5 +1,7 @@
 # Roadmap
 
+> This file preserves the original technical phase checklist. Program status and sequencing are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md); do not infer current completion from unchecked items here.
+
 ## Phase 0 — Documentation Foundation ✅
 
 Establish project documentation, repository structure, and Git workflow.
@@ -156,3 +158,13 @@ Launch → Enter research task
 ```
 
 This milestone spans Phases 2–7 and represents the core product loop.
+
+## Program continuation
+
+The current milestone sequence is:
+
+1. **M8 — Local MVP Completion & Release Readiness**: i18n, local release, privacy, security, legal, and support gates.
+2. **M9 — Option Module Integration**: persistence repair, pricing/provider core, chain, strategy, and portfolio-risk vertical slices.
+3. **M10 — Goose Agent Integration**: post-MVP, read-only first, allowlisted MCP tools, structured output, and human-approved writes.
+
+Use the [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md) and the supporting documents linked from the milestone registry.

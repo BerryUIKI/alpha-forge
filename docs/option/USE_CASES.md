@@ -850,6 +850,9 @@ Each use case maps to specific features and acceptance criteria, ensuring the pl
 
 ## References
 
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
 - [Product Specification](./PRODUCT.md)
 - [Architecture Design](./ARCHITECTURE.md)
 - [API Specification](./API_SPEC.md)

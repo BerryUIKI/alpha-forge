@@ -1,4 +1,4 @@
-# M8 Production & Commercialization Decision Workbook
+# M8 Local MVP & Commercialization Decision Workbook
 
 **Status**: Awaiting product-owner decisions
 **How to use this file**: Replace every `TODO` with an answer, select one option where choices are listed, and add a short rationale for any non-default choice. You may also reply in chat using the template at the end of this document.
@@ -14,6 +14,7 @@ The recommended first commercial release keeps the local-first product model:
 - Optional manual export is preferred over automatic cloud backup.
 - A simple license file or offline entitlement is preferred over subscription billing.
 - macOS is the first supported release platform, with Windows considered after the release workflow is proven.
+- Simplified Chinese and English are the planned MVP UI locales; the product owner must approve the launch default.
 
 Choose a different direction only if it is a deliberate product requirement.
 
@@ -26,6 +27,9 @@ Choose a different direction only if it is a deliberate product requirement.
 | Commercial model | TODO | Paid local desktop application | Defines entitlement work |
 | Is a cloud account required in M8? | TODO: Yes / No | No | Changes architecture and privacy obligations |
 | Countries or regions to support at launch | TODO | Your home market only | Affects payment, tax, legal, and privacy work |
+| Supported UI locales | TODO | Simplified Chinese (`zh-CN`) and English (`en`) | Defines translation and release QA scope |
+| Launch default locale | TODO: `zh-CN` / `en` | `zh-CN`, with user-selectable English | Defines deterministic first-run behavior |
+| Translation reviewer | TODO | Named bilingual reviewer | Owns finance terminology and disclaimer accuracy |
 | Product owner | TODO | Named individual | Owns scope decisions |
 
 ## 2. Authentication and identity
@@ -106,6 +110,7 @@ Complete this section only if an account is required. If not, write `Not in M8` 
 ## 7. Approval checklist
 
 - [ ] Product scope approved
+- [ ] UI locales, launch default, and translation reviewer approved
 - [ ] Identity approach approved or explicitly deferred
 - [ ] Licensing and billing model approved
 - [ ] Backup and privacy model approved
@@ -128,6 +133,9 @@ M8 product scope:
 - Target customer:
 - Commercial model:
 - Launch regions:
+- Supported UI locales:
+- Launch default locale:
+- Translation reviewer:
 
 Authentication:
 - Required in M8? (yes/no):

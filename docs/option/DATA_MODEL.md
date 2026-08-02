@@ -376,10 +376,12 @@ Workspace
 
 ## Database Schema
 
-### Migration: 0003_options_support.sql
+### Historical schema file: 0004_options_support.sql
+
+The repository contains this historical schema file, but the current custom migration runner does not apply it. M9 must add and register a new append-only reconciliation migration; do not rename or edit the historical file. See [Implementation Details](IMPLEMENTATION_DETAILS.md#persistence-path).
 
 ```sql
--- Migration: 0003_options_support
+-- Historical schema file: 0004_options_support (not applied by the current runner)
 -- Description: Add option analysis platform tables
 -- Author: AlphaForge Team
 -- Date: 2024-01-XX
@@ -1074,24 +1076,26 @@ LIMIT 1;
 **Rules**:
 1. Never modify existing migration files after release
 2. Create new migration for schema changes
-3. Use reversible migrations with down scripts
-4. Test migrations on copy of production data
+3. Repair a released schema with a later forward-only migration
+4. Test fresh, historical, partial, and repeat-run upgrade paths on recoverable database copies
 
 **Example**:
 ```sql
--- Migration: 0004_add_greeks_snapshots.sql
-CREATE TABLE greeks_snapshots (
+-- Migration: NNNN_options_support_reconciliation.sql
+CREATE TABLE IF NOT EXISTS greeks_snapshots (
     -- ...
 );
-
--- Rollback: 0004_add_greeks_snapshots_down.sql
-DROP TABLE greeks_snapshots;
 ```
+
+Operational rollback uses a database backup and a normal application revert. Never remove an applied migration or destroy user data to roll back code.
 
 ---
 
 ## References
 
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
 - [Architecture Design](./ARCHITECTURE.md)
 - [API Specification](./API_SPEC.md)
 - [AlphaForge Data Model](../DATA_MODEL.md)

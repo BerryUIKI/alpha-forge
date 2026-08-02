@@ -473,6 +473,9 @@ See [ROADMAP.md](./ROADMAP.md) for detailed phase specifications.
 
 ## References
 
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
 - [AlphaForge Product Definition](../PRODUCT.md)
 - [AlphaForge Vision Statement](../VISION.md)
 - [Option Architecture Design](./ARCHITECTURE.md)

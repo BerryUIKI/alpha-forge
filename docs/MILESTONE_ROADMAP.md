@@ -23,7 +23,22 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
-| M8 | 📅 Future | TBD | Production & Commercialization |
+| M8 | 📋 Planned | TBD | Local MVP Completion & Release Readiness |
+| M9 | 📋 Planned | Post-MVP | Option Module Integration |
+| M10 | 📋 Planned | Post-MVP, after M9 | Goose Agent Integration |
+
+## Delivery document registry
+
+This roadmap is the program entry point. Implementation agents must follow the linked execution documents for the active milestone.
+
+| Milestone/workstream | Supporting documents |
+|---|---|
+| All milestones | [Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md), [Git Workflow](GIT_WORKFLOW.md), [Architecture](ARCHITECTURE.md), [Security](SECURITY.md) |
+| M8 i18n | [i18n Index](i18n/README.md), [i18n Architecture](i18n/ARCHITECTURE.md), [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), [M8 Decision Record](M8_DECISION_RECORD.md) |
+| M9 Option | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md) |
+| M10 Goose | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md) |
+
+Status in this file is authoritative at the program level. Detailed documents own work-package checklists; neither historical branch names nor unmerged code override this status.
 
 ---
 
@@ -578,31 +593,30 @@ Artifact rendered
 
 ---
 
-## M8 — Production & Commercialization 📅
+## M8 — Local MVP Completion & Release Readiness 📋
 
-**Status**: Future
+**Status**: Planned. Product and release choices must be recorded in the [M8 Decision Record](M8_DECISION_RECORD.md) before implementation claims completion.
 
 ### Goal
-Prepare AlphaForge as a commercial product.
+Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services.
 
 ### Deliverables
 
 #### Infrastructure
-- [ ] User authentication
-- [ ] Licensing system
-- [ ] Subscription management
-- [ ] Cloud backup (optional)
+- [ ] Record the launch market, locale, platform, privacy, support, and release-owner decisions
+- [ ] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
+- [ ] Provide user-controlled local data export and recovery documentation
+- [ ] Keep authentication, licensing, subscriptions, telemetry, and cloud backup deferred unless separately approved
 
 #### Marketplace
-- [ ] Plugin marketplace
-- [ ] Research templates
-- [ ] Community contributions
+- [ ] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
+- [ ] Document bundled research templates and internal plugin compatibility where shipped
 
 #### Deployment
-- [ ] Application icons
-- [ ] Installer packaging (DMG, MSI, AppImage)
-- [ ] Auto-update infrastructure
-- [ ] Release automation
+- [ ] Finalize application identity and icons
+- [ ] Produce approved macOS and Windows installer targets
+- [ ] Define signing/notarization, update, rollback, and release-ownership policy
+- [ ] Keep release credentials in approved CI secrets only
 
 ### Release Readiness
 - [ ] Performance optimization
@@ -610,6 +624,101 @@ Prepare AlphaForge as a commercial product.
 - [ ] Documentation review
 - [ ] Legal review
 - [ ] Support infrastructure
+
+### Execution path
+
+1. Resolve the [M8 Decision Record](M8_DECISION_RECORD.md).
+2. Execute [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md) from decision/inventory through packaged QA.
+3. Complete local export, privacy, installer, update, security, legal, and support gates in scoped vertical slices.
+4. Run full repository checks plus macOS/Windows packaged smoke tests.
+5. Record acceptance evidence and declare the local MVP complete before M9 or M10 implementation begins.
+
+### Acceptance criteria
+
+- Critical MVP workflows complete in both approved locales.
+- Local data remains the source of truth and no unapproved cloud service or telemetry is enabled.
+- Installation, first run, backup/export, failure recovery, update, and rollback paths are documented and tested on supported platforms.
+- Security, privacy, investment-research disclaimer, and support contacts are approved.
+- Standard tests and packaged smoke tests have retained evidence.
+
+---
+
+## M9 — Option Module Integration 📋
+
+**Status**: Planned for post-MVP execution. The documentation baseline is consolidated; the integrated Option runtime is not complete on `dev`.
+
+### Goal
+
+Integrate evidence-grounded Option pricing, chain analysis, strategies, and portfolio-risk research as safe, tested vertical slices.
+
+### Entry gate
+
+- M8 local MVP is complete unless the product owner explicitly changes the order.
+- [Option baseline](option/README.md) is revalidated against current `dev`.
+- Pricing-model, provider, migration, and Artifact decisions are approved.
+- Historical `integration/option` code has a file-level reuse/reject audit.
+
+### Execution path
+
+1. Repair Option schema application with a new append-only migration and tests.
+2. Integrate a pure pricing/provider core with independent numerical fixtures.
+3. Deliver the Option-chain input-to-persistence UI slice.
+4. Deliver strategy construction and a controlled Artifact renderer.
+5. Deliver scenario and portfolio-risk integration with provenance.
+6. Pass calculation, migration, security, accessibility, i18n, E2E, performance, and packaged-build gates.
+
+Detailed steps are in [Option Integration Plan](option/INTEGRATION_PLAN.md) and [Implementation Details](option/IMPLEMENTATION_DETAILS.md).
+
+### Acceptance criteria
+
+- Required Option slices are accepted on `dev`; historical branch presence is not completion.
+- Data, assumptions, timestamps, model versions, uncertainty, and source provenance are visible.
+- Workspace isolation, background-task lifecycle, typed IPC, and Artifact permissions follow current architecture.
+- No trading, brokerage execution, or autonomous recommendation capability exists.
+- Independent domain review and real verification evidence are recorded.
+
+---
+
+## M10 — Goose Agent Integration 📋
+
+**Status**: Planned after MVP. No Goose runtime ships in M8.
+
+### Goal
+
+Use a version-pinned Goose runtime to improve evidence-grounded research while AlphaForge retains task control, permissions, credentials, persistence, and mandatory human review.
+
+### Entry gate
+
+- M8 is complete; this post-MVP requirement is mandatory.
+- M9 is complete, or the product owner has explicitly approved M10 as an independent post-MVP workstream.
+- The current upstream Goose source, license, version, API/CLI, permission, recipe, and MCP behavior are reverified.
+- An ADR selects sidecar/library/API topology, credential ownership, packaging, update, and removal strategy.
+- A threat model approves a read-only first use case.
+
+### Execution path
+
+1. Complete an isolated synthetic-data lifecycle spike.
+2. Add an allowlisted, read-only AlphaForge MCP bridge through Rust services.
+3. Ship opt-in shadow-mode research with structured output and full task controls.
+4. Add human-approved proposals that persist only through existing Rust services.
+5. Pass credential, binary-integrity, workspace-isolation, prompt-injection, packaging, and support gates.
+
+Detailed steps are in the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md).
+
+### Acceptance criteria
+
+- Goose has no direct SQLite, unrestricted filesystem, shell, secret, trade, or privileged Tauri access.
+- Only allowlisted, typed, bounded, workspace-scoped tools are available.
+- Outputs are structured, validated, source-grounded, persisted with provenance, and rendered through controlled Artifacts.
+- Domain writes require explicit user confirmation.
+- Cancellation, timeout, retry policy, concurrency, restart, token, cost, and output limits are tested.
+- Approved macOS and Windows packages verify the pinned runtime and fail closed on integrity mismatch.
+
+---
+
+## Deferred commercialization
+
+Authentication, billing, licensing enforcement, cloud sync, telemetry, and a public plugin marketplace remain outside the local MVP and are not authorized by M9 or M10. They require a separate product, privacy, legal, security, and architecture decision milestone.
 
 ---
 
@@ -664,7 +773,9 @@ Every feature starts with documentation:
 - M2 → M3 add intelligence capabilities
 - M4 → M5 build research workflows
 - M6 → M7 extend functionality
-- M8 prepares for scale
+- M8 completes the local MVP release gate
+- M9 integrates Option research after the MVP
+- M10 integrates Goose only after the MVP boundary is complete
 
 ### 3. Complete Vertical Slices
 Every milestone delivers an end-to-end experience:
@@ -704,12 +815,13 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M8 — Production & Commercialization** is intentionally deferred pending the decisions in [M8 Decision Record](M8_DECISION_RECORD.md). Security hardening continues as focused maintenance work.
+**M8 — Local MVP Completion & Release Readiness** is planned and remains gated by the decisions in [M8 Decision Record](M8_DECISION_RECORD.md). This documentation set does not mark implementation complete.
 
 ### Next Milestones
-1. Resolve M8 product and release decisions
-2. Complete the M8 decision gate before commercial infrastructure work
-3. Continue focused security and quality improvements
+1. Resolve M8 product, locale, privacy, platform, and release decisions.
+2. Execute the M8 i18n and release-readiness work packages with acceptance evidence.
+3. Rebaseline and integrate Option as M9 after the MVP.
+4. Reverify upstream and integrate Goose as M10 after the MVP.
 
 ### Long-term Vision
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.
@@ -726,3 +838,7 @@ Transform AlphaForge into the definitive AI-powered investment research platform
 - [Plugin Specification](PLUGIN_SPEC.md)
 - [Security Model](SECURITY.md)
 - [Development Guide](DEVELOPMENT.md)
+- [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md)
+- [i18n Documentation](i18n/README.md)
+- [Option Documentation](option/README.md)
+- [Goose Integration Documentation](goose/README.md)

@@ -1,180 +1,59 @@
-# AlphaForge Next Steps Strategy
+# AlphaForge Next Steps
 
-**Generated**: 2026-08-01
-**Current State**: M7 Plugin Ecosystem (Complete) ✅
-**Next Milestone**: M8 Production & Commercialization
+**Updated**: 2026-08-03
 
----
+**Current completed milestone**: M7 Plugin Ecosystem
 
-## 📊 Current Status Summary
+**Next planned milestone**: M8 Local MVP Completion & Release Readiness
 
-### Completed Milestones
-- ✅ M0: Project Foundation
-- ✅ M1: Desktop Runtime Foundation
-- ✅ M1.5: Application Foundation
-- ✅ M2: Agent Runtime
-- ✅ M3: Artifact Intelligence System
-- ✅ M4: Research Workspace (Core Complete)
-- ✅ M5: Investment Knowledge System
-- ✅ M6: Portfolio Intelligence
-- ✅ M7: Plugin Ecosystem
+Program status and milestone acceptance criteria are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md). Implementation agents follow the [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md).
 
-### In Progress
-- No active implementation milestone
+## Current status
 
-### Test Coverage
-- **Frontend Tests**: 53 passing
-- **Rust Quality**: `cargo check -p investment-os` and `cargo clippy -p investment-os --all-targets --all-features -- -D warnings` pass cleanly
+- M0 through M7 are recorded complete in the milestone roadmap.
+- No M8 implementation is marked complete by this documentation update.
+- The M8 decision record still requires product-owner approval before release choices are authoritative on `dev`.
+- The Option documentation is consolidated, but the Option runtime is not integrated on `dev`.
+- Goose implementation is explicitly post-MVP and is not part of M8.
 
-### Key Achievements (M5 Backend)
-- Investment thesis domain models
-- Thesis repository with CRUD operations
-- Thesis service with business logic
-- 13 Thesis management commands, including confidence-history review
-- Knowledge graph entities, relationships, and Thesis links
-- Evidence collection and tracking
+## Immediate actions: activate M8
 
----
+1. Complete the [M8 Decision Record](M8_DECISION_RECORD.md): launch locale, platforms, privacy, export, update, signing, legal, security, and support owners.
+2. Execute [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), beginning with the decision and string inventory package.
+3. Plan local export, installer, update, privacy, security, legal, and support work as separate vertical slices.
+4. Record test, packaged-smoke, and review evidence before declaring the MVP complete.
 
-## 🎯 Short-Term Goals (Current Sprint)
+## After MVP: M9 Option
 
-### 1. Scope M8 Production & Commercialization (Deferred)
-**Priority**: High
-**Timeline**: To be defined
+Start with the [Option Index](option/README.md), then run the baseline audit in the [Option Integration Plan](option/INTEGRATION_PLAN.md).
 
-M7 is complete. M8 is temporarily deferred. Before implementation begins, define the authentication provider, licensing and billing model, cloud-backup scope, privacy requirements, and release-signing process for M8.
-Use [M8 Decision Record](M8_DECISION_RECORD.md) to capture those approvals before opening an M8 feature branch.
+The first implementation package must repair Option schema application through a new append-only migration and tests. Do not merge the historical `integration/option` branch wholesale; extract and revalidate scoped candidate code against current `dev`.
 
----
+## After MVP and M9: M10 Goose
 
-## 🚀 Medium-Term Goals (Next 4-6 Weeks)
+Start with the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md). Reverify the current AAIF Goose source and APIs, approve an ADR and threat model, then perform a synthetic-data spike. The first shipped mode is read-only and opt-in. Goose receives no direct database, shell, unrestricted filesystem, credential, trade, or privileged Tauri capability.
 
-### M6: Portfolio Intelligence
-**Priority**: High
-**Timeline**: 4 weeks
+## Persistent quality work
 
-#### Core Features
-1. **Portfolio Management**
-   - Account management — workspace-scoped accounts are implemented
-   - Holdings tracking — manual account positions are implemented
-   - Transaction import — validated CSV history import is implemented; it does not execute trades
-   - Allocation analysis — cost-basis allocation and exposure are implemented; live pricing is not yet integrated
+- Increase regression coverage for migrations, task cancellation/restart, Artifact isolation, and critical UI states.
+- Keep error codes stable and logs redacted.
+- Preserve local-first data ownership and source provenance.
+- Maintain loading, success, empty, error, partial, and offline behavior for asynchronous features.
+- Keep documentation aligned with integrated behavior; unmerged branch code is not completion evidence.
 
-2. **AI Analysis**
-   - Risk concentration analysis — transparent cost-basis concentration signals are implemented
-   - Theme exposure mapping — explicit knowledge-entity links and cost-basis exposure are implemented
-   - Thesis alignment checking — portfolio review exposes matching thesis coverage
-   - Historical review automation — on-demand review summarizes concentration and unaligned holdings
+## Standard verification
 
-#### Important Constraints
-```text
-✓ Portfolio tracking and analysis
-✓ Research-thesis alignment
-✓ Risk visualization
-✗ NO automated trading
-✗ NO autonomous investment decisions
-✗ NO trade execution
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test
 ```
 
-### M8: Production & Commercialization (TBD)
-- User authentication
-- Licensing system
-- Cloud backup (optional)
-- Application signing
-- Installer packaging
+Run `pnpm test:e2e` and `pnpm tauri build` for critical flows and release-impacting work. Record commands that cannot run and the remaining risk.
 
----
+## Next decision point
 
-## 🔧 Technical Debt & Improvements
-
-### High Priority
-1. **Testing**
-   - Add E2E testing framework
-   - Increase test coverage to 80%+
-   - Add performance regression tests
-
-2. **Performance**
-   - Database query optimization
-   - Artifact rendering performance
-   - Memory usage profiling
-
-3. **Security**
-   - Audit artifact permission model
-   - Input validation hardening
-   - Secure credential storage
-
-### Medium Priority
-1. **Code Quality**
-   - Reduce code duplication
-   - Improve error handling patterns
-   - Add more inline documentation
-
-2. **Architecture**
-   - Refine service layer boundaries
-   - Improve state management patterns
-   - Enhance type safety
-
----
-
-## 📈 Success Metrics
-
-### M8 Decision Gate
-- [ ] Select an authentication approach and identity provider
-- [ ] Define licensing, entitlement, and subscription requirements
-- [ ] Decide whether cloud backup is in scope and document its privacy model
-- [ ] Assign release-signing identities and supported platforms
-
-### Quality Gates
-- All tests passing
-- Code coverage > 80%
-- Zero critical bugs
-- Performance benchmarks met
-
----
-
-## 🎯 Recommended Next Steps
-
-### Immediate (This Week)
-
-1. **Maintain completed milestone documentation**
-   - Keep M3–M7 status and acceptance notes aligned with delivered behavior.
-
-2. **Complete the M8 product decision record**
-   - Select authentication and billing providers.
-   - Confirm cloud backup, privacy, and data-retention scope.
-   - Assign signing and installer release owners.
-
----
-
-## 📚 Resources Needed
-
-### Development
-- Rust PDF processing library evaluation
-- Full-text search implementation research
-- Document storage strategy planning
-
-### Testing
-- E2E testing framework selection
-- Test data generation
-- Performance testing tools
-
-### Documentation
-- User guide structure
-- API documentation standards
-- Tutorial creation
-
----
-
-## 🎉 Conclusion
-
-**M7 Complete**: AlphaForge supports validated internal plugins, controlled artifact rendering, and the documented official plugin set.
-
-**Next Milestone**: M8 Production & Commercialization.
-
-**Focus Areas**: Establish the commercial and security decisions before implementing external authentication, billing, backup, or release infrastructure.
-
-**Timeline**: To be defined after the M8 decision gate.
-
----
-
-**Status**: Ready to begin next phase ✅
+The next decision is whether M8 product and release inputs are sufficiently complete to activate the first implementation work package. M9 and M10 remain planned until their entry gates pass.
