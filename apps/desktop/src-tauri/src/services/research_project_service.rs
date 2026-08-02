@@ -29,13 +29,19 @@ impl ResearchProjectService {
     }
 
     pub async fn archive_project(&self, id: &str) -> Result<ResearchProject, AppError> {
-        let project = self.repo.get(id).await?.ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
+        self.repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
         self.repo.update_status(id, ProjectStatus::Archived).await?;
         self.repo.get(id).await?.ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
     }
 
     pub async fn complete_project(&self, id: &str) -> Result<ResearchProject, AppError> {
-        let project = self.repo.get(id).await?.ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
+        self.repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
         self.repo.update_status(id, ProjectStatus::Completed).await?;
         self.repo.get(id).await?.ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
     }

@@ -34,21 +34,6 @@ mod tests {
         pool
     }
 
-    fn create_test_workspace(pool: &SqlitePool) -> String {
-        let workspace_id = uuid::Uuid::new_v4().to_string();
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        runtime.block_on(async {
-            sqlx::query(
-                "INSERT INTO workspaces (id, name, created_at, updated_at) VALUES (?, 'Test Workspace', datetime('now'), datetime('now'))"
-            )
-            .bind(&workspace_id)
-            .execute(pool)
-            .await
-            .expect("Failed to create test workspace");
-        });
-        workspace_id
-    }
-
     #[tokio::test]
     async fn test_executor_config_default() {
         let config = ExecutorConfig::default();
@@ -68,14 +53,4 @@ mod tests {
         assert_eq!(config.max_concurrent, 5);
     }
 
-    #[tokio::test]
-    async fn test_running_count_empty() {
-        let pool = setup_test_db().await;
-        let _repo = AgentTaskRepository::new(pool);
-        let _config = ExecutorConfig::default();
-
-        // Note: Executor requires AppHandle which we can't easily mock
-        // This test verifies the setup works
-        assert!(true);
-    }
 }

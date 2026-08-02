@@ -217,7 +217,7 @@ mod tests {
         for status in statuses {
             repo.update_status(&task.id, status.clone())
                 .await
-                .expect(&format!("Failed to update to {:?}", status));
+                .unwrap_or_else(|_| panic!("Failed to update to {:?}", status));
 
             let updated = repo
                 .get(&task.id)

@@ -18,9 +18,10 @@ pub struct InvestmentThesis {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum ThesisStatus {
+    #[default]
     Draft,
     Active,
     Validating,
@@ -37,12 +38,6 @@ impl std::fmt::Display for ThesisStatus {
             ThesisStatus::Validated => write!(f, "validated"),
             ThesisStatus::Closed => write!(f, "closed"),
         }
-    }
-}
-
-impl Default for ThesisStatus {
-    fn default() -> Self {
-        ThesisStatus::Draft
     }
 }
 

@@ -32,7 +32,7 @@ impl ThesisService {
 
         // Validate confidence if provided
         if let Some(confidence) = input.confidence {
-            if confidence < 0 || confidence > 100 {
+            if !(0..=100).contains(&confidence) {
                 return Err(AppError::Validation(
                     "Confidence must be between 0 and 100".to_string(),
                 ));

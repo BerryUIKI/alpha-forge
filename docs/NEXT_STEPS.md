@@ -24,7 +24,7 @@
 
 ### Test Coverage
 - **Frontend Tests**: 53 passing
-- **Rust Build**: `cargo check -p investment-os` passes (four unrelated warnings remain)
+- **Rust Quality**: `cargo check -p investment-os` and `cargo clippy -p investment-os --all-targets --all-features -- -D warnings` pass cleanly
 
 ### Key Achievements (M5 Backend)
 - Investment thesis domain models
