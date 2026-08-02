@@ -6,6 +6,7 @@ mod tests {
     use sqlx::SqlitePool;
 
     use crate::database::repositories::thesis_repository::ThesisRepository;
+    use crate::error::AppError;
     use domain::thesis::{
         AddEvidenceInput, CreateThesisInput, EvidenceDirection, ThesisStatus,
         UpdateConfidenceInput,
@@ -148,6 +149,54 @@ mod tests {
 
         let result = repo.get_thesis("nonexistent").await.unwrap();
         assert!(result.is_none());
+    }
+
+    #[tokio::test]
+    async fn rejects_corrupted_thesis_timestamps_instead_of_fabricating_them() {
+        let pool = setup_test_db().await;
+        let repo = ThesisRepository::new(pool.clone());
+        let thesis = repo
+            .create_thesis(CreateThesisInput {
+                workspace_id: "test-workspace".to_string(),
+                title: "Timestamp integrity".to_string(),
+                thesis: "A test thesis".to_string(),
+                confidence: None,
+            })
+            .await
+            .unwrap();
+
+        sqlx::query("UPDATE investment_theses SET created_at = 'not-a-timestamp' WHERE id = ?")
+            .bind(&thesis.id)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let error = repo.get_thesis(&thesis.id).await.unwrap_err();
+        assert!(matches!(error, AppError::Internal(message) if message == "Invalid thesis creation timestamp in database"));
+    }
+
+    #[tokio::test]
+    async fn rejects_corrupted_confidence_history_timestamps() {
+        let pool = setup_test_db().await;
+        let repo = ThesisRepository::new(pool.clone());
+        let thesis = repo
+            .create_thesis(CreateThesisInput {
+                workspace_id: "test-workspace".to_string(),
+                title: "Confidence integrity".to_string(),
+                thesis: "A test thesis".to_string(),
+                confidence: None,
+            })
+            .await
+            .unwrap();
+
+        sqlx::query("UPDATE thesis_confidence_history SET recorded_at = 'not-a-timestamp' WHERE thesis_id = ?")
+            .bind(&thesis.id)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let error = repo.list_confidence_history(&thesis.id).await.unwrap_err();
+        assert!(matches!(error, AppError::Internal(message) if message == "Invalid thesis confidence history timestamp in database"));
     }
 
     #[tokio::test]

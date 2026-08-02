@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::database::migrations;
     use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
 
@@ -91,5 +92,52 @@ mod tests {
         assert!(columns
             .iter()
             .any(|(_, name, _, _, _)| name == "updated_at"));
+    }
+
+    #[tokio::test]
+    async fn normalizes_legacy_thesis_timestamps() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to establish current schema");
+        sqlx::query(
+            "INSERT INTO workspaces (id, name, created_at, updated_at) VALUES ('workspace', 'Test workspace', '2026-08-01T12:34:56Z', '2026-08-01T12:34:56Z')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert workspace");
+        sqlx::query(
+            "INSERT INTO investment_theses (id, workspace_id, title, thesis, confidence, status, created_at, updated_at) VALUES ('legacy-thesis', 'workspace', 'Legacy', 'Legacy thesis', 50, 'draft', '2026-08-01 12:34:56', '2026-08-01 12:34:56')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert legacy thesis");
+        sqlx::query("DROP TRIGGER update_thesis_updated_at")
+            .execute(&pool)
+            .await
+            .expect("Failed to remove current timestamp trigger");
+        sqlx::query(
+            "UPDATE investment_theses SET created_at = '2026-08-01 12:34:56', updated_at = '2026-08-01 12:34:56' WHERE id = 'legacy-thesis'",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to simulate legacy timestamps");
+        sqlx::query("DELETE FROM _migrations WHERE name = '0013_thesis_timestamp_normalization'")
+            .execute(&pool)
+            .await
+            .expect("Failed to reset timestamp migration");
+
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        let timestamp: String = sqlx::query_scalar(
+            "SELECT updated_at FROM investment_theses WHERE id = 'legacy-thesis'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Failed to read normalized timestamp");
+
+        assert_eq!(timestamp, "2026-08-01T12:34:56.000Z");
     }
 }
