@@ -1,6 +1,6 @@
 // Thesis repository — handles persistence for investment theses and evidence.
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use sqlx::SqlitePool;
 
 use crate::error::AppError;
@@ -77,7 +77,7 @@ impl ThesisRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to get thesis: {}", e)))?;
 
-        Ok(row.map(|r| r.into()))
+        row.map(TryInto::try_into).transpose()
     }
 
     /// List all theses for a workspace.
@@ -99,7 +99,7 @@ impl ThesisRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list theses: {}", e)))?;
 
-        Ok(rows.into_iter().map(|r| r.into()).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     /// Update thesis status.
@@ -219,7 +219,7 @@ impl ThesisRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list evidence: {}", e)))?;
 
-        Ok(rows.into_iter().map(|r| r.into()).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     /// Delete evidence.
@@ -245,7 +245,7 @@ impl ThesisRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list confidence history: {e}")))?;
 
-        Ok(rows.into_iter().map(Into::into).collect())
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 
     async fn record_confidence_snapshot(
@@ -284,29 +284,34 @@ struct ThesisRow {
     updated_at: String,
 }
 
-impl From<ThesisRow> for InvestmentThesis {
-    fn from(row: ThesisRow) -> Self {
+impl TryFrom<ThesisRow> for InvestmentThesis {
+    type Error = AppError;
+
+    fn try_from(row: ThesisRow) -> Result<Self, Self::Error> {
         let status = match row.status.as_str() {
             "draft" => ThesisStatus::Draft,
             "active" => ThesisStatus::Active,
             "validating" => ThesisStatus::Validating,
             "validated" => ThesisStatus::Validated,
             "closed" => ThesisStatus::Closed,
-            _ => ThesisStatus::Draft,
+            _ => return Err(AppError::Internal("Invalid thesis status in database".to_string())),
         };
 
-        InvestmentThesis {
+        Ok(InvestmentThesis {
             id: row.id,
             workspace_id: row.workspace_id,
             title: row.title,
             thesis: row.thesis,
             confidence: row.confidence,
             status,
-            validation_date: row.validation_date.and_then(|d| d.parse().ok()),
+            validation_date: row
+                .validation_date
+                .map(|value| parse_timestamp(&value, "thesis validation"))
+                .transpose()?,
             outcome: row.outcome,
-            created_at: row.created_at.parse().unwrap_or_else(|_| Utc::now()),
-            updated_at: row.updated_at.parse().unwrap_or_else(|_| Utc::now()),
-        }
+            created_at: parse_timestamp(&row.created_at, "thesis creation")?,
+            updated_at: parse_timestamp(&row.updated_at, "thesis update")?,
+        })
     }
 }
 
@@ -328,32 +333,42 @@ struct ConfidenceSnapshotRow {
     recorded_at: String,
 }
 
-impl From<ConfidenceSnapshotRow> for ThesisConfidenceSnapshot {
-    fn from(row: ConfidenceSnapshotRow) -> Self {
-        Self {
+impl TryFrom<ConfidenceSnapshotRow> for ThesisConfidenceSnapshot {
+    type Error = AppError;
+
+    fn try_from(row: ConfidenceSnapshotRow) -> Result<Self, Self::Error> {
+        Ok(Self {
             id: row.id,
             thesis_id: row.thesis_id,
             confidence: row.confidence,
-            recorded_at: row.recorded_at.parse().unwrap_or_else(|_| Utc::now()),
-        }
+            recorded_at: parse_timestamp(&row.recorded_at, "thesis confidence history")?,
+        })
     }
 }
 
-impl From<EvidenceRow> for ThesisEvidence {
-    fn from(row: EvidenceRow) -> Self {
+impl TryFrom<EvidenceRow> for ThesisEvidence {
+    type Error = AppError;
+
+    fn try_from(row: EvidenceRow) -> Result<Self, Self::Error> {
         let direction = match row.direction.as_str() {
             "supporting" => EvidenceDirection::Supporting,
             "contradicting" => EvidenceDirection::Contradicting,
-            _ => EvidenceDirection::Supporting,
+            _ => return Err(AppError::Internal("Invalid evidence direction in database".to_string())),
         };
 
-        ThesisEvidence {
+        Ok(ThesisEvidence {
             id: row.id,
             thesis_id: row.thesis_id,
             direction,
             evidence: row.evidence,
             source_id: row.source_id,
-            created_at: row.created_at.parse().unwrap_or_else(|_| Utc::now()),
-        }
+            created_at: parse_timestamp(&row.created_at, "thesis evidence creation")?,
+        })
     }
+}
+
+fn parse_timestamp(value: &str, field: &str) -> Result<DateTime<Utc>, AppError> {
+    DateTime::parse_from_rfc3339(value)
+        .map(|timestamp| timestamp.with_timezone(&Utc))
+        .map_err(|_| AppError::Internal(format!("Invalid {field} timestamp in database")))
 }
