@@ -9,7 +9,7 @@
     "dev:web": "cd apps/desktop && npm run dev",
     "build": "cd apps/desktop && npm run build",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "npm run typecheck -w @investment-os/desktop",
+    "typecheck": "pnpm run typecheck --filter @investment-os/desktop",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
