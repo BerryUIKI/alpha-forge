@@ -16,6 +16,7 @@ This record distinguishes the free, open-source MVP from later commercial work. 
 | Later commercial direction     | Paid commercial offering, to be reviewed before implementation            |
 | Cloud account required         | No                                                                        |
 | Launch markets                 | Mainland China primary; English-language overseas users secondary         |
+| Launch language policy         | Simplified Chinese default client locale; user-selectable English locale  |
 | Product coverage               | A-share, Hong Kong, United States equities, options, and futures research |
 | Product owner                  | @BerryUIKI                                                                |
 
@@ -63,6 +64,7 @@ Signing credentials and release credentials must live only in the approved relea
 | ---------------------------------------------- | --------------------------------------------------------- |
 | Terms and investment-research disclaimer owner | @BerryUIKI                                                |
 | Privacy notice owner                           | @BerryUIKI                                                |
+| Investment-research disclaimer                 | Published in-app and in repository documentation          |
 | Security incident contact                      | TBD before public release                                 |
 | Support channels                               | GitHub Issues and a contact email published by @BerryUIKI |
 | Legal/privacy review                           | Required before a commercial or public production release |
