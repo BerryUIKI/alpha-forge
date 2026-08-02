@@ -94,7 +94,7 @@ impl AppState {
             KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
         let portfolio_service = PortfolioService::new(portfolio_repo);
         let plugin_service = PluginService::new(plugin_repo);
-        let system_service = SystemService::new(app_handle.clone());
+        let system_service = SystemService::new(app_handle.clone(), db_pool.clone());
 
         // Create task executor
         let executor_config = ExecutorConfig::default();

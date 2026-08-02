@@ -63,7 +63,7 @@ AlphaForge helps you:
 | M5 | ✅ Complete | Investment Knowledge System |
 | M6 | ✅ Complete | Portfolio Intelligence |
 | M7 | ✅ Complete | Plugin Ecosystem |
-| M8 | 📅 Future | Production & Commercialization |
+| M8 | 🚧 In progress | Local-desktop release foundation |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
@@ -87,9 +87,10 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - ✅ Research workspace, thesis, knowledge graph, and portfolio workflows
 - ✅ Validated internal plugin registry and predefined artifact renderers
 
-### Planned (M8)
-- 📅 Production authentication, licensing, and subscription decisions
-- 📅 Optional cloud backup and release signing
+### M8 release foundation
+- 🚧 Local SQLite backup export and an in-app privacy surface
+- 🚧 Manual GitHub Release update checks and DMG/Windows EXE packaging configuration
+- 📅 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
 
 ---
 
@@ -288,9 +289,9 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 
 ## ⚠️ Current Limitations
 
-1. **No production authentication or billing**: M8 requires product and provider decisions.
-2. **No cloud backup**: Optional M8 scope is not implemented.
-3. **No release signing or installer packaging**: Requires platform certificates and release ownership.
+1. **No production authentication, billing, or licensing**: These are deliberately deferred from the local MVP.
+2. **No cloud backup or automatic updates**: Users control manual local exports and manual downloads.
+3. **No macOS notarization in the MVP**: A Gatekeeper warning is a known release risk.
 4. **No real AI-provider integration**: Agent commands remain locally scoped.
 
 ---

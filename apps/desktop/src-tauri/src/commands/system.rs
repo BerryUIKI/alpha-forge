@@ -37,3 +37,15 @@ pub async fn check_database_health(state: State<'_, AppState>) -> Result<String,
 
     Ok("healthy".to_string())
 }
+
+#[tauri::command]
+pub async fn export_local_backup(state: State<'_, AppState>) -> Result<Option<String>, AppError> {
+    state.system_service.export_local_backup().await
+}
+
+#[tauri::command]
+pub async fn check_for_update(
+    state: State<'_, AppState>,
+) -> Result<crate::services::system_service::ReleaseCheck, AppError> {
+    state.system_service.check_for_update().await
+}
