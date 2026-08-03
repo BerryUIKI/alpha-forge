@@ -14,7 +14,7 @@ This document translates the Option specifications into the current repository's
 | Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
 | Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - calculation commands integrated             |
 | Frontend state    | **Completed** TanStack Query conventions          | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                    |
-| UI                | **In Progress** Shared states and layout          | `features/options` - GreeksCalculator, OptionChainList components                           |
+| UI                | **Completed** Shared states and layout          | `features/options` - GreeksCalculator, OptionChainList, StrategyBuilder components          |
 | Artifact          | Predefined renderer registry                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                   |
 | Tests             | Existing Rust/Vitest patterns                       | Numerical fixtures, migrations, repositories, services, schemas, states, IPC, E2E            |
 
