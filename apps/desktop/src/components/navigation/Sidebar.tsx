@@ -1,16 +1,19 @@
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, Search, BookOpen, PieChart, Box, Settings } from "lucide-react";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 const navItems = [
-  { to: "/today", icon: LayoutDashboard, label: "Today" },
-  { to: "/research", icon: Search, label: "Research" },
-  { to: "/journal", icon: BookOpen, label: "Journal" },
-  { to: "/portfolio", icon: PieChart, label: "Portfolio" },
-  { to: "/artifacts", icon: Box, label: "Artifacts" },
-  { to: "/settings", icon: Settings, label: "Settings" },
-];
+  { to: "/today", icon: LayoutDashboard, label: "today" },
+  { to: "/research", icon: Search, label: "research" },
+  { to: "/journal", icon: BookOpen, label: "journal" },
+  { to: "/portfolio", icon: PieChart, label: "portfolio" },
+  { to: "/artifacts", icon: Box, label: "artifacts" },
+  { to: "/settings", icon: Settings, label: "settings" },
+] as const;
 
 export function Sidebar() {
+  const { t } = useLocale();
+
   return (
     <aside className="flex w-16 flex-col items-center border-r border-border bg-card py-4">
       {navItems.map((item) => (
@@ -24,7 +27,8 @@ export function Sidebar() {
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             }`
           }
-          title={item.label}
+          title={t(item.label)}
+          aria-label={t(item.label)}
         >
           <item.icon className="h-5 w-5" />
         </NavLink>

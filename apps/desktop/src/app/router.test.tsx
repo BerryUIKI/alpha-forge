@@ -42,13 +42,13 @@ function renderWithRouter(initialEntry: string = "/") {
     ],
     {
       initialEntries: [initialEntry],
-    }
+    },
   );
 
   return render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -85,16 +85,16 @@ describe("Router", () => {
 
   it("renders Settings page", () => {
     renderWithRouter("/settings");
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("设置")).toBeInTheDocument();
   });
 
   it("renders sidebar navigation", () => {
     renderWithRouter("/");
-    expect(screen.getByTitle("Today")).toBeInTheDocument();
-    expect(screen.getByTitle("Research")).toBeInTheDocument();
-    expect(screen.getByTitle("Journal")).toBeInTheDocument();
-    expect(screen.getByTitle("Portfolio")).toBeInTheDocument();
-    expect(screen.getByTitle("Artifacts")).toBeInTheDocument();
-    expect(screen.getByTitle("Settings")).toBeInTheDocument();
+    expect(screen.getByTitle("今日")).toBeInTheDocument();
+    expect(screen.getByTitle("研究")).toBeInTheDocument();
+    expect(screen.getByTitle("投资日志")).toBeInTheDocument();
+    expect(screen.getByTitle("投资组合")).toBeInTheDocument();
+    expect(screen.getByTitle("研究产物")).toBeInTheDocument();
+    expect(screen.getByTitle("设置")).toBeInTheDocument();
   });
 });

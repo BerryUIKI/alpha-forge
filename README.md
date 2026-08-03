@@ -63,7 +63,7 @@ AlphaForge helps you:
 | M5 | ✅ Complete | Investment Knowledge System |
 | M6 | ✅ Complete | Portfolio Intelligence |
 | M7 | ✅ Complete | Plugin Ecosystem |
-| M8 | 📋 Planned | Local MVP Completion & Release Readiness |
+| M8 | 🚧 In progress | Local-desktop release foundation |
 | M9 | 📋 Planned | Option Module Integration (post-MVP) |
 | M10 | 📋 Planned | Goose Agent Integration (post-MVP) |
 
@@ -89,11 +89,13 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - ✅ Research workspace, thesis, knowledge graph, and portfolio workflows
 - ✅ Validated internal plugin registry and predefined artifact renderers
 
-### Planned (M8-M10)
-- 📋 M8: English/Simplified-Chinese i18n foundation and local MVP release gates
+### M8 release foundation
+- 🚧 Local SQLite backup export and an in-app privacy surface
+- 🚧 Manual GitHub Release update checks and DMG/Windows EXE packaging configuration
+- 🚧 Simplified-Chinese default locale with an English switch in Settings
+- 📋 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
 - 📋 M9: Option module integration through verified vertical slices
 - 📋 M10: constrained Goose Agent integration after MVP completion
-- ⏸️ Authentication, billing, cloud sync, telemetry, and a public plugin marketplace require a later decision milestone
 
 ---
 
@@ -300,9 +302,9 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 
 ## ⚠️ Current Limitations
 
-1. **No production authentication or billing**: M8 requires product and provider decisions.
-2. **No cloud backup**: Optional M8 scope is not implemented.
-3. **No release signing or installer packaging**: Requires platform certificates and release ownership.
+1. **No production authentication, billing, or licensing**: These are deliberately deferred from the local MVP.
+2. **No cloud backup or automatic updates**: Users control manual local exports and manual downloads.
+3. **No macOS notarization in the MVP**: A Gatekeeper warning is a known release risk.
 4. **No real AI-provider integration**: Agent commands remain locally scoped.
 
 ---

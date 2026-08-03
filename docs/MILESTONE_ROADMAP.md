@@ -23,7 +23,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
-| M8 | 📋 Planned | TBD | Local MVP Completion & Release Readiness |
+| M8 | 🚧 In progress | TBD | Local MVP Completion & Release Readiness |
 | M9 | 📋 Planned | Post-MVP | Option Module Integration |
 | M10 | 📋 Planned | Post-MVP, after M9 | Goose Agent Integration |
 
@@ -593,20 +593,25 @@ Artifact rendered
 
 ---
 
-## M8 — Local MVP Completion & Release Readiness 📋
+## M8 — Local MVP Completion & Release Readiness 🚧
 
-**Status**: Planned. Product and release choices must be recorded in the [M8 Decision Record](M8_DECISION_RECORD.md) before implementation claims completion.
+**Status**: In progress. Product and release choices must be recorded in the [M8 Decision Record](M8_DECISION_RECORD.md) before implementation claims completion.
 
 ### Goal
-Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services.
+Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services. Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.
 
 ### Deliverables
 
 #### Infrastructure
-- [ ] Record the launch market, locale, platform, privacy, support, and release-owner decisions
+- [x] Record the local-only MVP decisions (launch market, locale, platform, privacy, support, release-owner)
 - [ ] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
+- [x] Add user-controlled local SQLite backup export
+- [x] Add privacy and manual-update controls in Settings
 - [ ] Provide user-controlled local data export and recovery documentation
-- [ ] Keep authentication, licensing, subscriptions, telemetry, and cloud backup deferred unless separately approved
+- [ ] User authentication (deferred)
+- [ ] Licensing system (deferred)
+- [ ] Subscription management (deferred)
+- [ ] Cloud backup (deferred)
 
 #### Marketplace
 - [ ] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
@@ -614,9 +619,11 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 #### Deployment
 - [ ] Finalize application identity and icons
-- [ ] Produce approved macOS and Windows installer targets
+- [x] Configure DMG and Windows EXE (NSIS) targets
 - [ ] Define signing/notarization, update, rollback, and release-ownership policy
+- [x] Document manual GitHub Release checks
 - [ ] Keep release credentials in approved CI secrets only
+- [ ] Signing and release automation (release-owner operation)
 
 ### Release Readiness
 - [ ] Performance optimization
@@ -815,7 +822,7 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M8 — Local MVP Completion & Release Readiness** is planned and remains gated by the decisions in [M8 Decision Record](M8_DECISION_RECORD.md). This documentation set does not mark implementation complete.
+**M8 — Local MVP Completion & Release Readiness** is in progress. Product and release decisions are recorded in [M8 Decision Record](M8_DECISION_RECORD.md); remaining i18n, installer, and release-readiness work packages are underway.
 
 ### Next Milestones
 1. Resolve M8 product, locale, privacy, platform, and release decisions.
