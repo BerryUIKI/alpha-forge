@@ -18,4 +18,6 @@ The user controls local data and backup destinations. Removing the application's
 
 ## Scope and contact
 
-This notice covers the local MVP only. Any future account, cloud backup, analytics, payment, or licensing service requires an updated notice and review before release. The public privacy contact email will be published by @BerryUIKI before public production release.
+This notice covers the local MVP only. Any future account, cloud backup, analytics, payment, or licensing service requires an updated notice and review before release.
+
+**Support**: GitHub Issues only (no separate support email for MVP).

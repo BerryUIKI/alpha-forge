@@ -52,6 +52,6 @@ The first delivery does not include:
 | Launch default: `zh-CN` or `en`                     | Product owner                | Before catalog rollout            |
 | Product name and finance terminology glossary       | Product + bilingual reviewer | Before critical-flow translation  |
 | Currency display policy for mixed-market portfolios | Product owner                | Before portfolio localization     |
-| Translation reviewer and review SLA                 | Product owner                | Before declaring M8 i18n complete |
+| Translation reviewer and review SLA | @BerryUIKI (product owner)   | Before declaring M8 i18n complete |
 
 Locale selection changes presentation only. Stored timestamps remain UTC/ISO 8601, persisted enum values and error codes remain stable, and monetary values retain their original currency code.

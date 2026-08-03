@@ -11,8 +11,9 @@ Program status and milestone acceptance criteria are governed by [MILESTONE_ROAD
 ## Current status
 
 - M0 through M7 are recorded complete in the milestone roadmap.
-- M8 is in progress. No M8 implementation is marked complete by this documentation update.
-- The M8 decision record still requires product-owner approval before release choices are authoritative on `dev`.
+- M8 is in progress. Product, locale, privacy, and release decisions are recorded in the M8 Decision Record.
+- Translation reviewer (@BerryUIKI), security incident contact (@BerryUIKI), and support channel (GitHub Issues) are assigned.
+- Legal and release-security review remains pending before public production release.
 - The Option documentation is consolidated, but the Option runtime is not integrated on `dev`.
 - Goose implementation is explicitly post-MVP and is not part of M8.
 
@@ -109,6 +110,10 @@ The next decision is whether M8 product and release inputs are sufficiently comp
 - [x] Defer licensing, entitlement, and subscription enforcement
 - [x] Record the no-cloud-backup privacy model
 - [x] Assign @BerryUIKI as release-signing owner and select supported platforms
+- [x] Assign @BerryUIKI as translation reviewer for zh-CN and en
+- [x] Assign @BerryUIKI as security incident contact
+- [x] Establish GitHub Issues as the MVP support channel
+- [ ] Complete legal and release-security review before public production release
 
 ### Quality Gates
 - All tests passing
