@@ -50,7 +50,7 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**Phase 7 — Plugin Ecosystem** (complete)
+**M7 — Plugin Ecosystem** is complete. **M8 — Local MVP Completion & Release Readiness** is planned.
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -64,6 +64,8 @@ AlphaForge helps you:
 | M6 | ✅ Complete | Portfolio Intelligence |
 | M7 | ✅ Complete | Plugin Ecosystem |
 | M8 | 🚧 In progress | Local-desktop release foundation |
+| M9 | 📋 Planned | Option Module Integration (post-MVP) |
+| M10 | 📋 Planned | Goose Agent Integration (post-MVP) |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
@@ -91,7 +93,9 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - 🚧 Local SQLite backup export and an in-app privacy surface
 - 🚧 Manual GitHub Release update checks and DMG/Windows EXE packaging configuration
 - 🚧 Simplified-Chinese default locale with an English switch in Settings
-- 📅 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
+- 📋 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
+- 📋 M9: Option module integration through verified vertical slices
+- 📋 M10: constrained Goose Agent integration after MVP completion
 
 ---
 
@@ -197,6 +201,11 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | [VISION.md](docs/VISION.md) | Long-term direction |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
 | [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | Product milestones |
+| [i18n](docs/i18n/README.md) | Localization architecture and delivery plan |
+| [Option module](docs/option/README.md) | Consolidated Option specifications and integration plan |
+| [Goose integration](docs/goose/README.md) | Post-MVP Goose boundaries and roadmap |
+| [Delivery playbook](docs/milestones/DELIVERY_PLAYBOOK.md) | Milestone execution and evidence rules |
+| [Sequential task breakdown](docs/milestones/SEQUENTIAL_TASK_BREAKDOWN.md) | One-task-at-a-time child-agent execution queue |
 
 ### Technical Documentation
 
@@ -251,8 +260,8 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 ### Development Timeline
 
 ```
-M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
-✅    ✅    ✅      ✅    ✅    ✅    ✅    ✅    ✅    📅
+M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8 → M9 → M10
+✅    ✅    ✅      ✅    ✅    ✅    ✅    ✅    ✅    📋    📋    📋
 ```
 
 ### Phase Overview
@@ -268,9 +277,12 @@ M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8
 **Features (M4-M6)**: ✅ Complete
 - Research workspace, thesis tracking, and portfolio analysis
 
-**Extensibility (M7-M8)**:
-- ✅ Plugin ecosystem
-- 📅 Production release
+**Extensibility (M7)**: ✅ Plugin ecosystem
+
+**Release and post-MVP (M8-M10)**:
+- 📋 Local MVP completion and release readiness
+- 📋 Option module integration
+- 📋 Goose Agent integration after MVP completion
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for details.
 

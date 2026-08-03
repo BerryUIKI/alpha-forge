@@ -1,42 +1,33 @@
-# AlphaForge Next Steps Strategy
+# AlphaForge Next Steps
 
-**Generated**: 2026-08-01
-**Current State**: M7 Plugin Ecosystem (Complete) ✅
-**Next Milestone**: M8 Production & Commercialization
+**Updated**: 2026-08-03
 
----
+**Current completed milestone**: M7 Plugin Ecosystem
 
-## 📊 Current Status Summary
+**Next planned milestone**: M8 Local MVP Completion & Release Readiness
 
-### Completed Milestones
-- ✅ M0: Project Foundation
-- ✅ M1: Desktop Runtime Foundation
-- ✅ M1.5: Application Foundation
-- ✅ M2: Agent Runtime
-- ✅ M3: Artifact Intelligence System
-- ✅ M4: Research Workspace (Core Complete)
-- ✅ M5: Investment Knowledge System
-- ✅ M6: Portfolio Intelligence
-- ✅ M7: Plugin Ecosystem
+Program status and milestone acceptance criteria are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md). Implementation agents follow the [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md).
 
-### In Progress
-- No active implementation milestone
+## Current status
 
-### Test Coverage
-- **Frontend Tests**: 53 passing
-- **Rust Quality**: `cargo check -p investment-os` and `cargo clippy -p investment-os --all-targets --all-features -- -D warnings` pass cleanly
+- M0 through M7 are recorded complete in the milestone roadmap.
+- M8 is in progress. No M8 implementation is marked complete by this documentation update.
+- The M8 decision record still requires product-owner approval before release choices are authoritative on `dev`.
+- The Option documentation is consolidated, but the Option runtime is not integrated on `dev`.
+- Goose implementation is explicitly post-MVP and is not part of M8.
 
-### Key Achievements (M5 Backend)
-- Investment thesis domain models
-- Thesis repository with CRUD operations
-- Thesis service with business logic
-- 13 Thesis management commands, including confidence-history review
-- Knowledge graph entities, relationships, and Thesis links
-- Evidence collection and tracking
+## Immediate actions: activate M8
 
----
+1. Complete the [M8 Decision Record](M8_DECISION_RECORD.md): launch locale, platforms, privacy, export, update, signing, legal, security, and support owners.
+2. Execute [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), beginning with the decision and string inventory package.
+3. Plan local export, installer, update, privacy, security, legal, and support work as separate vertical slices.
+4. Record test, packaged-smoke, and review evidence before declaring the MVP complete.
 
-## 🎯 Short-Term Goals (Current Sprint)
+## After MVP: M9 Option
+
+Start with the [Option Index](option/README.md), then run the baseline audit in the [Option Integration Plan](option/INTEGRATION_PLAN.md).
+
+The first implementation package must repair Option schema application through a new append-only migration and tests. Do not merge the historical `integration/option` branch wholesale; extract and revalidate scoped candidate code against current `dev`.
 
 ### 1. Complete M8 local-desktop release foundation
 **Priority**: High
@@ -44,36 +35,30 @@
 
 M7 is complete. The local-desktop M8 boundary is now recorded in the [M8 Decision Record](M8_DECISION_RECORD.md): no account, cloud backup, telemetry, billing, licensing, or activation in the MVP. Complete the remaining legal, security-contact, and release-owner checks before public production release.
 
----
+## After MVP and M9: M10 Goose
 
-## 🚀 Medium-Term Goals (Next 4-6 Weeks)
+Start with the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md). Reverify the current AAIF Goose source and APIs, approve an ADR and threat model, then perform a synthetic-data spike. The first shipped mode is read-only and opt-in. Goose receives no direct database, shell, unrestricted filesystem, credential, trade, or privileged Tauri capability.
 
-### M6: Portfolio Intelligence
-**Priority**: High
-**Timeline**: 4 weeks
+## Persistent quality work
 
-#### Core Features
-1. **Portfolio Management**
-   - Account management — workspace-scoped accounts are implemented
-   - Holdings tracking — manual account positions are implemented
-   - Transaction import — validated CSV history import is implemented; it does not execute trades
-   - Allocation analysis — cost-basis allocation and exposure are implemented; live pricing is not yet integrated
+- Increase regression coverage for migrations, task cancellation/restart, Artifact isolation, and critical UI states.
+- Keep error codes stable and logs redacted.
+- Preserve local-first data ownership and source provenance.
+- Maintain loading, success, empty, error, partial, and offline behavior for asynchronous features.
+- Keep documentation aligned with integrated behavior; unmerged branch code is not completion evidence.
 
-2. **AI Analysis**
-   - Risk concentration analysis — transparent cost-basis concentration signals are implemented
-   - Theme exposure mapping — explicit knowledge-entity links and cost-basis exposure are implemented
-   - Thesis alignment checking — portfolio review exposes matching thesis coverage
-   - Historical review automation — on-demand review summarizes concentration and unaligned holdings
+## Standard verification
 
-#### Important Constraints
-```text
-✓ Portfolio tracking and analysis
-✓ Research-thesis alignment
-✓ Risk visualization
-✗ NO automated trading
-✗ NO autonomous investment decisions
-✗ NO trade execution
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test
 ```
+
+Run `pnpm test:e2e` and `pnpm tauri build` for critical flows and release-impacting work. Record commands that cannot run and the remaining risk.
 
 ### M8: Production & Commercialization (local MVP foundation)
 - Manual local backup export
@@ -82,7 +67,9 @@ M7 is complete. The local-desktop M8 boundary is now recorded in the [M8 Decisio
 - DMG and Windows EXE packaging configuration
 - Authentication, licensing, billing, and cloud backup deferred
 
----
+## Next decision point
+
+The next decision is whether M8 product and release inputs are sufficiently complete to activate the first implementation work package. M9 and M10 remain planned until their entry gates pass.
 
 ## 🔧 Technical Debt & Improvements
 

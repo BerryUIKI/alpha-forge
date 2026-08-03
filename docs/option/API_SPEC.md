@@ -1281,6 +1281,9 @@ await desktopApi.options.fetchOptionChain({
 
 ## References
 
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
 - [Architecture Design](./ARCHITECTURE.md)
 - [Data Model](./DATA_MODEL.md)
 - [Use Cases](./USE_CASES.md)

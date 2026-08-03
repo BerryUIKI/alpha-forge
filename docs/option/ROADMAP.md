@@ -1,12 +1,14 @@
 # Option Analysis Platform - Roadmap
 
-> Building a professional-grade option analysis platform in 7 phases over 24 weeks
+> Target feature decomposition for M9. See [README](README.md) for the verified baseline and [Integration Plan](INTEGRATION_PLAN.md) for the current execution sequence.
+
+The original seven-phase design is retained because it captures the intended product scope. Its checkboxes describe acceptance on `dev`, not file presence on a historical feature or integration branch. The current `dev` baseline contains only a partial foundation; `origin/integration/option` is an unverified candidate implementation.
 
 ## Timeline Overview
 
 | Phase | Duration | Status | Key Deliverable |
 |-------|----------|--------|-----------------|
-| Phase 1 | Weeks 1-3 | 📋 Planned | Foundation & Documentation |
+| Phase 1 | Weeks 1-3 | 🚧 Partial on `dev` | Foundation & Documentation |
 | Phase 2 | Weeks 4-6 | 📋 Planned | Core Backend & Pricing Engine |
 | Phase 3 | Weeks 7-9 | 📋 Planned | Frontend Foundation |
 | Phase 4 | Weeks 10-13 | 📋 Planned | Strategy Builder |
@@ -14,7 +16,7 @@
 | Phase 6 | Weeks 18-20 | 📋 Planned | Portfolio Integration |
 | Phase 7 | Weeks 21-24 | 📋 Planned | Testing & Polish |
 
-**Total Duration**: 24 weeks (6 months)
+**Planning estimate**: 24 weeks in the original plan. Re-estimate after the M9 rebaseline; do not treat calendar weeks as a completion claim.
 
 ---
 
@@ -41,7 +43,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
 - [x] `docs/option/USE_CASES.md` - User stories
 
 #### Rust Backend
-- [ ] Domain models in `crates/domain/src/option.rs`
+- [x] Domain models in `crates/domain/src/option.rs` exist on `dev`
   - `OptionType` enum (Call/Put)
   - `OptionContract` struct
   - `OptionChain` struct
@@ -51,7 +53,8 @@ Establish the foundation for option analysis with comprehensive documentation, d
   - `OptionPosition` struct
   - `StrategyType` enum
 
-- [ ] Database migration `0003_options_support.sql`
+- [ ] Integrate the Option schema through a new append-only runtime migration
+  - A historical `0004_options_support.sql` file exists, but the current migration runner does not apply it
   - `option_chains` table
   - `option_contracts` table
   - `greeks` table
@@ -59,7 +62,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
   - `strategy_legs` table
   - `option_positions` table
 
-- [ ] Repository layer
+- [x] Repository modules exist on `dev`; runtime schema and repository test coverage remain required
   - `OptionChainRepository`
   - `OptionContractRepository`
   - `GreeksRepository`
@@ -67,7 +70,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
   - `OptionPositionRepository`
 
 #### TypeScript Frontend
-- [ ] Type definitions in `src/types/option.ts`
+- [x] Type definitions and Zod schemas exist in `apps/desktop/src/types/option.ts`
   - Interfaces matching Rust domain models
   - Zod schemas for validation
 
@@ -98,10 +101,10 @@ pub struct OptionContract {
 ```bash
 # Rust tests
 cargo test --package domain
-cargo test --package desktop --lib database
+cargo test -p investment-os database
 
 # Migration tests
-cargo test --package desktop --test migrations
+cargo test -p investment-os database::migrations_test
 
 # Type checks
 pnpm typecheck
@@ -125,10 +128,10 @@ All tests passing
 
 - [ ] All documentation reviewed and approved
 - [ ] Domain models implemented and tested
-- [ ] Database migrations tested with rollback
+- [ ] Database migrations tested on fresh, historical, partial, and repeat-run paths
 - [ ] Repository layer has > 80% test coverage
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -229,7 +232,7 @@ pub fn black_scholes_price(
 cargo test --package option-core
 
 # Integration tests
-cargo test --package desktop --lib services
+cargo test -p investment-os services
 
 # Performance benchmarks
 cargo bench --package option-core
@@ -260,7 +263,7 @@ IPC commands functional
 - [ ] Demo provider creates realistic chains
 - [ ] > 90% test coverage on `option-core`
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -276,29 +279,29 @@ Build the React frontend foundation for option chain visualization and Greeks di
 
 #### Pages
 
-- [ ] `src/pages/options/OptionsDashboard.tsx`
+- [ ] `apps/desktop/src/pages/options/OptionsDashboard.tsx`
   - Main option analysis entry point
   - Navigation to sub-features
 
-- [ ] `src/pages/options/OptionChainPage.tsx`
+- [ ] `apps/desktop/src/pages/options/OptionChainPage.tsx`
   - Option chain viewer
   - Symbol selection, expiration selection
   - Chain table with filtering
 
-- [ ] `src/pages/options/GreeksPage.tsx`
+- [ ] `apps/desktop/src/pages/options/GreeksPage.tsx`
   - Greeks calculator interface
   - Input parameters form
   - Results visualization
 
 #### Feature Components
 
-- [ ] `src/features/options/OptionChainViewer/`
+- [ ] `apps/desktop/src/features/options/OptionChainViewer/`
   - `OptionChainTable.tsx` - Main table component
   - `ChainFilters.tsx` - Expiration, strike range, volume filters
   - `OptionRow.tsx` - Individual option display
   - `GreeksDisplay.tsx` - Inline Greeks visualization
 
-- [ ] `src/features/options/GreeksCalculator/`
+- [ ] `apps/desktop/src/features/options/GreeksCalculator/`
   - `GreeksForm.tsx` - Parameter input form
   - `GreeksResults.tsx` - Results display
   - `GreeksChart.tsx` - Sensitivity visualization
@@ -350,10 +353,10 @@ User selects symbol
 
 ```bash
 # Component tests
-pnpm test src/features/options
+pnpm test -- apps/desktop/src/features/options
 
 # Integration tests
-pnpm test src/pages/options
+pnpm test -- apps/desktop/src/pages/options
 
 # Type checking
 pnpm typecheck
@@ -388,7 +391,7 @@ IPC integration functional
 - [ ] Accessibility standards met (ARIA)
 - [ ] Component tests passing (> 70% coverage)
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -404,16 +407,16 @@ Implement the multi-leg strategy builder with interactive payoff diagrams and ri
 
 #### Frontend Components
 
-- [ ] `src/pages/options/StrategyBuilderPage.tsx`
+- [ ] `apps/desktop/src/pages/options/StrategyBuilderPage.tsx`
   - Strategy construction interface
 
-- [ ] `src/features/options/StrategyBuilder/`
+- [ ] `apps/desktop/src/features/options/StrategyBuilder/`
   - `StrategySelector.tsx` - Pre-built templates
   - `LegBuilder.tsx` - Individual leg configuration
   - `StrategyPreview.tsx` - Real-time preview
   - `PayoffDiagram.tsx` - Interactive P&L chart
 
-- [ ] `src/features/options/StrategyAnalysis/`
+- [ ] `apps/desktop/src/features/options/StrategyAnalysis/`
   - `RiskMetrics.tsx` - Greeks, break-evens, max profit/loss
   - `ProbabilityAnalysis.tsx` - PoP calculation
   - `ScenarioComparison.tsx` - Multiple scenarios
@@ -509,14 +512,14 @@ pub fn calculate_strategy_payoff(
 
 ```bash
 # Frontend tests
-pnpm test src/features/options/StrategyBuilder
+pnpm test -- apps/desktop/src/features/options/StrategyBuilder
 
 # Backend tests
 cargo test --package option-core --lib strategy
-cargo test --package desktop --lib services strategy_service
+cargo test -p investment-os strategy_service
 
 # Plugin tests
-pnpm test plugins/strategy-payoff
+pnpm test -- plugins/strategy-payoff
 
 # E2E tests
 pnpm test:e2e -- strategy-builder
@@ -548,7 +551,7 @@ Reopen from artifacts page
 - [ ] E2E workflow tests passing
 - [ ] Performance acceptable (diagram renders < 500ms)
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -564,10 +567,10 @@ Implement volatility surface visualization, term structure analysis, and scenari
 
 #### Volatility Analysis Components
 
-- [ ] `src/pages/options/VolatilityAnalysisPage.tsx`
+- [ ] `apps/desktop/src/pages/options/VolatilityAnalysisPage.tsx`
   - Volatility surface and term structure viewer
 
-- [ ] `src/features/options/VolatilitySurface/`
+- [ ] `apps/desktop/src/features/options/VolatilitySurface/`
   - `Surface3D.tsx` - 3D visualization (Three.js or Plotly)
   - `TermStructure.tsx` - IV vs. expiration chart
   - `SkewAnalysis.tsx` - IV vs. strike chart
@@ -575,7 +578,7 @@ Implement volatility surface visualization, term structure analysis, and scenari
 
 #### Scenario Analysis Components
 
-- [ ] `src/features/options/ScenarioAnalysis/`
+- [ ] `apps/desktop/src/features/options/ScenarioAnalysis/`
   - `ScenarioBuilder.tsx` - Define scenarios
   - `ScenarioRunnerButton.tsx` - Execute analysis
   - `ScenarioResults.tsx` - Compare outcomes
@@ -651,15 +654,15 @@ pub struct Scenario {
 
 ```bash
 # Frontend tests
-pnpm test src/features/options/VolatilitySurface
-pnpm test src/features/options/ScenarioAnalysis
+pnpm test -- apps/desktop/src/features/options/VolatilitySurface
+pnpm test -- apps/desktop/src/features/options/ScenarioAnalysis
 
 # Backend tests
 cargo test --package option-core --lib volatility_surface
-cargo test --package desktop --lib services scenario_service
+cargo test -p investment-os scenario_service
 
 # Plugin tests
-pnpm test plugins/volatility-surface
+pnpm test -- plugins/volatility-surface
 
 # Performance tests
 pnpm test -- performance
@@ -693,7 +696,7 @@ Compare outcomes visually
 - [ ] All tests passing
 - [ ] Performance benchmarks met
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -709,10 +712,10 @@ Integrate option positions with portfolio tracking, enabling portfolio-level ris
 
 #### Portfolio Components
 
-- [ ] `src/pages/options/PortfolioRiskPage.tsx`
+- [ ] `apps/desktop/src/pages/options/PortfolioRiskPage.tsx`
   - Portfolio-level risk dashboard
 
-- [ ] `src/features/options/PortfolioRisk/`
+- [ ] `apps/desktop/src/features/options/PortfolioRisk/`
   - `GreeksAggregation.tsx` - Net Greeks display
   - `ExposureAnalysis.tsx` - Position exposure charts
   - `RiskBreakdown.tsx` - Risk contribution by position
@@ -789,11 +792,11 @@ pub struct RiskContribution {
 
 ```bash
 # Frontend tests
-pnpm test src/features/options/PortfolioRisk
+pnpm test -- apps/desktop/src/features/options/PortfolioRisk
 
 # Backend tests
-cargo test --package desktop --lib services portfolio_option_service
-cargo test --package desktop --lib database option_position_repository
+cargo test -p investment-os portfolio_option_service
+cargo test -p investment-os option_position_repository
 
 # Integration tests
 pnpm test:e2e -- portfolio-risk
@@ -824,7 +827,7 @@ Historical Greeks tracked
 - [ ] Integration with equity portfolio works
 - [ ] All tests passing
 - [ ] Code review completed
-- [ ] Branch merged to `dev/option`
+- [ ] Accepted on `dev` through a scoped M9 PR
 
 ---
 
@@ -1018,7 +1021,7 @@ Ready for dev branch integration
 - [ ] Documentation complete and reviewed
 - [ ] No regressions in existing features
 - [ ] Merge conflicts resolved
-- [ ] Integration testing on `dev/option`
+- [ ] Integration testing on the current M9 branch and `dev`
 
 ### PR to `dev` Requirements
 
@@ -1092,18 +1095,18 @@ Each phase is considered complete when:
 - ✅ Documentation updated
 - ✅ Code review approved
 - ✅ Demo recording created (for major phases)
-- ✅ Branch merged to `dev/option`
+- ✅ All required Option slices accepted on `dev`
 
 ### Final Success Criteria
 
 The Option Analysis Platform is ready for production when:
-- ✅ All 7 phases complete
-- ✅ Full test suite passing
-- ✅ Performance targets met
-- ✅ Security review passed
-- ✅ Documentation complete
-- ✅ User acceptance testing passed
-- ✅ Merged to `dev` branch
+- [ ] All 7 phases complete
+- [ ] Full test suite passing
+- [ ] Performance targets met
+- [ ] Security review passed
+- [ ] Documentation complete
+- [ ] User acceptance testing passed
+- [ ] Merged to `dev` branch
 
 ---
 
@@ -1113,5 +1116,9 @@ The Option Analysis Platform is ready for production when:
 - [Option Architecture Design](./ARCHITECTURE.md)
 - [Option Data Model](./DATA_MODEL.md)
 - [Option API Specification](./API_SPEC.md)
+- [Option Documentation Index](./README.md)
+- [Option Implementation Details](./IMPLEMENTATION_DETAILS.md)
+- [Option Integration Plan](./INTEGRATION_PLAN.md)
+- [Option Git Workflow](./GIT_WORKFLOW.md)
 - [AlphaForge Milestone Roadmap](../MILESTONE_ROADMAP.md)
 - [AlphaForge Architecture](../ARCHITECTURE.md)
