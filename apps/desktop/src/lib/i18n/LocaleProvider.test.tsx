@@ -25,7 +25,7 @@ function LocaleProbe() {
     <>
       <p>{locale}</p>
       <p>{t("settings")}</p>
-      <button onClick={() => void setLocale("en-US")}>Switch language</button>
+      <button onClick={() => void setLocale("en")}>Switch language</button>
     </>
   );
 }
@@ -50,8 +50,8 @@ describe("LocaleProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Switch language" }));
 
-    await waitFor(() => expect(screen.getByText("en-US")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("en")).toBeInTheDocument());
     expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(settingsMock.setSetting).toHaveBeenCalledWith("app.locale", "en-US");
+    expect(settingsMock.setSetting).toHaveBeenCalledWith("app.locale", "en");
   });
 });

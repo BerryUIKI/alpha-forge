@@ -1,4 +1,4 @@
-export const LOCALES = ["zh-CN", "en-US"] as const;
+export const LOCALES = ["zh-CN", "en"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -38,7 +38,7 @@ const messages = {
     openPrivacyNotice: "打开隐私声明",
     openResearchDisclaimer: "打开研究免责声明",
   },
-  "en-US": {
+  "en": {
     today: "Today",
     research: "Research",
     journal: "Journal",

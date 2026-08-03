@@ -24,32 +24,31 @@ Settings change
 
 React owns the locale context, translation lookup, interpolation, and formatting. Rust owns setting persistence and stable error codes. Tauri remains the typed IPC boundary.
 
-## Proposed code layout
+## Implemented code layout (M8-03)
 
 ```text
 apps/desktop/src/lib/i18n/
-  index.ts
-  locale.ts                 # supported locales, validation, fallback
-  LocaleProvider.tsx        # startup loading and runtime switching
-  locale-context.ts
-  useLocale.ts
-  formatters.ts             # Intl wrappers
+  index.ts                  # Module barrel file
+  locale.ts                 # Supported locales, validation, fallback, inline messages
+  locale-context.ts         # React context definition
+  LocaleProvider.tsx        # Startup loading and runtime switching
+  LocaleProvider.test.tsx   # Provider tests
+  useLocale.ts              # Context hook
+  locale.test.ts            # Core locale tests
+  formatters.ts             # Intl wrappers for date, number, percent, currency
+  formatters.test.ts        # Formatter unit tests
+  catalog-parity.test.ts    # Catalog key parity test
   catalogs/
     en/
+      index.ts
+      common.ts             # Common UI strings
+      navigation.ts         # Navigation labels
+      settings.ts           # Settings page strings
+    zh-CN/
+      index.ts
       common.ts
       navigation.ts
       settings.ts
-      research.ts
-      journal.ts
-      portfolio.ts
-      artifacts.ts
-      agent.ts
-      options.ts
-    zh-CN/
-      ...matching namespaces
-  tests/
-    catalog-parity.test.ts
-    formatters.test.ts
 ```
 
 Feature catalogs are namespaced but assembled by a single i18n module. Components must not import catalogs directly; they use `useLocale()` so the implementation can evolve without touching every caller.
