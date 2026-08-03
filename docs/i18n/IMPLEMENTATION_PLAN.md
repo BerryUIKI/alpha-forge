@@ -103,6 +103,22 @@ pnpm test -- --run
 
 ### Remaining slices:
 
+### I18N-3.2: Research Workflow (M8-06) — ✅ Complete
+
+**Goal:** Localize research projects, documents, sources, notes, search, imports, and reports while preserving source quotations and provenance unchanged.
+
+1. ✅ Added research catalog with keys for projects, documents, sources, notes, reports, search
+2. ✅ Localized ResearchPage component with all controls and labels
+3. ✅ Preserved user content (titles, content, URLs) without translation
+4. ✅ Added tests covering both locales
+
+**Verification:** ✅ Passed
+
+```bash
+pnpm test -- --run
+# 143 tests passed
+```
+
 2. Research projects, documents, sources, notes, search, and reports.
 2. Research projects, documents, sources, notes, search, and reports.
 3. Journal, thesis evidence, confidence history, and validation.
