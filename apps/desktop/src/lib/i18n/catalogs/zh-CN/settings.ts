@@ -37,6 +37,16 @@ export const settings = {
     "AlphaForge 是本地优先的开源 MVP。它不要求账户、不进行自动云备份，且默认关闭遥测。你的本地数据库始终是唯一事实来源。",
   privacyNotice: "打开隐私声明",
   privacyDisclaimer: "打开研究免责声明",
+
+  // Database health section
+  databaseHealth: "数据库健康",
+  databaseHealthDescription: "检查本地 SQLite 数据库的完整性和连接状态。",
+  checkDatabaseHealth: "检查数据库健康",
+  checking: "正在检查…",
+  databaseHealthy: "数据库健康检查完成。",
+  databaseCheckFailed: "数据库健康检查失败。",
+  databaseStatusHealthy: "健康",
+  databaseStatusError: "错误",
 } as const;
 
 export type SettingsKey = keyof typeof settings;

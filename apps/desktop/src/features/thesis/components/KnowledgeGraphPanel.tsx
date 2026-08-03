@@ -2,8 +2,10 @@ import { useState } from "react";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 import { useCreateKnowledgeEntity, useCreateKnowledgeRelationship, useKnowledgeEntities, useKnowledgeRelationships } from "../hooks/useKnowledgeGraph";
 import { LoadingSpinner, ErrorState, EmptyState } from "@/components/common";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
+  const { t } = useLocale();
   const entities = useKnowledgeEntities(workspaceId);
   const relationships = useKnowledgeRelationships(workspaceId);
   const createEntity = useCreateKnowledgeEntity();
@@ -17,29 +19,24 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
 
   async function addEntity(event: React.FormEvent) {
     event.preventDefault();
-    if (!name.trim()) return setError("Entity name is required.");
+    if (!name.trim()) return setError(t("entityNameRequired"));
     try {
       await createEntity.mutateAsync({ workspaceId, entityType, name: name.trim() });
       setName("");
       setError("");
     } catch {
-      setError("Unable to create the knowledge entity.");
+      setError(t("unableToCreateEntity"));
     }
   }
 
   async function addRelationship(event: React.FormEvent) {
     event.preventDefault();
-    if (!sourceId || !targetId || !relationshipType.trim())
-      return setError("Source, target, and relationship type are required.");
+    if (!sourceId || !targetId || !relationshipType.trim()) return setError(t("relationshipRequired"));
     try {
-      await createRelationship.mutateAsync({
-        sourceEntityId: sourceId,
-        targetEntityId: targetId,
-        relationshipType: relationshipType.trim(),
-      });
+      await createRelationship.mutateAsync({ sourceEntityId: sourceId, targetEntityId: targetId, relationshipType: relationshipType.trim() });
       setError("");
     } catch {
-      setError("Unable to create the relationship.");
+      setError(t("unableToCreateRelationship"));
     }
   }
 
@@ -49,21 +46,21 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
   if (entities.isLoading || relationships.isLoading) {
     return (
       <section className="rounded-lg border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Knowledge graph</h2>
-        <LoadingSpinner className="mt-8" ariaLabel="Loading knowledge graph data" />
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
+        <LoadingSpinner className="mt-8" ariaLabel={t("loading")} />
       </section>
     );
   }
 
   // Error state
   if (entities.error || relationships.error) {
-    const errorMessage = entities.error?.message || relationships.error?.message || "Failed to load knowledge graph data";
+    const errorMessage = entities.error?.message || relationships.error?.message || t("unexpectedError");
     return (
       <section className="rounded-lg border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Knowledge graph</h2>
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
         <ErrorState
           message={errorMessage}
-          retryLabel="Try Again"
+          retryLabel={t("retry")}
           onRetry={() => {
             entities.refetch();
             relationships.refetch();
@@ -80,10 +77,10 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
   if (!hasEntities && !hasRelationships) {
     return (
       <section className="rounded-lg border border-border bg-card p-5">
-        <h2 className="text-lg font-semibold">Knowledge graph</h2>
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
         <EmptyState
-          title="No knowledge entities yet"
-          description="Start by adding companies, industries, technologies, or macro themes to build your knowledge graph."
+          title={t("noWorkspaces")}
+          description={t("knowledgeGraphDescription")}
         />
       </section>
     );
@@ -91,76 +88,39 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
 
   return (
     <section className="rounded-lg border border-border bg-card p-5">
-      <h2 className="text-lg font-semibold">Knowledge graph</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Connect companies, industries, technologies, and macro themes.
-      </p>
+      <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{t("knowledgeGraphDescription")}</p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <form onSubmit={addEntity} className="space-y-2">
           <div className="flex gap-2">
-            <select
-              value={entityType}
-              onChange={(event) => setEntityType(event.target.value as KnowledgeEntityType)}
-              className="rounded-md border border-input bg-background px-2 text-sm"
-            >
-              <option value="company">Company</option>
-              <option value="industry">Industry</option>
-              <option value="technology">Technology</option>
-              <option value="macro_theme">Macro theme</option>
+            <select value={entityType} onChange={(event) => setEntityType(event.target.value as KnowledgeEntityType)} className="rounded-md border border-input bg-background px-2 text-sm">
+              <option value="company">{t("entityTypeCompany")}</option>
+              <option value="industry">{t("entityTypeIndustry")}</option>
+              <option value="technology">{t("entityTypeTechnology")}</option>
+              <option value="macro_theme">{t("entityTypeMacroTheme")}</option>
             </select>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Entity name"
-              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
+            <input value={name} onChange={(event) => setName(event.target.value)} placeholder={t("entityName")} className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
           </div>
-          <button
-            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
-            disabled={createEntity.isPending}
-          >
-            Add entity
+          <button className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent" disabled={createEntity.isPending}>
+            {t("addEntity")}
           </button>
         </form>
 
         <form onSubmit={addRelationship} className="space-y-2">
           <div className="grid grid-cols-3 gap-2">
-            <select
-              value={sourceId}
-              onChange={(event) => setSourceId(event.target.value)}
-              className="rounded-md border border-input bg-background p-2 text-sm"
-            >
-              <option value="">Source</option>
-              {entities.data?.map((entity) => (
-                <option key={entity.id} value={entity.id}>
-                  {entity.name}
-                </option>
-              ))}
+            <select value={sourceId} onChange={(event) => setSourceId(event.target.value)} className="rounded-md border border-input bg-background p-2 text-sm">
+              <option value="">{t("source")}</option>
+              {entities.data?.map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
             </select>
-            <input
-              value={relationshipType}
-              onChange={(event) => setRelationshipType(event.target.value)}
-              className="min-w-0 rounded-md border border-input bg-background px-2 text-sm"
-            />
-            <select
-              value={targetId}
-              onChange={(event) => setTargetId(event.target.value)}
-              className="rounded-md border border-input bg-background p-2 text-sm"
-            >
-              <option value="">Target</option>
-              {entities.data?.map((entity) => (
-                <option key={entity.id} value={entity.id}>
-                  {entity.name}
-                </option>
-              ))}
+            <input value={relationshipType} onChange={(event) => setRelationshipType(event.target.value)} className="min-w-0 rounded-md border border-input bg-background px-2 text-sm" />
+            <select value={targetId} onChange={(event) => setTargetId(event.target.value)} className="rounded-md border border-input bg-background p-2 text-sm">
+              <option value="">{t("target")}</option>
+              {entities.data?.map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
             </select>
           </div>
-          <button
-            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
-            disabled={createRelationship.isPending}
-          >
-            Add relationship
+          <button className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent" disabled={createRelationship.isPending}>
+            {t("addRelationship")}
           </button>
         </form>
       </div>
@@ -179,9 +139,7 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
         <ul className="space-y-1 text-sm">
           {relationships.data?.map((relationship) => (
             <li key={relationship.id} className="rounded bg-muted px-2 py-1">
-              {entityName(relationship.source_entity_id)}{" "}
-              <span className="text-muted-foreground">{relationship.relationship_type}</span>{" "}
-              {entityName(relationship.target_entity_id)}
+              {entityName(relationship.source_entity_id)} <span className="text-muted-foreground">{relationship.relationship_type}</span> {entityName(relationship.target_entity_id)}
             </li>
           ))}
         </ul>

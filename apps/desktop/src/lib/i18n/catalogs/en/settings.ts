@@ -41,6 +41,16 @@ export const settings = {
     "AlphaForge is a local-first, open-source MVP. It has no account requirement, no automatic cloud backup, and telemetry is disabled by default. Your local database remains the source of truth.",
   privacyNotice: "Open privacy notice",
   privacyDisclaimer: "Open research disclaimer",
+
+  // Database health section
+  databaseHealth: "Database health",
+  databaseHealthDescription: "Check the integrity and connectivity of the local SQLite database.",
+  checkDatabaseHealth: "Check database health",
+  checking: "Checking…",
+  databaseHealthy: "Database health check complete.",
+  databaseCheckFailed: "Database health check failed.",
+  databaseStatusHealthy: "Healthy",
+  databaseStatusError: "Error",
 } as const;
 
 export type SettingsKey = keyof typeof settings;
