@@ -1,13 +1,191 @@
 import { useState } from "react";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 import { useCreateKnowledgeEntity, useCreateKnowledgeRelationship, useKnowledgeEntities, useKnowledgeRelationships } from "../hooks/useKnowledgeGraph";
+import { LoadingSpinner, ErrorState, EmptyState } from "@/components/common";
 
 export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
-  const entities = useKnowledgeEntities(workspaceId); const relationships = useKnowledgeRelationships(workspaceId);
-  const createEntity = useCreateKnowledgeEntity(); const createRelationship = useCreateKnowledgeRelationship();
-  const [name, setName] = useState(""); const [entityType, setEntityType] = useState<KnowledgeEntityType>("company"); const [sourceId, setSourceId] = useState(""); const [targetId, setTargetId] = useState(""); const [relationshipType, setRelationshipType] = useState("enables"); const [error, setError] = useState("");
-  async function addEntity(event: React.FormEvent) { event.preventDefault(); if (!name.trim()) return setError("Entity name is required."); try { await createEntity.mutateAsync({ workspaceId, entityType, name: name.trim() }); setName(""); setError(""); } catch { setError("Unable to create the knowledge entity."); } }
-  async function addRelationship(event: React.FormEvent) { event.preventDefault(); if (!sourceId || !targetId || !relationshipType.trim()) return setError("Source, target, and relationship type are required."); try { await createRelationship.mutateAsync({ sourceEntityId: sourceId, targetEntityId: targetId, relationshipType: relationshipType.trim() }); setError(""); } catch { setError("Unable to create the relationship."); } }
+  const entities = useKnowledgeEntities(workspaceId);
+  const relationships = useKnowledgeRelationships(workspaceId);
+  const createEntity = useCreateKnowledgeEntity();
+  const createRelationship = useCreateKnowledgeRelationship();
+  const [name, setName] = useState("");
+  const [entityType, setEntityType] = useState<KnowledgeEntityType>("company");
+  const [sourceId, setSourceId] = useState("");
+  const [targetId, setTargetId] = useState("");
+  const [relationshipType, setRelationshipType] = useState("enables");
+  const [error, setError] = useState("");
+
+  async function addEntity(event: React.FormEvent) {
+    event.preventDefault();
+    if (!name.trim()) return setError("Entity name is required.");
+    try {
+      await createEntity.mutateAsync({ workspaceId, entityType, name: name.trim() });
+      setName("");
+      setError("");
+    } catch {
+      setError("Unable to create the knowledge entity.");
+    }
+  }
+
+  async function addRelationship(event: React.FormEvent) {
+    event.preventDefault();
+    if (!sourceId || !targetId || !relationshipType.trim())
+      return setError("Source, target, and relationship type are required.");
+    try {
+      await createRelationship.mutateAsync({
+        sourceEntityId: sourceId,
+        targetEntityId: targetId,
+        relationshipType: relationshipType.trim(),
+      });
+      setError("");
+    } catch {
+      setError("Unable to create the relationship.");
+    }
+  }
+
   const entityName = (id: string) => entities.data?.find((entity) => entity.id === id)?.name ?? id;
-  return <section className="rounded-lg border border-border bg-card p-5"><h2 className="text-lg font-semibold">Knowledge graph</h2><p className="mt-1 text-sm text-muted-foreground">Connect companies, industries, technologies, and macro themes.</p><div className="mt-4 grid gap-4 lg:grid-cols-2"><form onSubmit={addEntity} className="space-y-2"><div className="flex gap-2"><select value={entityType} onChange={(event) => setEntityType(event.target.value as KnowledgeEntityType)} className="rounded-md border border-input bg-background px-2 text-sm"><option value="company">Company</option><option value="industry">Industry</option><option value="technology">Technology</option><option value="macro_theme">Macro theme</option></select><input value={name} onChange={(event) => setName(event.target.value)} placeholder="Entity name" className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" /></div><button className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent" disabled={createEntity.isPending}>Add entity</button></form><form onSubmit={addRelationship} className="space-y-2"><div className="grid grid-cols-3 gap-2"><select value={sourceId} onChange={(event) => setSourceId(event.target.value)} className="rounded-md border border-input bg-background p-2 text-sm"><option value="">Source</option>{entities.data?.map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}</select><input value={relationshipType} onChange={(event) => setRelationshipType(event.target.value)} className="min-w-0 rounded-md border border-input bg-background px-2 text-sm" /><select value={targetId} onChange={(event) => setTargetId(event.target.value)} className="rounded-md border border-input bg-background p-2 text-sm"><option value="">Target</option>{entities.data?.map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}</select></div><button className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent" disabled={createRelationship.isPending}>Add relationship</button></form></div>{error && <p className="mt-2 text-sm text-destructive">{error}</p>}<div className="mt-4 grid gap-4 lg:grid-cols-2"><ul className="space-y-1 text-sm">{entities.data?.map((entity) => <li key={entity.id} className="rounded bg-muted px-2 py-1"><span className="text-muted-foreground">{entity.entity_type}: </span>{entity.name}</li>)}</ul><ul className="space-y-1 text-sm">{relationships.data?.map((relationship) => <li key={relationship.id} className="rounded bg-muted px-2 py-1">{entityName(relationship.source_entity_id)} <span className="text-muted-foreground">{relationship.relationship_type}</span> {entityName(relationship.target_entity_id)}</li>)}</ul></div></section>;
+
+  // Loading state
+  if (entities.isLoading || relationships.isLoading) {
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">Knowledge graph</h2>
+        <LoadingSpinner className="mt-8" ariaLabel="Loading knowledge graph data" />
+      </section>
+    );
+  }
+
+  // Error state
+  if (entities.error || relationships.error) {
+    const errorMessage = entities.error?.message || relationships.error?.message || "Failed to load knowledge graph data";
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">Knowledge graph</h2>
+        <ErrorState
+          message={errorMessage}
+          retryLabel="Try Again"
+          onRetry={() => {
+            entities.refetch();
+            relationships.refetch();
+          }}
+        />
+      </section>
+    );
+  }
+
+  // Empty state
+  const hasEntities = entities.data && entities.data.length > 0;
+  const hasRelationships = relationships.data && relationships.data.length > 0;
+
+  if (!hasEntities && !hasRelationships) {
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">Knowledge graph</h2>
+        <EmptyState
+          title="No knowledge entities yet"
+          description="Start by adding companies, industries, technologies, or macro themes to build your knowledge graph."
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-5">
+      <h2 className="text-lg font-semibold">Knowledge graph</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Connect companies, industries, technologies, and macro themes.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <form onSubmit={addEntity} className="space-y-2">
+          <div className="flex gap-2">
+            <select
+              value={entityType}
+              onChange={(event) => setEntityType(event.target.value as KnowledgeEntityType)}
+              className="rounded-md border border-input bg-background px-2 text-sm"
+            >
+              <option value="company">Company</option>
+              <option value="industry">Industry</option>
+              <option value="technology">Technology</option>
+              <option value="macro_theme">Macro theme</option>
+            </select>
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Entity name"
+              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <button
+            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
+            disabled={createEntity.isPending}
+          >
+            Add entity
+          </button>
+        </form>
+
+        <form onSubmit={addRelationship} className="space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <select
+              value={sourceId}
+              onChange={(event) => setSourceId(event.target.value)}
+              className="rounded-md border border-input bg-background p-2 text-sm"
+            >
+              <option value="">Source</option>
+              {entities.data?.map((entity) => (
+                <option key={entity.id} value={entity.id}>
+                  {entity.name}
+                </option>
+              ))}
+            </select>
+            <input
+              value={relationshipType}
+              onChange={(event) => setRelationshipType(event.target.value)}
+              className="min-w-0 rounded-md border border-input bg-background px-2 text-sm"
+            />
+            <select
+              value={targetId}
+              onChange={(event) => setTargetId(event.target.value)}
+              className="rounded-md border border-input bg-background p-2 text-sm"
+            >
+              <option value="">Target</option>
+              {entities.data?.map((entity) => (
+                <option key={entity.id} value={entity.id}>
+                  {entity.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
+            disabled={createRelationship.isPending}
+          >
+            Add relationship
+          </button>
+        </form>
+      </div>
+
+      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <ul className="space-y-1 text-sm">
+          {entities.data?.map((entity) => (
+            <li key={entity.id} className="rounded bg-muted px-2 py-1">
+              <span className="text-muted-foreground">{entity.entity_type}: </span>
+              {entity.name}
+            </li>
+          ))}
+        </ul>
+        <ul className="space-y-1 text-sm">
+          {relationships.data?.map((relationship) => (
+            <li key={relationship.id} className="rounded bg-muted px-2 py-1">
+              {entityName(relationship.source_entity_id)}{" "}
+              <span className="text-muted-foreground">{relationship.relationship_type}</span>{" "}
+              {entityName(relationship.target_entity_id)}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
 }

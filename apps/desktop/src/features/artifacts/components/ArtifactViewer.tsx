@@ -2,6 +2,9 @@
 
 import { useArtifact } from "../hooks/useArtifacts";
 import { artifactRegistry } from "../renderers/registry";
+import { ErrorState, LoadingSpinner, EmptyState } from "@/components/common";
+import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage } from "@/lib/i18n/locale";
 
 interface ArtifactViewerProps {
   artifactId: string;
@@ -11,29 +14,30 @@ interface ArtifactViewerProps {
  * Generic artifact viewer that renders the appropriate component based on artifact type.
  */
 export function ArtifactViewer({ artifactId }: ArtifactViewerProps) {
-  const { data: artifact, isLoading, error } = useArtifact(artifactId);
+  const { t } = useLocale();
+  const { data: artifact, isLoading, error, refetch } = useArtifact(artifactId);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading artifact...</div>
-      </div>
-    );
+    return <LoadingSpinner className="h-64" ariaLabel={t("loadingArtifact")} />;
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-red-600">Error loading artifact: {error.message}</div>
-      </div>
+      <ErrorState
+        title={t("errorLoadingArtifact")}
+        message={error.message}
+        retryLabel={t("retry")}
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (!artifact) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Artifact not found</div>
-      </div>
+      <EmptyState
+        title={t("artifactNotFound")}
+        description={t("artifactNotFoundDescription")}
+      />
     );
   }
 
@@ -42,11 +46,10 @@ export function ArtifactViewer({ artifactId }: ArtifactViewerProps) {
 
   if (!Renderer) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">
-          No renderer available for artifact type: {artifact.artifact_type}
-        </div>
-      </div>
+      <EmptyState
+        title={t("noRendererAvailable")}
+        description={formatMessage(t("noRendererAvailableDescription"), { type: artifact.artifact_type })}
+      />
     );
   }
 
@@ -60,11 +63,11 @@ export function ArtifactViewer({ artifactId }: ArtifactViewerProps) {
           <div>
             <h2 className="text-lg font-semibold">{artifact.artifact_type}</h2>
             <p className="text-sm text-muted-foreground">
-              Status: {artifact.status}
+              {t("artifactStatus")}: {artifact.status}
             </p>
           </div>
           <div className="text-sm text-muted-foreground">
-            Created: {new Date(artifact.created_at).toLocaleString()}
+            {t("artifactCreated")}: {new Date(artifact.created_at).toLocaleString()}
           </div>
         </div>
       </div>

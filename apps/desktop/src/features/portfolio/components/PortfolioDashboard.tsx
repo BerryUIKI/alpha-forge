@@ -75,7 +75,7 @@ function AlignmentReviewPanel({ workspaceId }: { workspaceId: string }) {
             setError("");
             await review.mutateAsync(workspaceId);
           } catch (cause) {
-            setError(cause instanceof Error ? cause.message : t("unableToCreateAccount"));
+            setError(cause instanceof Error ? cause.message : t("failedToCheckAlignment"));
           }
         }}
         disabled={review.isPending}

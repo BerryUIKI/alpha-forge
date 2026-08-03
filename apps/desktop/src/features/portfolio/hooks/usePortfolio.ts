@@ -40,4 +40,13 @@ export function useImportPortfolioTransactions() {
   return useMutation({ mutationFn: ({ accountId, csvText }: { accountId: string; csvText: string }) => desktopApi.portfolio.importPortfolioTransactionsCsv(accountId, csvText), onSuccess: (_, input) => { queryClient.invalidateQueries({ queryKey: portfolioKeys.transactions(input.accountId) }); queryClient.invalidateQueries({ queryKey: portfolioKeys.positions(input.accountId) }); queryClient.invalidateQueries({ queryKey: portfolioKeys.all }); } });
 }
 export function useLinkPortfolioTheme() { const queryClient = useQueryClient(); return useMutation({ mutationFn: ({ workspaceId, symbol, entityId }: { workspaceId: string; symbol: string; entityId: string }) => desktopApi.portfolio.linkPortfolioTheme(workspaceId, symbol, entityId), onSuccess: (_, input) => queryClient.invalidateQueries({ queryKey: portfolioKeys.themes(input.workspaceId) }) }); }
-export function usePortfolioReview() { return useMutation({ mutationFn: (workspaceId: string) => desktopApi.portfolio.generatePortfolioReview(workspaceId) }); }
+export function usePortfolioReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workspaceId: string) => desktopApi.portfolio.generatePortfolioReview(workspaceId),
+    onSuccess: (_, workspaceId) => {
+      queryClient.invalidateQueries({ queryKey: portfolioKeys.alignment(workspaceId) });
+      queryClient.invalidateQueries({ queryKey: portfolioKeys.risks(workspaceId) });
+    },
+  });
+}
