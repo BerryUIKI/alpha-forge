@@ -28,6 +28,7 @@ export type SidebarState = "expanded" | "collapsed";
 export type UserMenuItem =
   | "profile"
   | "theme-toggle"
+  | "language"
   | "settings";
 
 /**

@@ -15,7 +15,7 @@
 
 import { useCallback, useState } from "react";
 import { ChevronLeft, GripVertical } from "lucide-react";
-import type { LeftSidebarProps } from "../types";
+import type { LeftSidebarProps, UserMenuItem } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { ScrollableList } from "./ScrollableList";
@@ -66,7 +66,7 @@ export function LeftSidebar({
     onWorkspaceChange?.(workspace);
   }, [onWorkspaceChange]);
 
-  const handleMenuItemClick = useCallback((item: "profile" | "theme-toggle" | "settings") => {
+  const handleMenuItemClick = useCallback((item: UserMenuItem) => {
     // TODO: [GUI-M1-1] Handle user menu actions
     console.log(`Menu item clicked: ${item}`);
   }, []);
