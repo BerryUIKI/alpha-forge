@@ -68,6 +68,13 @@ export const research = {
 
   // Errors
   saveError: "Unable to save the research item. Check the required fields and try again.",
+
+  // Actions
+  archiveProject: "Archive",
+  completeProject: "Complete",
+  deleteProject: "Delete",
+  deleteDocument: "Delete document",
+  deleteReport: "Delete report",
 } as const;
 
 export type ResearchKey = keyof typeof research;

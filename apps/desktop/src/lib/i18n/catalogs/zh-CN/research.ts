@@ -68,6 +68,13 @@ export const research = {
 
   // Errors
   saveError: "无法保存研究项目。请检查必填字段后重试。",
+
+  // Actions
+  archiveProject: "归档",
+  completeProject: "完成",
+  deleteProject: "删除",
+  deleteDocument: "删除文档",
+  deleteReport: "删除报告",
 } as const;
 
 export type ResearchKey = keyof typeof research;
