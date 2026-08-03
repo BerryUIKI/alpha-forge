@@ -284,6 +284,333 @@ Update the following documents:
 
 ---
 
+## Data Recovery Guide
+
+### Recovery Scenarios
+
+This section guides users through recovering their AlphaForge data in various scenarios.
+
+#### Scenario 1: Restore from Manual Backup
+
+If you have a backup file (exported via Settings > Export Local Backup):
+
+**macOS/Windows:**
+
+1. Open AlphaForge
+2. Go to **Settings > Local Backup**
+3. Click **Import Backup**
+4. Select the backup file (e.g., `backup-2026-08-03.db`)
+5. Confirm the import
+6. Restart the application
+
+**Note:** Importing a backup will replace the current workspace data.
+
+#### Scenario 2: Restore from File System Backup
+
+If you backed up the entire `~/Documents/alpha-forge/` directory:
+
+**macOS:**
+
+```bash
+# 1. Close AlphaForge completely
+
+# 2. Backup current data (if exists)
+mv ~/Documents/alpha-forge ~/Documents/alpha-forge.backup
+
+# 3. Restore from backup location
+cp -R /path/to/backup/alpha-forge ~/Documents/
+
+# 4. Verify permissions
+chmod -R 700 ~/Documents/alpha-forge
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# 1. Close AlphaForge completely
+
+# 2. Backup current data (if exists)
+Move-Item "$env:USERPROFILE\Documents\alpha-forge" "$env:USERPROFILE\Documents\alpha-forge.backup"
+
+# 3. Restore from backup location
+Copy-Item -Path "D:\backups\alpha-forge" -Destination "$env:USERPROFILE\Documents\" -Recurse
+```
+
+#### Scenario 3: Recover Specific Workspace
+
+To restore only one workspace without affecting others:
+
+**Steps:**
+
+1. Close AlphaForge
+2. Navigate to `~/Documents/alpha-forge/workspaces/`
+3. Identify the workspace directory by ID or creation date
+4. Replace the specific workspace folder:
+   - **macOS**: `cp -R /backup/alpha-forge/workspaces/{workspace-id} ~/Documents/alpha-forge/workspaces/`
+   - **Windows**: `Copy-Item -Path "D:\backup\workspaces\{workspace-id}" -Destination "$env:USERPROFILE\Documents\alpha-forge\workspaces\" -Recurse`
+5. Restart AlphaForge
+
+#### Scenario 4: Recover from Corrupted Database
+
+If a workspace database is corrupted:
+
+**Symptoms:**
+- Application crashes when opening specific workspace
+- Error message: "Failed to load workspace" or "Database disk image is malformed"
+
+**Recovery Steps:**
+
+1. **Attempt Automatic Repair** (if SQLite WAL files exist):
+   ```bash
+   # The application attempts automatic recovery on startup
+   # If .db-wal and .db-shm files exist, SQLite may recover
+   ```
+
+2. **Restore from Backup**:
+   - Check `~/Documents/alpha-forge/workspaces/{id}/exports/` for manual backups
+   - If no backup, data may be unrecoverable
+
+3. **Create New Workspace** (if recovery fails):
+   - Application will prompt to create a new workspace
+   - Old corrupted database remains in place (not deleted automatically)
+
+#### Scenario 5: Recover from Application Crash
+
+If AlphaForge crashed and data appears missing:
+
+1. **Check for WAL Recovery**:
+   - SQLite Write-Ahead Log (WAL) files may contain uncommitted changes
+   - Restart the application - SQLite will attempt automatic WAL recovery
+
+2. **Check Workspace List**:
+   - Workspaces are stored in `~/Documents/alpha-forge/workspaces/`
+   - Each workspace has a unique ID directory
+   - If directory exists, workspace can be reopened
+
+3. **Check Application Logs**:
+   - macOS: `~/Documents/alpha-forge/logs/alpha-forge.log`
+   - Windows: `%USERPROFILE%\Documents\alpha-forge\logs\alpha-forge.log`
+   - Logs may indicate what went wrong
+
+#### Scenario 6: Recover After OS Reinstall
+
+If you reinstalled your operating system:
+
+1. **Restore from External Backup**:
+   - Copy entire `alpha-forge` directory from external backup
+   - Place in `~/Documents/` (macOS) or `%USERPROFILE%\Documents\` (Windows)
+
+2. **Verify Application Version**:
+   - Ensure you're using the same or newer version of AlphaForge
+   - Older versions may not read newer database formats
+
+3. **Check Workspace Directories**:
+   - Each workspace in `workspaces/` directory should be intact
+   - Workspace database files: `workspace.db`, `workspace.db-wal`, `workspace.db-shm`
+
+### Recovery Best Practices
+
+1. **Regular Backups**:
+   - Use Settings > Export Local Backup weekly
+   - Store backups in a different location (external drive, cloud storage)
+
+2. **Test Backups**:
+   - Periodically test backup restoration on a test workspace
+   - Verify backup files are not corrupted
+
+3. **Multiple Backup Copies**:
+   - Keep multiple backup versions (e.g., last 4 weekly backups)
+   - Use timestamped filenames: `backup-2026-08-03.db`
+
+4. **Document Workspace IDs**:
+   - Note workspace names and IDs for easier recovery
+   - Workspace IDs are visible in Settings > Workspace
+
+---
+
+## Data Migration Guide
+
+### Migration Scenarios
+
+This section guides users through migrating AlphaForge data between devices or versions.
+
+#### Scenario 1: Migrate to New Computer
+
+**Prerequisites:**
+- Both computers have AlphaForge installed
+- Sufficient disk space on new computer
+- External storage or network transfer method
+
+**Steps:**
+
+1. **On Old Computer**:
+   - Close AlphaForge completely
+   - Navigate to data directory:
+     - macOS: `/Users/{username}/Documents/alpha-forge/`
+     - Windows: `C:\Users\{username}\Documents\alpha-forge\`
+   - Copy entire `alpha-forge` directory to external storage or network location
+
+2. **Transfer Data**:
+   - Use external drive, network transfer, or cloud storage
+   - Ensure transfer is complete and verified
+
+3. **On New Computer**:
+   - Install AlphaForge (same version or newer)
+   - Close AlphaForge if it auto-launched
+   - Copy `alpha-forge` directory to Documents folder:
+     - macOS: `~/Documents/alpha-forge/`
+     - Windows: `%USERPROFILE%\Documents\alpha-forge\`
+
+4. **Verify Migration**:
+   - Open AlphaForge
+   - Check Settings > Workspace to verify workspaces appear
+   - Open each workspace to verify data integrity
+
+**Troubleshooting:**
+- If workspaces don't appear, check directory structure matches specification
+- If database errors occur, ensure SQLite version compatibility
+- If settings are missing, check `config/settings.json` exists
+
+#### Scenario 2: Migrate Between macOS and Windows
+
+**Cross-Platform Considerations:**
+
+1. **Path Differences**:
+   - macOS: `/Users/{username}/Documents/alpha-forge/`
+   - Windows: `C:\Users\{username}\Documents\alpha-forge\`
+
+2. **File System Differences**:
+   - macOS uses POSIX paths (forward slashes)
+   - Windows uses backslashes (handled automatically)
+   - No conversion needed - paths are relative
+
+3. **Line Endings**:
+   - JSON files use UTF-8 encoding on both platforms
+   - No line ending conversion required
+
+**Migration Steps:**
+
+1. Export data on source platform using Settings > Export Local Backup
+2. Transfer backup file to target platform
+3. Import backup using Settings > Import Backup
+
+**Note:** Direct directory copy also works - AlphaForge is cross-platform compatible.
+
+#### Scenario 3: Upgrade to New AlphaForge Version
+
+**Before Upgrade:**
+
+1. **Create Backup**:
+   - Use Settings > Export Local Backup
+   - Save backup to external location
+
+2. **Check Release Notes**:
+   - Review breaking changes or migration requirements
+   - Note any database schema changes
+
+**After Upgrade:**
+
+1. **Automatic Migration**:
+   - AlphaForge automatically migrates data on first run
+   - Migration logs appear in `logs/alpha-forge.log`
+
+2. **Verify Data**:
+   - Check all workspaces appear correctly
+   - Verify recent research and theses are intact
+   - Check settings have been migrated
+
+3. **Handle Migration Failures**:
+   - If migration fails, application will show error message
+   - Restore from backup created before upgrade
+   - Report migration issue with log file attached
+
+**Version Compatibility:**
+- AlphaForge uses semantic versioning (MAJOR.MINOR.PATCH)
+- MINOR and PATCH upgrades are backward-compatible
+- MAJOR upgrades may require migration (documented in release notes)
+
+#### Scenario 4: Migrate Workspace Between Users
+
+To transfer a workspace to another user account (same computer):
+
+**Steps:**
+
+1. **Export Workspace** (as original user):
+   - Open workspace in AlphaForge
+   - Use Settings > Export Local Backup
+   - Save to shared location (e.g., `/tmp/` or `C:\Temp\`)
+
+2. **Import Workspace** (as target user):
+   - Log in as target user
+   - Open AlphaForge
+   - Use Settings > Import Backup
+   - Select the backup file
+
+**Alternative Method:**
+
+1. Copy workspace directory:
+   - macOS: `cp -R ~/Documents/alpha-forge/workspaces/{workspace-id} /tmp/workspace-transfer`
+   - Windows: `Copy-Item -Path "$env:USERPROFILE\Documents\alpha-forge\workspaces\{workspace-id}" -Destination "C:\Temp\workspace-transfer" -Recurse`
+
+2. Change ownership:
+   - macOS: `sudo chown -R targetuser:targetuser /tmp/workspace-transfer`
+   - Windows: Use File Explorer > Properties > Security
+
+3. Move to target user's directory:
+   - Log in as target user
+   - Move to `~/Documents/alpha-forge/workspaces/` or `%USERPROFILE%\Documents\alpha-forge\workspaces\`
+
+#### Scenario 5: Migrate from Legacy Version
+
+If upgrading from a version before M8 (data directory structure changed):
+
+**Automatic Migration:**
+
+AlphaForge M8+ automatically detects legacy data locations:
+- Old location: Application-specific data directory
+- New location: `~/Documents/alpha-forge/`
+
+**Manual Migration (if automatic fails):**
+
+1. Locate legacy data directory:
+   - macOS: `~/Library/Application Support/alpha-forge/`
+   - Windows: `%APPDATA%\alpha-forge\`
+
+2. Copy to new location:
+   ```bash
+   # macOS
+   mkdir -p ~/Documents/alpha-forge
+   cp -R ~/Library/Application\ Support/alpha-forge/* ~/Documents/alpha-forge/
+
+   # Windows
+   mkdir "%USERPROFILE%\Documents\alpha-forge"
+   xcopy "%APPDATA%\alpha-forge" "%USERPROFILE%\Documents\alpha-forge" /E /I
+   ```
+
+3. Verify migration successful, then delete legacy directory
+
+### Migration Checklist
+
+Before starting any migration:
+
+- [ ] Close AlphaForge completely on source device
+- [ ] Create backup of entire data directory
+- [ ] Verify backup integrity (can be opened)
+- [ ] Ensure target device has sufficient disk space
+- [ ] Install same or newer AlphaForge version on target device
+- [ ] Document current workspace names and IDs
+
+After migration:
+
+- [ ] Verify all workspaces appear in workspace list
+- [ ] Open each workspace to verify data integrity
+- [ ] Check settings (theme, locale, preferences)
+- [ ] Test basic operations (create note, run task)
+- [ ] Check application logs for errors
+- [ ] Delete backup only after verified everything works
+
+---
+
 ## References
 
 - [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
