@@ -21,15 +21,19 @@ mod tests {
             .await
             .expect("Failed to run initial migration");
 
-        sqlx::query(include_str!("../../migrations/0002_agent_tasks_enhancement.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run agent tasks migration");
+        sqlx::query(include_str!(
+            "../../migrations/0002_agent_tasks_enhancement.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run agent tasks migration");
 
-        sqlx::query(include_str!("../../migrations/0003_fix_status_constraint.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run status constraint fix");
+        sqlx::query(include_str!(
+            "../../migrations/0003_fix_status_constraint.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run status constraint fix");
 
         pool
     }
@@ -52,5 +56,4 @@ mod tests {
         // For now, just verify the config works
         assert_eq!(config.max_concurrent, 5);
     }
-
 }

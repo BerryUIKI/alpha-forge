@@ -21,20 +21,26 @@ mod tests {
             .await
             .expect("Failed to run initial migration");
 
-        sqlx::query(include_str!("../../../migrations/0002_agent_tasks_enhancement.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run agent tasks migration");
+        sqlx::query(include_str!(
+            "../../../migrations/0002_agent_tasks_enhancement.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run agent tasks migration");
 
-        sqlx::query(include_str!("../../../migrations/0003_fix_status_constraint.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run status constraint fix");
+        sqlx::query(include_str!(
+            "../../../migrations/0003_fix_status_constraint.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run status constraint fix");
 
-        sqlx::query(include_str!("../../../migrations/0004_enhance_artifacts.sql"))
-            .execute(&pool)
-            .await
-            .expect("Failed to run artifacts enhancement migration");
+        sqlx::query(include_str!(
+            "../../../migrations/0004_enhance_artifacts.sql"
+        ))
+        .execute(&pool)
+        .await
+        .expect("Failed to run artifacts enhancement migration");
 
         pool
     }
@@ -158,7 +164,10 @@ mod tests {
             repo.create(input).await.expect("Failed to create artifact");
         }
 
-        let artifacts = repo.list_by_workspace(&workspace_id).await.expect("Failed to list");
+        let artifacts = repo
+            .list_by_workspace(&workspace_id)
+            .await
+            .expect("Failed to list");
         assert_eq!(artifacts.len(), 3);
     }
 
@@ -198,10 +207,16 @@ mod tests {
         };
 
         let artifact = repo.create(input).await.expect("Failed to create artifact");
-        
-        repo.update_status(&artifact.id, ArtifactStatus::Generating).await.expect("Failed to update status");
-        
-        let updated = repo.get(&artifact.id).await.expect("Failed to get").unwrap();
+
+        repo.update_status(&artifact.id, ArtifactStatus::Generating)
+            .await
+            .expect("Failed to update status");
+
+        let updated = repo
+            .get(&artifact.id)
+            .await
+            .expect("Failed to get")
+            .unwrap();
         assert_eq!(updated.status, ArtifactStatus::Generating);
     }
 
@@ -219,11 +234,17 @@ mod tests {
         };
 
         let artifact = repo.create(input).await.expect("Failed to create artifact");
-        
+
         let output = serde_json::json!({"result": "success", "data": [1, 2, 3]});
-        repo.update_output(&artifact.id, output.clone()).await.expect("Failed to update output");
-        
-        let updated = repo.get(&artifact.id).await.expect("Failed to get").unwrap();
+        repo.update_output(&artifact.id, output.clone())
+            .await
+            .expect("Failed to update output");
+
+        let updated = repo
+            .get(&artifact.id)
+            .await
+            .expect("Failed to get")
+            .unwrap();
         assert_eq!(updated.output, Some(output));
         assert_eq!(updated.status, ArtifactStatus::Completed);
     }
@@ -242,10 +263,16 @@ mod tests {
         };
 
         let artifact = repo.create(input).await.expect("Failed to create artifact");
-        
-        repo.set_error(&artifact.id, "Test error message").await.expect("Failed to set error");
-        
-        let updated = repo.get(&artifact.id).await.expect("Failed to get").unwrap();
+
+        repo.set_error(&artifact.id, "Test error message")
+            .await
+            .expect("Failed to set error");
+
+        let updated = repo
+            .get(&artifact.id)
+            .await
+            .expect("Failed to get")
+            .unwrap();
         assert_eq!(updated.error, Some("Test error message".to_string()));
         assert_eq!(updated.status, ArtifactStatus::Failed);
     }
@@ -264,9 +291,9 @@ mod tests {
         };
 
         let artifact = repo.create(input).await.expect("Failed to create artifact");
-        
+
         repo.delete(&artifact.id).await.expect("Failed to delete");
-        
+
         let deleted = repo.get(&artifact.id).await.expect("Failed to query");
         assert!(deleted.is_none());
     }
@@ -288,7 +315,11 @@ mod tests {
         let artifact = repo.create(input).await.expect("Failed to create artifact");
         assert_eq!(artifact.artifact_type, custom_type);
 
-        let fetched = repo.get(&artifact.id).await.expect("Failed to get").unwrap();
+        let fetched = repo
+            .get(&artifact.id)
+            .await
+            .expect("Failed to get")
+            .unwrap();
         assert_eq!(fetched.artifact_type, custom_type);
     }
 }

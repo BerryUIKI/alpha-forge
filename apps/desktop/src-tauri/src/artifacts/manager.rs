@@ -72,10 +72,7 @@ impl ArtifactManager {
         // Build artifact URL
         // For now, we'll use a simple HTML template
         // In production, this would route to a React component
-        let artifact_url = format!(
-            "/artifact/{}/{}",
-            config.artifact_id, config.artifact_type
-        );
+        let artifact_url = format!("/artifact/{}/{}", config.artifact_id, config.artifact_type);
 
         // Create window
         let artifact_url = artifact_url
@@ -84,7 +81,7 @@ impl ArtifactManager {
         let _window = WebviewWindowBuilder::new(
             &self.app_handle,
             &window_label,
-            WebviewUrl::App(artifact_url)
+            WebviewUrl::App(artifact_url),
         )
         .title(&config.title)
         .inner_size(config.width, config.height)
@@ -172,11 +169,7 @@ impl ArtifactManager {
     }
 
     /// Changes theme for an artifact window.
-    pub async fn set_artifact_theme(
-        &self,
-        artifact_id: &str,
-        theme: &str,
-    ) -> Result<(), AppError> {
+    pub async fn set_artifact_theme(&self, artifact_id: &str, theme: &str) -> Result<(), AppError> {
         self.emit_to_artifact(
             artifact_id,
             "artifact:theme",

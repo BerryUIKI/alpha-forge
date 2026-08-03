@@ -13,10 +13,9 @@
  * @module menu
  * @version GUI-M1-2
  */
-
 use tauri::{
-    menu::{Menu, MenuBuilder, MenuItem, MenuItemBuilder, Submenu, SubmenuBuilder},
-    AppHandle, Manager, Runtime,
+    menu::{Menu, MenuBuilder, MenuItemBuilder, Submenu, SubmenuBuilder},
+    AppHandle, Runtime,
 };
 
 /// Menu identifiers for event handling

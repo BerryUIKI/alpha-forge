@@ -59,7 +59,10 @@ impl ResearchProjectRepository {
         Ok(row.map(|r| r.into()))
     }
 
-    pub async fn list_by_workspace(&self, workspace_id: &str) -> Result<Vec<ResearchProject>, AppError> {
+    pub async fn list_by_workspace(
+        &self,
+        workspace_id: &str,
+    ) -> Result<Vec<ResearchProject>, AppError> {
         let rows = sqlx::query_as::<_, ResearchProjectRow>(
             "SELECT id, workspace_id, title, description, status, created_at, updated_at FROM research_projects WHERE workspace_id = ? ORDER BY created_at DESC"
         )

@@ -21,11 +21,11 @@ export function TodayPage() {
 
   const handleCreateSuccess = (workspace: { id: string; name: string }) => {
     // Refresh will happen automatically via TanStack Query invalidation
-    setSelectedWorkspace({ 
-      id: workspace.id, 
-      name: workspace.name, 
-      createdAt: new Date().toISOString(), 
-      updatedAt: new Date().toISOString() 
+    setSelectedWorkspace({
+      id: workspace.id,
+      name: workspace.name,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     });
   };
 

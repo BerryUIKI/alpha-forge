@@ -3,11 +3,11 @@
 // Contains shared domain types: Research, Thesis, Portfolio, Artifact, Task, Workspace, Option.
 // These are pure data structures with no I/O dependencies.
 
-pub mod research;
-pub mod thesis;
-pub mod knowledge_graph;
-pub mod portfolio;
 pub mod artifact;
-pub mod task;
-pub mod workspace;
+pub mod knowledge_graph;
 pub mod option;
+pub mod portfolio;
+pub mod research;
+pub mod task;
+pub mod thesis;
+pub mod workspace;

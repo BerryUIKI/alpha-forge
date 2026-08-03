@@ -5,8 +5,8 @@ use sqlx::SqlitePool;
 
 use crate::error::AppError;
 use domain::thesis::{
-    AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis, ThesisEvidence,
-    ThesisConfidenceSnapshot, ThesisStatus, UpdateConfidenceInput,
+    AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis,
+    ThesisConfidenceSnapshot, ThesisEvidence, ThesisStatus, UpdateConfidenceInput,
 };
 
 pub struct ThesisRepository {
@@ -103,11 +103,7 @@ impl ThesisRepository {
     }
 
     /// Update thesis status.
-    pub async fn update_status(
-        &self,
-        id: &str,
-        status: ThesisStatus,
-    ) -> Result<(), AppError> {
+    pub async fn update_status(&self, id: &str, status: ThesisStatus) -> Result<(), AppError> {
         let status_str = status.to_string();
         sqlx::query("UPDATE investment_theses SET status = ? WHERE id = ?")
             .bind(&status_str)
@@ -119,19 +115,16 @@ impl ThesisRepository {
     }
 
     /// Update thesis confidence.
-    pub async fn update_confidence(
-        &self,
-        input: UpdateConfidenceInput,
-    ) -> Result<(), AppError> {
+    pub async fn update_confidence(&self, input: UpdateConfidenceInput) -> Result<(), AppError> {
         let confidence = input.confidence.clamp(0, 100);
         sqlx::query("UPDATE investment_theses SET confidence = ? WHERE id = ?")
             .bind(confidence)
             .bind(&input.thesis_id)
             .execute(&self.pool)
-        .await
-        .map_err(|e| {
-            AppError::Internal(format!("Failed to update thesis confidence: {}", e))
-        })?;
+            .await
+            .map_err(|e| {
+                AppError::Internal(format!("Failed to update thesis confidence: {}", e))
+            })?;
         self.record_confidence_snapshot(&input.thesis_id, confidence)
             .await?;
         Ok(())
@@ -170,10 +163,7 @@ impl ThesisRepository {
     }
 
     /// Add evidence to a thesis.
-    pub async fn add_evidence(
-        &self,
-        input: AddEvidenceInput,
-    ) -> Result<ThesisEvidence, AppError> {
+    pub async fn add_evidence(&self, input: AddEvidenceInput) -> Result<ThesisEvidence, AppError> {
         let id = uuid::Uuid::new_v4().to_string();
         let now = Utc::now();
         let direction_str = input.direction.to_string();
@@ -294,7 +284,11 @@ impl TryFrom<ThesisRow> for InvestmentThesis {
             "validating" => ThesisStatus::Validating,
             "validated" => ThesisStatus::Validated,
             "closed" => ThesisStatus::Closed,
-            _ => return Err(AppError::Internal("Invalid thesis status in database".to_string())),
+            _ => {
+                return Err(AppError::Internal(
+                    "Invalid thesis status in database".to_string(),
+                ))
+            }
         };
 
         Ok(InvestmentThesis {
@@ -353,7 +347,11 @@ impl TryFrom<EvidenceRow> for ThesisEvidence {
         let direction = match row.direction.as_str() {
             "supporting" => EvidenceDirection::Supporting,
             "contradicting" => EvidenceDirection::Contradicting,
-            _ => return Err(AppError::Internal("Invalid evidence direction in database".to_string())),
+            _ => {
+                return Err(AppError::Internal(
+                    "Invalid evidence direction in database".to_string(),
+                ))
+            }
         };
 
         Ok(ThesisEvidence {

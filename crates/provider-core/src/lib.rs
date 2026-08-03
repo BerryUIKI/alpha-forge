@@ -37,12 +37,18 @@ pub enum ProviderError {
 
 #[async_trait]
 pub trait ResearchProvider: Send + Sync {
-    async fn complete_research(&self, request: ResearchCompletionRequest) -> Result<ResearchCompletion, ProviderError>;
+    async fn complete_research(
+        &self,
+        request: ResearchCompletionRequest,
+    ) -> Result<ResearchCompletion, ProviderError>;
 }
 
 pub fn parse_research_completion(raw: &str) -> Result<ResearchCompletion, ProviderError> {
-    let completion: ResearchCompletion = serde_json::from_str(raw).map_err(|_| ProviderError::InvalidResponse)?;
-    if completion.summary.trim().is_empty() || completion.confidence > 100 { return Err(ProviderError::InvalidResponse); }
+    let completion: ResearchCompletion =
+        serde_json::from_str(raw).map_err(|_| ProviderError::InvalidResponse)?;
+    if completion.summary.trim().is_empty() || completion.confidence > 100 {
+        return Err(ProviderError::InvalidResponse);
+    }
     Ok(completion)
 }
 
@@ -58,7 +64,13 @@ mod tests {
 
     #[test]
     fn rejects_missing_summary_or_invalid_confidence() {
-        assert!(parse_research_completion(r#"{"summary":"","claims":[],"evidence":[],"risks":[],"confidence":20}"#).is_err());
-        assert!(parse_research_completion(r#"{"summary":"x","claims":[],"evidence":[],"risks":[],"confidence":101}"#).is_err());
+        assert!(parse_research_completion(
+            r#"{"summary":"","claims":[],"evidence":[],"risks":[],"confidence":20}"#
+        )
+        .is_err());
+        assert!(parse_research_completion(
+            r#"{"summary":"x","claims":[],"evidence":[],"risks":[],"confidence":101}"#
+        )
+        .is_err());
     }
 }

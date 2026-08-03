@@ -89,8 +89,9 @@ impl ArtifactRepository {
             ArtifactType::Custom(ref s) => s,
         };
 
-        let input_json = serde_json::to_string(&input.input)
-            .map_err(|e| AppError::Internal(format!("Failed to serialize artifact input: {}", e)))?;
+        let input_json = serde_json::to_string(&input.input).map_err(|e| {
+            AppError::Internal(format!("Failed to serialize artifact input: {}", e))
+        })?;
 
         sqlx::query(
             r#"
@@ -188,8 +189,9 @@ impl ArtifactRepository {
 
     /// Updates artifact output.
     pub async fn update_output(&self, id: &str, output: serde_json::Value) -> Result<(), AppError> {
-        let output_json = serde_json::to_string(&output)
-            .map_err(|e| AppError::Internal(format!("Failed to serialize artifact output: {}", e)))?;
+        let output_json = serde_json::to_string(&output).map_err(|e| {
+            AppError::Internal(format!("Failed to serialize artifact output: {}", e))
+        })?;
 
         sqlx::query(
             r#"

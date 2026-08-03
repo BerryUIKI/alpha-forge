@@ -15,6 +15,11 @@
     "publisher": "BerryUIKI",
     "homepage": "https://github.com/BerryUIKI/alpha-forge",
     "category": "Finance",
+    "icon": [
+      "icons/icon.ico",
+      "icons/icon.png",
+      "icons/icon.icns"
+    ],
     "macOS": {
       "minimumSystemVersion": "11.0"
     },

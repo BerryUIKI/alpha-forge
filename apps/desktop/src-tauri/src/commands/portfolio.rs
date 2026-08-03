@@ -3,8 +3,9 @@
 use crate::app::state::AppState;
 use crate::error::AppError;
 use domain::portfolio::{
-    CreatePortfolioAccountInput, CreatePositionInput, PortfolioAccount, Position,
-    ConcentrationRisk, CreatePortfolioThemeLinkInput, PortfolioAllocation, PortfolioReview, PortfolioTransaction, ThemeExposure, ThesisAlignment,
+    ConcentrationRisk, CreatePortfolioAccountInput, CreatePortfolioThemeLinkInput,
+    CreatePositionInput, PortfolioAccount, PortfolioAllocation, PortfolioReview,
+    PortfolioTransaction, Position, ThemeExposure, ThesisAlignment,
 };
 use tauri::State;
 
@@ -60,29 +61,83 @@ pub async fn list_portfolio_positions(
 }
 
 #[tauri::command]
-pub async fn import_portfolio_transactions_csv(account_id: String, csv_text: String, state: State<'_, AppState>) -> Result<Vec<PortfolioTransaction>, AppError> {
-    state.portfolio_service.import_transactions_csv(&account_id, &csv_text).await
+pub async fn import_portfolio_transactions_csv(
+    account_id: String,
+    csv_text: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<PortfolioTransaction>, AppError> {
+    state
+        .portfolio_service
+        .import_transactions_csv(&account_id, &csv_text)
+        .await
 }
 
 #[tauri::command]
-pub async fn list_portfolio_transactions(account_id: String, state: State<'_, AppState>) -> Result<Vec<PortfolioTransaction>, AppError> {
+pub async fn list_portfolio_transactions(
+    account_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<PortfolioTransaction>, AppError> {
     state.portfolio_service.list_transactions(&account_id).await
 }
 
 #[tauri::command]
-pub async fn get_portfolio_allocation(workspace_id: String, state: State<'_, AppState>) -> Result<Vec<PortfolioAllocation>, AppError> {
-    state.portfolio_service.allocation_by_workspace(&workspace_id).await
+pub async fn get_portfolio_allocation(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<PortfolioAllocation>, AppError> {
+    state
+        .portfolio_service
+        .allocation_by_workspace(&workspace_id)
+        .await
 }
 
 #[tauri::command]
-pub async fn get_portfolio_concentration_risks(workspace_id: String, state: State<'_, AppState>) -> Result<Vec<ConcentrationRisk>, AppError> {
-    state.portfolio_service.concentration_risks(&workspace_id).await
+pub async fn get_portfolio_concentration_risks(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<ConcentrationRisk>, AppError> {
+    state
+        .portfolio_service
+        .concentration_risks(&workspace_id)
+        .await
 }
 #[tauri::command]
-pub async fn link_portfolio_theme(workspace_id: String, symbol: String, entity_id: String, state: State<'_, AppState>) -> Result<(), AppError> { state.portfolio_service.link_theme(CreatePortfolioThemeLinkInput { workspace_id, symbol, entity_id }).await }
+pub async fn link_portfolio_theme(
+    workspace_id: String,
+    symbol: String,
+    entity_id: String,
+    state: State<'_, AppState>,
+) -> Result<(), AppError> {
+    state
+        .portfolio_service
+        .link_theme(CreatePortfolioThemeLinkInput {
+            workspace_id,
+            symbol,
+            entity_id,
+        })
+        .await
+}
 #[tauri::command]
-pub async fn get_portfolio_theme_exposure(workspace_id: String, state: State<'_, AppState>) -> Result<Vec<ThemeExposure>, AppError> { state.portfolio_service.theme_exposure(&workspace_id).await }
+pub async fn get_portfolio_theme_exposure(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<ThemeExposure>, AppError> {
+    state.portfolio_service.theme_exposure(&workspace_id).await
+}
 #[tauri::command]
-pub async fn get_portfolio_thesis_alignment(workspace_id: String, state: State<'_, AppState>) -> Result<Vec<ThesisAlignment>, AppError> { state.portfolio_service.thesis_alignment(&workspace_id).await }
+pub async fn get_portfolio_thesis_alignment(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<ThesisAlignment>, AppError> {
+    state
+        .portfolio_service
+        .thesis_alignment(&workspace_id)
+        .await
+}
 #[tauri::command]
-pub async fn generate_portfolio_review(workspace_id: String, state: State<'_, AppState>) -> Result<PortfolioReview, AppError> { state.portfolio_service.review(&workspace_id).await }
+pub async fn generate_portfolio_review(
+    workspace_id: String,
+    state: State<'_, AppState>,
+) -> Result<PortfolioReview, AppError> {
+    state.portfolio_service.review(&workspace_id).await
+}

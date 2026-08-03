@@ -8,8 +8,7 @@ mod tests {
     use crate::database::repositories::thesis_repository::ThesisRepository;
     use crate::error::AppError;
     use domain::thesis::{
-        AddEvidenceInput, CreateThesisInput, EvidenceDirection, ThesisStatus,
-        UpdateConfidenceInput,
+        AddEvidenceInput, CreateThesisInput, EvidenceDirection, ThesisStatus, UpdateConfidenceInput,
     };
 
     async fn setup_test_db() -> SqlitePool {
@@ -101,7 +100,10 @@ mod tests {
 
         assert_eq!(thesis.workspace_id, "test-workspace");
         assert_eq!(thesis.title, "NVIDIA Growth Thesis");
-        assert_eq!(thesis.thesis, "NVIDIA will continue to dominate AI chip market");
+        assert_eq!(
+            thesis.thesis,
+            "NVIDIA will continue to dominate AI chip market"
+        );
         assert_eq!(thesis.confidence, 75);
         assert_eq!(thesis.status, ThesisStatus::Draft);
     }
@@ -172,7 +174,9 @@ mod tests {
             .unwrap();
 
         let error = repo.get_thesis(&thesis.id).await.unwrap_err();
-        assert!(matches!(error, AppError::Internal(message) if message == "Invalid thesis creation timestamp in database"));
+        assert!(
+            matches!(error, AppError::Internal(message) if message == "Invalid thesis creation timestamp in database")
+        );
     }
 
     #[tokio::test]
@@ -196,7 +200,9 @@ mod tests {
             .unwrap();
 
         let error = repo.list_confidence_history(&thesis.id).await.unwrap_err();
-        assert!(matches!(error, AppError::Internal(message) if message == "Invalid thesis confidence history timestamp in database"));
+        assert!(
+            matches!(error, AppError::Internal(message) if message == "Invalid thesis confidence history timestamp in database")
+        );
     }
 
     #[tokio::test]
@@ -291,12 +297,19 @@ mod tests {
             .await
             .unwrap();
 
-        repo.record_outcome(&thesis.id, "Thesis validated successfully".to_string(), ThesisStatus::Validated)
-            .await
-            .unwrap();
+        repo.record_outcome(
+            &thesis.id,
+            "Thesis validated successfully".to_string(),
+            ThesisStatus::Validated,
+        )
+        .await
+        .unwrap();
 
         let updated = repo.get_thesis(&thesis.id).await.unwrap().unwrap();
-        assert_eq!(updated.outcome, Some("Thesis validated successfully".to_string()));
+        assert_eq!(
+            updated.outcome,
+            Some("Thesis validated successfully".to_string())
+        );
         assert_eq!(updated.status, ThesisStatus::Validated);
         assert!(updated.validation_date.is_some());
     }

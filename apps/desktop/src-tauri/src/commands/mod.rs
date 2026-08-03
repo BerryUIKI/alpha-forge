@@ -1,11 +1,11 @@
 pub mod agent;
 pub mod artifacts;
 pub mod journal;
-pub mod portfolio;
+pub mod knowledge_graph;
 pub mod plugins;
+pub mod portfolio;
 pub mod research;
 pub mod settings;
 pub mod system;
 pub mod thesis;
-pub mod knowledge_graph;
 pub mod workspace;

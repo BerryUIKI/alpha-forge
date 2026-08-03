@@ -1,14 +1,18 @@
 // Research report repository — handles report persistence.
 
-use chrono::Utc;
-use sqlx::SqlitePool;
 use crate::error::AppError;
+use chrono::Utc;
 use domain::research::{CreateReportInput, ReportType, ResearchReport};
+use sqlx::SqlitePool;
 
-pub struct ResearchReportRepository { pool: SqlitePool }
+pub struct ResearchReportRepository {
+    pool: SqlitePool,
+}
 
 impl ResearchReportRepository {
-    pub fn new(pool: SqlitePool) -> Self { Self { pool } }
+    pub fn new(pool: SqlitePool) -> Self {
+        Self { pool }
+    }
 
     pub async fn create(&self, input: CreateReportInput) -> Result<ResearchReport, AppError> {
         let id = uuid::Uuid::new_v4().to_string();
@@ -18,7 +22,15 @@ impl ResearchReportRepository {
             .bind(&id).bind(&input.project_id).bind(&input.title).bind(&input.content).bind(&report_type)
             .bind(now.to_rfc3339()).bind(now.to_rfc3339())
             .execute(&self.pool).await.map_err(|e| AppError::Internal(format!("Failed to create report: {}", e)))?;
-        Ok(ResearchReport { id, project_id: input.project_id, title: input.title, content: input.content, report_type: input.report_type, created_at: now, updated_at: now })
+        Ok(ResearchReport {
+            id,
+            project_id: input.project_id,
+            title: input.title,
+            content: input.content,
+            report_type: input.report_type,
+            created_at: now,
+            updated_at: now,
+        })
     }
 
     pub async fn get(&self, id: &str) -> Result<Option<ResearchReport>, AppError> {
@@ -32,18 +44,43 @@ impl ResearchReportRepository {
     }
 
     pub async fn delete(&self, id: &str) -> Result<(), AppError> {
-        sqlx::query("DELETE FROM research_reports WHERE id = ?").bind(id).execute(&self.pool).await
+        sqlx::query("DELETE FROM research_reports WHERE id = ?")
+            .bind(id)
+            .execute(&self.pool)
+            .await
             .map_err(|e| AppError::Internal(format!("Failed to delete report: {}", e)))?;
         Ok(())
     }
 }
 
 #[derive(sqlx::FromRow)]
-struct ReportRow { id: String, project_id: String, title: String, content: String, report_type: String, created_at: String, updated_at: String }
+struct ReportRow {
+    id: String,
+    project_id: String,
+    title: String,
+    content: String,
+    report_type: String,
+    created_at: String,
+    updated_at: String,
+}
 
 impl From<ReportRow> for ResearchReport {
     fn from(row: ReportRow) -> Self {
-        let report_type = match row.report_type.as_str() { "analysis" => ReportType::Analysis, "summary" => ReportType::Summary, "thesis" => ReportType::Thesis, "recommendation" => ReportType::Recommendation, _ => ReportType::Analysis };
-        ResearchReport { id: row.id, project_id: row.project_id, title: row.title, content: row.content, report_type, created_at: row.created_at.parse().unwrap_or_else(|_| Utc::now()), updated_at: row.updated_at.parse().unwrap_or_else(|_| Utc::now()) }
+        let report_type = match row.report_type.as_str() {
+            "analysis" => ReportType::Analysis,
+            "summary" => ReportType::Summary,
+            "thesis" => ReportType::Thesis,
+            "recommendation" => ReportType::Recommendation,
+            _ => ReportType::Analysis,
+        };
+        ResearchReport {
+            id: row.id,
+            project_id: row.project_id,
+            title: row.title,
+            content: row.content,
+            report_type,
+            created_at: row.created_at.parse().unwrap_or_else(|_| Utc::now()),
+            updated_at: row.updated_at.parse().unwrap_or_else(|_| Utc::now()),
+        }
     }
 }

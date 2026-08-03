@@ -6,8 +6,7 @@ use crate::app::state::AppState;
 use crate::error::AppError;
 use domain::thesis::{
     AddEvidenceInput, CreateThesisInput, EvidenceDirection, InvestmentThesis,
-    ThesisConfidenceSnapshot, ThesisEvidence,
-    UpdateConfidenceInput,
+    ThesisConfidenceSnapshot, ThesisEvidence, UpdateConfidenceInput,
 };
 
 // Thesis CRUD commands
@@ -156,5 +155,8 @@ pub async fn list_thesis_confidence_history(
     thesis_id: String,
     state: State<'_, AppState>,
 ) -> Result<Vec<ThesisConfidenceSnapshot>, AppError> {
-    state.thesis_service.list_confidence_history(&thesis_id).await
+    state
+        .thesis_service
+        .list_confidence_history(&thesis_id)
+        .await
 }

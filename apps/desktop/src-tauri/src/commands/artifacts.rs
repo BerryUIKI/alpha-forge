@@ -75,7 +75,10 @@ pub async fn complete_artifact_generation(
     output: serde_json::Value,
     state: State<'_, AppState>,
 ) -> Result<Artifact, AppError> {
-    state.artifact_service.complete_generation(&id, output).await
+    state
+        .artifact_service
+        .complete_generation(&id, output)
+        .await
 }
 
 #[tauri::command]
@@ -108,20 +111,14 @@ pub async fn start_viewing_artifact(
         height: 768.0,
     };
 
-    state
-        .artifact_manager
-        .open_artifact(window_config)
-        .await?;
+    state.artifact_manager.open_artifact(window_config).await?;
 
     // Update status to viewing
     state.artifact_service.start_viewing(&id).await
 }
 
 #[tauri::command]
-pub async fn close_artifact(
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<Artifact, AppError> {
+pub async fn close_artifact(id: String, state: State<'_, AppState>) -> Result<Artifact, AppError> {
     // Close artifact window
     state.artifact_manager.close_artifact(&id).await?;
 
@@ -130,16 +127,11 @@ pub async fn close_artifact(
 }
 
 #[tauri::command]
-pub async fn delete_artifact(
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<(), AppError> {
+pub async fn delete_artifact(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.artifact_service.delete_artifact(&id).await
 }
 
 #[tauri::command]
-pub async fn list_open_artifacts(
-    state: State<'_, AppState>,
-) -> Result<Vec<String>, AppError> {
+pub async fn list_open_artifacts(state: State<'_, AppState>) -> Result<Vec<String>, AppError> {
     Ok(state.artifact_manager.list_open_artifacts().await)
 }

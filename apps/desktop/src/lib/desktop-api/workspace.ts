@@ -4,12 +4,14 @@ import { invoke } from "@tauri-apps/api/core";
 
 /**
  * A workspace represents an independent research environment.
+ * Types must match Rust domain model exactly (snake_case).
+ * Backend: crates/domain/src/workspace.rs
  */
 export interface Workspace {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
