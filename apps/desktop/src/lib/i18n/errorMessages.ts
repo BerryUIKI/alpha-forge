@@ -48,7 +48,7 @@ function errorCodeToMessageKey(code: ErrorCode): `error${Capitalize<ErrorCode>}`
  */
 export function getLocalizedErrorMessage(locale: Locale, errorCode: ErrorCode): string {
   const key = errorCodeToMessageKey(errorCode);
-  return translate(locale, key);
+  return translate(locale, key as any);
 }
 
 /**
@@ -60,7 +60,7 @@ export function getLocalizedErrorMessage(locale: Locale, errorCode: ErrorCode): 
  */
 export function getLocalizedErrorDescription(locale: Locale, errorCode: ErrorCode): string {
   const key = `${errorCodeToMessageKey(errorCode)}Description` as const;
-  return translate(locale, key);
+  return translate(locale, key as any);
 }
 
 /**
