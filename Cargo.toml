@@ -5,6 +5,7 @@ members = [
   "crates/domain",
   "crates/agent-core",
   "crates/artifact-core",
+  "crates/option-core",
   "crates/provider-core",
   "crates/shared",
 ]
