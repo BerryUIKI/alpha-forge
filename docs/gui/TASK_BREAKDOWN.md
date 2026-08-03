@@ -1,5 +1,24 @@
 # GUI Layout Iteration - Task Breakdown & Schedule
 
+## ⚠️ IMPORTANT: Backend Integration Notice
+
+**When implementing GUI-M1-5 and beyond**:
+- All data operations must integrate with Tauri commands
+- Follow integration guide: `docs/FRONTEND_BACKEND_INTEGRATION.md`
+- Ensure TypeScript types match Rust types exactly
+- Add i18n keys for all new UI strings
+- Use TanStack Query for async state management
+- Implement proper error handling with localization
+
+**Before implementing any data features**:
+1. Check available Tauri commands in `src-tauri/src/commands/`
+2. Match types exactly (see integration guide)
+3. Add validation (Zod schemas)
+4. Add error handling
+5. Test integration
+
+---
+
 ## Milestone Overview
 
 **Milestone**: GUI-M1 (GUI Layout Restructuring)
@@ -184,26 +203,42 @@ pnpm tauri build
 **Priority**: High
 **Estimated Effort**: 2-3 days
 
+**⚠️ Backend Integration Required**:
+- All data operations must use Tauri commands
+- Follow `docs/FRONTEND_BACKEND_INTEGRATION.md` strictly
+- Connect UI components to backend APIs
+- Implement real data loading (not placeholders)
+
 #### Tasks
 
 1. **Component Integration**
-   - [ ] Wire all 4 modules together
+   - [ ] Wire all 4 modules together with backend
+   - [ ] Connect workspace selector to workspace commands
+   - [ ] Integrate agent panel with agent runtime
+   - [ ] Connect user operations to user service
    - [ ] Global layout tests
    - [ ] Cross-module interaction tests
 
-2. **Responsive Testing**
+2. **Backend Connection**
+   - [ ] Replace placeholder data with Tauri command calls
+   - [ ] Implement TanStack Query hooks for all data operations
+   - [ ] Add proper error handling and loading states
+   - [ ] Connect workspace switching to backend
+   - [ ] Integrate theme persistence with settings service
+
+3. **Responsive Testing**
    - [ ] Window resize tests
    - [ ] Sidebar collapse/expand integration
    - [ ] Minimum width constraints
    - [ ] Graceful degradation
 
-3. **Accessibility Audit**
+4. **Accessibility Audit**
    - [ ] Keyboard navigation
    - [ ] Screen reader compatibility
    - [ ] ARIA labels verification
    - [ ] Focus management
 
-4. **Cross-Platform Testing**
+5. **Cross-Platform Testing**
    - [ ] macOS smoke test
    - [ ] Windows smoke test
    - [ ] Native menu verification
