@@ -55,9 +55,7 @@ impl ArtifactService {
     /// Lists all artifacts for a task.
     pub async fn list_task_artifacts(&self, task_id: &str) -> Result<Vec<Artifact>, AppError> {
         if task_id.trim().is_empty() {
-            return Err(AppError::Validation(
-                "Task ID cannot be empty".to_string(),
-            ));
+            return Err(AppError::Validation("Task ID cannot be empty".to_string()));
         }
 
         self.repo.list_by_task(task_id).await
@@ -80,7 +78,9 @@ impl ArtifactService {
         }
 
         // Update status
-        self.repo.update_status(id, ArtifactStatus::Generating).await?;
+        self.repo
+            .update_status(id, ArtifactStatus::Generating)
+            .await?;
 
         // Fetch updated artifact
         self.repo

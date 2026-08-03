@@ -12,12 +12,12 @@
 
 pub mod agent_task_repository;
 pub mod artifact_repository;
-pub mod thesis_repository;
 pub mod knowledge_graph_repository;
 pub mod plugin_repository;
 pub mod portfolio_repository;
 pub mod research_project_repository;
 pub mod settings_repository;
+pub mod thesis_repository;
 pub mod workspace_repository;
 
 // Option platform repositories
@@ -36,9 +36,9 @@ mod artifact_repository_test;
 #[cfg(test)]
 mod thesis_repository_test;
 
-#[cfg(test)]
-mod workspace_repository_test;
 pub mod research_document_repository;
-pub mod research_source_repository;
 pub mod research_note_repository;
 pub mod research_report_repository;
+pub mod research_source_repository;
+#[cfg(test)]
+mod workspace_repository_test;

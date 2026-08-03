@@ -55,16 +55,28 @@ pub struct PortfolioTransaction {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub enum TransactionType { Buy, Sell }
+pub enum TransactionType {
+    Buy,
+    Sell,
+}
 
 impl TransactionType {
     pub fn parse(value: &str) -> Option<Self> {
-        match value.trim().to_ascii_lowercase().as_str() { "buy" => Some(Self::Buy), "sell" => Some(Self::Sell), _ => None }
+        match value.trim().to_ascii_lowercase().as_str() {
+            "buy" => Some(Self::Buy),
+            "sell" => Some(Self::Sell),
+            _ => None,
+        }
     }
 }
 
 impl std::fmt::Display for TransactionType {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { match self { Self::Buy => write!(formatter, "buy"), Self::Sell => write!(formatter, "sell") } }
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Buy => write!(formatter, "buy"),
+            Self::Sell => write!(formatter, "sell"),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -95,16 +107,38 @@ pub struct ConcentrationRisk {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-pub enum ConcentrationSeverity { Moderate, High }
+pub enum ConcentrationSeverity {
+    Moderate,
+    High,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ThemeExposure { pub entity_id: String, pub theme_name: String, pub allocated_cost: f64, pub weight_percent: f64 }
+pub struct ThemeExposure {
+    pub entity_id: String,
+    pub theme_name: String,
+    pub allocated_cost: f64,
+    pub weight_percent: f64,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreatePortfolioThemeLinkInput { pub workspace_id: String, pub symbol: String, pub entity_id: String }
+pub struct CreatePortfolioThemeLinkInput {
+    pub workspace_id: String,
+    pub symbol: String,
+    pub entity_id: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ThesisAlignment { pub symbol: String, pub thesis_id: String, pub thesis_title: String, pub confidence: i32, pub status: String }
+pub struct ThesisAlignment {
+    pub symbol: String,
+    pub thesis_id: String,
+    pub thesis_title: String,
+    pub confidence: i32,
+    pub status: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PortfolioReview { pub generated_at: DateTime<Utc>, pub concentration_risks: Vec<ConcentrationRisk>, pub unaligned_symbols: Vec<String> }
+pub struct PortfolioReview {
+    pub generated_at: DateTime<Utc>,
+    pub concentration_risks: Vec<ConcentrationRisk>,
+    pub unaligned_symbols: Vec<String>,
+}

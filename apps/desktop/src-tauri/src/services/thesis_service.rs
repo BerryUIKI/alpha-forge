@@ -4,8 +4,7 @@ use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::error::AppError;
 use domain::thesis::{
     AddEvidenceInput, CreateThesisInput, InvestmentThesis, ThesisConfidenceSnapshot,
-    ThesisEvidence, ThesisStatus,
-    UpdateConfidenceInput,
+    ThesisEvidence, ThesisStatus, UpdateConfidenceInput,
 };
 
 pub struct ThesisService {
@@ -24,10 +23,14 @@ impl ThesisService {
     ) -> Result<InvestmentThesis, AppError> {
         // Validate input
         if input.title.trim().is_empty() {
-            return Err(AppError::Validation("Thesis title cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Thesis title cannot be empty".to_string(),
+            ));
         }
         if input.thesis.trim().is_empty() {
-            return Err(AppError::Validation("Thesis content cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Thesis content cannot be empty".to_string(),
+            ));
         }
 
         // Validate confidence if provided
@@ -67,9 +70,10 @@ impl ThesisService {
         }
 
         self.repo.update_status(id, ThesisStatus::Active).await?;
-        self.repo.get_thesis(id).await?.ok_or_else(|| {
-            AppError::Internal("Thesis disappeared after update".to_string())
-        })
+        self.repo
+            .get_thesis(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Thesis disappeared after update".to_string()))
     }
 
     /// Start validation of a thesis.
@@ -86,10 +90,13 @@ impl ThesisService {
             ));
         }
 
-        self.repo.update_status(id, ThesisStatus::Validating).await?;
-        self.repo.get_thesis(id).await?.ok_or_else(|| {
-            AppError::Internal("Thesis disappeared after update".to_string())
-        })
+        self.repo
+            .update_status(id, ThesisStatus::Validating)
+            .await?;
+        self.repo
+            .get_thesis(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Thesis disappeared after update".to_string()))
     }
 
     /// Complete validation with an outcome.
@@ -118,9 +125,10 @@ impl ThesisService {
         };
 
         self.repo.record_outcome(id, outcome, status).await?;
-        self.repo.get_thesis(id).await?.ok_or_else(|| {
-            AppError::Internal("Thesis disappeared after update".to_string())
-        })
+        self.repo
+            .get_thesis(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Thesis disappeared after update".to_string()))
     }
 
     /// Update thesis confidence.
@@ -132,9 +140,7 @@ impl ThesisService {
             .repo
             .get_thesis(&input.thesis_id)
             .await?
-            .ok_or_else(|| {
-                AppError::NotFound(format!("Thesis '{}' not found", input.thesis_id))
-            })?;
+            .ok_or_else(|| AppError::NotFound(format!("Thesis '{}' not found", input.thesis_id)))?;
 
         if thesis.status == ThesisStatus::Closed {
             return Err(AppError::Validation(
@@ -143,9 +149,10 @@ impl ThesisService {
         }
 
         self.repo.update_confidence(input.clone()).await?;
-        self.repo.get_thesis(&input.thesis_id).await?.ok_or_else(|| {
-            AppError::Internal("Thesis disappeared after update".to_string())
-        })
+        self.repo
+            .get_thesis(&input.thesis_id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Thesis disappeared after update".to_string()))
     }
 
     /// Close a thesis.
@@ -161,9 +168,10 @@ impl ThesisService {
         }
 
         self.repo.update_status(id, ThesisStatus::Closed).await?;
-        self.repo.get_thesis(id).await?.ok_or_else(|| {
-            AppError::Internal("Thesis disappeared after update".to_string())
-        })
+        self.repo
+            .get_thesis(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Thesis disappeared after update".to_string()))
     }
 
     /// Delete a thesis.
@@ -172,17 +180,12 @@ impl ThesisService {
     }
 
     /// Add evidence to a thesis.
-    pub async fn add_evidence(
-        &self,
-        input: AddEvidenceInput,
-    ) -> Result<ThesisEvidence, AppError> {
+    pub async fn add_evidence(&self, input: AddEvidenceInput) -> Result<ThesisEvidence, AppError> {
         let thesis = self
             .repo
             .get_thesis(&input.thesis_id)
             .await?
-            .ok_or_else(|| {
-                AppError::NotFound(format!("Thesis '{}' not found", input.thesis_id))
-            })?;
+            .ok_or_else(|| AppError::NotFound(format!("Thesis '{}' not found", input.thesis_id)))?;
 
         if thesis.status == ThesisStatus::Closed {
             return Err(AppError::Validation(

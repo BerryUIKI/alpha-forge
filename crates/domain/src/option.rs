@@ -229,7 +229,7 @@ mod tests {
         let call = OptionType::Call;
         let json = serde_json::to_string(&call).unwrap();
         assert_eq!(json, r#""call""#);
-        
+
         let parsed: OptionType = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed, OptionType::Call);
     }
@@ -259,7 +259,7 @@ mod tests {
             data_source: DataSource::Demo,
             created_at: Utc::now(),
         };
-        
+
         assert_eq!(chain.symbol, "AAPL");
         assert_eq!(chain.underlying_price, 150.0);
     }
@@ -284,7 +284,7 @@ mod tests {
             created_at: Utc::now(),
             updated_at: Utc::now(),
         };
-        
+
         assert_eq!(contract.option_type, OptionType::Call);
         assert_eq!(contract.strike, 150.0);
     }
@@ -303,7 +303,7 @@ mod tests {
             calculated_at: Utc::now(),
             calculation_model: PricingModel::BlackScholes,
         };
-        
+
         assert!((greeks.delta - 0.52).abs() < 0.001);
         assert!((greeks.gamma - 0.08).abs() < 0.001);
     }
@@ -323,7 +323,7 @@ mod tests {
             created_at: Utc::now(),
             updated_at: Utc::now(),
         };
-        
+
         assert_eq!(strategy.strategy_type, StrategyType::BullCallSpread);
         assert_eq!(strategy.break_even_points.len(), 1);
     }
@@ -341,7 +341,7 @@ mod tests {
             expiration: Utc::now(),
             option_type: OptionType::Call,
         };
-        
+
         assert_eq!(leg.quantity, 1);
         assert_eq!(leg.position_type, PositionType::Long);
     }
@@ -359,7 +359,7 @@ mod tests {
             closed_at: None,
             notes: Some("Test position".to_string()),
         };
-        
+
         assert_eq!(position.quantity, 2);
         assert!(position.closed_at.is_none());
     }
@@ -378,7 +378,7 @@ mod tests {
             rho: 0.02,
             created_at: Utc::now(),
         };
-        
+
         assert!((snapshot.delta - 0.50).abs() < 0.001);
     }
 }

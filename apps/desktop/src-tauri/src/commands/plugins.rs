@@ -48,13 +48,25 @@ pub async fn create_plugin_artifact(
     input: serde_json::Value,
     state: State<'_, AppState>,
 ) -> Result<Artifact, AppError> {
-    let request = state.plugin_service.prepare_artifact(&plugin_id, input).await?;
-    let artifact = state.artifact_service.create_artifact(CreateArtifactInput {
-        workspace_id,
-        task_id: None,
-        artifact_type: request.artifact_type,
-        input: request.payload.clone(),
-    }).await?;
-    state.artifact_service.start_generation(&artifact.id).await?;
-    state.artifact_service.complete_generation(&artifact.id, request.payload).await
+    let request = state
+        .plugin_service
+        .prepare_artifact(&plugin_id, input)
+        .await?;
+    let artifact = state
+        .artifact_service
+        .create_artifact(CreateArtifactInput {
+            workspace_id,
+            task_id: None,
+            artifact_type: request.artifact_type,
+            input: request.payload.clone(),
+        })
+        .await?;
+    state
+        .artifact_service
+        .start_generation(&artifact.id)
+        .await?;
+    state
+        .artifact_service
+        .complete_generation(&artifact.id, request.payload)
+        .await
 }

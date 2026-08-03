@@ -83,6 +83,9 @@ mod tests {
     #[test]
     fn exposes_stable_error_codes() {
         assert_eq!(AppError::Internal("failure".to_string()).code(), "INTERNAL");
-        assert_eq!(AppError::PermissionDenied("denied".to_string()).code(), "PERMISSION_DENIED");
+        assert_eq!(
+            AppError::PermissionDenied("denied".to_string()).code(),
+            "PERMISSION_DENIED"
+        );
     }
 }

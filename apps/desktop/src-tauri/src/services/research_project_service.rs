@@ -13,9 +13,14 @@ impl ResearchProjectService {
         Self { repo }
     }
 
-    pub async fn create_project(&self, input: CreateProjectInput) -> Result<ResearchProject, AppError> {
+    pub async fn create_project(
+        &self,
+        input: CreateProjectInput,
+    ) -> Result<ResearchProject, AppError> {
         if input.title.trim().is_empty() {
-            return Err(AppError::Validation("Project title cannot be empty".to_string()));
+            return Err(AppError::Validation(
+                "Project title cannot be empty".to_string(),
+            ));
         }
         self.repo.create(input).await
     }
@@ -24,7 +29,10 @@ impl ResearchProjectService {
         self.repo.get(id).await
     }
 
-    pub async fn list_projects(&self, workspace_id: &str) -> Result<Vec<ResearchProject>, AppError> {
+    pub async fn list_projects(
+        &self,
+        workspace_id: &str,
+    ) -> Result<Vec<ResearchProject>, AppError> {
         self.repo.list_by_workspace(workspace_id).await
     }
 
@@ -34,7 +42,10 @@ impl ResearchProjectService {
             .await?
             .ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
         self.repo.update_status(id, ProjectStatus::Archived).await?;
-        self.repo.get(id).await?.ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
+        self.repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
     }
 
     pub async fn complete_project(&self, id: &str) -> Result<ResearchProject, AppError> {
@@ -42,8 +53,13 @@ impl ResearchProjectService {
             .get(id)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("Project '{}' not found", id)))?;
-        self.repo.update_status(id, ProjectStatus::Completed).await?;
-        self.repo.get(id).await?.ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
+        self.repo
+            .update_status(id, ProjectStatus::Completed)
+            .await?;
+        self.repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Project disappeared".to_string()))
     }
 
     pub async fn delete_project(&self, id: &str) -> Result<(), AppError> {

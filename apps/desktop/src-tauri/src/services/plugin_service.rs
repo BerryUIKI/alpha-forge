@@ -60,8 +60,15 @@ impl PluginService {
             "research-timeline" => ArtifactType::Timeline,
             "earnings-analyzer" => ArtifactType::EarningsAnalysis,
             "macro-dashboard" => ArtifactType::MacroDashboard,
-            _ => return Err(AppError::NotFound("Internal plugin is not supported".to_string())),
+            _ => {
+                return Err(AppError::NotFound(
+                    "Internal plugin is not supported".to_string(),
+                ))
+            }
         };
-        Ok(PluginArtifactRequest { artifact_type, payload })
+        Ok(PluginArtifactRequest {
+            artifact_type,
+            payload,
+        })
     }
 }

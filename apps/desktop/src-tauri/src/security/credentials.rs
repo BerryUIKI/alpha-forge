@@ -19,10 +19,7 @@ impl OsKeychainCredentialStore {
 
     pub fn get(&self, credential_name: &str) -> Result<Option<String>, AppError> {
         validate_credential_name(credential_name)?;
-        match self
-            .entry(credential_name)?
-            .get_password()
-        {
+        match self.entry(credential_name)?.get_password() {
             Ok(secret) => Ok(Some(secret)),
             Err(keyring::Error::NoEntry) => Ok(None),
             Err(_) => Err(keychain_error("read")),
@@ -31,18 +28,14 @@ impl OsKeychainCredentialStore {
 
     pub fn delete(&self, credential_name: &str) -> Result<(), AppError> {
         validate_credential_name(credential_name)?;
-        match self
-            .entry(credential_name)?
-            .delete_credential()
-        {
+        match self.entry(credential_name)?.delete_credential() {
             Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
             Err(_) => Err(keychain_error("delete")),
         }
     }
 
     fn entry(&self, credential_name: &str) -> Result<keyring::Entry, AppError> {
-        keyring::Entry::new(SERVICE_NAME, credential_name)
-            .map_err(|_| keychain_error("access"))
+        keyring::Entry::new(SERVICE_NAME, credential_name).map_err(|_| keychain_error("access"))
     }
 }
 

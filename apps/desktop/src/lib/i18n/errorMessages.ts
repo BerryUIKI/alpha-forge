@@ -3,7 +3,7 @@
  * Maps stable error codes from Rust backend to i18n message keys.
  */
 
-import { translate, type Locale } from "./locale";
+import { translate, type Locale, type MessageKey } from "./locale";
 
 /**
  * Stable error codes from Rust backend.
@@ -28,11 +28,14 @@ export interface ErrorResponse {
 /**
  * Map error codes to i18n message keys.
  */
-function errorCodeToMessageKey(code: ErrorCode): `error${Capitalize<ErrorCode>}` {
-  // Convert NOT_FOUND -> errorNotFound (not errorNot_found)
+function errorCodeToMessageKey(code: ErrorCode): MessageKey {
+  // Convert NOT_FOUND -> errorNotFound (proper camelCase)
   const parts = code.split("_");
-  const capitalized = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join("");
-  return `error${capitalized}` as `error${Capitalize<ErrorCode>}`;
+  const capitalized = parts.map((p, i) => 
+    i === 0 ? p.toLowerCase() : p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+  ).join("");
+  const key = `error${capitalized.charAt(0).toUpperCase() + capitalized.slice(1)}`;
+  return key as MessageKey;
 }
 
 /**
@@ -48,7 +51,7 @@ function errorCodeToMessageKey(code: ErrorCode): `error${Capitalize<ErrorCode>}`
  */
 export function getLocalizedErrorMessage(locale: Locale, errorCode: ErrorCode): string {
   const key = errorCodeToMessageKey(errorCode);
-  return translate(locale, key as any);
+  return translate(locale, key);
 }
 
 /**
@@ -59,8 +62,9 @@ export function getLocalizedErrorMessage(locale: Locale, errorCode: ErrorCode): 
  * @returns Localized error description
  */
 export function getLocalizedErrorDescription(locale: Locale, errorCode: ErrorCode): string {
-  const key = `${errorCodeToMessageKey(errorCode)}Description` as const;
-  return translate(locale, key as any);
+  const baseKey = errorCodeToMessageKey(errorCode);
+  const key = `${baseKey}Description` as MessageKey;
+  return translate(locale, key);
 }
 
 /**
