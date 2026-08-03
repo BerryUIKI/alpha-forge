@@ -55,7 +55,10 @@ export function SettingsPage() {
           aria-label={t("language")}
           className="mt-4 rounded-md border border-input bg-background px-3 py-2 text-sm"
           value={locale}
-          onChange={(event) => void setLocale(event.target.value as Locale)}
+          onChange={(event) => {
+            const newLocale = event.target.value as Locale;
+            void setLocale(newLocale);
+          }}
         >
           {LOCALES.map((option) => (
             <option key={option} value={option}>
