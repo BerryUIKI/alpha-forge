@@ -5,6 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@testing-library/jest-dom";
+import { LocaleProvider } from "@/lib/i18n";
 
 // Import components
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -47,8 +48,10 @@ function renderWithRouter(initialEntry: string = "/") {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
+      <LocaleProvider>
+        <RouterProvider router={router} />
+      </LocaleProvider>
+    </QueryClientProvider>
   );
 }
 
