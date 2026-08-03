@@ -5,6 +5,35 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "zh-CN";
 export const LOCALE_SETTING_KEY = "app.locale";
 
+/**
+ * Detect system locale from browser settings.
+ * Returns the best matching supported locale, or falls back to DEFAULT_LOCALE.
+ */
+export function detectSystemLocale(): Locale {
+  // Try to get the user's preferred language
+  const browserLocales = navigator.languages ?? [navigator.language];
+  
+  for (const browserLocale of browserLocales) {
+    // Exact match (e.g., "zh-CN" -> "zh-CN")
+    if (LOCALES.includes(browserLocale as Locale)) {
+      return browserLocale as Locale;
+    }
+    
+    // Language-only match (e.g., "zh" -> "zh-CN", "en-US" -> "en")
+    const parts = browserLocale.split("-");
+    const languagePart = parts[0];
+    if (languagePart) {
+      const matchedLocale = LOCALES.find((locale) => locale.startsWith(languagePart));
+      if (matchedLocale) {
+        return matchedLocale;
+      }
+    }
+  }
+  
+  // Fallback to product default
+  return DEFAULT_LOCALE;
+}
+
 const messages = {
   "zh-CN": {
     today: "今日",
@@ -425,6 +454,8 @@ export function formatMessage(message: string, values: Record<string, string>): 
 export function parseLocale(value: string | null | undefined): Locale {
   return LOCALES.includes(value as Locale) ? (value as Locale) : DEFAULT_LOCALE;
 }
+
+export { messages };
 
 // Note: Portfolio keys added to catalog files. For brevity in locale.ts, 
 // using the catalog exports directly via t() in components.

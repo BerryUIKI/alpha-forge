@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { desktopApi } from "@/lib/desktop-api";
 import { LocaleContext, type LocaleContextValue } from "./locale-context";
-import { DEFAULT_LOCALE, LOCALE_SETTING_KEY, parseLocale, translate, type Locale } from "./locale";
+import { DEFAULT_LOCALE, LOCALE_SETTING_KEY, parseLocale, detectSystemLocale, translate, type Locale } from "./locale";
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    // On first render, use system locale as default
+    // This will be overridden if a saved preference exists
+    return detectSystemLocale();
+  });
   const hasUserSelectedLocale = useRef(false);
 
   useEffect(() => {
@@ -12,10 +16,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     void desktopApi.settings.getSetting(LOCALE_SETTING_KEY).then(
       (storedLocale) => {
         if (isMounted && !hasUserSelectedLocale.current) {
-          setLocaleState(parseLocale(storedLocale));
+          // If user has a saved preference, use it
+          // Otherwise, keep the system-detected locale
+          if (storedLocale) {
+            setLocaleState(parseLocale(storedLocale));
+          }
         }
       },
-      () => undefined,
+      () => {
+        // If settings read fails, keep system locale
+        // This ensures the app works even if settings are unavailable
+      },
     );
 
     return () => {
