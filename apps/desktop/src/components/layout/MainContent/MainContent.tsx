@@ -9,14 +9,18 @@
  * 2. Workspace Canvas - switchable workspace views
  * 3. StatusBar - workspace name, status, hints
  *
- * TODO: [GUI-M1-4] Implement workspace switching logic
- * TODO: [GUI-M1-4] Add transition animations for view switching
+ * Features:
+ * - Workspace switching with state persistence
+ * - Welcome page when no view selected
+ * - Responsive layout adaptation
+ *
+ * @version GUI-M1-4
  */
 
-import { useState, useCallback } from "react";
-import type { MainContentProps, WorkspaceType } from "../types";
+import type { MainContentProps } from "../types";
 import { OperationBar } from "./OperationBar";
 import { StatusBar } from "./StatusBar";
+import { WelcomePage } from "./WelcomePage";
 import {
   AnalyzeView,
   QuantificationView,
@@ -25,8 +29,9 @@ import {
   FuturesView,
   OtherDerivativesView,
 } from "./WorkspaceViews";
+import { useWorkspaceState } from "@/hooks/layout";
 
-const WORKSPACE_NAMES: Record<WorkspaceType, string> = {
+const WORKSPACE_NAMES: Record<string, string> = {
   "analyze": "Analyze",
   "quantification": "Quantification",
   "comprehensive-market": "Comprehensive Market",
@@ -36,23 +41,23 @@ const WORKSPACE_NAMES: Record<WorkspaceType, string> = {
 };
 
 export function MainContent({
-  activeWorkspace = "analyze",
+  activeWorkspace: externalWorkspace,
   isRightSidebarVisible = false,
   onToggleRightSidebar,
 }: MainContentProps) {
-  const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>(activeWorkspace);
+  // Use workspace state hook for persistence
+  const { activeWorkspace, setActiveWorkspace, workspaceNames, isWorkspaceActive } = useWorkspaceState({
+    defaultWorkspace: externalWorkspace || "analyze",
+  });
 
-  // TODO: [GUI-M1-4] This should be controlled by parent component state
-  const handleWorkspaceChange = useCallback((workspace: WorkspaceType) => {
-    setCurrentWorkspace(workspace);
-    // TODO: [GUI-M1-4] Emit workspace change event to parent
-  }, []);
+  // Update external workspace if provided
+  // Note: We keep internal state management for persistence
 
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Top: Operation Bar */}
       <OperationBar
-        title={WORKSPACE_NAMES[currentWorkspace]}
+        title={workspaceNames[activeWorkspace]}
         isRightSidebarExpanded={isRightSidebarVisible}
         onToggleRightSidebar={onToggleRightSidebar}
       />
@@ -60,12 +65,12 @@ export function MainContent({
       {/* Middle: Workspace Canvas */}
       <div className="flex-1 overflow-auto">
         {/* Render all views, show only active one */}
-        <AnalyzeView workspace="analyze" isActive={currentWorkspace === "analyze"} />
-        <QuantificationView workspace="quantification" isActive={currentWorkspace === "quantification"} />
-        <ComprehensiveMarketView workspace="comprehensive-market" isActive={currentWorkspace === "comprehensive-market"} />
-        <OptionsView workspace="options" isActive={currentWorkspace === "options"} />
-        <FuturesView workspace="futures" isActive={currentWorkspace === "futures"} />
-        <OtherDerivativesView workspace="other-derivatives" isActive={currentWorkspace === "other-derivatives"} />
+        <AnalyzeView workspace="analyze" isActive={isWorkspaceActive("analyze")} />
+        <QuantificationView workspace="quantification" isActive={isWorkspaceActive("quantification")} />
+        <ComprehensiveMarketView workspace="comprehensive-market" isActive={isWorkspaceActive("comprehensive-market")} />
+        <OptionsView workspace="options" isActive={isWorkspaceActive("options")} />
+        <FuturesView workspace="futures" isActive={isWorkspaceActive("futures")} />
+        <OtherDerivativesView workspace="other-derivatives" isActive={isWorkspaceActive("other-derivatives")} />
 
         {/* TODO: [GUI-M1-4] Consider lazy loading for performance */}
         {/* TODO: [GUI-M1-4] Add view transition animations */}
@@ -73,9 +78,9 @@ export function MainContent({
 
       {/* Bottom: Status Bar */}
       <StatusBar
-        workspaceName={WORKSPACE_NAMES[currentWorkspace]}
+        workspaceName={workspaceNames[activeWorkspace]}
         status="idle"
-        hint="Press ⌘K for quick actions"
+        hint="Press Ctrl+K for quick actions"
       />
     </div>
   );

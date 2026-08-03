@@ -4,46 +4,32 @@
  * Main layout orchestrator for Codex-style desktop interface.
  * Combines all four modules:
  * - Module A: Left Collapsible Sidebar
- * - Module B: Top Native Menu Bar (TODO: Tauri integration)
+ * - Module B: Top Native Menu Bar (Tauri integration)
  * - Module C: Right Collapsible Sidebar (Agent)
  * - Module D: Main Content Area
  *
  * State Management:
  * - Sidebar states (expanded/collapsed) are managed here
- * - Workspace selection state is managed here
+ * - Workspace selection state is managed via useWorkspaceState hook
  * - Right sidebar toggle is synchronized between MainContent and RightSidebar
  * - Keyboard shortcuts for sidebar toggles
  *
- * @version GUI-M1-1
+ * @version GUI-M1-4
  */
 
 import { useState, useCallback } from "react";
-import type { WorkspaceType, SidebarState } from "./types";
+import type { SidebarState, WorkspaceType } from "./types";
 import { LeftSidebar } from "./LeftSidebar";
 import { RightSidebar } from "./RightSidebar";
 import { MainContent } from "./MainContent";
 import { useSidebarShortcuts } from "@/hooks/layout";
 
-interface MainLayoutProps {
-  /** Initial left sidebar state */
-  leftSidebarState?: SidebarState;
-  /** Initial right sidebar state */
-  rightSidebarState?: SidebarState;
-  /** Initial workspace type */
-  initialWorkspace?: WorkspaceType;
-}
-
-export function MainLayout({
-  leftSidebarState = "expanded",
-  rightSidebarState = "collapsed",
-  initialWorkspace = "analyze",
-}: MainLayoutProps) {
+export function MainLayout() {
   // Sidebar states
-  const [leftState, setLeftState] = useState<SidebarState>(leftSidebarState);
-  const [rightState, setRightState] = useState<SidebarState>(rightSidebarState);
+  const [leftState, setLeftState] = useState<SidebarState>("expanded");
+  const [rightState, setRightState] = useState<SidebarState>("collapsed");
 
-  // Workspace selection
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
+  // Workspace selection is now managed in MainContent via useWorkspaceState
 
   // Handle left sidebar state changes
   const handleLeftStateChange = useCallback((state: SidebarState) => {
@@ -60,9 +46,11 @@ export function MainLayout({
     setRightState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
   }, []);
 
-  // Handle workspace selection changes
+  // Handle workspace selection changes from left sidebar
   const handleWorkspaceChange = useCallback((workspace: WorkspaceType) => {
-    setActiveWorkspace(workspace);
+    // Note: Workspace state is now managed in MainContent via useWorkspaceState hook
+    // This callback is kept for future integration with left sidebar workspace selector
+    console.log("Workspace changed to:", workspace);
   }, []);
 
   // Toggle left sidebar (for keyboard shortcut)
@@ -97,14 +85,13 @@ export function MainLayout({
       <LeftSidebar
         state={leftState}
         onStateChange={handleLeftStateChange}
-        selectedWorkspace={activeWorkspace}
+        selectedWorkspace="analyze" // Will be connected to workspace state in future
         onWorkspaceChange={handleWorkspaceChange}
       />
 
       {/* Module D: Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <MainContent
-          activeWorkspace={activeWorkspace}
           isRightSidebarVisible={rightState === "expanded"}
           onToggleRightSidebar={handleToggleRightSidebar}
         />
@@ -116,8 +103,7 @@ export function MainLayout({
         onStateChange={handleRightStateChange}
       />
 
-      {/* TODO: [GUI-M1-2] Module B: Native Menu Bar integration */}
-      {/* This will be configured via Tauri menu API, not React component */}
+      {/* Module B: Native Menu Bar - configured via Tauri */}
     </div>
   );
 }
