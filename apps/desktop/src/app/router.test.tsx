@@ -70,7 +70,7 @@ describe("Router", () => {
 
   it("renders Journal page", () => {
     renderWithRouter("/journal");
-    expect(screen.getByText("Journal")).toBeInTheDocument();
+    expect(screen.getByText("投资日志")).toBeInTheDocument();
   });
 
   it("renders Portfolio page", () => {

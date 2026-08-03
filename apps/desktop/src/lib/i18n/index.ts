@@ -35,7 +35,7 @@ export {
 } from "./formatters";
 
 // Catalogs - English (source)
-export { common as enCommon, navigation as enNavigation, settings as enSettings, workspace as enWorkspace, research as enResearch } from "./catalogs/en";
+export { common as enCommon, navigation as enNavigation, settings as enSettings, workspace as enWorkspace, research as enResearch, journal as enJournal } from "./catalogs/en";
 
 // Catalogs - Simplified Chinese
-export { common as zhCNCommon, navigation as zhCNNavigation, settings as zhCNSettings, workspace as zhCNWorkspace, research as zhCNResearch } from "./catalogs/zh-CN";
+export { common as zhCNCommon, navigation as zhCNNavigation, settings as zhCNSettings, workspace as zhCNWorkspace, research as zhCNResearch, journal as zhCNJournal } from "./catalogs/zh-CN";
