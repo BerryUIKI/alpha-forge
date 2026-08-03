@@ -1,72 +1,82 @@
 /**
  * AgentPanel Component
  *
- * Content of the right sidebar for Agent interaction (Module C).
- * Enhanced placeholder with collapsible sections and better UI.
+ * Right sidebar content for Agent task management.
+ * Connected to backend via TanStack Query hooks.
  *
- * Features:
- * - Collapsible sections for Conversation, Tools, and Tasks
- * - Status indicator with real-time updates placeholder
- * - Empty state with actionable placeholder
- * - Prepared for future Agent runtime integration
- *
- * @version GUI-M1-3
+ * @version GUI-M2
  */
 
 import { useState } from "react";
-import { Bot, MessageSquare, Wrench, ListTodo, ChevronDown, ChevronRight, Send, Zap } from "lucide-react";
-import type { AgentPanelProps } from "../types";
+import { Bot, X, Play, Square } from "lucide-react";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ErrorState } from "@/components/common/ErrorState";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
+import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
+import { useAgentTask, useStartAgentTask, useCancelAgentTask } from "@/features/agent/hooks/useAgentTasks";
+import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
+import type { AgentTask } from "@/lib/desktop-api/agent";
 
-interface CollapsibleSectionProps {
-  title: string;
-  icon: typeof MessageSquare;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
+interface AgentPanelProps {
+  status?: string;
+  placeholder?: string;
 }
 
-function CollapsibleSection({ title, icon: Icon, children, defaultOpen = false }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
+  const { data: workspaces, isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  return (
-    <div className="rounded-lg border border-border">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between p-3 hover:bg-accent transition-colors"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{title}</span>
-        </div>
-        {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        )}
-      </button>
-      {isOpen && <div className="border-t border-border p-3">{children}</div>}
-    </div>
-  );
-}
+  // Use first workspace as default
+  const workspaceId = workspaces?.[0]?.id || "";
 
-export function AgentPanel({
-  status = "Ready to assist",
-  placeholder = "Agent capabilities coming soon",
-}: AgentPanelProps) {
-  const [inputValue, setInputValue] = useState("");
+  // Task actions
+  const startTask = useStartAgentTask();
+  const cancelTask = useCancelAgentTask();
 
-  const handleSendMessage = () => {
-    // TODO: [GUI-M1-3] Implement message sending to agent
-    console.log("Send message:", inputValue);
-    setInputValue("");
+  // Selected task details
+  const { data: selectedTask } = useAgentTask(selectedTaskId || "");
+
+  const handleTaskSelect = (task: AgentTask) => {
+    setSelectedTaskId(task.id);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const handleTaskCreated = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setShowCreateForm(false);
   };
+
+  // Loading state
+  if (workspacesLoading) {
+    return <LoadingSpinner className="p-8" />;
+  }
+
+  // Error state
+  if (workspacesError) {
+    return (
+      <div className="p-4">
+        <ErrorState
+          message="Failed to load workspaces"
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
+  // No workspace state
+  if (!workspaceId) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+        <Bot className="h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-4 text-lg font-semibold">No Workspace</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create a workspace first to use the Agent
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -78,126 +88,110 @@ export function AgentPanel({
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Bot className="h-5 w-5 text-primary" />
               </div>
-              {/* Status indicator */}
-              <div className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-card bg-green-500" />
             </div>
             <div>
               <h3 className="text-sm font-semibold">Agent</h3>
               <p className="text-xs text-muted-foreground">{status}</p>
             </div>
           </div>
-          <button
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-accent"
-            aria-label="Agent settings"
-            title="Agent settings (coming soon)"
-          >
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </button>
         </div>
       </div>
 
-      {/* Collapsible Sections */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto p-3">
-        <div className="space-y-2">
-          {/* Conversation Section */}
-          <CollapsibleSection title="Conversation" icon={MessageSquare} defaultOpen>
-            <div className="space-y-2">
-              {/* Message input */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type a message..."
-                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  disabled
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-                  aria-label="Send message"
-                  disabled
-                  title="Send message (coming soon)"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
+        {/* Create Task Section */}
+        <div className="mb-4">
+          {showCreateForm ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowCreateForm(false)}
+                className="absolute right-2 top-2 rounded-md p-1 hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <CreateAgentTask
+                workspaceId={workspaceId}
+                onSuccess={handleTaskCreated}
+                onCancel={() => setShowCreateForm(false)}
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+              + New Research Task
+            </button>
+          )}
+        </div>
+
+        {/* Task List */}
+        <div className="mb-4">
+          <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+            Recent Tasks
+          </h4>
+          <AgentTaskList
+            workspaceId={workspaceId}
+            onSelectTask={handleTaskSelect}
+          />
+        </div>
+
+        {/* Selected Task Details */}
+        {selectedTask && (
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="mb-3 flex items-start justify-between">
+              <div>
+                <h4 className="font-semibold">{selectedTask.title}</h4>
+                <TaskStatusBadge status={selectedTask.status} />
               </div>
-              <p className="text-xs text-muted-foreground text-center">
-                Chat interface coming soon
+              <button
+                onClick={() => setSelectedTaskId(null)}
+                className="rounded-md p-1 hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {selectedTask.description && (
+              <p className="mb-3 text-sm text-muted-foreground">
+                {selectedTask.description}
               </p>
-            </div>
-          </CollapsibleSection>
-
-          {/* Tools Section */}
-          <CollapsibleSection title="Tools" icon={Wrench}>
-            <div className="grid grid-cols-2 gap-2">
-              {["Search", "Analyze", "Report", "Query"].map((tool) => (
+            )}
+            <div className="flex gap-2">
+              {selectedTask.status === "created" && (
                 <button
-                  key={tool}
-                  className="flex items-center justify-center rounded-lg border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
-                  disabled
-                  title={`${tool} tool (coming soon)`}
+                  onClick={() => startTask.mutate(selectedTask.id)}
+                  disabled={startTask.isPending}
+                  className="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
-                  {tool}
+                  <Play className="h-3 w-3" />
+                  Start
                 </button>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Tool invocation coming soon
-            </p>
-          </CollapsibleSection>
-
-          {/* Tasks Section */}
-          <CollapsibleSection title="Tasks" icon={ListTodo}>
-            <div className="space-y-2">
-              {["Active tasks", "Recent tasks", "Task history"].map((item) => (
+              )}
+              {(selectedTask.status === "running" || selectedTask.status === "queued") && (
                 <button
-                  key={item}
-                  className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-xs transition-colors hover:bg-accent disabled:opacity-50"
-                  disabled
-                  title={`${item} (coming soon)`}
+                  onClick={() => cancelTask.mutate(selectedTask.id)}
+                  disabled={cancelTask.isPending}
+                  className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
                 >
-                  <span>{item}</span>
-                  <span className="text-muted-foreground">0</span>
+                  <Square className="h-3 w-3" />
+                  Cancel
                 </button>
-              ))}
+              )}
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Task management coming soon
-            </p>
-          </CollapsibleSection>
-        </div>
-
-        {/* Empty State */}
-        <div className="mt-4 flex items-center justify-center">
-          <div className="rounded-lg border border-dashed border-border p-6 text-center max-w-xs">
-            <Bot className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm font-medium">{placeholder}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Full agent capabilities in future release
-            </p>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Status Footer */}
+      {/* Footer */}
       <div className="border-t border-border p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span className="text-xs text-muted-foreground">Status: Idle</span>
+            <span className="text-xs text-muted-foreground">Agent Ready</span>
           </div>
           <span className="text-xs text-muted-foreground">v0.1.0</span>
         </div>
       </div>
-
-      {/* TODO markers for future implementation */}
-      {/* TODO: [GUI-M1-3] Connect to agent runtime via Tauri commands */}
-      {/* TODO: [GUI-M1-3] Implement real-time status updates */}
-      {/* TODO: [GUI-M1-3] Add conversation history persistence */}
-      {/* TODO: [GUI-M1-3] Implement tool execution feedback */}
-      {/* TODO: [GUI-M1-3] Add task progress indicators */}
     </div>
   );
 }
