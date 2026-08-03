@@ -14,6 +14,7 @@
 pub mod agent_service;
 pub mod artifact_service;
 pub mod knowledge_graph_service;
+pub mod option_service;
 pub mod plugin_service;
 pub mod portfolio_service;
 pub mod settings_service;

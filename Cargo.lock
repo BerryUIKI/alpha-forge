@@ -2306,6 +2306,7 @@ dependencies = [
  "csv",
  "domain",
  "keyring",
+ "option-core",
  "pdf-extract",
  "provider-core",
  "reqwest 0.12.28",
