@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 import { useCreateKnowledgeEntity, useCreateKnowledgeRelationship, useKnowledgeEntities, useKnowledgeRelationships } from "../hooks/useKnowledgeGraph";
+import { LoadingSpinner, ErrorState, EmptyState } from "@/components/common";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
@@ -40,6 +41,50 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
   }
 
   const entityName = (id: string) => entities.data?.find((entity) => entity.id === id)?.name ?? id;
+
+  // Loading state
+  if (entities.isLoading || relationships.isLoading) {
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
+        <LoadingSpinner className="mt-8" ariaLabel={t("loading")} />
+      </section>
+    );
+  }
+
+  // Error state
+  if (entities.error || relationships.error) {
+    const errorMessage = entities.error?.message || relationships.error?.message || t("unexpectedError");
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
+        <ErrorState
+          message={errorMessage}
+          retryLabel={t("retry")}
+          onRetry={() => {
+            entities.refetch();
+            relationships.refetch();
+          }}
+        />
+      </section>
+    );
+  }
+
+  // Empty state
+  const hasEntities = entities.data && entities.data.length > 0;
+  const hasRelationships = relationships.data && relationships.data.length > 0;
+
+  if (!hasEntities && !hasRelationships) {
+    return (
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
+        <EmptyState
+          title={t("noWorkspaces")}
+          description={t("knowledgeGraphDescription")}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-lg border border-border bg-card p-5">
