@@ -65,7 +65,7 @@ describe("Router", () => {
 
   it("renders Research page", () => {
     renderWithRouter("/research");
-    expect(screen.getByText("Research")).toBeInTheDocument();
+    expect(screen.getByText("研究")).toBeInTheDocument();
   });
 
   it("renders Journal page", () => {
