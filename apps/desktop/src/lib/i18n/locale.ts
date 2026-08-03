@@ -273,3 +273,6 @@ export function formatMessage(message: string, values: Record<string, string>): 
 export function parseLocale(value: string | null | undefined): Locale {
   return LOCALES.includes(value as Locale) ? (value as Locale) : DEFAULT_LOCALE;
 }
+
+// Note: Portfolio keys added to catalog files. For brevity in locale.ts, 
+// using the catalog exports directly via t() in components.

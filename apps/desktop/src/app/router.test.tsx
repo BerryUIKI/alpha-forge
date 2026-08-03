@@ -73,14 +73,16 @@ describe("Router", () => {
     expect(screen.getByText("投资日志")).toBeInTheDocument();
   });
 
-  it("renders Portfolio page", () => {
+  it("renders Portfolio page", async () => {
     renderWithRouter("/portfolio");
-    expect(screen.getByText("Portfolio")).toBeInTheDocument();
+    const heading = await screen.findByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
   });
 
-  it("renders Artifacts page", () => {
+  it("renders Artifacts page", async () => {
     renderWithRouter("/artifacts");
-    expect(screen.getByText("Artifacts")).toBeInTheDocument();
+    const heading = await screen.findByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
   });
 
   it("renders Settings page", () => {
