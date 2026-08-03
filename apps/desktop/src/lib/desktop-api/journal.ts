@@ -2,6 +2,11 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
-export async function listTheses(): Promise<string[]> {
-  return invoke("list_theses");
+/**
+ * List journal entries for a workspace.
+ * Note: Backend currently returns an empty array (placeholder).
+ * @param workspaceId - The workspace ID to list entries for
+ */
+export async function listJournalEntries(workspaceId: string): Promise<string[]> {
+  return invoke("list_journal_entries", { workspaceId });
 }
