@@ -38,20 +38,49 @@ describe("LocaleProvider", () => {
     settingsMock.setSetting.mockResolvedValue(undefined);
   });
 
-  it("uses Chinese by default and persists a user-selected language", async () => {
+  it("detects system locale on first launch (en in test environment)", async () => {
     render(
       <LocaleProvider>
         <LocaleProbe />
       </LocaleProvider>,
     );
 
-    expect(screen.getByText("zh-CN")).toBeInTheDocument();
-    expect(screen.getByText("设置")).toBeInTheDocument();
+    // In test environment, navigator.language is typically "en"
+    // So the provider should detect and use "en" as system locale
+    expect(screen.getByText("en")).toBeInTheDocument();
+    expect(screen.getByText("Settings")).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Switch language" }));
+  it("uses saved locale preference over system locale", async () => {
+    // Simulate a user who previously selected zh-CN
+    settingsMock.getSetting.mockResolvedValue("zh-CN");
+
+    render(
+      <LocaleProvider>
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    await waitFor(() => expect(screen.getByText("zh-CN")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("设置")).toBeInTheDocument());
+  });
+
+  it("persists a user-selected language", async () => {
+    render(
+      <LocaleProvider>
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    // Initially uses system locale (en in test env)
+    expect(screen.getByText("en")).toBeInTheDocument();
+    expect(screen.getByText("Settings")).toBeInTheDocument();
+
+    // User switches to zh-CN
+    const button = screen.getByRole("button", { name: "Switch language" });
+    fireEvent.click(button);
 
     await waitFor(() => expect(screen.getByText("en")).toBeInTheDocument());
-    expect(screen.getByText("Settings")).toBeInTheDocument();
     expect(settingsMock.setSetting).toHaveBeenCalledWith("app.locale", "en");
   });
 });

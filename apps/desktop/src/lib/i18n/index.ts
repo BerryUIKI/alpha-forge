@@ -9,6 +9,7 @@ export {
   DEFAULT_LOCALE,
   LOCALE_SETTING_KEY,
   parseLocale,
+  detectSystemLocale,
   translate,
   formatMessage,
   type Locale,

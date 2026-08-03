@@ -55,7 +55,7 @@ Feature catalogs are namespaced but assembled by a single i18n module. Component
 
 ## Locale and key model
 
-- Use BCP 47 identifiers: `en`, `zh-CN`.
+- Use BCP 47 identifiers: `en`, `zh-CN`, with architecture supporting future additions.
 - Keep the supported-locale allowlist explicit; never trust a persisted or URL-provided locale.
 - Use semantic dotted keys such as `research.empty.title`, not source sentences as keys.
 - Preserve key parity between the source and translated catalogs with a test.
@@ -63,19 +63,57 @@ Feature catalogs are namespaced but assembled by a single i18n module. Component
 - Do not concatenate translated fragments. Use complete messages so translators can reorder grammar.
 - Do not place Markdown or untrusted HTML in catalogs. Render rich UI through React components with controlled placeholders.
 
-For the first two locales, typed TypeScript catalogs avoid a runtime loader and keep packaging local. If catalog size or translator tooling later requires external JSON, record that change in an ADR and preserve compile-time parity checks.
+### Adding new locales
+
+The architecture supports easy addition of new locales:
+
+1. Add locale identifier to `LOCALES` array in `locale.ts`
+2. Create new catalog directory: `catalogs/{locale-id}/`
+3. Translate all catalog files maintaining key parity
+4. Add locale to parity tests
+5. Update language selector in Settings
+6. Update documentation with translator credits
+
+No code changes required in components or business logic.
 
 ## Persistence and startup behavior
 
 The locale setting uses the existing Settings repository and `desktopApi.settings`; React must not read SQLite or operating-system files. Startup must render a deterministic fallback while the stored setting loads so the app does not flash between two languages.
 
-Recommended precedence:
+**Locale precedence (updated for multi-language support):**
 
-1. Valid saved application setting.
-2. Approved M8 launch default.
-3. `en` as the final catalog fallback for missing keys.
+1. Valid saved application setting (user's explicit choice).
+2. System locale detection (if supported and valid).
+3. Product-specific default locale.
+4. `en` as the final catalog fallback for missing keys.
 
-Do not infer the operating-system locale for the MVP unless the product owner explicitly replaces this policy. Silent OS detection makes launch behavior and screenshots harder to reproduce.
+### System Language Detection
+
+The application detects the user's system language at first startup:
+
+- **Detection method**: `navigator.language` or `Intl.DateTimeFormat().resolvedOptions().locale`
+- **Supported locales**: Only BCP 47 identifiers in the allowlist (`en`, `zh-CN` in MVP)
+- **Fallback chain**: If system locale is unsupported (e.g., `fr`, `de`), use product default
+- **User override**: Users can always change language in Settings, which takes precedence
+
+**Implementation principle:**
+- First-time users get their system language if supported
+- Returning users get their saved preference
+- All behavior is deterministic and testable
+- Easy to add new locales without code changes
+
+**Example flow:**
+```
+User in China with zh-CN system locale:
+  -> First launch: auto-select zh-CN
+  -> User changes to en in Settings
+  -> Next launch: use saved en preference
+
+User in France with fr system locale:
+  -> First launch: fr not in supported list
+  -> Fall back to product default (zh-CN)
+  -> User can manually select en or stay with zh-CN
+```
 
 ## Formatting rules
 
