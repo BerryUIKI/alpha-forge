@@ -7,12 +7,12 @@ This document translates the Option specifications into the current repository's
 | Layer             | Existing baseline to reuse                          | Planned additions or changes                                                                 |
 | ----------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Domain            | `crates/domain/src/option.rs`                       | Validate model completeness; add inputs/outputs only when a vertical slice requires them     |
-| Calculation       | None on `dev`                                       | `crates/option-core` pure crate for pricing, Greeks, volatility, and payoff functions        |
-| Persistence       | Option repositories and historical schema file      | New append-only runtime migration, row/domain mapping tests, repository tests                |
+| Calculation       | **Completed** `crates/option-core`                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing     |
+| Persistence       | **Completed** Option repositories and migration    | `0014_options_support.sql` applied via custom runner - 23 migration tests passing            |
 | Provider          | `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations; approved live adapter later            |
 | Service           | Existing service pattern                            | `option_service.rs`, `strategy_service.rs`, and portfolio integration only as slices require |
 | Command           | Existing thin command pattern                       | `commands/options.rs` with validated request/response types                                  |
-| Frontend protocol | `apps/desktop/src/types/option.ts`                  | Zod schemas plus `lib/desktop-api/options.ts`                                                |
+| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - CRUD operations integrated                   |
 | Frontend state    | TanStack Query conventions                          | Option hooks with bounded cache keys and cancellation behavior                               |
 | UI                | Shared states and layout                            | `features/options`, `pages/options`, router and navigation entries                           |
 | Artifact          | Predefined renderer registry                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                   |
