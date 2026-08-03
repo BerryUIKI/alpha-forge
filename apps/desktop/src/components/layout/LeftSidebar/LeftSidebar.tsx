@@ -5,25 +5,25 @@
  * Combines WorkspaceSelector, ScrollableList, and UserOperations.
  *
  * Features:
- * - Collapsible sidebar with expand/collapse animation
- * - Drag-to-resize functionality (TODO: [GUI-M1-1])
- * - Responsive width constraints
+ * - Collapsible sidebar with smooth animation
+ * - Drag-to-resize functionality
+ * - State persistence via localStorage
+ * - Keyboard shortcuts support
  *
- * TODO: [GUI-M1-1] Implement drag-to-resize functionality
- * TODO: [GUI-M1-1] Persist sidebar state across sessions
- * TODO: [GUI-M1-1] Add keyboard shortcuts for collapse/expand
+ * @version GUI-M1-1
  */
 
-import { useState, useCallback } from "react";
-import { ChevronLeft } from "lucide-react";
+import { useCallback, useState } from "react";
+import { ChevronLeft, GripVertical } from "lucide-react";
 import type { LeftSidebarProps } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { ScrollableList } from "./ScrollableList";
 import { UserOperations } from "./UserOperations";
+import { useSidebarState, useResize } from "@/hooks/layout";
 
 export function LeftSidebar({
-  state = "expanded",
+  state: externalState,
   onStateChange,
   selectedWorkspace = "analyze",
   onWorkspaceChange,
@@ -31,22 +31,39 @@ export function LeftSidebar({
   minWidth = DEFAULT_SIDEBAR_WIDTHS.left.min,
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
 }: LeftSidebarProps) {
-  const [internalState, setInternalState] = useState(state);
+  // Use sidebar state hook for persistence
+  const {
+    state: internalState,
+    width,
+    toggleState,
+    setWidth,
+    isExpanded,
+  } = useSidebarState({
+    storageKey: "left-sidebar",
+    defaultState: externalState || "expanded",
+    defaultWidth,
+    minWidth,
+    maxWidth,
+  });
+
+  // Use resize hook for drag-to-resize
+  const { isResizing, startResize } = useResize({
+    initialWidth: width,
+    minWidth,
+    maxWidth,
+    direction: "right",
+    onWidthChange: setWidth,
+  });
+
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
 
-  const isExpanded = internalState === "expanded";
-
   const handleToggle = useCallback(() => {
-    const newState = isExpanded ? "collapsed" : "expanded";
-    setInternalState(newState);
-    onStateChange?.(newState);
-
-    // TODO: [GUI-M1-1] Persist sidebar state to local storage
-  }, [isExpanded, onStateChange]);
+    toggleState();
+    onStateChange?.(isExpanded ? "collapsed" : "expanded");
+  }, [toggleState, isExpanded, onStateChange]);
 
   const handleWorkspaceChange = useCallback((workspace: typeof selectedWorkspace) => {
     onWorkspaceChange?.(workspace);
-    // TODO: [GUI-M1-4] Trigger workspace view switching in MainContent
   }, [onWorkspaceChange]);
 
   const handleMenuItemClick = useCallback((item: "profile" | "theme-toggle" | "settings") => {
@@ -55,10 +72,10 @@ export function LeftSidebar({
   }, []);
 
   if (!isExpanded) {
-    // Collapsed state - minimal UI
+    // Collapsed state - minimal UI with smooth animation
     return (
       <aside
-        className="flex h-full flex-col border-r border-border bg-card"
+        className="flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out"
         style={{ width: "48px" }}
         aria-label="Left sidebar (collapsed)"
       >
@@ -67,7 +84,7 @@ export function LeftSidebar({
           onClick={handleToggle}
           className="flex h-12 items-center justify-center border-b border-border transition-colors hover:bg-accent"
           aria-label="Expand sidebar"
-          title="Expand sidebar"
+          title="Expand sidebar (Ctrl+1)"
         >
           <ChevronLeft className="h-5 w-5 rotate-180" />
         </button>
@@ -82,11 +99,13 @@ export function LeftSidebar({
     );
   }
 
-  // Expanded state
+  // Expanded state with resize handle
   return (
     <aside
-      className="flex h-full flex-col border-r border-border bg-card"
-      style={{ width: `${defaultWidth}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
+      className={`relative flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out ${
+        isResizing ? "select-none" : ""
+      }`}
+      style={{ width: `${width}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
       aria-label="Left sidebar"
     >
       {/* Collapse Button */}
@@ -95,7 +114,7 @@ export function LeftSidebar({
           onClick={handleToggle}
           className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
           aria-label="Collapse sidebar"
-          title="Collapse sidebar"
+          title="Collapse sidebar (Ctrl+1)"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -121,8 +140,19 @@ export function LeftSidebar({
         theme="light"
       />
 
-      {/* TODO: [GUI-M1-1] Add drag-to-resize handle */}
-      {/* TODO: [GUI-M1-1] Implement resize logic with mouse events */}
+      {/* Drag-to-resize handle */}
+      <div
+        className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors group"
+        onMouseDown={startResize}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize sidebar"
+        tabIndex={0}
+      >
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
     </aside>
   );
 }
