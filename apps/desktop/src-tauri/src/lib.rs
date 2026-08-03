@@ -6,6 +6,7 @@ pub mod config;
 pub mod database;
 pub mod documents;
 pub mod error;
+pub mod menu;
 pub mod plugins;
 pub mod providers;
 pub mod security;
@@ -28,6 +29,11 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();
+
+            // Setup native menu bar
+            if let Err(error) = menu::setup_menu(&handle) {
+                tracing::error!("Failed to setup menu: {}", error);
+            }
 
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
