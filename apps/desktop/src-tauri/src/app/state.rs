@@ -14,7 +14,9 @@ use crate::database::repositories::artifact_repository::ArtifactRepository;
 use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRepository;
 use crate::database::repositories::option_chain_repository::OptionChainRepository;
 use crate::database::repositories::option_contract_repository::OptionContractRepository;
+use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::greeks_repository::GreeksRepository;
+use crate::database::repositories::strategy_leg_repository::StrategyLegRepository;
 use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
@@ -31,6 +33,7 @@ use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::option_service::OptionService;
+use crate::services::strategy_service::StrategyService;
 use crate::services::plugin_service::PluginService;
 use crate::services::portfolio_service::PortfolioService;
 use crate::services::research_document_service::ResearchDocumentService;
@@ -58,6 +61,7 @@ pub struct AppState {
     pub thesis_service: ThesisService,
     pub knowledge_graph_service: KnowledgeGraphService,
     pub option_service: OptionService,
+    pub strategy_service: StrategyService,
     pub portfolio_service: PortfolioService,
     pub plugin_service: PluginService,
     pub system_service: SystemService,
@@ -84,6 +88,8 @@ impl AppState {
         let option_chain_repo = OptionChainRepository::new(db_pool.clone());
         let option_contract_repo = OptionContractRepository::new(db_pool.clone());
         let greeks_repo = GreeksRepository::new(db_pool.clone());
+        let option_strategy_repo = OptionStrategyRepository::new(db_pool.clone());
+        let strategy_leg_repo = StrategyLegRepository::new(db_pool.clone());
         let portfolio_repo = PortfolioRepository::new(db_pool.clone());
         let plugin_repo = PluginRepository::new(db_pool.clone());
 
@@ -104,6 +110,10 @@ impl AppState {
             Arc::new(option_chain_repo),
             Arc::new(option_contract_repo),
             Arc::new(greeks_repo),
+        );
+        let strategy_service = StrategyService::new(
+            Arc::new(option_strategy_repo),
+            Arc::new(strategy_leg_repo),
         );
         let portfolio_service = PortfolioService::new(portfolio_repo);
         let plugin_service = PluginService::new(plugin_repo);
@@ -139,6 +149,7 @@ impl AppState {
             thesis_service,
             knowledge_graph_service,
             option_service,
+            strategy_service,
             portfolio_service,
             plugin_service,
             system_service,
