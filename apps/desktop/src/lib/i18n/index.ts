@@ -35,7 +35,7 @@ export {
 } from "./formatters";
 
 // Catalogs - English (source)
-export { common as enCommon, navigation as enNavigation, settings as enSettings } from "./catalogs/en";
+export { common as enCommon, navigation as enNavigation, settings as enSettings, workspace as enWorkspace } from "./catalogs/en";
 
 // Catalogs - Simplified Chinese
-export { common as zhCNCommon, navigation as zhCNNavigation, settings as zhCNSettings } from "./catalogs/zh-CN";
+export { common as zhCNCommon, navigation as zhCNNavigation, settings as zhCNSettings, workspace as zhCNWorkspace } from "./catalogs/zh-CN";

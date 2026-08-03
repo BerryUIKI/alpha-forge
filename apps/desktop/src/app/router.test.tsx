@@ -55,12 +55,12 @@ function renderWithRouter(initialEntry: string = "/") {
 describe("Router", () => {
   it("renders Today page at root path", () => {
     renderWithRouter("/");
-    expect(screen.getByText("Today")).toBeInTheDocument();
+    expect(screen.getByText("今日")).toBeInTheDocument();
   });
 
   it("renders Today page at /today path", () => {
     renderWithRouter("/today");
-    expect(screen.getByText("Today")).toBeInTheDocument();
+    expect(screen.getByText("今日")).toBeInTheDocument();
   });
 
   it("renders Research page", () => {

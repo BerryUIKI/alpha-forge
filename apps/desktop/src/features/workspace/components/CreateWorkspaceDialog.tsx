@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useCreateWorkspace } from "@/features/workspace/hooks/useWorkspaces";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 interface CreateWorkspaceDialogProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const createMutation = useCreateWorkspace();
+  const { t } = useLocale();
 
   if (!isOpen) return null;
 
@@ -22,12 +24,12 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError("Workspace name is required");
+      setError(t("workspaceNameRequired"));
       return;
     }
 
     if (trimmedName.length > 200) {
-      setError("Workspace name must be 200 characters or less");
+      setError(t("workspaceNameTooLong"));
       return;
     }
 
@@ -38,18 +40,19 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
       onSuccess?.({ id: workspace.id, name: workspace.name });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create workspace");
+      setError(err instanceof Error ? err.message : t("failedToCreateWorkspace"));
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
       <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Create Workspace</h2>
+          <h2 id="dialog-title" className="text-lg font-semibold">{t("createWorkspaceTitle")}</h2>
           <button
             onClick={onClose}
             className="rounded-md p-1 hover:bg-accent"
+            aria-label={t("cancel")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -58,7 +61,7 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="workspace-name" className="mb-2 block text-sm font-medium">
-              Workspace Name
+              {t("workspaceName")}
             </label>
             <input
               id="workspace-name"
@@ -68,11 +71,11 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
                 setName(e.target.value);
                 setError("");
               }}
-              placeholder="My Research"
+              placeholder={t("workspaceNamePlaceholder")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               autoFocus
             />
-            {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
+            {error && <p className="mt-1 text-sm text-destructive" role="alert">{error}</p>}
           </div>
 
           <div className="flex justify-end gap-2">
@@ -81,14 +84,14 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
               onClick={onClose}
               className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={createMutation.isPending}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {createMutation.isPending ? "Creating..." : "Create"}
+              {createMutation.isPending ? t("creating") : t("create")}
             </button>
           </div>
         </form>

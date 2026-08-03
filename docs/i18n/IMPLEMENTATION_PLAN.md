@@ -85,7 +85,25 @@ pnpm test -- apps/desktop/src/components/navigation/Sidebar.test.tsx \
 
 Deliver vertical slices in this order:
 
-1. Workspace create/select and Today dashboard.
+### I18N-3.1: Workspace and Today (M8-05) — ✅ Complete
+
+**Goal:** Workspace create/select and Today dashboard fully localized.
+
+1. ✅ Added workspace catalog with keys for creation, selection, validation, and error states
+2. ✅ Localized WorkspaceList, CreateWorkspaceDialog, and TodayPage components
+3. ✅ Used shared formatters for dates without changing stored values
+4. ✅ Added tests covering both locales
+
+**Verification:** ✅ Passed
+
+```bash
+pnpm test -- --run
+# 138 tests passed
+```
+
+### Remaining slices:
+
+2. Research projects, documents, sources, notes, search, and reports.
 2. Research projects, documents, sources, notes, search, and reports.
 3. Journal, thesis evidence, confidence history, and validation.
 4. Portfolio accounts, positions, imports, allocation, and risk review.

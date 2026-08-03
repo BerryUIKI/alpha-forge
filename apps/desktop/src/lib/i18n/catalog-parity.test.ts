@@ -80,6 +80,17 @@ describe("Catalog parity", () => {
     expect(result.extraInZhCN).toHaveLength(0);
   });
 
+  it("workspace catalog has parity between en and zh-CN", () => {
+    const result = assertCatalogParity(
+      enCatalog.workspace as Record<string, unknown>,
+      zhCNCatalog.workspace as Record<string, unknown>,
+      "workspace",
+    );
+    expect(result.hasParity).toBe(true);
+    expect(result.missingInZhCN).toHaveLength(0);
+    expect(result.extraInZhCN).toHaveLength(0);
+  });
+
   it("all catalogs have the same namespaces in both locales", () => {
     const enNamespaces = Object.keys(enCatalog);
     const zhCNNamespaces = Object.keys(zhCNCatalog);
