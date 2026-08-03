@@ -5,6 +5,9 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage } from "@/lib/i18n/locale";
+import { formatDate } from "@/lib/i18n/formatters";
 import type { Workspace } from "@/lib/desktop-api/workspace";
 
 interface WorkspaceListProps {
@@ -13,16 +16,18 @@ interface WorkspaceListProps {
 }
 
 export function WorkspaceList({ onSelect, onCreateNew }: WorkspaceListProps) {
+  const { locale, t } = useLocale();
   const { data: workspaces, isLoading, error, refetch } = useWorkspaces();
 
   if (isLoading) {
-    return <LoadingSpinner className="p-8" />;
+    return <LoadingSpinner className="p-8" ariaLabel={t("loading")} />;
   }
 
   if (error) {
     return (
       <ErrorState
-        message="Failed to load workspaces"
+        message={t("failedToLoadWorkspaces")}
+        retryLabel={t("retry")}
         onRetry={() => refetch()}
       />
     );
@@ -32,8 +37,8 @@ export function WorkspaceList({ onSelect, onCreateNew }: WorkspaceListProps) {
     return (
       <EmptyState
         icon={<Folder className="h-8 w-8" />}
-        title="No workspaces yet"
-        description="Create your first workspace to start organizing your research."
+        title={t("noWorkspaces")}
+        description={t("noWorkspacesDescription")}
         action={
           onCreateNew && (
             <button
@@ -41,7 +46,7 @@ export function WorkspaceList({ onSelect, onCreateNew }: WorkspaceListProps) {
               className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Create Workspace
+              {t("createWorkspace")}
             </button>
           )
         }
@@ -59,7 +64,7 @@ export function WorkspaceList({ onSelect, onCreateNew }: WorkspaceListProps) {
         >
           <h3 className="font-semibold">{workspace.name}</h3>
           <p className="text-sm text-muted-foreground">
-            Created {new Date(workspace.createdAt).toLocaleDateString()}
+            {formatMessage(t("created"), { date: formatDate(locale, new Date(workspace.createdAt)) })}
           </p>
         </button>
       ))}
