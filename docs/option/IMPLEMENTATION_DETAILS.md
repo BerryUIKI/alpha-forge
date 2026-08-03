@@ -10,7 +10,7 @@ This document translates the Option specifications into the current repository's
 | Calculation       | **Completed** `crates/option-core`                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing     |
 | Persistence       | **Completed** Option repositories and migration    | `0014_options_support.sql` applied via custom runner - 23 migration tests passing            |
 | Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
-| Service           | **Completed** Existing service pattern            | `option_service.rs` - pricing/Greeks/IV calculations integrated                           |
+| Service           | **Completed** Existing service pattern            | `option_service.rs`, `strategy_service.rs` - pricing/Greeks/strategy calculations         |
 | Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
 | Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - calculation commands integrated             |
 | Frontend state    | **Completed** TanStack Query conventions          | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                    |
