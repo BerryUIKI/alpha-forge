@@ -10,3 +10,4 @@ export { research } from "./research";
 export { journal } from "./journal";
 export { portfolio } from "./portfolio";
 export { artifacts } from "./artifacts";
+export { agent } from "./agent";
