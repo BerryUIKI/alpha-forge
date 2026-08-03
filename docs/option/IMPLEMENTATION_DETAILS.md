@@ -9,9 +9,9 @@ This document translates the Option specifications into the current repository's
 | Domain            | `crates/domain/src/option.rs`                       | Validate model completeness; add inputs/outputs only when a vertical slice requires them     |
 | Calculation       | **Completed** `crates/option-core`                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing     |
 | Persistence       | **Completed** Option repositories and migration    | `0014_options_support.sql` applied via custom runner - 23 migration tests passing            |
-| Provider          | `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations; approved live adapter later            |
-| Service           | Existing service pattern                            | `option_service.rs`, `strategy_service.rs`, and portfolio integration only as slices require |
-| Command           | Existing thin command pattern                       | `commands/options.rs` with validated request/response types                                  |
+| Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
+| Service           | **Completed** Existing service pattern            | `option_service.rs` - pricing/Greeks/IV calculations integrated                           |
+| Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
 | Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - CRUD operations integrated                   |
 | Frontend state    | TanStack Query conventions                          | Option hooks with bounded cache keys and cancellation behavior                               |
 | UI                | Shared states and layout                            | `features/options`, `pages/options`, router and navigation entries                           |
