@@ -4,6 +4,9 @@
 use crate::error::AppError;
 
 #[tauri::command]
-pub async fn list_journal_entries() -> Result<Vec<String>, AppError> {
+pub async fn list_journal_entries(workspace_id: String) -> Result<Vec<String>, AppError> {
+    // TODO: Implement journal entries retrieval from database
+    // Currently returns empty array as placeholder
+    let _ = workspace_id; // Acknowledge parameter until implementation
     Ok(Vec::new())
 }
