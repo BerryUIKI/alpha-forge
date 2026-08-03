@@ -57,10 +57,7 @@ impl StrategyLegRepository {
     }
 
     /// Lists all legs for a strategy.
-    pub async fn list_by_strategy(
-        &self,
-        strategy_id: &str,
-    ) -> Result<Vec<StrategyLeg>, AppError> {
+    pub async fn list_by_strategy(&self, strategy_id: &str) -> Result<Vec<StrategyLeg>, AppError> {
         let rows = sqlx::query_as::<_, StrategyLegRow>(
             r#"
                 SELECT id, strategy_id, option_contract_id, quantity,

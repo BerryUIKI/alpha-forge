@@ -35,7 +35,9 @@ impl StrategyService {
         // Check for valid quantities
         for leg in legs {
             if leg.quantity == 0 {
-                return Err(AppError::Validation("Leg quantity cannot be zero".to_string()));
+                return Err(AppError::Validation(
+                    "Leg quantity cannot be zero".to_string(),
+                ));
             }
         }
 

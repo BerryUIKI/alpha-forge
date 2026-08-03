@@ -3,6 +3,8 @@
 // Services own business logic and coordination between repositories.
 // This service handles option chain fetching, Greeks calculations, and pricing.
 
+#![allow(clippy::too_many_arguments)]
+
 use std::sync::Arc;
 
 use crate::database::repositories::greeks_repository::GreeksRepository;
@@ -21,6 +23,7 @@ use option_core::{
 /// - Data providers (Demo, Live, File)
 /// - Option repositories (chains, contracts, Greeks)
 /// - Pricing and Greeks calculations (Black-Scholes)
+#[allow(dead_code)]
 pub struct OptionService {
     chain_repo: Arc<OptionChainRepository>,
     contract_repo: Arc<OptionContractRepository>,
@@ -69,9 +72,10 @@ impl OptionService {
             .map_err(|e| AppError::Internal(format!("Failed to create provider: {}", e)))?;
 
         // Fetch chain from provider
-        let chain = provider.fetch_chain(symbol, workspace_id).await.map_err(|e| {
-            AppError::Internal(format!("Failed to fetch option chain: {}", e))
-        })?;
+        let chain = provider
+            .fetch_chain(symbol, workspace_id)
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to fetch option chain: {}", e)))?;
 
         // Persist chain to database
         self.chain_repo.create(&chain).await?;

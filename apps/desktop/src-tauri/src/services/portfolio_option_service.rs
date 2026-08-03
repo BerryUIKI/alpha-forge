@@ -7,6 +7,7 @@ use domain::option::OptionPosition;
 
 pub struct PortfolioOptionService {
     position_repo: OptionPositionRepository,
+    #[allow(dead_code)]
     portfolio_repo: PortfolioRepository,
 }
 
@@ -67,7 +68,10 @@ impl PortfolioOptionService {
     ) -> Result<OptionExposure, AppError> {
         let positions = self.list_option_positions(workspace_id).await?;
 
-        let total_cost = positions.iter().map(|p| p.cost_basis * p.quantity as f64).sum();
+        let total_cost = positions
+            .iter()
+            .map(|p| p.cost_basis * p.quantity as f64)
+            .sum();
 
         Ok(OptionExposure {
             total_positions: positions.len(),

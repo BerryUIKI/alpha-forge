@@ -11,13 +11,12 @@ use crate::agent::executor::{ExecutorConfig, TaskExecutor};
 use crate::artifacts::manager::ArtifactManager;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
+use crate::database::repositories::greeks_repository::GreeksRepository;
 use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRepository;
 use crate::database::repositories::option_chain_repository::OptionChainRepository;
 use crate::database::repositories::option_contract_repository::OptionContractRepository;
-use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::option_position_repository::OptionPositionRepository;
-use crate::database::repositories::greeks_repository::GreeksRepository;
-use crate::database::repositories::strategy_leg_repository::StrategyLegRepository;
+use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
@@ -26,6 +25,7 @@ use crate::database::repositories::research_project_repository::ResearchProjectR
 use crate::database::repositories::research_report_repository::ResearchReportRepository;
 use crate::database::repositories::research_source_repository::ResearchSourceRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
+use crate::database::repositories::strategy_leg_repository::StrategyLegRepository;
 use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::error::AppError;
@@ -34,9 +34,8 @@ use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::option_service::OptionService;
-use crate::services::portfolio_option_service::PortfolioOptionService;
-use crate::services::strategy_service::StrategyService;
 use crate::services::plugin_service::PluginService;
+use crate::services::portfolio_option_service::PortfolioOptionService;
 use crate::services::portfolio_service::PortfolioService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_note_service::ResearchNoteService;
@@ -44,6 +43,7 @@ use crate::services::research_project_service::ResearchProjectService;
 use crate::services::research_report_service::ResearchReportService;
 use crate::services::research_source_service::ResearchSourceService;
 use crate::services::settings_service::SettingsService;
+use crate::services::strategy_service::StrategyService;
 use crate::services::system_service::SystemService;
 use crate::services::thesis_service::ThesisService;
 use crate::services::workspace_service::WorkspaceService;
@@ -116,14 +116,10 @@ impl AppState {
             Arc::new(option_contract_repo),
             Arc::new(greeks_repo),
         );
-        let strategy_service = StrategyService::new(
-            Arc::new(option_strategy_repo),
-            Arc::new(strategy_leg_repo),
-        );
-        let portfolio_option_service = PortfolioOptionService::new(
-            option_position_repo,
-            portfolio_repo_for_option,
-        );
+        let strategy_service =
+            StrategyService::new(Arc::new(option_strategy_repo), Arc::new(strategy_leg_repo));
+        let portfolio_option_service =
+            PortfolioOptionService::new(option_position_repo, portfolio_repo_for_option);
         let portfolio_service = PortfolioService::new(portfolio_repo);
         let plugin_service = PluginService::new(plugin_repo);
         let system_service = SystemService::new(app_handle.clone(), db_pool.clone());

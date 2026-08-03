@@ -45,7 +45,9 @@ pub async fn fetch_option_chain(
         return Err(AppError::Validation("Symbol cannot be empty".to_string()));
     }
     if params.workspace_id.trim().is_empty() {
-        return Err(AppError::Validation("Workspace ID cannot be empty".to_string()));
+        return Err(AppError::Validation(
+            "Workspace ID cannot be empty".to_string(),
+        ));
     }
 
     let source = match params.provider.as_deref() {
@@ -68,22 +70,34 @@ pub async fn calculate_greeks(
 ) -> Result<GreeksResponse, AppError> {
     // Validate inputs
     if params.underlying_price <= 0.0 {
-        return Err(AppError::Validation("Underlying price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Underlying price must be positive".to_string(),
+        ));
     }
     if params.strike <= 0.0 {
-        return Err(AppError::Validation("Strike price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Strike price must be positive".to_string(),
+        ));
     }
     if params.expiration_years <= 0.0 {
-        return Err(AppError::Validation("Time to expiration must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Time to expiration must be positive".to_string(),
+        ));
     }
     if params.volatility <= 0.0 {
-        return Err(AppError::Validation("Volatility must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Volatility must be positive".to_string(),
+        ));
     }
 
     let option_type = match params.option_type.as_str() {
         "call" => OptionType::Call,
         "put" => OptionType::Put,
-        _ => return Err(AppError::Validation("Invalid option type: must be 'call' or 'put'".to_string())),
+        _ => {
+            return Err(AppError::Validation(
+                "Invalid option type: must be 'call' or 'put'".to_string(),
+            ))
+        }
     };
 
     let greeks = state.option_service.calculate_greeks(
@@ -113,22 +127,34 @@ pub async fn calculate_option_price(
 ) -> Result<f64, AppError> {
     // Validate inputs
     if params.underlying_price <= 0.0 {
-        return Err(AppError::Validation("Underlying price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Underlying price must be positive".to_string(),
+        ));
     }
     if params.strike <= 0.0 {
-        return Err(AppError::Validation("Strike price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Strike price must be positive".to_string(),
+        ));
     }
     if params.expiration_years <= 0.0 {
-        return Err(AppError::Validation("Time to expiration must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Time to expiration must be positive".to_string(),
+        ));
     }
     if params.volatility <= 0.0 {
-        return Err(AppError::Validation("Volatility must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Volatility must be positive".to_string(),
+        ));
     }
 
     let option_type = match params.option_type.as_str() {
         "call" => OptionType::Call,
         "put" => OptionType::Put,
-        _ => return Err(AppError::Validation("Invalid option type: must be 'call' or 'put'".to_string())),
+        _ => {
+            return Err(AppError::Validation(
+                "Invalid option type: must be 'call' or 'put'".to_string(),
+            ))
+        }
     };
 
     state.option_service.calculate_price(
@@ -150,22 +176,34 @@ pub async fn calculate_implied_volatility(
 ) -> Result<f64, AppError> {
     // Validate inputs
     if params.underlying_price <= 0.0 {
-        return Err(AppError::Validation("Underlying price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Underlying price must be positive".to_string(),
+        ));
     }
     if params.strike <= 0.0 {
-        return Err(AppError::Validation("Strike price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Strike price must be positive".to_string(),
+        ));
     }
     if params.expiration_years <= 0.0 {
-        return Err(AppError::Validation("Time to expiration must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Time to expiration must be positive".to_string(),
+        ));
     }
     if params.market_price <= 0.0 {
-        return Err(AppError::Validation("Market price must be positive".to_string()));
+        return Err(AppError::Validation(
+            "Market price must be positive".to_string(),
+        ));
     }
 
     let option_type = match params.option_type.as_str() {
         "call" => OptionType::Call,
         "put" => OptionType::Put,
-        _ => return Err(AppError::Validation("Invalid option type: must be 'call' or 'put'".to_string())),
+        _ => {
+            return Err(AppError::Validation(
+                "Invalid option type: must be 'call' or 'put'".to_string(),
+            ))
+        }
     };
 
     state.option_service.calculate_iv(
