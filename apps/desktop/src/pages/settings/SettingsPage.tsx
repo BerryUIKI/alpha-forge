@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck } from "lucide-react";
+import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck, Activity, Database } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { desktopApi } from "@/lib/desktop-api";
 import { formatMessage, LOCALES, type Locale } from "@/lib/i18n/locale";
@@ -10,6 +10,10 @@ export function SettingsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+
+  // System info state
+  const [dbHealth, setDbHealth] = useState<string | null>(null);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
   const exportBackup = async () => {
     setIsExporting(true);
@@ -42,6 +46,21 @@ export function SettingsPage() {
     }
   };
 
+  const checkDatabaseHealth = async () => {
+    setIsCheckingHealth(true);
+    setMessage(null);
+    try {
+      const result = await desktopApi.system.checkDatabaseHealth();
+      setDbHealth(result);
+      setMessage(t("databaseHealthy"));
+    } catch {
+      setDbHealth("error");
+      setMessage(t("databaseCheckFailed"));
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
@@ -66,6 +85,30 @@ export function SettingsPage() {
             </option>
           ))}
         </select>
+      </section>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <Database className="mt-0.5 h-5 w-5" />
+          <div>
+            <h2 className="font-semibold">{t("databaseHealth")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("databaseHealthDescription")}</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-4">
+          <button
+            onClick={checkDatabaseHealth}
+            disabled={isCheckingHealth}
+            className="rounded-md border border-input px-3 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50"
+          >
+            {isCheckingHealth ? t("checking") : t("checkDatabaseHealth")}
+          </button>
+          {dbHealth && (
+            <span className={`flex items-center gap-1.5 text-sm ${dbHealth === "healthy" ? "text-green-600" : "text-destructive"}`}>
+              <Activity className="h-4 w-4" />
+              {dbHealth === "healthy" ? t("databaseStatusHealthy") : t("databaseStatusError")}
+            </span>
+          )}
+        </div>
       </section>
       <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">
