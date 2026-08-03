@@ -294,27 +294,18 @@ Wire the newly-added desktopApi wrappers (from PR-02) into the relevant pages.
 
 ---
 
-#### PR-06: i18n Hardcoded Strings in Feature Components
+#### PR-06: i18n Hardcoded Strings in Feature Components ✅ COMPLETED
 
 **Branch:** `feat/i18n-feature-components`
+**PR:** https://github.com/BerryUIKI/alpha-forge/pull/66
 
-Replace all hardcoded English strings with i18n keys.
-
-| Component | Strings to Localize |
-|-----------|-------------------|
-| `ThesisList` | Error/empty messages, confidence labels |
-| `ThesisDetail` | Section headers, form labels, evidence direction labels |
-| `KnowledgeGraphPanel` | All labels, entity type names, form placeholders |
-| `CreateAgentTask` | Input placeholders, button labels |
-| `AgentPanel` | Section titles, status messages, button labels |
-| `StatusBar` | Status labels, hint text (if retained) |
-| `OperationBar` | Button labels, tooltips (if retained) |
-
-| Item | Detail |
+| Item | Status |
 |------|--------|
-| Files | Feature components + `lib/i18n/catalogs/en/` + `lib/i18n/catalogs/zh-CN/` |
-| Tests | Run catalog parity test (`pnpm test -- --grep catalog`) |
-| Depends on | None |
+| CreateAgentTask: 11 strings | ✅ Done (existing keys) |
+| AgentTaskList: 3 strings | ✅ Done (existing keys) |
+| ThesisList: 4 strings | ✅ Done (new keys) |
+| ThesisDetail: 27 strings | ✅ Done (new keys) |
+| KnowledgeGraphPanel: 15 strings | ✅ Done (new keys) |
 
 ---
 
