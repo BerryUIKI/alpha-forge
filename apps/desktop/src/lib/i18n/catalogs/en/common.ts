@@ -47,6 +47,14 @@ export const common = {
     "AlphaForge is a local-first, open-source MVP. It has no account requirement, no automatic cloud backup, and telemetry is disabled by default. Your local database remains the source of truth.",
   openPrivacyNotice: "Open privacy notice",
   openResearchDisclaimer: "Open research disclaimer",
+
+  // Common states
+  loading: "Loading…",
+  retry: "Try Again",
+  offline: "You are offline",
+  offlineDescription: "Please check your internet connection and try again.",
+  unexpectedError: "Something went wrong",
+  unexpectedErrorDescription: "An unexpected error occurred.",
 } as const;
 
 export type CommonKey = keyof typeof common;

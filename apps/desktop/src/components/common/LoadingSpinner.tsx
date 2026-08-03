@@ -5,6 +5,8 @@ import { Loader2 } from "lucide-react";
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;
+  /** Accessible label for screen readers */
+  ariaLabel?: string;
 }
 
 const sizeClasses = {
@@ -13,10 +15,20 @@ const sizeClasses = {
   lg: "h-8 w-8",
 };
 
-export function LoadingSpinner({ size = "md", className = "" }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  size = "md",
+  className = "",
+  ariaLabel = "Loading",
+}: LoadingSpinnerProps) {
   return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
+    <div
+      className={`flex items-center justify-center ${className}`}
+      role="status"
+      aria-label={ariaLabel}
+      aria-live="polite"
+    >
+      <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} aria-hidden="true" />
+      <span className="sr-only">{ariaLabel}</span>
     </div>
   );
 }

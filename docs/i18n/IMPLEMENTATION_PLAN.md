@@ -58,15 +58,28 @@ pnpm lint
 
 ## Work package I18N-2: Application shell and common states
 
+**Status:** ✅ Complete (M8-04)
+
 **Goal:** make the persistent shell and reusable asynchronous states complete in both locales.
 
-1. Localize sidebar navigation, page titles, command palette, settings, dialogs, buttons, and tooltips.
-2. Localize shared loading, empty, error, partial, and offline components.
-3. Add localized labels and announcements for keyboard navigation and focus management.
-4. Replace ad hoc date/number formatting in shared components with the approved helpers.
-5. Add component tests that switch locale at runtime.
+1. ✅ Localize sidebar navigation, page titles, command palette, settings, dialogs, buttons, and tooltips.
+2. ✅ Localize shared loading, empty, error, partial, and offline components.
+3. ✅ Add localized labels and announcements for keyboard navigation and focus management.
+4. ✅ Replace ad hoc date/number formatting in shared components with the approved helpers.
+5. ✅ Add component tests that switch locale at runtime.
 
-**Exit gate:** every route can be reached and recovered from an error in either locale without clipping or inaccessible labels.
+**Verification:** ✅ Passed
+
+```bash
+pnpm test -- apps/desktop/src/components/navigation/Sidebar.test.tsx \
+  apps/desktop/src/components/common/EmptyState.test.tsx \
+  apps/desktop/src/components/common/ErrorState.test.tsx \
+  apps/desktop/src/components/common/LoadingSpinner.test.tsx \
+  apps/desktop/src/components/common/OfflineState.test.tsx --run
+# 24 tests passed
+```
+
+**Exit gate:** ✅ Complete. Every route can be reached and recovered from an error in either locale without clipping or inaccessible labels.
 
 ## Work package I18N-3: Critical MVP workflows
 
