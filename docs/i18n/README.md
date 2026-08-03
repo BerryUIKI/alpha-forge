@@ -38,12 +38,14 @@ The first delivery does not include:
 
 ## Document map
 
-| Document                                                | Purpose                                                                                |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [Architecture](ARCHITECTURE.md)                         | Ownership boundaries, catalog design, formatting, error localization, and runtime flow |
-| [Implementation Plan](IMPLEMENTATION_PLAN.md)           | Ordered work packages, file-level path, tests, gates, and definition of done           |
-| [Milestone Roadmap](../MILESTONE_ROADMAP.md)            | Program sequencing and M8 acceptance gates                                             |
-| [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md) | Rules an implementation agent must follow for every milestone work package             |
+| Document | Purpose |
+| --- | --- |
+| [Architecture](ARCHITECTURE.md) | Ownership boundaries, catalog design, formatting, error localization, and runtime flow |
+| [Implementation Plan](IMPLEMENTATION_PLAN.md) | Ordered work packages, file-level path, tests, gates, and definition of done |
+| [Terminology Guide](TERMINOLOGY_GUIDE.md) | Canonical English source terms for investment research, portfolio, and agent domains |
+| [String Inventory](STRING_INVENTORY.md) | Complete inventory of all user-visible strings by namespace and owner |
+| [Milestone Roadmap](../MILESTONE_ROADMAP.md) | Program sequencing and M8 acceptance gates |
+| [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md) | Rules an implementation agent must follow for every milestone work package |
 
 ## Required decisions before implementation
 

@@ -16,15 +16,22 @@ This plan is the execution path for the i18n portion of M8. It is documentation 
 
 ## Work package I18N-0: Decision and inventory
 
+**Status:** ✅ Complete (M8-01, M8-02)
+
 **Goal:** freeze the launch language policy and identify every user-visible string before choosing code changes.
 
-1. Resolve the launch-default and reviewer fields in [M8 Decision Record](../M8_DECISION_RECORD.md).
-2. Audit the unmerged M8 locale prototype and current `dev`; record reusable code and conflicts.
-3. Inventory strings under `apps/desktop/src`, grouped by critical workflow and async state.
-4. Classify strings as product UI, Rust error, plugin/Artifact UI, user content, or documentation.
-5. Create an approved bilingual glossary for research, thesis, evidence, portfolio, Option, and risk terms.
+1. ✅ Resolve the launch-default and reviewer fields in [M8 Decision Record](../M8_DECISION_RECORD.md).
+2. ✅ Audit the unmerged M8 locale prototype and current `dev`; record reusable code and conflicts.
+3. ✅ Inventory strings under `apps/desktop/src`, grouped by critical workflow and async state.
+4. ✅ Classify strings as product UI, Rust error, plugin/Artifact UI, user content, or documentation.
+5. ✅ Create an approved bilingual glossary for research, thesis, evidence, portfolio, Option, and risk terms.
 
-**Exit gate:** policy is approved, inventory has an owner for every critical surface, and no competing locale provider will be introduced.
+**Deliverables:**
+- [Terminology Guide](TERMINOLOGY_GUIDE.md) — Canonical English source terms
+- [String Inventory](STRING_INVENTORY.md) — Complete inventory by namespace (~350 strings)
+- [M8 Decision Record](../M8_DECISION_RECORD.md) — Launch locale `zh-CN`, translation reviewer `@BerryUIKI`
+
+**Exit gate:** ✅ Policy approved, inventory has owner for every critical surface, no competing locale provider.
 
 ## Work package I18N-1: Runtime foundation
 
