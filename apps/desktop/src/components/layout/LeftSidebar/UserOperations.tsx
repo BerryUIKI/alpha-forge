@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { User, Sun, Moon, Settings, ChevronUp } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { UserOperationsProps, UserMenuItem } from "../types";
@@ -27,6 +28,7 @@ export function UserOperations({
 }: UserOperationsProps) {
   const [internalIsMenuOpen, setInternalIsMenuOpen] = useState(false);
   const isMenuOpen = externalIsMenuOpen ?? internalIsMenuOpen;
+  const navigate = useNavigate();
   
   // Get theme from context
   const { theme, setTheme } = useTheme();
@@ -50,8 +52,8 @@ export function UserOperations({
       // TODO: [GUI-M1-1] Navigate to user profile page
       console.log("Profile clicked - implement navigation");
     } else if (item === "settings") {
-      // TODO: [GUI-M1-1] Navigate to settings page
-      console.log("Settings clicked - implement navigation");
+      // Navigate to settings page
+      navigate("/settings");
     }
   };
 
