@@ -35,16 +35,18 @@ This plan is the execution path for the i18n portion of M8. It is documentation 
 
 ## Work package I18N-1: Runtime foundation
 
+**Status:** ✅ Complete (M8-03)
+
 **Goal:** deliver one typed runtime path with deterministic fallback and persistence.
 
-1. Add the module layout specified in [Architecture](ARCHITECTURE.md).
-2. Define `SupportedLocale`, validation, source locale, launch default, and fallback behavior in `locale.ts`.
-3. Implement `LocaleProvider` and `useLocale`; mount it in `apps/desktop/src/app/providers.tsx`.
-4. Persist a valid locale through `apps/desktop/src/lib/desktop-api/settings.ts` and the existing Rust Settings service.
-5. Implement shared `Intl` formatters and unit tests.
-6. Add source and translated `common`, `navigation`, and `settings` catalogs plus a parity test.
+1. ✅ Add the module layout specified in [Architecture](ARCHITECTURE.md).
+2. ✅ Define `SupportedLocale`, validation, source locale, launch default, and fallback behavior in `locale.ts`.
+3. ✅ Implement `LocaleProvider` and `useLocale`; mount it in `apps/desktop/src/app/providers.tsx`.
+4. ✅ Persist a valid locale through `apps/desktop/src/lib/desktop-api/settings.ts` and the existing Rust Settings service.
+5. ✅ Implement shared `Intl` formatters and unit tests.
+6. ✅ Add source and translated `common`, `navigation`, and `settings` catalogs plus a parity test.
 
-**Verification:**
+**Verification:** ✅ Passed
 
 ```bash
 pnpm typecheck
@@ -52,7 +54,7 @@ pnpm test -- apps/desktop/src/lib/i18n
 pnpm lint
 ```
 
-**Exit gate:** a user can change locale in Settings, the choice survives restart, invalid stored values recover safely, and no plaintext credential or arbitrary file access is introduced.
+**Exit gate:** ✅ Complete. A user can change locale in Settings, the choice survives restart, invalid stored values recover safely, and no plaintext credential or arbitrary file access is introduced.
 
 ## Work package I18N-2: Application shell and common states
 
