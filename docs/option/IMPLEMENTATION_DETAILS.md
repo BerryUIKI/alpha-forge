@@ -12,9 +12,9 @@ This document translates the Option specifications into the current repository's
 | Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
 | Service           | **Completed** Existing service pattern            | `option_service.rs` - pricing/Greeks/IV calculations integrated                           |
 | Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
-| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - CRUD operations integrated                   |
-| Frontend state    | TanStack Query conventions                          | Option hooks with bounded cache keys and cancellation behavior                               |
-| UI                | Shared states and layout                            | `features/options`, `pages/options`, router and navigation entries                           |
+| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - calculation commands integrated             |
+| Frontend state    | **Completed** TanStack Query conventions          | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                    |
+| UI                | **In Progress** Shared states and layout          | `features/options` - GreeksCalculator, OptionChainList components                           |
 | Artifact          | Predefined renderer registry                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                   |
 | Tests             | Existing Rust/Vitest patterns                       | Numerical fixtures, migrations, repositories, services, schemas, states, IPC, E2E            |
 
