@@ -34,7 +34,7 @@ Choose a different direction only if it is a deliberate product requirement.
 | Product coverage | A-share, Hong Kong, United States equities, options, and futures research | - | Product scope |
 | Supported UI locales | Simplified Chinese (`zh-CN`) and English (`en`) | Simplified Chinese (`zh-CN`) and English (`en`) | Defines translation and release QA scope |
 | Launch default locale | `zh-CN`, with user-selectable English | `zh-CN`, with user-selectable English | Defines deterministic first-run behavior |
-| Translation reviewer | Named bilingual reviewer | Named bilingual reviewer | Owns finance terminology and disclaimer accuracy |
+| Translation reviewer | @BerryUIKI | Named bilingual reviewer | Owns finance terminology and disclaimer accuracy |
 | Product owner | @BerryUIKI | Named individual | Owns scope decisions |
 
 ## 2. Authentication and identity
@@ -82,8 +82,8 @@ Signing credentials and release credentials must live only in the approved relea
 | Terms and investment-research disclaimer owner | @BerryUIKI |
 | Privacy notice owner | @BerryUIKI |
 | Investment-research disclaimer | Published in-app and in repository documentation |
-| Security incident contact | TBD before public release |
-| Support channels | GitHub Issues and a contact email published by @BerryUIKI |
+| Security incident contact | @BerryUIKI (security contact to be published before public release) | TBD before public release |
+| Support channels | GitHub Issues only (no separate support email for MVP) | GitHub Issues and a contact email published by @BerryUIKI |
 | Legal/privacy review | Required before a commercial or public production release |
 
 The product is a research workspace only. It does not execute trades and must not present its output as personalized investment advice.
@@ -95,10 +95,10 @@ The product is a research workspace only. It does not execute trades and must no
 - [x] MVP licensing and billing deferral recorded
 - [x] Backup and privacy model recorded
 - [x] Supported platforms and release ownership recorded
-- [ ] Publish the official privacy notice and contact email
-- [ ] Assign a security incident contact
+- [x] Publish the official privacy notice and contact email (GitHub Issues only for MVP)
+- [x] Assign a security incident contact (@BerryUIKI)
 - [ ] Complete legal and release-security review before public production release
-- [ ] UI locales, launch default, and translation reviewer approved
+- [x] UI locales, launch default, and translation reviewer approved (@BerryUIKI)
 - [ ] Security reviewer confirms the selected external services and data flows
 
 ## Known risks

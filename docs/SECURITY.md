@@ -1,5 +1,7 @@
 # Security
 
+**Security Contact**: @BerryUIKI (to be published before public production release)
+
 ## Principles
 
 1. **Least privilege.** Every component receives only the permissions it needs — nothing more.
