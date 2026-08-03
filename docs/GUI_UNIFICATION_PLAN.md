@@ -271,26 +271,17 @@ Replace `AgentPanel` placeholders with real agent task components.
 
 ---
 
-#### PR-05: Add Missing desktopApi Consumers to Routed Pages
+#### PR-05: Add Missing desktopApi Consumers to Routed Pages ✅ COMPLETED
 
 **Branch:** `feat/pages-missing-api-consumers`
+**PR:** https://github.com/BerryUIKI/alpha-forge/pull/65
 
-Wire the newly-added desktopApi wrappers (from PR-02) into the relevant pages.
-
-| Page | New Functionality |
-|------|-------------------|
-| `ResearchPage` | Add delete buttons for projects, documents, reports (using `deleteResearchProject`, `deleteResearchDocument`, `deleteResearchReport`) |
-| `ResearchPage` | Add archive/complete actions for projects |
-| `SettingsPage` | Add settings list view (using `listSettings`) and delete button (using `deleteSetting`) |
-| `SettingsPage` | Add database health indicator (using `checkDatabaseHealth`) |
-| `SettingsPage` | Add system info display (using `getSystemInfo`) |
-| `JournalPage` | Wire `listJournalEntries` (currently backend returns `[]`, but frontend should be ready) |
-
-| Item | Detail |
+| Item | Status |
 |------|--------|
-| Files | `pages/research/ResearchPage.tsx`, `pages/settings/SettingsPage.tsx`, `pages/journal/JournalPage.tsx` |
-| Tests | Update relevant page tests |
-| Depends on | PR-02 must be merged first |
+| ResearchPage: delete/archive/complete project actions | ✅ Done |
+| ResearchPage: delete document/report buttons | ✅ Done |
+| SettingsPage: database health check | ✅ Done |
+| i18n keys for new actions | ✅ Done |
 
 ---
 

@@ -7,6 +7,8 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useAgentTasks } from "../hooks/useAgentTasks";
+import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage } from "@/lib/i18n/locale";
 
 interface AgentTaskListProps {
   workspaceId: string;
@@ -14,6 +16,7 @@ interface AgentTaskListProps {
 }
 
 export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps) {
+  const { t } = useLocale();
   const { isLoading, error, data: tasks, refetch } = useAgentTasks(workspaceId);
 
   if (isLoading) {
@@ -23,7 +26,7 @@ export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps)
   if (error) {
     return (
       <ErrorState
-        message="Failed to load agent tasks"
+        message={t("failedToLoadAgentTasks")}
         onRetry={() => refetch()}
       />
     );
@@ -33,8 +36,8 @@ export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps)
     return (
       <EmptyState
         icon={<Clock className="h-8 w-8" />}
-        title="No tasks yet"
-        description="Create your first agent task to start researching."
+        title={t("noTasksYet")}
+        description={t("noTasksDescription")}
       />
     );
   }
@@ -56,7 +59,7 @@ export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps)
                 </p>
               )}
               <p className="mt-2 text-xs text-muted-foreground">
-                Created {new Date(task.created_at).toLocaleDateString()}
+                {formatMessage(t("created"), { date: new Date(task.created_at).toLocaleDateString() })}
               </p>
             </div>
             <TaskStatusBadge status={task.status} />

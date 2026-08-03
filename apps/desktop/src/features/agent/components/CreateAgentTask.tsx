@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { useCreateAgentTask } from "../hooks/useAgentTasks";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 interface CreateAgentTaskProps {
   workspaceId: string;
@@ -11,6 +12,7 @@ interface CreateAgentTaskProps {
 }
 
 export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgentTaskProps) {
+  const { t } = useLocale();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +25,7 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
 
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Task title is required");
+      setError(t("taskTitleRequired"));
       return;
     }
 
@@ -33,14 +35,14 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
         title: trimmedTitle,
         description: description.trim() || undefined,
       });
-      
+
       setTitle("");
       setDescription("");
       setError("");
       setIsOpen(false);
       onSuccess?.(task.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create task");
+      setError(err instanceof Error ? err.message : t("failedToCreateTask"));
     }
   };
 
@@ -51,7 +53,7 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
         className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
       >
         <Plus className="mr-2 h-4 w-4" />
-        New Task
+        {t("newTask")}
       </button>
     );
   }
@@ -59,7 +61,7 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Create Agent Task</h3>
+        <h3 className="text-lg font-semibold">{t("createAgentTask")}</h3>
         <button
           onClick={() => {
             setIsOpen(false);
@@ -74,7 +76,7 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="task-title" className="mb-2 block text-sm font-medium">
-            Title
+            {t("taskTitleLabel")}
           </label>
           <input
             id="task-title"
@@ -84,7 +86,7 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
               setTitle(e.target.value);
               setError("");
             }}
-            placeholder="Research Tesla's Q4 earnings"
+            placeholder={t("taskTitlePlaceholder")}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
@@ -92,13 +94,13 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
 
         <div className="mb-4">
           <label htmlFor="task-description" className="mb-2 block text-sm font-medium">
-            Description (optional)
+            {t("taskDescriptionLabel")}
           </label>
           <textarea
             id="task-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Provide more details about what you want to research..."
+            placeholder={t("taskDescriptionPlaceholder")}
             rows={3}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
@@ -115,14 +117,14 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
             }}
             className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
           >
-            Cancel
+            {t("taskCancel")}
           </button>
           <button
             type="submit"
             disabled={createMutation.isPending}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {createMutation.isPending ? "Creating..." : "Create Task"}
+            {createMutation.isPending ? t("taskCreating") : t("createTask")}
           </button>
         </div>
       </form>
