@@ -1,52 +1,94 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+.pnpm-debug.log
 
 # Build output
 dist/
 target/
 build/
 out/
+*.tsbuildinfo
 
 # Tauri
 **/src-tauri/gen/
 apps/desktop/src-tauri/gen/
+src-tauri/gen/
+
+# Build tools cache
+.vite/
+.turbo/
+.cache/
+.webpack/
+.parcel-cache/
+.next/
+.nuxt/
+.eslintcache
+
+# Monorepo tools
+.nx/
 
 # ZCode temporary files
 .zcode/
 
 # IDE
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
+*.sublime-workspace
+*.sublime-project
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Environment
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # Logs
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Test coverage
 coverage/
 .nyc_output/
-
-# pnpm
-.pnpm-debug.log
+lib-cov/
+.grunt/
+.lock-wscript/
 
 # Rust
 *.rs.bk
+**/*.rs.bk
+Cargo.lock
 
-# Vite
-.vite/
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
 
-# Misc
+# Archives
 *.tgz
 *.gz
+*.zip
+*.tar
+
+# Debug
+*.pid
+*.seed
+*.pid.lock
+
+# Misc
+.workbuddy/
