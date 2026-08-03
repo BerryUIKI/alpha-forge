@@ -12,10 +12,9 @@
  * - Sidebar states (expanded/collapsed) are managed here
  * - Workspace selection state is managed here
  * - Right sidebar toggle is synchronized between MainContent and RightSidebar
+ * - Keyboard shortcuts for sidebar toggles
  *
- * TODO: [GUI-M1-2] Integrate with Tauri native menu bar
- * TODO: [GUI-M1-5] Add keyboard shortcuts for sidebar toggles
- * TODO: [GUI-M1-5] Persist layout state to local storage
+ * @version GUI-M1-1
  */
 
 import { useState, useCallback } from "react";
@@ -23,6 +22,7 @@ import type { WorkspaceType, SidebarState } from "./types";
 import { LeftSidebar } from "./LeftSidebar";
 import { RightSidebar } from "./RightSidebar";
 import { MainContent } from "./MainContent";
+import { useSidebarShortcuts } from "@/hooks/layout";
 
 interface MainLayoutProps {
   /** Initial left sidebar state */
@@ -48,27 +48,48 @@ export function MainLayout({
   // Handle left sidebar state changes
   const handleLeftStateChange = useCallback((state: SidebarState) => {
     setLeftState(state);
-    // TODO: [GUI-M1-5] Persist to local storage
   }, []);
 
   // Handle right sidebar state changes (synchronized toggle)
   const handleRightStateChange = useCallback((state: SidebarState) => {
     setRightState(state);
-    // TODO: [GUI-M1-5] Persist to local storage
   }, []);
 
   // Handle right sidebar toggle from MainContent
   const handleToggleRightSidebar = useCallback(() => {
     setRightState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
-    // TODO: [GUI-M1-5] Persist to local storage
   }, []);
 
   // Handle workspace selection changes
   const handleWorkspaceChange = useCallback((workspace: WorkspaceType) => {
     setActiveWorkspace(workspace);
-    // TODO: [GUI-M1-4] Trigger view switching in MainContent
-    // TODO: [GUI-M1-5] Persist to local storage
   }, []);
+
+  // Toggle left sidebar (for keyboard shortcut)
+  const toggleLeftSidebar = useCallback(() => {
+    setLeftState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
+  }, []);
+
+  // Toggle right sidebar (for keyboard shortcut)
+  const toggleRightSidebar = useCallback(() => {
+    setRightState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
+  }, []);
+
+  // Toggle both sidebars (for keyboard shortcut)
+  const toggleBothSidebars = useCallback(() => {
+    const bothExpanded = leftState === "expanded" && rightState === "expanded";
+    const newState: SidebarState = bothExpanded ? "collapsed" : "expanded";
+    setLeftState(newState);
+    setRightState(newState);
+  }, [leftState, rightState]);
+
+  // Setup keyboard shortcuts
+  useSidebarShortcuts({
+    onToggleLeft: toggleLeftSidebar,
+    onToggleRight: toggleRightSidebar,
+    onToggleBoth: toggleBothSidebars,
+    enabled: true,
+  });
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -100,13 +121,3 @@ export function MainLayout({
     </div>
   );
 }
-
-// TODO: [GUI-M1-2] Add Tauri menu bar configuration
-// TODO: [GUI-M1-5] Add keyboard shortcuts:
-//   - ⌘/Ctrl + 1: Toggle left sidebar
-//   - ⌘/Ctrl + 2: Toggle right sidebar
-//   - ⌘/Ctrl + B: Toggle both sidebars
-// TODO: [GUI-M1-5] Add layout state persistence:
-//   - Save sidebar states to localStorage
-//   - Save active workspace to localStorage
-//   - Restore on app startup

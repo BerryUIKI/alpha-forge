@@ -3,16 +3,14 @@
  *
  * Bottom section of left sidebar for user operations.
  * Fixed position, always visible, does not scroll.
- * UI-only implementation with placeholder menu items.
+ * Integrates theme toggle functionality.
  *
- * TODO: [GUI-M1-1] Implement user profile navigation
- * TODO: [GUI-M1-1] Implement theme toggle business logic
- * TODO: [GUI-M1-1] Implement settings navigation
- * TODO: [GUI-M1-4] Add i18n for menu labels
+ * @version GUI-M1-1
  */
 
 import { useState } from "react";
 import { User, Sun, Moon, Settings, ChevronUp } from "lucide-react";
+import { useTheme } from "next-themes";
 import type { UserOperationsProps, UserMenuItem } from "../types";
 
 const MENU_ITEMS: Array<{ id: UserMenuItem; label: string; icon: typeof User }> = [
@@ -26,10 +24,13 @@ export function UserOperations({
   isMenuOpen: externalIsMenuOpen,
   onMenuOpenChange,
   onMenuItemClick,
-  theme = "light",
 }: UserOperationsProps) {
   const [internalIsMenuOpen, setInternalIsMenuOpen] = useState(false);
   const isMenuOpen = externalIsMenuOpen ?? internalIsMenuOpen;
+  
+  // Get theme from context
+  const { theme, setTheme } = useTheme();
+  const currentTheme = theme === "dark" ? "dark" : "light";
 
   const handleToggle = () => {
     const newState = !isMenuOpen;
@@ -42,11 +43,9 @@ export function UserOperations({
     setInternalIsMenuOpen(false);
     onMenuOpenChange?.(false);
 
-    // TODO: [GUI-M1-1] Implement actual menu actions
-    // Placeholder for business logic
+    // Handle theme toggle
     if (item === "theme-toggle") {
-      // TODO: [GUI-M1-1] Integrate with theme provider
-      console.log("Theme toggle clicked - implement business logic");
+      setTheme(currentTheme === "light" ? "dark" : "light");
     } else if (item === "profile") {
       // TODO: [GUI-M1-1] Navigate to user profile page
       console.log("Profile clicked - implement navigation");
@@ -87,7 +86,9 @@ export function UserOperations({
           aria-label="User operations menu"
         >
           {MENU_ITEMS.map((item) => {
-            const Icon = item.id === "theme-toggle" ? (theme === "light" ? Sun : Moon) : item.icon;
+            const Icon = item.id === "theme-toggle" 
+              ? (currentTheme === "light" ? Sun : Moon) 
+              : item.icon;
             return (
               <button
                 key={item.id}
@@ -98,7 +99,7 @@ export function UserOperations({
                 <Icon className="h-4 w-4" />
                 <span>
                   {item.label}
-                  {item.id === "theme-toggle" && ` (${theme === "light" ? "Light" : "Dark"})`}
+                  {item.id === "theme-toggle" && ` (${currentTheme === "light" ? "Light" : "Dark"})`}
                 </span>
               </button>
             );
