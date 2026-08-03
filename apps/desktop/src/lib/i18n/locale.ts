@@ -37,6 +37,12 @@ const messages = {
       "AlphaForge 是本地优先的开源 MVP。它不要求账户、不进行自动云备份，且默认关闭遥测。你的本地数据库始终是唯一事实来源。",
     openPrivacyNotice: "打开隐私声明",
     openResearchDisclaimer: "打开研究免责声明",
+    loading: "加载中…",
+    retry: "重试",
+    offline: "你已离线",
+    offlineDescription: "请检查你的网络连接后重试。",
+    unexpectedError: "出了点问题",
+    unexpectedErrorDescription: "发生了意外错误。",
   },
   "en": {
     today: "Today",
@@ -71,6 +77,12 @@ const messages = {
       "AlphaForge is a local-first, open-source MVP. It has no account requirement, no automatic cloud backup, and telemetry is disabled by default. Your local database remains the source of truth.",
     openPrivacyNotice: "Open privacy notice",
     openResearchDisclaimer: "Open research disclaimer",
+    loading: "Loading…",
+    retry: "Try Again",
+    offline: "You are offline",
+    offlineDescription: "Please check your internet connection and try again.",
+    unexpectedError: "Something went wrong",
+    unexpectedErrorDescription: "An unexpected error occurred.",
   },
 } as const;
 
