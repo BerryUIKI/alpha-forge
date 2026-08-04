@@ -20,6 +20,7 @@
 pub mod adapter;
 pub mod config;
 pub mod error;
+pub mod mcp;
 pub mod output;
 pub mod recipe;
 
@@ -29,5 +30,6 @@ pub mod test_fixture;
 pub use adapter::GooseAdapter;
 pub use config::GooseConfig;
 pub use error::GooseError;
+pub use mcp::McpBridge;
 pub use output::{GooseOutput, StructuredResponse};
 pub use recipe::Recipe;
