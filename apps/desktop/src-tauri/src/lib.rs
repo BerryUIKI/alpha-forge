@@ -177,7 +177,11 @@ pub fn run() {
             commands::options::calculate_greeks,
             commands::options::calculate_option_price,
             commands::options::calculate_implied_volatility,
+            // Goose commands (M10)
+            commands::goose::start_goose_shadow_analysis,
+            commands::goose::cancel_goose_analysis,
+            commands::goose::check_goose_health,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");
-}
+    }

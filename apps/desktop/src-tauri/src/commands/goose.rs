@@ -1,7 +1,5 @@
 //! Tauri commands for Goose integration
 
-use std::sync::Arc;
-
 use tauri::State;
 
 use crate::app::state::AppState;

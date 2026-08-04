@@ -43,6 +43,12 @@ impl Default for RunId {
     }
 }
 
+impl std::fmt::Display for RunId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "goose-run-{}", self.0)
+    }
+}
+
 /// Status of a Goose run
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RunStatus {

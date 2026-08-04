@@ -407,7 +407,7 @@ mod tests {
 
     #[test]
     fn max_page_size_is_reasonable() {
-        assert!(MAX_PAGE_SIZE <= 100);
-        assert!(DEFAULT_PAGE_SIZE <= MAX_PAGE_SIZE);
+        const { assert!(MAX_PAGE_SIZE <= 100) }
+        const { assert!(DEFAULT_PAGE_SIZE <= MAX_PAGE_SIZE) }
     }
 }
