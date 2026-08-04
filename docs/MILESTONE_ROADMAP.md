@@ -604,23 +604,23 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 #### Infrastructure
 - [x] Record the local-only MVP decisions (launch market, locale, platform, privacy, support, release-owner)
-- [ ] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
+- [x] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
 - [x] Add user-controlled local SQLite backup export
 - [x] Add privacy and manual-update controls in Settings
-- [ ] Provide user-controlled local data export and recovery documentation
+- [x] Provide user-controlled local data export and recovery documentation
 - [ ] User authentication (deferred)
 - [ ] Licensing system (deferred)
 - [ ] Subscription management (deferred)
 - [ ] Cloud backup (deferred)
 
 #### Marketplace
-- [ ] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
-- [ ] Document bundled research templates and internal plugin compatibility where shipped
+- [x] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
+- [x] Document bundled research templates and internal plugin compatibility where shipped
 
 #### Deployment
-- [ ] Finalize application identity and icons
+- [x] Finalize application identity and icons
 - [x] Configure DMG and Windows EXE (NSIS) targets
-- [ ] Define signing/notarization, update, rollback, and release-ownership policy
+- [x] Define signing/notarization, update, rollback, and release-ownership policy
 - [x] Document manual GitHub Release checks
 - [ ] Keep release credentials in approved CI secrets only
 - [ ] Signing and release automation (release-owner operation)

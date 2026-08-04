@@ -1,16 +1,17 @@
 // Task status badge component.
 
 import { Badge } from "@investment-os/ui";
+import { useLocale } from "@/lib/i18n/useLocale";
 import type { TaskStatus } from "@/lib/desktop-api/agent";
 
-const statusConfig: Record<TaskStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  created: { label: "Created", variant: "outline" },
-  queued: { label: "Queued", variant: "secondary" },
-  running: { label: "Running", variant: "default" },
-  waiting_for_input: { label: "Waiting", variant: "outline" },
-  completed: { label: "Completed", variant: "default" },
-  failed: { label: "Failed", variant: "destructive" },
-  cancelled: { label: "Cancelled", variant: "outline" },
+const statusKeys: Record<TaskStatus, { labelKey: "taskStatusCreated" | "taskStatusQueued" | "taskStatusRunning" | "taskStatusWaiting" | "taskStatusCompleted" | "taskStatusFailed" | "taskStatusCancelled"; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  created: { labelKey: "taskStatusCreated", variant: "outline" },
+  queued: { labelKey: "taskStatusQueued", variant: "secondary" },
+  running: { labelKey: "taskStatusRunning", variant: "default" },
+  waiting_for_input: { labelKey: "taskStatusWaiting", variant: "outline" },
+  completed: { labelKey: "taskStatusCompleted", variant: "default" },
+  failed: { labelKey: "taskStatusFailed", variant: "destructive" },
+  cancelled: { labelKey: "taskStatusCancelled", variant: "outline" },
 };
 
 interface TaskStatusBadgeProps {
@@ -18,11 +19,12 @@ interface TaskStatusBadgeProps {
 }
 
 export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
-  const config = statusConfig[status];
-  
+  const { t } = useLocale();
+  const config = statusKeys[status];
+
   return (
     <Badge variant={config.variant}>
-      {config.label}
+      {t(config.labelKey)}
     </Badge>
   );
 }

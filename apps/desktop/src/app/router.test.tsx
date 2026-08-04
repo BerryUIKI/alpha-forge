@@ -101,8 +101,9 @@ describe("Router - GUI-M1 Layout Structure", () => {
 
   it("renders workspace selector", () => {
     renderWithRouter("/");
-    const button = screen.getByRole("button", { name: /workspace selector|工作区/i });
-    expect(button).toBeInTheDocument();
+    // The Today page shows a workspace selection heading
+    const heading = screen.getByRole("heading", { name: /选择工作区|select.*workspace/i });
+    expect(heading).toBeInTheDocument();
   });
 
   it("renders main content area", () => {
