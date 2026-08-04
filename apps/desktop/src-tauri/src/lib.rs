@@ -6,6 +6,7 @@ pub mod config;
 pub mod database;
 pub mod documents;
 pub mod error;
+pub mod goose;
 pub mod menu;
 pub mod plugins;
 pub mod providers;
