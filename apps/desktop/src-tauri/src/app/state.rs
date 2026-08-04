@@ -32,6 +32,7 @@ use crate::error::AppError;
 use crate::providers::ai::OpenAiResearchProvider;
 use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
+use crate::services::goose_service::GooseService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::option_service::OptionService;
 use crate::services::plugin_service::PluginService;
@@ -70,6 +71,8 @@ pub struct AppState {
     pub system_service: SystemService,
     pub task_executor: Arc<TaskExecutor>,
     pub artifact_manager: Arc<ArtifactManager>,
+    /// Goose service for shadow-mode analysis (optional, initialized when M10 is enabled)
+    pub goose_service: Option<Arc<GooseService>>,
 }
 
 impl AppState {
@@ -161,6 +164,8 @@ impl AppState {
             system_service,
             task_executor,
             artifact_manager,
+            // Goose service initialized as None (enabled when M10 is activated)
+            goose_service: None,
         })
     }
 }
