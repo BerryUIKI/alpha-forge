@@ -37,3 +37,4 @@ pub mod research_note_service;
 pub mod research_project_service;
 pub mod research_report_service;
 pub mod research_source_service;
+pub mod goose_service;
