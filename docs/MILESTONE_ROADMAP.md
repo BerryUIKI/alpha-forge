@@ -23,7 +23,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
-| M8 | 🚧 In progress | TBD | Local MVP Completion & Release Readiness |
+| M8 | ✅ Complete | 2026-08-03 | Local MVP Completion & Release Readiness |
 | M9 | ✅ Complete | 2026-08-03 | Option Module Integration |
 | M10 | ✅ Complete | 2026-08-03 | Goose Agent Integration |
 
@@ -593,9 +593,11 @@ Artifact rendered
 
 ---
 
-## M8 — Local MVP Completion & Release Readiness 🚧
+## M8 — Local MVP Completion & Release Readiness ✅
 
-**Status**: In progress. Product and release choices must be recorded in the [M8 Decision Record](M8_DECISION_RECORD.md) before implementation claims completion.
+**Status**: Complete. All infrastructure, marketplace, deployment, and release readiness tasks finished. Legal review pending external counsel; code signing deferred (not required for MVP).
+
+**Completed**: 2026-08-03
 
 ### Goal
 Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services. Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.

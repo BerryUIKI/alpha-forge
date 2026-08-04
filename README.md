@@ -50,7 +50,7 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**M8 — Local MVP Completion & Release Readiness** is in progress.
+**M8 — Local MVP Completion & Release Readiness** is complete.
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -63,7 +63,7 @@ AlphaForge helps you:
 | M5 | ✅ Complete | Investment Knowledge System |
 | M6 | ✅ Complete | Portfolio Intelligence |
 | M7 | ✅ Complete | Plugin Ecosystem |
-| M8 | 🚧 In progress | Local-desktop release foundation |
+| M8 | ✅ Complete | Local MVP Completion & Release Readiness |
 | M9 | ✅ Complete | Option Module Integration |
 | M10 | ✅ Complete | Goose Agent Integration |
 
