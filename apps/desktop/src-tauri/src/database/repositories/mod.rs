@@ -26,6 +26,7 @@ pub mod option_chain_repository;
 pub mod option_contract_repository;
 pub mod option_position_repository;
 pub mod option_strategy_repository;
+pub mod strategy_leg_repository;
 
 #[cfg(test)]
 mod agent_task_repository_test;

@@ -11,7 +11,12 @@ use crate::agent::executor::{ExecutorConfig, TaskExecutor};
 use crate::artifacts::manager::ArtifactManager;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
+use crate::database::repositories::greeks_repository::GreeksRepository;
 use crate::database::repositories::knowledge_graph_repository::KnowledgeGraphRepository;
+use crate::database::repositories::option_chain_repository::OptionChainRepository;
+use crate::database::repositories::option_contract_repository::OptionContractRepository;
+use crate::database::repositories::option_position_repository::OptionPositionRepository;
+use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
@@ -20,6 +25,7 @@ use crate::database::repositories::research_project_repository::ResearchProjectR
 use crate::database::repositories::research_report_repository::ResearchReportRepository;
 use crate::database::repositories::research_source_repository::ResearchSourceRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
+use crate::database::repositories::strategy_leg_repository::StrategyLegRepository;
 use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::error::AppError;
@@ -27,7 +33,9 @@ use crate::providers::ai::OpenAiResearchProvider;
 use crate::services::agent_service::AgentService;
 use crate::services::artifact_service::ArtifactService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
+use crate::services::option_service::OptionService;
 use crate::services::plugin_service::PluginService;
+use crate::services::portfolio_option_service::PortfolioOptionService;
 use crate::services::portfolio_service::PortfolioService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_note_service::ResearchNoteService;
@@ -35,6 +43,7 @@ use crate::services::research_project_service::ResearchProjectService;
 use crate::services::research_report_service::ResearchReportService;
 use crate::services::research_source_service::ResearchSourceService;
 use crate::services::settings_service::SettingsService;
+use crate::services::strategy_service::StrategyService;
 use crate::services::system_service::SystemService;
 use crate::services::thesis_service::ThesisService;
 use crate::services::workspace_service::WorkspaceService;
@@ -53,6 +62,9 @@ pub struct AppState {
     pub research_source_service: ResearchSourceService,
     pub thesis_service: ThesisService,
     pub knowledge_graph_service: KnowledgeGraphService,
+    pub option_service: OptionService,
+    pub strategy_service: StrategyService,
+    pub portfolio_option_service: PortfolioOptionService,
     pub portfolio_service: PortfolioService,
     pub plugin_service: PluginService,
     pub system_service: SystemService,
@@ -76,6 +88,13 @@ impl AppState {
         let thesis_repo = ThesisRepository::new(db_pool.clone());
         let thesis_repo_for_knowledge_graph = ThesisRepository::new(db_pool.clone());
         let knowledge_graph_repo = KnowledgeGraphRepository::new(db_pool.clone());
+        let option_chain_repo = OptionChainRepository::new(db_pool.clone());
+        let option_contract_repo = OptionContractRepository::new(db_pool.clone());
+        let greeks_repo = GreeksRepository::new(db_pool.clone());
+        let option_strategy_repo = OptionStrategyRepository::new(db_pool.clone());
+        let option_position_repo = OptionPositionRepository::new(db_pool.clone());
+        let strategy_leg_repo = StrategyLegRepository::new(db_pool.clone());
+        let portfolio_repo_for_option = PortfolioRepository::new(db_pool.clone());
         let portfolio_repo = PortfolioRepository::new(db_pool.clone());
         let plugin_repo = PluginRepository::new(db_pool.clone());
 
@@ -92,6 +111,15 @@ impl AppState {
         let thesis_service = ThesisService::new(thesis_repo);
         let knowledge_graph_service =
             KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
+        let option_service = OptionService::new(
+            Arc::new(option_chain_repo),
+            Arc::new(option_contract_repo),
+            Arc::new(greeks_repo),
+        );
+        let strategy_service =
+            StrategyService::new(Arc::new(option_strategy_repo), Arc::new(strategy_leg_repo));
+        let portfolio_option_service =
+            PortfolioOptionService::new(option_position_repo, portfolio_repo_for_option);
         let portfolio_service = PortfolioService::new(portfolio_repo);
         let plugin_service = PluginService::new(plugin_repo);
         let system_service = SystemService::new(app_handle.clone(), db_pool.clone());
@@ -125,6 +153,9 @@ impl AppState {
             research_source_service,
             thesis_service,
             knowledge_graph_service,
+            option_service,
+            strategy_service,
+            portfolio_option_service,
             portfolio_service,
             plugin_service,
             system_service,

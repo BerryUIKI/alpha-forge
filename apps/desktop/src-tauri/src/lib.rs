@@ -171,6 +171,11 @@ pub fn run() {
             commands::artifacts::close_artifact,
             commands::artifacts::delete_artifact,
             commands::artifacts::list_open_artifacts,
+            // Option commands
+            commands::options::fetch_option_chain,
+            commands::options::calculate_greeks,
+            commands::options::calculate_option_price,
+            commands::options::calculate_implied_volatility,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");

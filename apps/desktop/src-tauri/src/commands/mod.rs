@@ -2,6 +2,7 @@ pub mod agent;
 pub mod artifacts;
 pub mod journal;
 pub mod knowledge_graph;
+pub mod options;
 pub mod plugins;
 pub mod portfolio;
 pub mod research;
