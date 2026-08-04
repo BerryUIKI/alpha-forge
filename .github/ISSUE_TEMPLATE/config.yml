@@ -1,14 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📖 Documentation
+  - name: Documentation
     url: https://github.com/BerryUIKI/alpha-forge/tree/main/docs
-    about: Check the comprehensive documentation suite
-  - name: 🗺️ Roadmap
-    url: https://github.com/BerryUIKI/alpha-forge/blob/main/docs/MILESTONE_ROADMAP.md
-    about: View the project roadmap and milestone planning
-  - name: 💬 Discussions
-    url: https://github.com/BerryUIKI/alpha-forge/discussions
-    about: Ask questions and discuss with the community
-  - name: 🔒 Security Issues
-    url: https://github.com/BerryUIKI/alpha-forge/security/policy
-    about: Please report security vulnerabilities privately
+    about: Please check the documentation before opening a new issue.
+  - name: Security Vulnerability
+    url: https://github.com/BerryUIKI/alpha-forge/security/advisories/new
+    about: Please report security vulnerabilities privately via Security Advisories.

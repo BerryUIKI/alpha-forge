@@ -626,11 +626,11 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [ ] Signing and release automation (release-owner operation)
 
 ### Release Readiness
-- [ ] Performance optimization
-- [ ] Security hardening
-- [ ] Documentation review
+- [x] Performance optimization
+- [x] Security hardening
+- [x] Documentation review
 - [ ] Legal review
-- [ ] Support infrastructure
+- [x] Support infrastructure
 
 ### Execution path
 

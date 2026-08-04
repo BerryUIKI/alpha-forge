@@ -50,7 +50,7 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**M7 — Plugin Ecosystem** is complete. **M8 — Local MVP Completion & Release Readiness** is planned.
+**M8 — Local MVP Completion & Release Readiness** is in progress.
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -64,8 +64,8 @@ AlphaForge helps you:
 | M6 | ✅ Complete | Portfolio Intelligence |
 | M7 | ✅ Complete | Plugin Ecosystem |
 | M8 | 🚧 In progress | Local-desktop release foundation |
-| M9 | 📋 Planned | Option Module Integration (post-MVP) |
-| M10 | 📋 Planned | Goose Agent Integration (post-MVP) |
+| M9 | ✅ Complete | Option Module Integration |
+| M10 | ✅ Complete | Goose Agent Integration |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
