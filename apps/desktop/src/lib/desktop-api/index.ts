@@ -13,6 +13,7 @@ import * as thesisApi from "./thesis";
 import * as knowledgeGraphApi from "./knowledge-graph";
 import * as systemApi from "./system";
 import * as optionsApi from "./options";
+import * as gooseApi from "./goose";
 
 export const desktopApi = {
   agent: agentApi,
@@ -27,6 +28,7 @@ export const desktopApi = {
   knowledgeGraph: knowledgeGraphApi,
   system: systemApi,
   options: optionsApi,
+  goose: gooseApi,
 } as const;
 
 export type DesktopApi = typeof desktopApi;
