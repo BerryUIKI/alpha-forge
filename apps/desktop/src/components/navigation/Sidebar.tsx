@@ -15,7 +15,10 @@ export function Sidebar() {
   const { t } = useLocale();
 
   return (
-    <aside className="flex w-16 flex-col items-center border-r border-border bg-card py-4">
+    <aside
+      className="flex w-16 flex-col items-center border-r border-border bg-card py-4"
+      aria-label="Left sidebar"
+    >
       {navItems.map((item) => (
         <NavLink
           key={item.to}

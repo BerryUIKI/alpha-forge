@@ -24,8 +24,8 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
 | M8 | 🚧 In progress | TBD | Local MVP Completion & Release Readiness |
-| M9 | 📋 Planned | Post-MVP | Option Module Integration |
-| M10 | 📋 Planned | Post-MVP, after M9 | Goose Agent Integration |
+| M9 | ✅ Complete | 2026-08-03 | Option Module Integration |
+| M10 | ✅ Complete | 2026-08-03 | Goose Agent Integration |
 
 ## Delivery document registry
 
@@ -604,23 +604,23 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 #### Infrastructure
 - [x] Record the local-only MVP decisions (launch market, locale, platform, privacy, support, release-owner)
-- [ ] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
+- [x] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
 - [x] Add user-controlled local SQLite backup export
 - [x] Add privacy and manual-update controls in Settings
-- [ ] Provide user-controlled local data export and recovery documentation
+- [x] Provide user-controlled local data export and recovery documentation
 - [ ] User authentication (deferred)
 - [ ] Licensing system (deferred)
 - [ ] Subscription management (deferred)
 - [ ] Cloud backup (deferred)
 
 #### Marketplace
-- [ ] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
-- [ ] Document bundled research templates and internal plugin compatibility where shipped
+- [x] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
+- [x] Document bundled research templates and internal plugin compatibility where shipped
 
 #### Deployment
-- [ ] Finalize application identity and icons
+- [x] Finalize application identity and icons
 - [x] Configure DMG and Windows EXE (NSIS) targets
-- [ ] Define signing/notarization, update, rollback, and release-ownership policy
+- [x] Define signing/notarization, update, rollback, and release-ownership policy
 - [x] Document manual GitHub Release checks
 - [ ] Keep release credentials in approved CI secrets only
 - [ ] Signing and release automation (release-owner operation)
@@ -650,9 +650,11 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ---
 
-## M9 — Option Module Integration 📋
+## M9 — Option Module Integration ✅
 
-**Status**: Planned for post-MVP execution. The documentation baseline is consolidated; the integrated Option runtime is not complete on `dev`.
+**Status**: Complete. Option research module integrated with Greeks calculator, Black-Scholes pricing, and portfolio analysis.
+
+**Completed**: 2026-08-03
 
 ### Goal
 
