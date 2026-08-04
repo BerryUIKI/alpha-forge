@@ -24,8 +24,8 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
 | M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
 | M8 | 🚧 In progress | TBD | Local MVP Completion & Release Readiness |
-| M9 | 📋 Planned | Post-MVP | Option Module Integration |
-| M10 | 📋 Planned | Post-MVP, after M9 | Goose Agent Integration |
+| M9 | ✅ Complete | 2026-08-03 | Option Module Integration |
+| M10 | ✅ Complete | 2026-08-03 | Goose Agent Integration |
 
 ## Delivery document registry
 
@@ -650,9 +650,11 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ---
 
-## M9 — Option Module Integration 📋
+## M9 — Option Module Integration ✅
 
-**Status**: Planned for post-MVP execution. The documentation baseline is consolidated; the integrated Option runtime is not complete on `dev`.
+**Status**: Complete. Option research module integrated with Greeks calculator, Black-Scholes pricing, and portfolio analysis.
+
+**Completed**: 2026-08-03
 
 ### Goal
 
