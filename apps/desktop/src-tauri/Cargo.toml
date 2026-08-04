@@ -44,3 +44,9 @@ rfd = "0.17"
 # Goose integration dependencies
 sha2 = "0.10"
 serde_yaml = "0.9"
+
+# Release profile optimizations for smaller binaries
+[profile.release]
+lto = true          # Link-time optimization for smaller binaries
+strip = true        # Strip symbols from binary
+codegen-units = 1   # Better optimization at cost of compile time
