@@ -114,13 +114,18 @@ impl AppState {
         let thesis_service = ThesisService::new(thesis_repo);
         let knowledge_graph_service =
             KnowledgeGraphService::new(knowledge_graph_repo, thesis_repo_for_knowledge_graph);
+
+        // Create Arc wrappers for shared repositories
+        let option_strategy_repo_arc = Arc::new(option_strategy_repo);
+
         let option_service = OptionService::new(
             Arc::new(option_chain_repo),
             Arc::new(option_contract_repo),
             Arc::new(greeks_repo),
+            option_strategy_repo_arc.clone(),
         );
         let strategy_service =
-            StrategyService::new(Arc::new(option_strategy_repo), Arc::new(strategy_leg_repo));
+            StrategyService::new(option_strategy_repo_arc, Arc::new(strategy_leg_repo));
         let portfolio_option_service =
             PortfolioOptionService::new(option_position_repo, portfolio_repo_for_option);
         let portfolio_service = PortfolioService::new(portfolio_repo);

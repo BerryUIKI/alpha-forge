@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck, Activity, Database } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck, Activity, Database, Bot } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { desktopApi } from "@/lib/desktop-api";
 import { formatMessage, LOCALES, type Locale } from "@/lib/i18n/locale";
@@ -14,6 +14,23 @@ export function SettingsPage() {
   // System info state
   const [dbHealth, setDbHealth] = useState<string | null>(null);
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+
+  // Agent config state
+  const [apiKey, setApiKey] = useState("");
+  const [isSavingAgent, setIsSavingAgent] = useState(false);
+  const [agentMessage, setAgentMessage] = useState<string | null>(null);
+  const [hasExistingKey, setHasExistingKey] = useState(false);
+
+  // Check if API key exists in secure storage on mount
+  useEffect(() => {
+    desktopApi.credentials.hasCredential("api_key").then((exists) => {
+      setHasExistingKey(exists);
+      if (exists) {
+        // Key exists but we don't load the actual value for security
+        setApiKey("••••••••••••••••");
+      }
+    });
+  }, []);
 
   const exportBackup = async () => {
     setIsExporting(true);
@@ -61,6 +78,22 @@ export function SettingsPage() {
     }
   };
 
+  const saveAgentConfig = async () => {
+    setIsSavingAgent(true);
+    setAgentMessage(null);
+    try {
+      // ✅ SECURE: Save API key to OS keychain instead of plaintext database
+      await desktopApi.credentials.saveCredential("api_key", apiKey);
+      setHasExistingKey(true);
+      setApiKey("••••••••••••••••");
+      setAgentMessage(t("agentConfigSaved" as any) || "Agent配置已保存");
+    } catch {
+      setAgentMessage(t("agentConfigError" as any) || "保存失败");
+    } finally {
+      setIsSavingAgent(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
@@ -86,6 +119,56 @@ export function SettingsPage() {
           ))}
         </select>
       </section>
+
+      {/* Agent Configuration Section */}
+      <section id="agent" className="rounded-lg border border-border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <Bot className="mt-0.5 h-5 w-5" />
+          <div className="flex-1">
+            <h2 className="font-semibold">{t("agentConfig" as any) || "Agent配置"}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("agentConfigDescription" as any) || "配置AI助手的API密钥和模型参数"}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label htmlFor="api-key" className="block text-sm font-medium">
+              API Key
+            </label>
+            <input
+              id="api-key"
+              type="password"
+              value={apiKey}
+              onChange={(e) => {
+                const value = e.target.value;
+                // If user had existing key and starts typing, clear the placeholder
+                if (hasExistingKey && value !== "••••••••••••••••") {
+                  setApiKey(value);
+                  setHasExistingKey(false);
+                } else {
+                  setApiKey(value);
+                }
+              }}
+              placeholder={hasExistingKey ? t("apiKeyPlaceholder" as any) || "密钥已安全存储，输入新值以更新" : "sk-..."}
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={saveAgentConfig}
+              disabled={isSavingAgent || !apiKey.trim()}
+              className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              {isSavingAgent ? (t("saving" as any) || "保存中...") : (t("save" as any) || "保存")}
+            </button>
+            {agentMessage && (
+              <span className="text-sm text-muted-foreground">{agentMessage}</span>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">
           <Database className="mt-0.5 h-5 w-5" />

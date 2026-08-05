@@ -82,6 +82,10 @@ pub fn run() {
             commands::settings::set_setting,
             commands::settings::delete_setting,
             commands::settings::list_settings,
+            // Credentials commands (secure OS keychain storage)
+            commands::credentials::save_credential,
+            commands::credentials::has_credential,
+            commands::credentials::delete_credential,
             // Workspace commands
             commands::workspace::create_workspace,
             commands::workspace::list_workspaces,
@@ -141,8 +145,6 @@ pub fn run() {
             commands::knowledge_graph::list_knowledge_relationships,
             commands::knowledge_graph::link_thesis_knowledge_entity,
             commands::knowledge_graph::list_thesis_knowledge_links,
-            // Journal commands
-            commands::journal::list_journal_entries,
             // Portfolio commands
             commands::portfolio::list_portfolio_accounts,
             commands::portfolio::create_portfolio_account,
@@ -174,6 +176,18 @@ pub fn run() {
             commands::artifacts::list_open_artifacts,
             // Option commands
             commands::options::fetch_option_chain,
+            commands::options::get_option_chain,
+            commands::options::list_option_chains,
+            commands::options::delete_option_chain,
+            commands::options::create_option_contract,
+            commands::options::get_option_contract,
+            commands::options::list_option_contracts,
+            commands::options::delete_option_contract,
+            commands::options::create_option_strategy,
+            commands::options::get_option_strategy,
+            commands::options::list_option_strategies,
+            commands::options::update_option_strategy,
+            commands::options::delete_option_strategy,
             commands::options::calculate_greeks,
             commands::options::calculate_option_price,
             commands::options::calculate_implied_volatility,
