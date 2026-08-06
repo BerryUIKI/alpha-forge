@@ -50,6 +50,68 @@ export const common = {
   offlineDescription: "请检查你的网络连接后重试。",
   unexpectedError: "出了点问题",
   unexpectedErrorDescription: "发生了意外错误。",
+
+  // Feature error boundary
+  featureErrorTitle: "{feature}错误",
+  featureErrorDescription: "此功能遇到错误。你可以重试或导航到其他部分。",
+  errorDetails: "错误详情",
+  retryFeature: "重试",
+
+  // Feature names
+  portfolioFeature: "投资组合",
+  thesisFeature: "论点",
+  researchFeature: "研究",
+  optionsFeature: "期权",
+  gooseFeature: "Goose分析",
+  artifactsFeature: "研究产物",
+
+  // Functional Views
+  functionalView: "功能视图",
+  selectFunctionalView: "选择功能视图",
+  functionalViews: "功能视图",
+  functionalViewAnalyze: "分析",
+  functionalViewQuantification: "量化",
+  functionalViewComprehensiveMarket: "综合市场",
+  functionalViewOptions: "期权",
+  functionalViewFutures: "期货",
+  functionalViewOtherDerivatives: "其他衍生品",
+
+  // Tools
+  tools: "工具",
+  toolsList: "工具列表",
+  noToolsAvailable: "暂无可用工具",
+
+  // Tool names
+  toolResearchProjects: "研究项目",
+  toolDocuments: "文档",
+  toolThesis: "投资论点",
+  toolBacktesting: "回测",
+  toolRiskControls: "风险控制",
+  toolSignals: "信号",
+  toolMarketOverview: "市场概览",
+  toolSectorAnalysis: "行业分析",
+  toolGreeksCalculator: "Greeks计算器",
+  toolStrategyBuilder: "策略构建器",
+  toolOptionChain: "期权链",
+  toolFuturesChain: "期货链",
+  toolTermStructure: "期限结构",
+  toolDerivativesOverview: "衍生品概览",
+
+  // Tool descriptions
+  toolResearchProjectsDescription: "管理研究项目和来源",
+  toolDocumentsDescription: "导入和管理文档",
+  toolThesisDescription: "跟踪投资论点和证据",
+  toolBacktestingDescription: "运行历史数据回测",
+  toolRiskControlsDescription: "设置风险管理规则",
+  toolSignalsDescription: "监控交易信号",
+  toolMarketOverviewDescription: "查看市场整体情况",
+  toolSectorAnalysisDescription: "分析行业表现",
+  toolGreeksCalculatorDescription: "计算期权Greeks",
+  toolStrategyBuilderDescription: "构建期权策略",
+  toolOptionChainDescription: "查看期权链数据",
+  toolFuturesChainDescription: "查看期货合约链",
+  toolTermStructureDescription: "分析期限结构曲线",
+  toolDerivativesOverviewDescription: "衍生品市场概览",
 } as const;
 
 export type CommonKey = keyof typeof common;
