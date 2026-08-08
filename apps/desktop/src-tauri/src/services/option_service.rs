@@ -10,8 +10,9 @@ use std::sync::Arc;
 use crate::database::repositories::greeks_repository::GreeksRepository;
 use crate::database::repositories::option_chain_repository::OptionChainRepository;
 use crate::database::repositories::option_contract_repository::OptionContractRepository;
+use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::error::AppError;
-use domain::option::{DataSource, OptionChain, OptionType};
+use domain::option::{DataSource, OptionChain, OptionContract, OptionStrategy, OptionType};
 use option_core::{
     black_scholes_price, calculate_greeks, calculate_implied_volatility, GreeksValues,
     ProviderFactory,
@@ -21,13 +22,14 @@ use option_core::{
 ///
 /// Coordinates between:
 /// - Data providers (Demo, Live, File)
-/// - Option repositories (chains, contracts, Greeks)
+/// - Option repositories (chains, contracts, Greeks, strategies)
 /// - Pricing and Greeks calculations (Black-Scholes)
 #[allow(dead_code)]
 pub struct OptionService {
     chain_repo: Arc<OptionChainRepository>,
     contract_repo: Arc<OptionContractRepository>,
     greeks_repo: Arc<GreeksRepository>,
+    strategy_repo: Arc<OptionStrategyRepository>,
 }
 
 impl OptionService {
@@ -36,11 +38,13 @@ impl OptionService {
         chain_repo: Arc<OptionChainRepository>,
         contract_repo: Arc<OptionContractRepository>,
         greeks_repo: Arc<GreeksRepository>,
+        strategy_repo: Arc<OptionStrategyRepository>,
     ) -> Self {
         Self {
             chain_repo,
             contract_repo,
             greeks_repo,
+            strategy_repo,
         }
     }
 
@@ -237,5 +241,106 @@ impl OptionService {
             ));
         }
         Ok(())
+    }
+
+    // ============================================
+    // Option Chain CRUD Operations
+    // ============================================
+
+    /// Gets an option chain by ID.
+    pub async fn get_chain(&self, id: &str) -> Result<OptionChain, AppError> {
+        self.chain_repo.get(id).await?.ok_or_else(|| {
+            AppError::NotFound(format!("Option chain '{}' not found", id))
+        })
+    }
+
+    /// Lists all option chains for a workspace.
+    pub async fn list_chains(&self, workspace_id: &str) -> Result<Vec<OptionChain>, AppError> {
+        self.chain_repo.list_by_workspace(workspace_id).await
+    }
+
+    /// Deletes an option chain and all its contracts.
+    pub async fn delete_chain(&self, id: &str) -> Result<(), AppError> {
+        self.chain_repo.delete(id).await
+    }
+
+    // ============================================
+    // Option Contract CRUD Operations
+    // ============================================
+
+    /// Creates a new option contract.
+    pub async fn create_contract(&self, contract: &OptionContract) -> Result<(), AppError> {
+        // Validate required fields
+        if contract.chain_id.trim().is_empty() {
+            return Err(AppError::Validation("Chain ID is required".to_string()));
+        }
+        if contract.symbol.trim().is_empty() {
+            return Err(AppError::Validation("Symbol is required".to_string()));
+        }
+        if contract.strike <= 0.0 {
+            return Err(AppError::Validation("Strike must be positive".to_string()));
+        }
+
+        self.contract_repo.create(contract).await
+    }
+
+    /// Gets an option contract by ID.
+    pub async fn get_contract(&self, id: &str) -> Result<OptionContract, AppError> {
+        self.contract_repo.get(id).await?.ok_or_else(|| {
+            AppError::NotFound(format!("Option contract '{}' not found", id))
+        })
+    }
+
+    /// Lists all option contracts for a chain.
+    pub async fn list_contracts(&self, chain_id: &str) -> Result<Vec<OptionContract>, AppError> {
+        self.contract_repo.list_by_chain(chain_id).await
+    }
+
+    /// Deletes an option contract.
+    pub async fn delete_contract(&self, id: &str) -> Result<(), AppError> {
+        self.contract_repo.delete(id).await
+    }
+
+    // ============================================
+    // Option Strategy CRUD Operations
+    // ============================================
+
+    /// Creates a new option strategy.
+    pub async fn create_strategy(&self, strategy: &OptionStrategy) -> Result<(), AppError> {
+        // Validate required fields
+        if strategy.name.trim().is_empty() {
+            return Err(AppError::Validation("Strategy name is required".to_string()));
+        }
+        if strategy.underlying.trim().is_empty() {
+            return Err(AppError::Validation("Underlying symbol is required".to_string()));
+        }
+
+        self.strategy_repo.create(strategy).await
+    }
+
+    /// Gets an option strategy by ID.
+    pub async fn get_strategy(&self, id: &str) -> Result<OptionStrategy, AppError> {
+        self.strategy_repo.get(id).await?.ok_or_else(|| {
+            AppError::NotFound(format!("Option strategy '{}' not found", id))
+        })
+    }
+
+    /// Lists all option strategies for a workspace.
+    pub async fn list_strategies(&self, workspace_id: &str) -> Result<Vec<OptionStrategy>, AppError> {
+        self.strategy_repo.list_by_workspace(workspace_id).await
+    }
+
+    /// Updates an existing option strategy.
+    pub async fn update_strategy(&self, strategy: &OptionStrategy) -> Result<(), AppError> {
+        if strategy.name.trim().is_empty() {
+            return Err(AppError::Validation("Strategy name is required".to_string()));
+        }
+
+        self.strategy_repo.update(strategy).await
+    }
+
+    /// Deletes an option strategy.
+    pub async fn delete_strategy(&self, id: &str) -> Result<(), AppError> {
+        self.strategy_repo.delete(id).await
     }
 }

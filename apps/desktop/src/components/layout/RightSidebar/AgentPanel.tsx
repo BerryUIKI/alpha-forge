@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import { Bot, X, Play, Square } from "lucide-react";
+import { Bot, X, Play, Square, AlertCircle, Settings, Activity } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -16,21 +16,79 @@ import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
 import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
 import { useAgentTask, useStartAgentTask, useCancelAgentTask } from "@/features/agent/hooks/useAgentTasks";
+import { useAgentStatus } from "@/hooks/useAgentStatus";
+import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
+import { useLocale } from "@/lib/i18n/useLocale";
+import type { AgentConnectionStatus } from "@/components/layout/types";
 
 interface AgentPanelProps {
   status?: string;
   placeholder?: string;
 }
 
+/**
+ * Status indicator component with 4 states:
+ * - idle (gray): 空闲待命
+ * - running (blue blinking): 任务执行中
+ * - unconfigured (yellow): 需要完成助手配置
+ * - error (red): 连接失败
+ */
+function AgentStatusIndicator({ status }: { status: AgentConnectionStatus }) {
+  const { t } = useLocale();
+
+  const statusConfig = {
+    idle: {
+      color: "bg-gray-400",
+      text: t("statusIdle"),
+      icon: Bot,
+      animate: "",
+    },
+    running: {
+      color: "bg-blue-500",
+      text: t("statusRunning"),
+      icon: Activity,
+      animate: "animate-pulse",
+    },
+    unconfigured: {
+      color: "bg-yellow-500",
+      text: t("statusUnconfigured"),
+      icon: Settings,
+      animate: "",
+    },
+    error: {
+      color: "bg-red-500",
+      text: t("statusError"),
+      icon: AlertCircle,
+      animate: "",
+    },
+  };
+
+  const config = statusConfig[status];
+  const Icon = config.icon;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`h-2 w-2 rounded-full ${config.color} ${config.animate}`} />
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <span className="text-xs font-medium">{config.text}</span>
+    </div>
+  );
+}
+
 export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
+  const { t } = useLocale();
   const { data: workspaces, isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showConfigGuide, setShowConfigGuide] = useState(false);
 
   // Use first workspace as default
   const workspaceId = workspaces?.[0]?.id || "";
+
+  // Get agent status
+  const { status: agentStatus, hasRunningTasks } = useAgentStatus(workspaceId);
 
   // Task actions
   const startTask = useStartAgentTask();
@@ -38,6 +96,15 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
 
   // Selected task details
   const { data: selectedTask } = useAgentTask(selectedTaskId || "");
+
+  // Handle create button click
+  const handleCreateClick = () => {
+    if (agentStatus === "unconfigured" || agentStatus === "error") {
+      setShowConfigGuide(true);
+    } else {
+      setShowCreateForm(true);
+    }
+  };
 
   const handleTaskSelect = (task: AgentTask) => {
     setSelectedTaskId(task.id);
@@ -90,8 +157,8 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Agent</h3>
-              <p className="text-xs text-muted-foreground">{status}</p>
+              <h3 className="text-sm font-semibold">{t("agent")}</h3>
+              <AgentStatusIndicator status={agentStatus} />
             </div>
           </div>
         </div>
@@ -117,8 +184,12 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
             </div>
           ) : (
             <button
-              onClick={() => setShowCreateForm(true)}
-              className="w-full rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              onClick={handleCreateClick}
+              className={`w-full rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground transition-colors ${
+                agentStatus === "unconfigured" || agentStatus === "error"
+                  ? "cursor-pointer hover:border-yellow-500 hover:text-yellow-600"
+                  : "hover:border-primary hover:text-primary"
+              }`}
             >
               + New Research Task
             </button>
@@ -185,13 +256,17 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
       {/* Footer */}
       <div className="border-t border-border p-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span className="text-xs text-muted-foreground">Agent Ready</span>
-          </div>
+          <AgentStatusIndicator status={agentStatus} />
           <span className="text-xs text-muted-foreground">v0.1.0</span>
         </div>
       </div>
+
+      {/* Agent Config Guide Dialog */}
+      <AgentConfigGuide
+        isOpen={showConfigGuide}
+        onClose={() => setShowConfigGuide(false)}
+        status={agentStatus}
+      />
     </div>
   );
 }

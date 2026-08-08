@@ -3,8 +3,8 @@
  *
  * Primary layout orchestrator for the Investment OS desktop application.
  * Combines three zones:
- * - Left: Navigation sidebar with route-based icons
- * - Center: Router outlet for page content
+ * - Left: Collapsible sidebar with workspace selector, project list, user operations
+ * - Center: Main content area with OperationBar, routed pages, StatusBar
  * - Right: Collapsible Agent panel
  *
  * @version GUI-M2
@@ -12,8 +12,9 @@
 
 import { useState, useCallback } from "react";
 import { Outlet } from "react-router-dom";
-import { Sidebar } from "@/components/navigation/Sidebar";
-import { RightSidebar } from "@/components/layout/RightSidebar";
+import { LeftSidebar } from "./LeftSidebar";
+import { MainContent } from "./MainContent";
+import { RightSidebar } from "./RightSidebar";
 import { useSidebarShortcuts } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 
@@ -37,13 +38,16 @@ export function MainLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Left: Navigation Sidebar */}
-      <Sidebar />
+      {/* Left: Workspace Sidebar */}
+      <LeftSidebar />
 
-      {/* Center: Routed Pages */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Center: Main Content Area */}
+      <MainContent
+        isRightSidebarExpanded={rightState === "expanded"}
+        onToggleRightSidebar={toggleRightSidebar}
+      >
         <Outlet />
-      </div>
+      </MainContent>
 
       {/* Right: Agent Panel */}
       <RightSidebar

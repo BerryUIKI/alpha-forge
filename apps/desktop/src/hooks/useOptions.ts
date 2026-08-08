@@ -328,6 +328,27 @@ export function useDeleteOptionStrategy(locale: Locale) {
   });
 }
 
+/**
+ * Hook to delete an option contract
+ *
+ * @example
+ * const deleteMutation = useDeleteOptionContract();
+ * deleteMutation.mutate(contractId);
+ */
+export function useDeleteOptionContract(locale: Locale) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => desktopApi.options.deleteOptionContract(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["optionContracts"] });
+    },
+    onError: (error) => {
+      console.error("Failed to delete option contract:", error);
+    },
+  });
+}
+
 // ============================================================================
 // Utility Functions
 // ============================================================================

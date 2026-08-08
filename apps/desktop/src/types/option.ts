@@ -98,6 +98,12 @@ export interface OptionStrategy {
   maxProfit?: number;
   maxLoss?: number;
   breakEvenPoints: number[];
+  legs?: StrategyLeg[]; // Optional legs array
+  description?: string; // Optional description
+  totalDelta?: number; // Net delta
+  totalGamma?: number; // Net gamma
+  totalTheta?: number; // Net theta
+  totalVega?: number; // Net vega
   createdAt: string;
   updatedAt: string;
 }
