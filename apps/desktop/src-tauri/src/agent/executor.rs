@@ -93,6 +93,7 @@ impl TaskExecutor {
         // Create cancellation token
         let cancel_token = CancellationToken::new();
         let task_id = task.id.clone();
+        let task_id_for_insert = task_id.clone();
         let repo = self.repo.clone();
         let running_tasks = self.running_tasks.clone();
         let app = self.app.clone();
@@ -104,6 +105,8 @@ impl TaskExecutor {
         // fast completion from removing an entry before it has been inserted.
         let cancel_token_clone = cancel_token.clone();
         let task_clone = task.clone();
+        let repo_for_execution = repo.clone();
+        let app_for_execution = app.clone();
         let handle = tokio::spawn(async move {
             if start_rx.await.is_err() {
                 return Ok(());
@@ -111,8 +114,8 @@ impl TaskExecutor {
 
             let execution = tokio::spawn(Self::execute_task(
                 task_clone,
-                repo.clone(),
-                app.clone(),
+                repo_for_execution,
+                app_for_execution,
                 provider,
                 timeout,
                 cancel_token_clone,
@@ -140,7 +143,7 @@ impl TaskExecutor {
         {
             let mut running = self.running_tasks.write().await;
             running.insert(
-                task.id.clone(),
+                task_id_for_insert,
                 RunningTask {
                     _handle: handle,
                     cancel_token,

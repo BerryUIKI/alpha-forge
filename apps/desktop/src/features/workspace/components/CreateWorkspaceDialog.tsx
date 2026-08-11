@@ -1,9 +1,10 @@
 // Create workspace dialog component.
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { useCreateWorkspace } from "@/features/workspace/hooks/useWorkspaces";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
 
 interface CreateWorkspaceDialogProps {
   isOpen: boolean;
@@ -16,6 +17,23 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
   const [error, setError] = useState("");
   const createMutation = useCreateWorkspace();
   const { t } = useLocale();
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  // Store the element that triggered the dialog
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement as HTMLElement;
+    }
+  }, [isOpen]);
+
+  // Focus trap
+  const containerRef = useFocusTrap<HTMLDivElement>({
+    enabled: isOpen,
+    returnFocus: triggerRef.current,
+  });
+
+  // Escape key handler
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -45,8 +63,22 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-      <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+      onClick={(e) => {
+        // Close when clicking backdrop (outside modal content)
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        ref={containerRef}
+        className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl"
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="dialog-title" className="text-lg font-semibold">{t("createWorkspaceTitle")}</h2>
           <button
@@ -73,7 +105,6 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
               }}
               placeholder={t("workspaceNamePlaceholder")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              autoFocus
             />
             {error && <p className="mt-1 text-sm text-destructive" role="alert">{error}</p>}
           </div>

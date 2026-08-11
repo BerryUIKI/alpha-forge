@@ -14,7 +14,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type { Locale } from "@/lib/i18n/locale";
-import { processErrorResponse } from "@/lib/i18n/errorMessages";
+import { processAppError } from "@/lib/errors";
 import type { Workspace } from "@/lib/desktop-api/workspace";
 
 // Re-export Workspace type for convenience
@@ -146,5 +146,5 @@ export function useDeleteWorkspace(locale: Locale) {
  * @returns Localized error messages
  */
 export function processWorkspaceError(locale: Locale, error: unknown) {
-  return processErrorResponse(locale, error as any);
+  return processAppError(locale, error);
 }

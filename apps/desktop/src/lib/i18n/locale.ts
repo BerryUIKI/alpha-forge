@@ -439,7 +439,6 @@ const messages = {
     artifactsFeature: "研究产物",
     // Functional Views
     functionalView: "功能视图",
-    selectFunctionalView: "选择功能视图",
     functionalViews: "功能视图",
     functionalViewAnalyze: "分析",
     functionalViewQuantification: "量化",
@@ -450,7 +449,6 @@ const messages = {
     // Tools
     tools: "工具",
     toolsList: "工具列表",
-    noToolsAvailable: "暂无可用工具",
     // Tool names
     toolResearchProjects: "研究项目",
     toolDocuments: "文档",
@@ -889,7 +887,6 @@ const messages = {
     artifactsFeature: "Artifacts",
     // Functional Views
     functionalView: "Functional View",
-    selectFunctionalView: "Select functional view",
     functionalViews: "Functional Views",
     functionalViewAnalyze: "Analyze",
     functionalViewQuantification: "Quantification",
@@ -900,7 +897,6 @@ const messages = {
     // Tools
     tools: "Tools",
     toolsList: "Tools List",
-    noToolsAvailable: "No tools available",
     // Tool names
     toolResearchProjects: "Research Projects",
     toolDocuments: "Documents",

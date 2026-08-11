@@ -13,7 +13,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
-import { processErrorResponse } from "@/lib/i18n/errorMessages";
+import { processAppError } from "@/lib/errors";
 import type {
   StartShadowAnalysisInput,
   ShadowAnalysisResult,
@@ -192,7 +192,7 @@ export function useGooseShadowAnalysis(workspaceId: string) {
     isStarting: startMutation.isPending,
     result: startMutation.data,
     startError: startMutation.error
-      ? processErrorResponse("en" as any, startMutation.error as any)
+      ? processAppError("en", startMutation.error)
       : null,
 
     // Cancel analysis

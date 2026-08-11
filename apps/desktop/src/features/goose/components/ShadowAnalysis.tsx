@@ -105,12 +105,10 @@ export function ShadowAnalysis({
 
   // Error state
   if (startError) {
-    const errorMessage = typeof startError === 'string'
-      ? startError
-      : (startError as any)?.description || translate(locale, "analysisFailed");
+    const errorMessage = startError.description || translate(locale, "analysisFailed");
     return (
       <ErrorState
-        title={translate(locale, "analysisFailed")}
+        title={startError.title}
         message={errorMessage}
         onRetry={handleStart}
       />
