@@ -3,8 +3,8 @@
  *
  * Primary layout orchestrator for the Investment OS desktop application.
  * Combines three zones:
- * - Left: Navigation sidebar with functional views and tools
- * - Center: Router outlet for page content
+ * - Left: Collapsible sidebar with workspace selector, project list, user operations
+ * - Center: Main content area with OperationBar, routed pages, StatusBar
  * - Right: Collapsible Agent panel
  *
  * @version GUI-M2
@@ -12,28 +12,18 @@
 
 import { useState, useCallback } from "react";
 import { Outlet } from "react-router-dom";
-import { LeftSidebar } from "@/components/layout/LeftSidebar";
-import { RightSidebar } from "@/components/layout/RightSidebar";
+import { LeftSidebar } from "./LeftSidebar";
+import { MainContent } from "./MainContent";
+import { RightSidebar } from "./RightSidebar";
 import { useSidebarShortcuts } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 
 export function MainLayout() {
-  // Left sidebar state
-  const [leftState, setLeftState] = useState<SidebarState>("expanded");
-
   // Right sidebar state (Agent panel)
   const [rightState, setRightState] = useState<SidebarState>("collapsed");
 
-  const handleLeftStateChange = useCallback((state: SidebarState) => {
-    setLeftState(state);
-  }, []);
-
   const handleRightStateChange = useCallback((state: SidebarState) => {
     setRightState(state);
-  }, []);
-
-  const toggleLeftSidebar = useCallback(() => {
-    setLeftState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
   }, []);
 
   const toggleRightSidebar = useCallback(() => {
@@ -42,23 +32,22 @@ export function MainLayout() {
 
   // Setup keyboard shortcuts
   useSidebarShortcuts({
-    onToggleLeft: toggleLeftSidebar,
     onToggleRight: toggleRightSidebar,
     enabled: true,
   });
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Left: Navigation Sidebar */}
-      <LeftSidebar
-        state={leftState}
-        onStateChange={handleLeftStateChange}
-      />
+      {/* Left: Workspace Sidebar */}
+      <LeftSidebar />
 
-      {/* Center: Routed Pages */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Center: Main Content Area */}
+      <MainContent
+        isRightSidebarExpanded={rightState === "expanded"}
+        onToggleRightSidebar={toggleRightSidebar}
+      >
         <Outlet />
-      </div>
+      </MainContent>
 
       {/* Right: Agent Panel */}
       <RightSidebar

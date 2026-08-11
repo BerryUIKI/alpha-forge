@@ -1,106 +1,67 @@
 /**
- * ToolsList Component
+ * Tools List Component
  *
- * Displays dynamic list of tools based on selected functional view.
- * Scrollable container with navigation to tool routes.
+ * Displays a list of tools for the current functional view.
+ * Located in the middle section of the left sidebar.
  *
- * @version GUI-M2
+ * @module components/layout/LeftSidebar/ToolsList
  */
 
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  FileText,
-  Lightbulb,
-  LineChart,
-  Shield,
-  Zap,
-  TrendingUp,
-  PieChart,
-  Network,
-  Calculator,
-  Layers,
-  List,
-  GitBranch,
-  BarChart3,
-  Package,
-} from "lucide-react";
+import { useFunctionalView } from "@/hooks/layout";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { FunctionalView, Tool } from "@/components/layout/types";
-import { getToolsForView } from "@/config/tools-config";
+import type { ToolItem } from "@/components/layout/types";
 
-/**
- * Icon mapping for dynamic tool icons
- */
-const ICON_MAP: Record<string, typeof Search> = {
-  Search,
-  FileText,
-  Lightbulb,
-  LineChart,
-  Shield,
-  Zap,
-  TrendingUp,
-  PieChart,
-  Network,
-  Calculator,
-  Layers,
-  List,
-  GitBranch,
-  BarChart3,
-  Package,
-};
-
-interface ToolsListProps {
-  /** Currently selected functional view */
-  activeView: FunctionalView;
-}
-
-export function ToolsList({ activeView }: ToolsListProps) {
+export function ToolsList() {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const { tools } = useFunctionalView();
 
-  const tools = getToolsForView(activeView);
+  const handleToolClick = (tool: ToolItem) => {
+    if (tool.disabled) {
+      return;
+    }
 
-  const handleToolClick = (tool: Tool) => {
     if (tool.route) {
       navigate(tool.route);
+    } else if (tool.action) {
+      tool.action();
     }
   };
 
   if (tools.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4">
-        <p className="text-sm text-muted-foreground">{t("noToolsAvailable")}</p>
+      <div className="flex flex-1 items-center justify-center p-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t("noToolsAvailable" as any) || "暂无可用工具"}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 overflow-y-auto p-2">
-      <div className="mb-2 px-2">
-        <h3 className="text-xs font-medium text-muted-foreground">{t("tools")}</h3>
-      </div>
-
-      <ul className="space-y-1" role="list" aria-label={t("toolsList")}>
+      <div className="space-y-1">
         {tools.map((tool) => {
-          const IconComponent = ICON_MAP[tool.icon] || Search;
-
+          const Icon = tool.icon;
           return (
-            <li key={tool.id}>
-              <button
-                onClick={() => handleToolClick(tool)}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                disabled={!tool.route}
-                aria-label={t(tool.nameKey as any)}
-                title={tool.descriptionKey ? t(tool.descriptionKey as any) : undefined}
-              >
-                <IconComponent className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{t(tool.nameKey as any)}</span>
-              </button>
-            </li>
+            <button
+              key={tool.id}
+              onClick={() => handleToolClick(tool)}
+              disabled={tool.disabled}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                tool.disabled
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:bg-accent"
+              }`}
+              title={tool.disabled ? (t("comingSoon" as any) || "即将推出") : undefined}
+            >
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <span className="truncate">{tool.label}</span>
+            </button>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }

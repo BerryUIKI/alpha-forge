@@ -6,6 +6,7 @@ import { JournalPage } from "@/pages/journal/JournalPage";
 import { PortfolioPage } from "@/pages/portfolio/PortfolioPage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
+import { OptionsPage } from "@/pages/options/OptionsPage";
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: <PortfolioPage /> },
       { path: "artifacts", element: <ArtifactsPage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "options", element: <OptionsPage /> },
     ],
   },
 ]);

@@ -1,30 +1,28 @@
 /**
  * LeftSidebar Component
  *
- * Main container for the left sidebar with three-section layout:
- * - Section 1: Functional View Selector
- * - Section 2: Dynamic Tools List (scrollable)
- * - Section 3: User Operations (theme, language, settings)
+ * Main container for the left collapsible sidebar with new structure:
+ * - Top: Functional View Selector (功能视图下拉)
+ * - Middle: Tools List (工具列表)
+ * - Bottom: User Operations (用户菜单)
  *
  * Features:
- * - Default width: 240px, resizable 180-400px
- * - Collapse/expand with smooth animation
+ * - Collapsible sidebar with smooth animation
  * - Drag-to-resize functionality
  * - State persistence via localStorage
+ * - Keyboard shortcuts support (Ctrl+1)
  *
- * @version GUI-M2
+ * @version GUI-M3
  */
 
-import { useState, useCallback } from "react";
-import { useTheme } from "next-themes";
+import { useCallback } from "react";
 import { ChevronLeft, GripVertical } from "lucide-react";
-import type { FunctionalView, LeftSidebarProps } from "../types";
-import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { FunctionalViewSelector } from "./FunctionalViewSelector";
 import { ToolsList } from "./ToolsList";
 import { UserOperations } from "./UserOperations";
 import { useSidebarState, useResize } from "@/hooks/layout";
-import { DEFAULT_FUNCTIONAL_VIEW } from "@/config/tools-config";
+import type { LeftSidebarProps, UserMenuItem } from "../types";
+import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 
 export function LeftSidebar({
   state: externalState,
@@ -33,12 +31,8 @@ export function LeftSidebar({
   minWidth = DEFAULT_SIDEBAR_WIDTHS.left.min,
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
 }: LeftSidebarProps) {
-  const { theme, setTheme } = useTheme();
-  const [activeView, setActiveView] = useState<FunctionalView>(DEFAULT_FUNCTIONAL_VIEW);
-
   // Use sidebar state hook for persistence
   const {
-    state: internalState,
     width,
     toggleState,
     setWidth,
@@ -65,19 +59,13 @@ export function LeftSidebar({
     onStateChange?.(isExpanded ? "collapsed" : "expanded");
   }, [toggleState, isExpanded, onStateChange]);
 
-  const handleThemeChange = useCallback(
-    (newTheme: "light" | "dark") => {
-      setTheme(newTheme);
-    },
-    [setTheme]
-  );
-
-  const handleViewChange = useCallback((view: FunctionalView) => {
-    setActiveView(view);
+  const handleMenuItemClick = useCallback((item: UserMenuItem) => {
+    // Menu item click handling is done in UserOperations component
+    console.log(`Menu item clicked: ${item}`);
   }, []);
 
   if (!isExpanded) {
-    // Collapsed state - minimal UI
+    // Collapsed state - minimal UI with smooth animation
     return (
       <aside
         className="flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out"
@@ -94,9 +82,9 @@ export function LeftSidebar({
           <ChevronLeft className="h-5 w-5 rotate-180" />
         </button>
 
-        {/* Collapsed icon indicator */}
+        {/* Collapsed indicator */}
         <div className="flex flex-1 items-center justify-center">
-          <span className="text-lg">📊</span>
+          <span className="text-xs text-muted-foreground">☰</span>
         </div>
       </aside>
     );
@@ -111,9 +99,8 @@ export function LeftSidebar({
       style={{ width: `${width}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
       aria-label="Left sidebar"
     >
-      {/* Header with collapse button */}
-      <div className="flex items-center justify-between border-b border-border p-3">
-        <h2 className="text-sm font-semibold">Investment OS</h2>
+      {/* Collapse Button */}
+      <div className="flex items-center justify-end border-b border-border p-2">
         <button
           onClick={handleToggle}
           className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
@@ -124,16 +111,18 @@ export function LeftSidebar({
         </button>
       </div>
 
-      {/* Section 1: Functional View Selector */}
-      <FunctionalViewSelector value={activeView} onChange={handleViewChange} />
+      {/* Top: Functional View Selector */}
+      <div className="border-b border-border p-2">
+        <FunctionalViewSelector />
+      </div>
 
-      {/* Section 2: Tools List (scrollable) */}
-      <ToolsList activeView={activeView} />
+      {/* Middle: Tools List (scrollable) */}
+      <ToolsList />
 
-      {/* Section 3: User Operations */}
+      {/* Bottom: User Operations (fixed position) */}
       <UserOperations
-        theme={theme as "light" | "dark"}
-        onThemeChange={handleThemeChange}
+        username="Investor"
+        onMenuItemClick={handleMenuItemClick}
       />
 
       {/* Drag-to-resize handle */}

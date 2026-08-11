@@ -84,6 +84,50 @@ const messages = {
     offlineDescription: "请检查你的网络连接后重试。",
     unexpectedError: "出了点问题",
     unexpectedErrorDescription: "发生了意外错误。",
+    // Workspace types
+    workspaceTypeAnalyze: "分析",
+    workspaceTypeQuantification: "量化",
+    workspaceTypeComprehensiveMarket: "综合市场",
+    workspaceTypeOptions: "期权",
+    workspaceTypeFutures: "期货",
+    workspaceTypeOtherDerivatives: "其他衍生品",
+    // Status
+    statusIdle: "空闲",
+    statusRunning: "运行中",
+    statusError: "错误",
+    statusSyncing: "同步中",
+    statusUnconfigured: "需要完成助手配置",
+
+    // Quick Actions
+    quickActions: "快捷操作",
+    networkOnline: "网络在线",
+    networkOffline: "网络离线",
+
+    // Agent
+    agentConfig: "Agent配置",
+    agentConfigDescription: "配置AI助手的API密钥和模型参数",
+    agentConfigSaved: "Agent配置已保存",
+    agentConfigError: "保存失败",
+    agentNeedsConfig: "完成Agent配置",
+    agentNotConfiguredDesc: "要使用Agent创建研究任务，您需要先配置API密钥和模型参数。",
+    configStepsTitle: "配置步骤：",
+    agentConnectionFailed: "Agent连接失败",
+    agentConnectionErrorDesc: "Agent无法连接到AI服务。可能的原因：",
+    checkAgentSettings: "请检查Agent设置后重试。",
+    goToSettings: "去设置",
+    saving: "保存中...",
+    save: "保存",
+    noToolsAvailable: "暂无可用工具",
+    comingSoon: "即将推出",
+    selectFunctionalView: "选择功能视图",
+    createResearchProject: "新建研究任务",
+    agentSettings: "Agent设置",
+    // Theme
+    lightMode: "浅色模式",
+    darkMode: "深色模式",
+    // Actions
+    createNew: "新建",
+    agent: "代理",
     // Workspace
     noWorkspaces: "暂无工作区",
     noWorkspacesDescription: "创建你的第一个工作区，开始整理你的研究。",
@@ -156,6 +200,8 @@ const messages = {
     deleteReport: "删除报告",
     // Journal/Thesis
     journalTitle: "投资日志",
+    thesisManagement: "论点管理",
+    thesisManagementDescription: "跟踪投资论点，记录证据，并监控置信度变化。",
     investmentTheses: "投资论点",
     thesisDescription: "明确你的推理，跟踪证据，并验证结果。",
     createWorkspaceFirst: "请先创建工作区",
@@ -487,6 +533,50 @@ const messages = {
     offlineDescription: "Please check your internet connection and try again.",
     unexpectedError: "Something went wrong",
     unexpectedErrorDescription: "An unexpected error occurred.",
+    // Workspace types
+    workspaceTypeAnalyze: "Analyze",
+    workspaceTypeQuantification: "Quantification",
+    workspaceTypeComprehensiveMarket: "Comprehensive Market",
+    workspaceTypeOptions: "Options",
+    workspaceTypeFutures: "Futures",
+    workspaceTypeOtherDerivatives: "Other Derivatives",
+    // Status
+    statusIdle: "Idle",
+    statusRunning: "Running",
+    statusError: "Error",
+    statusSyncing: "Syncing",
+    statusUnconfigured: "Agent Configuration Required",
+
+    // Quick Actions
+    quickActions: "Quick Actions",
+    networkOnline: "Online",
+    networkOffline: "Offline",
+
+    // Agent
+    agentConfig: "Agent Configuration",
+    agentConfigDescription: "Configure API key and model parameters for the AI assistant",
+    agentConfigSaved: "Agent configuration saved",
+    agentConfigError: "Save failed",
+    agentNeedsConfig: "Complete Agent Configuration",
+    agentNotConfiguredDesc: "To create research tasks with Agent, you need to configure the API key and model parameters first.",
+    configStepsTitle: "Configuration Steps:",
+    agentConnectionFailed: "Agent Connection Failed",
+    agentConnectionErrorDesc: "Agent cannot connect to the AI service. Possible reasons:",
+    checkAgentSettings: "Please check Agent settings and try again.",
+    goToSettings: "Go to Settings",
+    saving: "Saving...",
+    save: "Save",
+    noToolsAvailable: "No tools available",
+    comingSoon: "Coming Soon",
+    selectFunctionalView: "Select functional view",
+    createResearchProject: "New Research Task",
+    agentSettings: "Agent Settings",
+    // Theme
+    lightMode: "Light Mode",
+    darkMode: "Dark Mode",
+    // Actions
+    createNew: "Create New",
+    agent: "Agent",
     // Workspace
     noWorkspaces: "No workspaces yet",
     noWorkspacesDescription: "Create your first workspace to start organizing your research.",
@@ -560,6 +650,8 @@ const messages = {
     deleteReport: "Delete report",
     // Journal/Thesis
     journalTitle: "Journal",
+    thesisManagement: "Thesis Management",
+    thesisManagementDescription: "Track investment theses, record evidence, and monitor confidence changes.",
     investmentTheses: "Investment theses",
     thesisDescription: "Make your reasoning explicit, track evidence, and validate outcomes.",
     createWorkspaceFirst: "Create a workspace first",

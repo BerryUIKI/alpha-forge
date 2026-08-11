@@ -1,90 +1,185 @@
 /**
  * UserOperations Component
  *
- * Bottom section of left sidebar with theme toggle, language switch, and settings.
- * Fixed height, does not participate in scrolling.
+ * Bottom section of left sidebar for user operations.
+ * Fixed position, always visible, does not scroll.
+ * Integrates theme toggle and language selection.
  *
- * @version GUI-M2
+ * @version GUI-M1-1
  */
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Moon, Sun, Globe, Settings } from "lucide-react";
-import { LOCALES, type Locale } from "@/lib/i18n/locale";
+import { useTheme } from "next-themes";
+import { User, Sun, Moon, Settings, ChevronUp, Globe } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
+import type { UserOperationsProps, UserMenuItem } from "../types";
 
-interface UserOperationsProps {
-  /** Current theme */
-  theme?: "light" | "dark";
-  /** Theme change callback */
-  onThemeChange?: (theme: "light" | "dark") => void;
-}
+const SUPPORTED_LOCALES = [
+  { code: "en" as const, label: "English" },
+  { code: "zh-CN" as const, label: "简体中文" },
+];
 
-export function UserOperations({ theme, onThemeChange }: UserOperationsProps) {
-  const { locale, setLocale, t } = useLocale();
+export function UserOperations({
+  username = "User",
+  isMenuOpen: externalIsMenuOpen,
+  onMenuOpenChange,
+  onMenuItemClick,
+}: UserOperationsProps) {
   const navigate = useNavigate();
+  const { t, locale, setLocale } = useLocale();
+  const { theme, setTheme } = useTheme();
+  const [internalIsMenuOpen, setInternalIsMenuOpen] = useState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
 
-  const handleThemeToggle = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    onThemeChange?.(newTheme);
+  const isMenuOpen = externalIsMenuOpen ?? internalIsMenuOpen;
+  const currentTheme = theme === "dark" ? "dark" : "light";
+
+  const handleToggle = () => {
+    const newState = !isMenuOpen;
+    setInternalIsMenuOpen(newState);
+    onMenuOpenChange?.(newState);
+    // Close language menu when main menu closes
+    if (!newState) {
+      setIsLanguageMenuOpen(false);
+    }
   };
 
-  const handleLanguageChange = (newLocale: Locale) => {
-    void setLocale(newLocale);
+  const handleMenuItemClick = (item: UserMenuItem) => {
+    onMenuItemClick?.(item);
+    setInternalIsMenuOpen(false);
+    onMenuOpenChange?.(false);
+    setIsLanguageMenuOpen(false);
+
+    switch (item) {
+      case "theme-toggle":
+        setTheme(currentTheme === "light" ? "dark" : "light");
+        break;
+      case "settings":
+        navigate("/settings");
+        break;
+      case "language":
+        // Toggle language submenu
+        setIsLanguageMenuOpen(!isLanguageMenuOpen);
+        setInternalIsMenuOpen(true);
+        onMenuOpenChange?.(true);
+        break;
+      case "profile":
+        // TODO: Navigate to profile page when implemented
+        break;
+    }
   };
 
-  const handleSettingsClick = () => {
-    navigate("/settings");
+  const handleLanguageSelect = (newLocale: "en" | "zh-CN") => {
+    setLocale(newLocale);
+    setIsLanguageMenuOpen(false);
+    setInternalIsMenuOpen(false);
+    onMenuOpenChange?.(false);
   };
 
   return (
-    <div className="border-t border-border p-3">
-      <div className="flex items-center justify-between gap-2">
-        {/* Theme Toggle */}
-        <button
-          onClick={handleThemeToggle}
-          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={t("menuThemeToggle")}
-          title={t("menuThemeToggle")}
-        >
-          {theme === "light" ? (
-            <Moon className="h-4 w-4" />
-          ) : (
-            <Sun className="h-4 w-4" />
-          )}
-        </button>
-
-        {/* Language Switcher */}
-        <div className="relative">
-          <select
-            value={locale}
-            onChange={(e) => handleLanguageChange(e.target.value as Locale)}
-            className="flex h-9 items-center justify-center gap-1 rounded-lg border border-transparent bg-transparent px-2 pr-6 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={t("menuLanguage")}
-            title={t("menuLanguage")}
-            style={{
-              appearance: "none",
-              backgroundImage: "none",
-            }}
-          >
-            {LOCALES.map((option) => (
-              <option key={option} value={option}>
-                {option === "zh-CN" ? "中文" : "EN"}
-              </option>
-            ))}
-          </select>
-          <Globe className="pointer-events-none absolute left-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+    <div className="border-t border-border">
+      {/* User Button */}
+      <button
+        onClick={handleToggle}
+        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+        aria-expanded={isMenuOpen}
+        aria-haspopup="menu"
+        aria-label={`User menu: ${username}`}
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+            <User className="h-4 w-4 text-primary" />
+          </div>
+          <span className="truncate font-medium">{username}</span>
         </div>
+        <ChevronUp
+          className={`h-4 w-4 transition-transform duration-200 ${
+            isMenuOpen ? "" : "rotate-180"
+          }`}
+        />
+      </button>
 
-        {/* Settings Button */}
-        <button
-          onClick={handleSettingsClick}
-          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={t("menuSettings")}
-          title={t("menuSettings")}
+      {/* Dropdown Menu */}
+      {isMenuOpen && (
+        <div
+          className="mb-1 mt-1 rounded-lg border border-border bg-popover shadow-lg"
+          role="menu"
+          aria-label="User operations menu"
         >
-          <Settings className="h-4 w-4" />
-        </button>
-      </div>
+          {/* Language Submenu */}
+          {isLanguageMenuOpen ? (
+            <>
+              <button
+                onClick={() => setIsLanguageMenuOpen(false)}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors first:rounded-t-lg hover:bg-accent text-muted-foreground"
+                role="menuitem"
+              >
+                <ChevronUp className="h-4 w-4 rotate-[-90deg]" />
+                <span>{t("back" as any) || "Back"}</span>
+              </button>
+              <div className="border-t border-border" />
+              {SUPPORTED_LOCALES.map((loc) => (
+                <button
+                  key={loc.code}
+                  onClick={() => handleLanguageSelect(loc.code)}
+                  className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
+                    locale === loc.code ? "bg-primary/10 font-medium" : ""
+                  }`}
+                  role="menuitem"
+                >
+                  <Globe className="h-4 w-4" />
+                  <span>{loc.label}</span>
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              {/* Theme Toggle */}
+              <button
+                onClick={() => handleMenuItemClick("theme-toggle")}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors first:rounded-t-lg hover:bg-accent"
+                role="menuitem"
+              >
+                {currentTheme === "light" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                <span>
+                  {currentTheme === "light" 
+                    ? (t("lightMode" as any) || "Light Mode")
+                    : (t("darkMode" as any) || "Dark Mode")
+                  }
+                </span>
+              </button>
+
+              {/* Language Selection */}
+              <button
+                onClick={() => handleMenuItemClick("language")}
+                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                role="menuitem"
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span>{t("language" as any) || "Language"}</span>
+                </div>
+                <ChevronUp className="h-4 w-4 rotate-90" />
+              </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => handleMenuItemClick("settings")}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors last:rounded-b-lg hover:bg-accent"
+                role="menuitem"
+              >
+                <Settings className="h-4 w-4" />
+                <span>{t("settings" as any) || "Settings"}</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
