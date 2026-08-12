@@ -4,15 +4,15 @@ This directory is the canonical documentation set for localizing the AlphaForge 
 
 ## Current baseline
 
-At the `dev` baseline used to write this plan:
+At the original baseline used to write this plan:
 
 - The React application does not have an application-wide locale provider or message catalog.
 - User-facing strings are embedded in components.
 - Locale-aware number and date presentation is a UI requirement in [UI Guidelines](../UI_GUIDELINES.md), but it is not yet centralized.
 - The M8 launch-locale decision is still governed by the [M8 Decision Record](../M8_DECISION_RECORD.md).
-- A separate, unmerged M8 branch contains a small Chinese-first locale prototype. It is an implementation candidate, not evidence that i18n is complete on `dev`.
+- An M8 locale prototype was subsequently integrated, including an application locale provider and message catalogs. The 2026-08-12 integration audit nevertheless reopened release acceptance because hard-coded user-facing strings and unsafe translation fallbacks remain.
 
-Do not create a second translation framework without first auditing that candidate and the current `dev` tree.
+Reuse and repair the integrated translation framework; do not create a second locale system.
 
 ## MVP boundary
 

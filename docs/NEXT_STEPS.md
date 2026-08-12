@@ -1,54 +1,48 @@
 # AlphaForge Next Steps
 
-**Updated**: 2026-08-03
+**Updated:** 2026-08-12
+**Active milestone:** S0 — Baseline Truth and Build Recovery
+**Program decision:** M8 and M9 are reopened for stabilization; M10 remains planned.
 
-**Current completed milestone**: M7 Plugin Ecosystem
-
-**Next planned milestone**: M8 Local MVP Completion & Release Readiness
-
-Program status and milestone acceptance criteria are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md). Implementation agents follow the [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md).
+Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Corrective sequencing and acceptance gates are governed by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Source evidence and the ordered small-PR plan are in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
 
 ## Current status
 
-- M0 through M7 are recorded complete in the milestone roadmap.
-- M8 is in progress. Product, locale, privacy, and release decisions are recorded in the M8 Decision Record.
-- Translation reviewer (@BerryUIKI), security incident contact (@BerryUIKI), and support channel (GitHub Issues) are assigned.
-- Legal and release-security review remains pending before public production release.
-- The Option documentation is consolidated, but the Option runtime is not integrated on `dev`.
-- Goose implementation is explicitly post-MVP and is not part of M8.
+- The repository contains substantial workspace, research, thesis, portfolio, Artifact, plugin, Option, and Agent implementation.
+- The 2026-08-12 code review found release-blocking cross-layer defects.
+- The Agent create-to-run flow, OpenAI credential configuration, Option IPC contract, Artifact-window route, and Rust module tree require repair.
+- Research navigation context, internal plugin reachability, and several backend-only APIs remain incomplete.
+- Goose has frontend and backend scaffolding, but the UI is unreachable, the service is disabled, and bridge operations remain placeholders.
+- Local MVP release acceptance is withdrawn until stabilization evidence is recorded.
 
-## Immediate actions: activate M8
+## Immediate work order
 
-1. Complete the [M8 Decision Record](M8_DECISION_RECORD.md): launch locale, platforms, privacy, export, update, signing, legal, security, and support owners.
-2. Execute [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), beginning with the decision and string inventory package.
-3. Plan local export, installer, update, privacy, security, legal, and support work as separate vertical slices.
-4. Record test, packaged-smoke, and review evidence before declaring the MVP complete.
+1. Resolve the missing Rust database module and restore a healthy baseline.
+2. Standardize the OpenAI credential identifier across Settings, Agent status, and provider lookup.
+3. Repair the Agent `created -> queued -> running` UI and command flow.
+4. Normalize Option and System command-boundary DTOs and add runtime response validation.
+5. Add the isolated Artifact-window route and narrow its command permissions.
+6. Synchronize Research URL context and selected workspace/project state.
+7. Complete one Option chain-to-contract-to-strategy vertical slice.
+8. Add a minimal internal-plugin settings and create-Artifact workflow.
+9. Enforce frontend and Rust quality gates in CI.
+10. Re-run release acceptance and update milestone evidence.
 
-## After MVP: M9 Option
+Each numbered item should normally be a separate pull request. Branch from `dev`, target `dev`, and never develop directly on `dev` or `main`.
 
-Start with the [Option Index](option/README.md), then run the baseline audit in the [Option Integration Plan](option/INTEGRATION_PLAN.md).
+## Required pull-request contents
 
-The first implementation package must repair Option schema application through a new append-only migration and tests. Do not merge the historical `integration/option` branch wholesale; extract and revalidate scoped candidate code against current `dev`.
+Every rectification pull request must include:
 
-### 1. Complete M8 local-desktop release foundation
-**Priority**: High
-**Timeline**: To be defined
+- One narrowly defined defect or vertical slice.
+- A clear frontend/backend contract when IPC is affected.
+- Regression tests for the corrected behavior.
+- Loading, empty, error, partial, and offline behavior where applicable.
+- English documentation updated in the same pull request as behavior.
+- The exact verification commands run and their results.
+- Remaining risks and deliberately deferred work.
 
-M7 is complete. The local-desktop M8 boundary is now recorded in the [M8 Decision Record](M8_DECISION_RECORD.md): no account, cloud backup, telemetry, billing, licensing, or activation in the MVP. Complete the remaining legal, security-contact, and release-owner checks before public production release.
-
-## After MVP and M9: M10 Goose
-
-Start with the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md). Reverify the current AAIF Goose source and APIs, approve an ADR and threat model, then perform a synthetic-data spike. The first shipped mode is read-only and opt-in. Goose receives no direct database, shell, unrestricted filesystem, credential, trade, or privileged Tauri capability.
-
-## Persistent quality work
-
-- Increase regression coverage for migrations, task cancellation/restart, Artifact isolation, and critical UI states.
-- Keep error codes stable and logs redacted.
-- Preserve local-first data ownership and source provenance.
-- Maintain loading, success, empty, error, partial, and offline behavior for asynchronous features.
-- Keep documentation aligned with integrated behavior; unmerged branch code is not completion evidence.
-
-## Standard verification
+## Verification after code repair
 
 ```bash
 pnpm lint
@@ -56,116 +50,49 @@ pnpm typecheck
 pnpm test
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
-cargo test
+cargo test --workspace
 ```
 
-Run `pnpm test:e2e` and `pnpm tauri build` for critical flows and release-impacting work. Record commands that cannot run and the remaining risk.
+Critical workflow and release-impacting pull requests must also run:
 
-### M8: Production & Commercialization (local MVP foundation)
-- Manual local backup export
-- Privacy notice and About surface
-- Manual GitHub Release update checks
-- DMG and Windows EXE packaging configuration
-- Authentication, licensing, billing, and cloud backup deferred
+```bash
+pnpm test:e2e
+pnpm tauri build
+```
 
-## Next decision point
+Do not substitute compilation alone for functional acceptance.
 
-The next decision is whether M8 product and release inputs are sufficiently complete to activate the first implementation work package. M9 and M10 remain planned until their entry gates pass.
+## Release acceptance gate
 
-## 🔧 Technical Debt & Improvements
+M8 can be accepted again only when:
 
-### High Priority
-1. **Testing**
-   - Add E2E testing framework
-   - Increase test coverage to 80%+
-   - Add performance regression tests
+- All P0 integration-audit findings are closed.
+- The core Agent-to-Artifact loop passes E2E.
+- The supported primary workflows pass packaged smoke tests.
+- Security, dependency, privacy, legal, support, backup, recovery, update, and rollback gates are complete.
+- README, architecture, roadmap, milestone, and user documentation agree.
+- A release owner records explicit acceptance evidence.
 
-2. **Performance**
-   - Database query optimization
-   - Artifact rendering performance
-   - Memory usage profiling
+## Option acceptance gate
 
-3. **Security**
-   - Audit artifact permission model
-   - Input validation hardening
-   - Secure credential storage
+M9 can be accepted again only when:
 
-### Medium Priority
-1. **Code Quality**
-   - Reduce code duplication
-   - Improve error handling patterns
-   - Add more inline documentation
+- TypeScript and Rust Option DTOs pass shared serialization fixtures.
+- Chain acquisition, persistence, contract detail, strategy persistence, calculation, and controlled Artifact rendering work end to end.
+- Assumptions, timestamps, source, model, uncertainty, and provenance are visible.
+- Numerical, migration, workspace-isolation, accessibility, i18n, E2E, and packaged-build gates pass.
+- No trade execution or autonomous investment decision capability exists.
 
-2. **Architecture**
-   - Refine service layer boundaries
-   - Improve state management patterns
-   - Enhance type safety
+## Goose entry gate
 
----
+M10 remains planned until stabilization and local MVP acceptance are complete. Goose work must then satisfy the ADR, threat model, version pinning, checksum, opt-in, read-only, workspace-scoping, structured-output, cancellation, budget, packaging, and support requirements in the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md).
 
-## 📈 Success Metrics
+## Persistent quality work
 
-### M8 Decision Gate
-- [x] Record a local-only identity approach
-- [x] Defer licensing, entitlement, and subscription enforcement
-- [x] Record the no-cloud-backup privacy model
-- [x] Assign @BerryUIKI as release-signing owner and select supported platforms
-- [x] Assign @BerryUIKI as translation reviewer for zh-CN and en
-- [x] Assign @BerryUIKI as security incident contact
-- [x] Establish GitHub Issues as the MVP support channel
-- [ ] Complete legal and release-security review before public production release
-
-### Quality Gates
-- All tests passing
-- Code coverage > 80%
-- Zero critical bugs
-- Performance benchmarks met
-
----
-
-## 🎯 Recommended Next Steps
-
-### Immediate (This Week)
-
-1. **Maintain completed milestone documentation**
-   - Keep M3–M7 status and acceptance notes aligned with delivered behavior.
-
-2. **Complete the remaining public-release gates**
-   - Publish the official privacy notice and support contact email.
-   - Assign a security incident contact.
-   - Run legal and release-security review before public production release.
-
----
-
-## 📚 Resources Needed
-
-### Development
-- Rust PDF processing library evaluation
-- Full-text search implementation research
-- Document storage strategy planning
-
-### Testing
-- E2E testing framework selection
-- Test data generation
-- Performance testing tools
-
-### Documentation
-- User guide structure
-- API documentation standards
-- Tutorial creation
-
----
-
-## 🎉 Conclusion
-
-**M7 Complete**: AlphaForge supports validated internal plugins, controlled artifact rendering, and the documented official plugin set.
-
-**Next Milestone**: M8 Production & Commercialization.
-
-**Focus Areas**: Establish the commercial and security decisions before implementing external authentication, billing, backup, or release infrastructure.
-
-**Timeline**: To be defined after the M8 decision gate.
-
----
-
-**Status**: Ready to begin next phase ✅
+- Prefer command-boundary DTOs over leaking database/domain naming into React.
+- Keep all IPC calls in the desktop API layer.
+- Treat API wrapper presence as infrastructure, not proof of a product feature.
+- Keep error codes stable and internal details redacted.
+- Preserve local-first data ownership and evidence provenance.
+- Maintain the no-trading and mandatory-human-review boundaries.
+- Keep branches short-lived and pull requests small.

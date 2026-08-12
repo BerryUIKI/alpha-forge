@@ -1,6 +1,8 @@
 # Sequential Child-Agent Task Breakdown
 
-This document is the canonical execution queue for M8 through M10. A coordinator assigns exactly one task to one child agent at a time. The next task does not start until the previous task is merged into `dev` and its acceptance evidence is recorded.
+> Historical delivery queue. As of 2026-08-12, active corrective work is governed by the [Stabilization Roadmap](../STABILIZATION_ROADMAP.md) and the [Integration Gap Audit](../reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md). Completion markers below record prior implementation activity and do not override the reopened M8/M9 program status.
+
+This document preserves the original execution queue for M8 through M10. It is not the active queue while stabilization is in progress.
 
 ## Execution contract
 

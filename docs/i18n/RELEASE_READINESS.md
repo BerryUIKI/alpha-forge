@@ -214,9 +214,9 @@ pnpm lint
 
 ## Conclusion
 
-M8 i18n work is complete. All critical user-facing strings are localized in both `en` and `zh-CN`, with system language detection and comprehensive error localization. The application is ready for bilingual release.
+The i18n implementation contains English and Simplified Chinese catalogs, system-language detection, and localized error infrastructure. Release acceptance is not current: the 2026-08-12 integration audit reopened M8 and identified remaining hard-coded user-facing strings and unsafe translation fallbacks. Complete the stabilization roadmap and repeat packaged bilingual QA before declaring the application ready for release.
 
-**Definition of Done**: ✅ Achieved
+**Historical i18n checklist status**: Completed before the 2026-08-12 release rebaseline; packaged release acceptance must be repeated.
 - [x] Launch default and reviewers recorded
 - [x] `en` and `zh-CN` catalogs have parity
 - [x] Locale persistence, fallback, formatters tested

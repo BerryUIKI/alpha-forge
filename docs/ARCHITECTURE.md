@@ -144,32 +144,30 @@ React Component
 
 All IPC goes through the `src/lib/desktop-api/` layer. Components never call `invoke()` directly.
 
-## Current IPC Commands
+## Current IPC Command Families
 
-| Command | Module | Status |
-|---------|--------|--------|
-| `health_check` | settings | ✅ Active |
-| `get_app_info` | settings | ✅ Active |
-| `get_setting` | settings | ✅ Active (SQLite) |
-| `set_setting` | settings | ✅ Active (SQLite) |
-| `create_task` | agent | Stub — returns completed task |
-| `list_tasks` | agent | Stub — returns [] |
-| `list_research_documents` | research | Stub — returns [] |
-| `list_theses` | journal | Stub — returns [] |
-| `list_portfolio_accounts` | portfolio | Stub — returns [] |
-| `list_artifacts` | artifacts | Stub — returns [] |
+The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, Artifacts, internal plugins, Options, and Goose scaffolding. Command registration alone is not completion evidence.
+
+Current integration status is maintained in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md). In particular:
+
+- Agent commands and UI exist, but the queue/start transition and credential identifier require repair.
+- Research, thesis, knowledge graph, and portfolio commands have reachable primary UI surfaces.
+- Artifact persistence and in-page renderers exist, but the separate Artifact-window route is incomplete.
+- Internal plugin commands exist, but the user-facing management and creation workflow is incomplete.
+- Option commands exist, but command-boundary field naming is incompatible with the frontend.
+- Goose commands are registered as scaffolding; the service is disabled and the feature is not accepted.
 
 ## Database
 
 - **Engine**: SQLite via SQLx
-- **Migrations**: Embedded in `database/migrations.rs`
-- **Current tables**: `app_settings`, `_migrations` (tracking)
+- **Migrations**: SQL files under `apps/desktop/src-tauri/migrations/`, applied by the custom runner in `database/migrations.rs`
+- **Current domains**: settings, workspaces, Agent tasks/events, Artifacts, research, theses, knowledge graph, portfolio, internal plugins, and Options
 - **Pragmas**: WAL mode, foreign keys enabled
-- **Full schema**: See `DATA_MODEL.md` for planned tables
+- **Schema reference**: See `DATA_MODEL.md`; verify it against migrations when changing persisted data
 
 ## Security
 
-- API keys: Will use OS keychain (stub in `security/credentials.rs`)
+- API keys: Stored through the OS keychain; the shared credential identifier is under stabilization
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
-- Input validation: Will use Zod (TS) + manual validation (Rust)
+- Input validation: Zod is used in selected TypeScript boundaries and explicit validation is used in Rust; coverage is not yet uniform
