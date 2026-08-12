@@ -114,6 +114,8 @@ The window manager opens `/artifact/{artifact_id}/{artifact_type}`. The React ro
 
 **Rectification:** Determine from Git history whether the module was intentionally removed. Restore the required implementation or remove the orphan declaration in a narrowly scoped build-repair PR.
 
+**Remediation status (2026-08-12):** Git history shows the declaration was accidentally added by `e0ca184`; no `database/timeout.rs` module, consumer, or historical implementation exists. This branch removes the orphan declaration. The finding is closed only after the required Rust verification passes.
+
 ### P1-1: Research navigation links do not select the requested context
 
 **Navigation producers:** `apps/desktop/src/components/layout/MainContent/OperationBar.tsx:53`, `WorkspaceDropdown.tsx:31`
