@@ -39,7 +39,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 ### Scope
 
 - Complete the `database::timeout` module-tree repair in this PR; S0 remains Active because its other scope and acceptance criteria remain outstanding.
-- Choose one JavaScript package manager and one authoritative lockfile.
+- Package-manager baseline completed in this PR: pnpm 9.0.0 and the tracked `pnpm-lock.yaml` are authoritative; S0 remains Active because its other scope and acceptance criteria remain outstanding.
 - Add standard CI quality gates in addition to CodeQL.
 - Align README, architecture, roadmap, and milestone status.
 - Record a command-to-wrapper static contract check.

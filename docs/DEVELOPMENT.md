@@ -19,12 +19,16 @@ cd investment-os
 # Install Rust (if not installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Install dependencies
-pnpm install
+# Install dependencies from the authoritative lockfile
+corepack pnpm install --frozen-lockfile
 
 # Start development
-pnpm dev
+corepack pnpm dev
 ```
+
+## Package Manager and Lockfile Policy
+
+This repository uses Corepack-managed pnpm 9.0.0, as declared in the root `package.json`; Corepack activates that pinned version for delegated workspace commands. The tracked `pnpm-lock.yaml` is the sole authoritative JavaScript lockfile; `package-lock.json` is not used. Use `corepack pnpm install --frozen-lockfile` for normal setup and reproducible installs. Regenerate the lockfile only as intentional dependency maintenance after changing package manifests, then review the resulting diff.
 
 ## Repository Structure
 
@@ -47,13 +51,13 @@ investment-os/
 ### Frontend
 
 ```bash
-pnpm dev:web        # Start Vite dev server (frontend only, no Tauri)
-pnpm typecheck      # TypeScript type check (all packages)
-pnpm lint           # ESLint
-pnpm format         # Prettier auto-fix
-pnpm format:check   # Prettier check
-pnpm test           # Vitest
-pnpm test:watch     # Vitest in watch mode
+corepack pnpm dev:web        # Start Vite dev server (frontend only, no Tauri)
+corepack pnpm typecheck      # TypeScript type check (all packages)
+corepack pnpm lint           # ESLint
+corepack pnpm format         # Prettier auto-fix
+corepack pnpm format:check   # Prettier check
+corepack pnpm test           # Vitest
+corepack pnpm test:watch     # Vitest in watch mode
 ```
 
 ### Rust
@@ -69,8 +73,8 @@ cargo test --workspace                       # Run tests
 ### Tauri
 
 ```bash
-pnpm tauri dev       # Full Tauri desktop app (dev mode)
-pnpm tauri build     # Production build
+corepack pnpm tauri dev       # Full Tauri desktop app (dev mode)
+corepack pnpm tauri build     # Production build
 ```
 
 ### Full Check
@@ -126,12 +130,11 @@ VS Code is the recommended editor. The `.vscode/` directory includes:
 
 ### pnpm install fails
 
-Try clearing the store:
+Clear the pnpm store, then retry the frozen install:
 
 ```bash
-pnpm store prune
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
+corepack pnpm store prune
+corepack pnpm install --frozen-lockfile
 ```
 
 ### cargo check fails with "not a valid Win32 application"
