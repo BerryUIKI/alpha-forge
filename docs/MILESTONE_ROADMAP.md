@@ -17,15 +17,15 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M0 | ✅ Complete | Week 1-2 | Project Foundation |
 | M1 | ✅ Complete | Week 3-4 | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Week 5-6 | Application Foundation |
-| M2 | ✅ Complete | Week 7-10 | Agent Runtime |
-| M3 | ✅ Complete | Week 11-14 | Artifact Intelligence System |
+| M2 | ⚠️ Stabilization required | Week 7-10 | Agent Runtime |
+| M3 | ⚠️ Stabilization required | Week 11-14 | Artifact Intelligence System |
 | M4 | ✅ Complete | Week 15-18 | Research Workspace |
 | M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
 | M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
-| M7 | ✅ Complete | Week 27-30 | Plugin Ecosystem |
-| M8 | ✅ Complete | 2026-08-03 | Local MVP Completion & Release Readiness |
-| M9 | ✅ Complete | 2026-08-03 | Option Module Integration |
-| M10 | ✅ Complete | 2026-08-03 | Goose Agent Integration |
+| M7 | ⚠️ Partial | Week 27-30 | Internal Plugin Ecosystem |
+| M8 | 🚧 Reopened | Rebaseline 2026-08-12 | Local MVP Completion & Release Readiness |
+| M9 | 🚧 Reopened | Rebaseline 2026-08-12 | Option Module Integration |
+| M10 | 📋 Planned | After stabilization | Goose Agent Integration |
 
 ## Delivery document registry
 
@@ -39,6 +39,8 @@ This roadmap is the program entry point. Implementation agents must follow the l
 | M10 Goose | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md) |
 
 Status in this file is authoritative at the program level. Detailed documents own work-package checklists; neither historical branch names nor unmerged code override this status.
+
+The current corrective program is defined by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Evidence for the 2026-08-12 rebaseline is recorded in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
 
 ---
 
@@ -593,11 +595,9 @@ Artifact rendered
 
 ---
 
-## M8 — Local MVP Completion & Release Readiness ✅
+## M8 — Local MVP Completion & Release Readiness 🚧
 
-**Status**: Complete. All infrastructure, marketplace, deployment, and release readiness tasks finished. Legal review pending external counsel; code signing deferred (not required for MVP).
-
-**Completed**: 2026-08-03
+**Status**: Reopened on 2026-08-12. Release acceptance was withdrawn after the integration audit identified broken Agent, credential, Artifact, build, and verification paths.
 
 ### Goal
 Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services. Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.
@@ -633,6 +633,8 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [x] Documentation review
 - [ ] Legal review
 - [x] Support infrastructure
+- [ ] Close all P0 findings in the 2026-08-12 integration audit
+- [ ] Pass and retain the complete verification and packaged-smoke matrix
 
 ### Execution path
 
@@ -652,11 +654,9 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ---
 
-## M9 — Option Module Integration ✅
+## M9 — Option Module Integration 🚧
 
-**Status**: Complete. Option research module integrated with Greeks calculator, Black-Scholes pricing, and portfolio analysis.
-
-**Completed**: 2026-08-03
+**Status**: Reopened on 2026-08-12. The implementation contains pricing and persistence code, but TypeScript/Rust request and response contracts are incompatible and the UI does not provide a complete chain-to-strategy workflow.
 
 ### Goal
 
@@ -826,13 +826,14 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M8 — Local MVP Completion & Release Readiness** is in progress. Product and release decisions are recorded in [M8 Decision Record](M8_DECISION_RECORD.md); remaining i18n, installer, and release-readiness work packages are underway.
+**Stabilization S0 — Baseline truth and build recovery** is active. M8 and M9 remain reopened until the [Stabilization Roadmap](STABILIZATION_ROADMAP.md) acceptance gates are met.
 
 ### Next Milestones
-1. Resolve M8 product, locale, privacy, platform, and release decisions.
-2. Execute the M8 i18n and release-readiness work packages with acceptance evidence.
-3. Rebaseline and integrate Option as M9 after the MVP.
-4. Reverify upstream and integrate Goose as M10 after the MVP.
+1. Restore a healthy module tree, deterministic package management, and CI quality gates.
+2. Repair the Agent credential and task-state contracts.
+3. Normalize IPC DTOs and complete Artifact routing and plugin reachability.
+4. Re-accept the Option vertical slice and then the local MVP with retained evidence.
+5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.
 
 ### Long-term Vision
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.

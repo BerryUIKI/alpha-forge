@@ -50,22 +50,24 @@ AlphaForge helps you:
 
 ## 📊 Status
 
-**M8 — Local MVP Completion & Release Readiness** is complete.
+**Current program state: stabilization required before local MVP acceptance.**
+
+A code-first frontend/backend audit on 2026-08-12 found broken core integration paths. M8 and M9 have been reopened for stabilization; M10 remains planned and is not an available product capability. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
 | M0 | ✅ Complete | Project Foundation |
 | M1 | ✅ Complete | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Application Foundation |
-| M2 | ✅ Complete | Agent Runtime |
-| M3 | ✅ Complete | Artifact Intelligence System |
+| M2 | ⚠️ Stabilization required | Agent Runtime |
+| M3 | ⚠️ Stabilization required | Artifact Intelligence System |
 | M4 | ✅ Complete | Research Workspace |
 | M5 | ✅ Complete | Investment Knowledge System |
 | M6 | ✅ Complete | Portfolio Intelligence |
-| M7 | ✅ Complete | Plugin Ecosystem |
-| M8 | ✅ Complete | Local MVP Completion & Release Readiness |
-| M9 | ✅ Complete | Option Module Integration |
-| M10 | ✅ Complete | Goose Agent Integration |
+| M7 | ⚠️ Partial | Internal plugin infrastructure; user workflow incomplete |
+| M8 | 🚧 Reopened | Local MVP Completion & Release Readiness |
+| M9 | 🚧 Reopened | Option Module Integration |
+| M10 | 📋 Planned | Goose Agent Integration |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
@@ -73,35 +75,35 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ## ✨ Features
 
-### Current (M0-M7)
+### Implemented foundation
 - ✅ Tauri 2 desktop application shell
 - ✅ React 19 + TypeScript + Vite foundation
 - ✅ Rust backend with SQLite persistence
 - ✅ IPC communication layer
 - ✅ Comprehensive documentation (17+ documents)
-- ✅ Agent task lifecycle management
-- ✅ Background task execution
+- 🚧 Agent task lifecycle and background execution require cross-layer repair
 - ✅ Real-time event streaming
 - ✅ Cancellation support
 - ✅ Artifact persistence layer
 - ✅ Artifact runtime manager
-- ✅ Artifact window lifecycle
+- 🚧 Artifact window routing and isolation require completion
 - ✅ Research workspace, thesis, knowledge graph, and portfolio workflows
-- ✅ Validated internal plugin registry and predefined artifact renderers
+- 🚧 Validated internal plugin registry and predefined renderers exist; a user-facing plugin workflow is not complete
 
-### M8 release foundation
-- 🚧 Local SQLite backup export and an in-app privacy surface
-- 🚧 Manual GitHub Release update checks and DMG/Windows EXE packaging configuration
-- 🚧 Simplified-Chinese default locale with an English switch in Settings
+### Stabilization priorities
+- 🚧 Repair Agent queue/start and OpenAI credential contracts
+- 🚧 Normalize TypeScript/Rust IPC DTOs, beginning with Option and System APIs
+- 🚧 Complete Artifact-window routing and internal-plugin reachability
+- 🚧 Revalidate Research navigation and critical asynchronous UI states
+- 🚧 Retain evidence for CI, E2E, packaged smoke, security, and release gates
 - 📋 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
-- 📋 M9: Option module integration through verified vertical slices
 - 📋 M10: constrained Goose Agent integration after MVP completion
 
 ---
 
 ## 🖼️ Screenshots
 
-> **Note**: AlphaForge is in early development (M1.5). Screenshots will be added as UI development progresses.
+> **Note**: AlphaForge is under active stabilization. Screenshots will be added after the accepted workflows and visual state are stable.
 
 ---
 
@@ -113,7 +115,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 | **Backend** | Rust, Tokio, SQLx, SQLite |
 | **Frontend** | React 19, TypeScript, Vite 6 |
 | **UI** | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide |
-| **AI** | OpenAI API (planned) |
+| **AI** | OpenAI Responses API integration under stabilization; Goose planned |
 | **Quality** | ESLint, Prettier, Vitest, Rustfmt, Clippy |
 
 ---

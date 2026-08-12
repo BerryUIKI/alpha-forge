@@ -1,6 +1,6 @@
 # Roadmap
 
-> This file preserves the original technical phase checklist. Program status and sequencing are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md); do not infer current completion from unchecked items here.
+> This file preserves the original technical phase checklist. Program status and sequencing are governed by [MILESTONE_ROADMAP.md](MILESTONE_ROADMAP.md) and the active [Stabilization Roadmap](STABILIZATION_ROADMAP.md); do not infer current completion from checked or unchecked items here.
 
 ## Phase 0 — Documentation Foundation ✅
 
