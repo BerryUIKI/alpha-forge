@@ -19,6 +19,8 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
+**Remediation status (2026-08-12):** The dual-lockfile and npm-invoking root-script gap identified during this audit is addressed on this branch: root scripts use pnpm-native workspace commands, `pnpm-lock.yaml` is the sole tracked JavaScript lockfile, and the tracked `package-lock.json` is removed. The baseline remains subject to the verification commands listed below.
+
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
 ## Status model
