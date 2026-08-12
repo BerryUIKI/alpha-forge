@@ -38,7 +38,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ### Scope
 
-- Resolve the missing `database::timeout` module.
+- Complete the `database::timeout` module-tree repair in this PR; S0 remains Active because its other scope and acceptance criteria remain outstanding.
 - Choose one JavaScript package manager and one authoritative lockfile.
 - Add standard CI quality gates in addition to CodeQL.
 - Align README, architecture, roadmap, and milestone status.
