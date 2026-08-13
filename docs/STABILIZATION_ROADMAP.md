@@ -87,6 +87,8 @@ Configure credential
 - Repair Option and System DTO mismatches first.
 - Add automated command registration and serialization fixture tests.
 
+Option IPC normalization is implemented: command-boundary DTOs use camelCase serde, domain/database models remain snake_case, Option desktop wrappers parse responses with Zod, malformed-response fixtures are covered, and wrapper/`lib.rs` registration parity is checked by `scripts/check-option-ipc-registration.mjs`.
+
 ### Acceptance criteria
 
 - TypeScript and Rust share checked fixtures for every repaired command family.
@@ -157,7 +159,7 @@ Select workspace
 ```
 
 - Numerical results pass independent fixtures.
-- No `create_option_chain` call exists unless a real registered command and workflow require it.
+- No `create_option_chain` call exists; `fetch_option_chain` is the registered acquisition and persistence path.
 - Workspace isolation and migration tests pass.
 
 ## S6 — Release-readiness re-acceptance
