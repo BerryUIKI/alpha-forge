@@ -53,8 +53,10 @@ Establish the foundation for option analysis with comprehensive documentation, d
   - `OptionPosition` struct
   - `StrategyType` enum
 
-- [ ] Integrate the Option schema through a new append-only runtime migration
-  - A historical `0004_options_support.sql` file exists, but the current migration runner does not apply it
+- [x] Integrate the Option schema through a new append-only runtime migration
+  - Historical `0004_options_support.sql` remains unchanged; canonical `0014_options_support.sql` is registered by the current migration runner
+  - Existing incompatible legacy Option tables are rejected without data deletion
+  - DDL and `_migrations` registration run atomically with rollback on failure
   - `option_chains` table
   - `option_contracts` table
   - `greeks` table

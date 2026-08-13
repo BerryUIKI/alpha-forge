@@ -8,7 +8,7 @@ This document translates the Option specifications into the current repository's
 | ----------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Domain            | `crates/domain/src/option.rs`                       | Validate model completeness; add inputs/outputs only when a vertical slice requires them     |
 | Calculation       | **Completed** `crates/option-core`                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing     |
-| Persistence       | **Completed** Option repositories and migration    | `0014_options_support.sql` applied via custom runner - 23 migration tests passing            |
+| Persistence       | **Implemented baseline** Option repositories and migration | `0014_options_support.sql` is registered by the custom runner; focused migration tests cover clean, repeat, partial, legacy, preservation, and rollback paths |
 | Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
 | Service           | **Completed** Existing service pattern            | `option_service.rs`, `strategy_service.rs`, `portfolio_option_service.rs` - full stack   |
 | Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
@@ -39,13 +39,13 @@ Domain models remain free of SQLx, Tauri, HTTP, React, and display-localization 
 
 The current custom migration runner skips historical migrations 0002-0006 and applies a reconciliation sequence. Therefore, adding an Option SQL file is insufficient.
 
-The implementation must:
+The implementation now:
 
-1. Add a new migration with a version greater than the current maximum.
-2. Make it safe for databases that may already contain some Option tables from historical builds.
-3. Register one named function in `database/migrations.rs` using the existing `_migrations` table.
-4. Verify fresh, pre-Option, partially populated, and repeat-run paths.
-5. Keep historical migrations unchanged.
+1. Uses the append-only `0014_options_support.sql` migration, greater than the current maximum.
+2. Preflights existing Option tables and rejects incompatible legacy schemas without deleting data.
+3. Registers `0014_options_support` in `database/migrations.rs` using the existing `_migrations` table.
+4. Applies DDL and migration registration atomically, with rollback on failure.
+5. Keeps historical migrations unchanged.
 
 Required database constraints include workspace scoping, referential integrity, stable IDs, creation/update timestamps for mutable entities, quote/calculation timestamps, and indexes for symbol, expiration, strike, chain, and position access. Complex SQL stays inside repositories.
 

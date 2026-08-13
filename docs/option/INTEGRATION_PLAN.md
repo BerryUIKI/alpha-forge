@@ -8,21 +8,21 @@ The plan supersedes the earlier assumption that `integration/option` can be merg
 
 ## Baseline evidence
 
-At consolidation time, `dev` contains:
+The current `dev` baseline contains:
 
 - `crates/domain/src/option.rs`.
-- `apps/desktop/src-tauri/migrations/0004_options_support.sql`.
-- Five Option repository modules under `apps/desktop/src-tauri/src/database/repositories/`.
+- `apps/desktop/src-tauri/migrations/0004_options_support.sql` (historical) and the canonical `0014_options_support.sql` runtime migration.
+- Six Option repository modules under `apps/desktop/src-tauri/src/database/repositories/`, wired to the canonical schema.
 - `apps/desktop/src/types/option.ts`.
+- `crates/option-core`, Option services and Tauri commands, the desktop API module, route, hooks, and feature components.
 - The Option specifications in this directory.
 
-It does not contain an integrated Option runtime:
+The runtime is not yet accepted as a complete vertical slice:
 
-- The custom migration runner does not apply the Option schema file.
-- There is no `crates/option-core` workspace member.
-- There are no Option services or Tauri commands on `dev`.
-- There is no Option desktop API module, route, navigation entry, feature UI, or renderer on `dev`.
-- There is no verified end-to-end Option test on `dev`.
+- The canonical persistence baseline is implemented and focused migration verification passes; repository CRUD/isolation coverage remains pending.
+- Option IPC request/response naming is incompatible across TypeScript and Rust, and the frontend invokes an unregistered `create_option_chain` command.
+- Chain selection, contract detail, and persisted-strategy UI paths are incomplete or unreachable.
+- No end-to-end Option workflow has been verified on `dev`.
 
 `origin/integration/option` contains candidate implementations for many of these items. They must pass the gates below against the then-current `dev`.
 
@@ -59,18 +59,20 @@ It does not contain an integrated Option runtime:
 
 **Actions**
 
-- Add a new append-only migration after the current highest migration to create or reconcile Option tables and indexes idempotently.
+- Add and register the append-only `0014_options_support.sql` migration after the current highest migration to create or reconcile Option tables and indexes idempotently.
 - Register it in the custom migration runner.
 - Map database rows to existing domain types through repositories.
 - Add fresh-database, historical-database, repeat-run, cascade, workspace-isolation, and repository CRUD tests.
-- Reconcile migration documentation that still uses the historical `0003`/`0004` label.
+- Keep the historical `0004_options_support.sql` label and file unchanged; document `0014_options_support` as the canonical runtime migration.
 
 **Exit criteria**
 
-- A new and upgraded database receives the same Option schema.
+- A new and upgraded database receives the same canonical Option schema.
 - Running migrations twice is safe.
+- Incompatible legacy Option tables fail recoverably without deleting existing rows.
+- DDL and `_migrations` registration roll back together on failure.
 - Repository failures map to stable application errors.
-- No existing migration file is renamed, deleted, or modified.
+- Historical runtime migrations under `apps/desktop/src-tauri/migrations/` are not renamed, deleted, or modified; the unused incompatible nested `src/database/migrations/0014_option_chain_tables.sql` is removed.
 
 ## Stage O2: Pricing and provider core
 
