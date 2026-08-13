@@ -4,7 +4,10 @@
 // API keys and other secrets never cross the Rust/React boundary as plaintext.
 
 use crate::error::AppError;
-use crate::security::credentials::OsKeychainCredentialStore;
+use crate::security::credentials::{
+    delete_openai_api_key as delete_key, has_openai_api_key as has_key,
+    save_openai_api_key as save_key, OsKeychainCredentialStore,
+};
 
 /// Save a credential to the OS keychain.
 ///
@@ -12,27 +15,14 @@ use crate::security::credentials::OsKeychainCredentialStore;
 /// keychain (Keychain Access on macOS, Credential Manager on Windows,
 /// Secret Service on Linux).
 #[tauri::command]
-pub async fn save_credential(
-    name: String,
-    value: String,
-) -> Result<(), AppError> {
-    // Validate credential name
-    if name.trim().is_empty() {
-        return Err(AppError::Validation(
-            "Credential name cannot be empty".to_string(),
-        ));
-    }
-
-    // Validate credential value
+pub async fn save_openai_api_key(value: String) -> Result<(), AppError> {
     if value.trim().is_empty() {
         return Err(AppError::Validation(
-            "Credential value cannot be empty".to_string(),
+            "OpenAI API key cannot be empty".to_string(),
         ));
     }
 
-    OsKeychainCredentialStore.set(&name, &value)?;
-
-    Ok(())
+    save_key(&OsKeychainCredentialStore, &value)
 }
 
 /// Check if a credential exists in the OS keychain.
@@ -40,26 +30,12 @@ pub async fn save_credential(
 /// Returns true if the credential exists, false otherwise.
 /// This does NOT return the actual credential value for security.
 #[tauri::command]
-pub async fn has_credential(name: String) -> Result<bool, AppError> {
-    if name.trim().is_empty() {
-        return Err(AppError::Validation(
-            "Credential name cannot be empty".to_string(),
-        ));
-    }
-
-    Ok(OsKeychainCredentialStore.get(&name)?.is_some())
+pub async fn has_openai_api_key() -> Result<bool, AppError> {
+    has_key(&OsKeychainCredentialStore)
 }
 
 /// Delete a credential from the OS keychain.
 #[tauri::command]
-pub async fn delete_credential(name: String) -> Result<(), AppError> {
-    if name.trim().is_empty() {
-        return Err(AppError::Validation(
-            "Credential name cannot be empty".to_string(),
-        ));
-    }
-
-    OsKeychainCredentialStore.delete(&name)?;
-
-    Ok(())
+pub async fn delete_openai_api_key() -> Result<(), AppError> {
+    delete_key(&OsKeychainCredentialStore)
 }

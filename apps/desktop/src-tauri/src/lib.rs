@@ -83,9 +83,9 @@ pub fn run() {
             commands::settings::delete_setting,
             commands::settings::list_settings,
             // Credentials commands (secure OS keychain storage)
-            commands::credentials::save_credential,
-            commands::credentials::has_credential,
-            commands::credentials::delete_credential,
+            commands::credentials::save_openai_api_key,
+            commands::credentials::has_openai_api_key,
+            commands::credentials::delete_openai_api_key,
             // Workspace commands
             commands::workspace::create_workspace,
             commands::workspace::list_workspaces,

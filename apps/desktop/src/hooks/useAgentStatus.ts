@@ -44,8 +44,8 @@ export function useAgentStatus(workspaceId: string) {
 
   // Check if API key is configured (secure keychain check)
   const credentialQuery = useQuery({
-    queryKey: ["credentials", "api_key"],
-    queryFn: () => desktopApi.credentials.hasCredential("api_key"),
+    queryKey: ["credentials", "openai", "status"],
+    queryFn: () => desktopApi.credentials.hasOpenAiApiKey(),
     retry: false,
   });
 
@@ -113,7 +113,7 @@ export function useAgentGlobalStatus() {
     queryKey: AGENT_STATUS_KEY,
     queryFn: async (): Promise<AgentConnectionStatus> => {
       // Check if API key is configured globally (secure keychain check)
-      const hasApiKey = await desktopApi.credentials.hasCredential("api_key");
+      const hasApiKey = await desktopApi.credentials.hasOpenAiApiKey();
       if (!hasApiKey) {
         return "unconfigured";
       }
