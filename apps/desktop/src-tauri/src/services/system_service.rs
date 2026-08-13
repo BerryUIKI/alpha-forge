@@ -10,6 +10,7 @@ use tauri::Manager;
 
 /// System information structure.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SystemInfo {
     pub app_name: String,
     pub app_version: String,
@@ -208,9 +209,29 @@ fn validate_release_url(input: &str) -> Result<String, AppError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{export_database_to, is_newer_version, validate_release_url};
+    use super::{export_database_to, is_newer_version, validate_release_url, SystemInfo};
     use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn serializes_system_info_with_camel_case_contract() {
+        let info = SystemInfo {
+            app_name: "Investment OS".to_string(),
+            app_version: "0.1.0".to_string(),
+            platform: "windows".to_string(),
+            architecture: "x86_64".to_string(),
+        };
+
+        assert_eq!(
+            serde_json::to_value(info).expect("system info should serialize"),
+            serde_json::json!({
+                "appName": "Investment OS",
+                "appVersion": "0.1.0",
+                "platform": "windows",
+                "architecture": "x86_64",
+            })
+        );
+    }
 
     #[test]
     fn compares_release_versions_without_accepting_invalid_tags() {

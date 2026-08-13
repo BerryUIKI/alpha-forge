@@ -89,6 +89,8 @@ Configure credential
 
 Option IPC normalization is implemented: command-boundary DTOs use camelCase serde, domain/database models remain snake_case, Option desktop wrappers parse responses with Zod, malformed-response fixtures are covered, and wrapper/`lib.rs` registration parity is checked by `scripts/check-option-ipc-registration.mjs`.
 
+System IPC normalization is implemented on the remediation branch: `SystemInfo` now has an explicit camelCase serialization contract, and the internal desktop wrapper validates unknown responses with Zod. The focused contract tests and this documentation update are pending merge; release acceptance is unchanged until the merge and required verification matrix are complete.
+
 ### Acceptance criteria
 
 - TypeScript and Rust share checked fixtures for every repaired command family.

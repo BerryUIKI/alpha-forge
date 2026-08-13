@@ -179,6 +179,8 @@ TypeScript expects `os`, `arch`, and `version`. Rust returns `app_name`, `app_ve
 
 **Rectification:** Add an explicit camelCase IPC response DTO and a contract test before exposing the function.
 
+**Remediation status (2026-08-13, pending merge):** The remediation branch adds the explicit `SystemInfo` camelCase serialization contract, updates the internal desktop wrapper to validate unknown responses with Zod, and adds focused Rust and Vitest contract tests. The wrapper remains unmounted; release acceptance remains pending merge and the required verification matrix.
+
 ### P1-6: Documentation contains contradictory completion claims
 
 **Files:** `README.md`, `docs/MILESTONE_ROADMAP.md`, `docs/NEXT_STEPS.md`, `docs/ARCHITECTURE.md`, and `docs/ROADMAP.md`
