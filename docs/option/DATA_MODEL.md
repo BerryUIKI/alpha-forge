@@ -378,10 +378,10 @@ Workspace
 
 ### Historical schema file: 0004_options_support.sql
 
-The repository contains this historical schema file, but the current custom migration runner does not apply it. M9 must add and register a new append-only reconciliation migration; do not rename or edit the historical file. See [Implementation Details](IMPLEMENTATION_DETAILS.md#persistence-path).
+The repository contains this historical schema file, but the custom migration runner intentionally leaves it unchanged. The canonical runtime schema is now provided by the append-only `0014_options_support.sql` migration, which is registered in `database/migrations.rs`; do not rename or edit the historical file. See [Implementation Details](IMPLEMENTATION_DETAILS.md#persistence-path).
 
 ```sql
--- Historical schema file: 0004_options_support (not applied by the current runner)
+-- Historical schema file: 0004_options_support (unapplied; 0014_options_support.sql is canonical)
 -- Description: Add option analysis platform tables
 -- Author: AlphaForge Team
 -- Date: 2024-01-XX

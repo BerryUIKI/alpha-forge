@@ -234,7 +234,8 @@ alpha-forge/
 │       │       └── market_data/
 │       │           └── options_provider.rs # NEW: Data fetching
 │       └── migrations/
-│           └── 0004_options_support.sql    # HISTORICAL: current runner does not apply it
+│           ├── 0004_options_support.sql    # HISTORICAL: unchanged
+│           └── 0014_options_support.sql    # CANONICAL: registered by migrations.rs
 │
 └── plugins/                                # Artifact plugins
     ├── option-chain/                       # NEW

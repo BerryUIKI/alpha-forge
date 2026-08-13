@@ -138,6 +138,7 @@ Validated JSON
 ### Scope
 
 - Repair Option IPC DTOs.
+- Canonical `0014_options_support` persistence baseline is implemented and its focused migration verification passes; broader repository CRUD/isolation acceptance remains pending.
 - Connect chain acquisition/list to contract detail.
 - Connect a persisted strategy workflow rather than a calculation-only mockup.
 - Display assumptions, timestamp, source, model, and uncertainty.

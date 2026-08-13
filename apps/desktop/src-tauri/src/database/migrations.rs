@@ -1,6 +1,6 @@
 // Database migration runner.
 
-use sqlx::{Row, SqlitePool};
+use sqlx::{Connection, Executor, Row, SqlitePool};
 use tracing::info;
 
 use crate::error::AppError;
@@ -29,6 +29,7 @@ pub async fn run(pool: &SqlitePool) -> Result<(), AppError> {
     apply_portfolio_theme_links(pool).await?;
     apply_plugin_registry(pool).await?;
     apply_thesis_timestamp_normalization(pool).await?;
+    apply_option_support(pool).await?;
 
     info!("migrations complete");
 
@@ -303,6 +304,201 @@ async fn apply_thesis_timestamp_normalization(pool: &SqlitePool) -> Result<(), A
         .execute(pool)
         .await
         .map_err(|e| AppError::Internal(format!("migration record failed: {e}")))?;
+
+    Ok(())
+}
+
+const OPTION_MIGRATION_NAME: &str = "0014_options_support";
+
+const OPTION_TABLE_COLUMNS: &[(&str, &[&str])] = &[
+    (
+        "option_chains",
+        &[
+            "id",
+            "workspace_id",
+            "symbol",
+            "underlying_price",
+            "as_of",
+            "data_source",
+            "created_at",
+        ],
+    ),
+    (
+        "option_contracts",
+        &[
+            "id",
+            "workspace_id",
+            "chain_id",
+            "symbol",
+            "option_type",
+            "strike",
+            "expiration",
+            "contract_multiplier",
+            "bid",
+            "ask",
+            "last",
+            "volume",
+            "open_interest",
+            "implied_volatility",
+            "created_at",
+            "updated_at",
+        ],
+    ),
+    (
+        "greeks",
+        &[
+            "id",
+            "option_contract_id",
+            "delta",
+            "gamma",
+            "theta",
+            "vega",
+            "rho",
+            "iv",
+            "calculated_at",
+            "calculation_model",
+        ],
+    ),
+    (
+        "option_strategies",
+        &[
+            "id",
+            "workspace_id",
+            "name",
+            "strategy_type",
+            "underlying",
+            "total_cost",
+            "max_profit",
+            "max_loss",
+            "break_even_points",
+            "created_at",
+            "updated_at",
+        ],
+    ),
+    (
+        "strategy_legs",
+        &[
+            "id",
+            "strategy_id",
+            "option_contract_id",
+            "quantity",
+            "position_type",
+            "premium",
+            "strike",
+            "expiration",
+            "option_type",
+        ],
+    ),
+    (
+        "option_positions",
+        &[
+            "id",
+            "workspace_id",
+            "account_id",
+            "option_contract_id",
+            "quantity",
+            "cost_basis",
+            "opened_at",
+            "closed_at",
+            "notes",
+        ],
+    ),
+    (
+        "greeks_snapshots",
+        &[
+            "id",
+            "workspace_id",
+            "position_id",
+            "snapshot_date",
+            "delta",
+            "gamma",
+            "theta",
+            "vega",
+            "rho",
+            "created_at",
+        ],
+    ),
+];
+
+async fn apply_option_support(pool: &SqlitePool) -> Result<(), AppError> {
+    let already = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _migrations WHERE name = ?")
+        .bind(OPTION_MIGRATION_NAME)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("option migration check failed: {e}")))?;
+
+    if already > 0 {
+        return Ok(());
+    }
+
+    // Preflight is read-only and happens before any DDL. This rejects an
+    // incompatible legacy table without changing it or any other table.
+    for (table, required_columns) in OPTION_TABLE_COLUMNS {
+        let object_type = sqlx::query_scalar::<_, String>(
+            "SELECT type FROM sqlite_master WHERE name = ? LIMIT 1",
+        )
+        .bind(*table)
+        .fetch_optional(pool)
+        .await
+        .map_err(|e| {
+            AppError::Internal(format!("option schema inspection failed for {table}: {e}"))
+        })?;
+
+        let Some(object_type) = object_type else {
+            continue;
+        };
+
+        if object_type != "table" {
+            return Err(AppError::Validation(format!(
+                "incompatible legacy Option schema: {table} is a {object_type}, not a table"
+            )));
+        }
+
+        let rows = sqlx::query(&format!("PRAGMA table_info({table})"))
+            .fetch_all(pool)
+            .await
+            .map_err(|e| {
+                AppError::Internal(format!("option schema inspection failed for {table}: {e}"))
+            })?;
+
+        let missing = required_columns
+            .iter()
+            .filter(|required| {
+                !rows
+                    .iter()
+                    .any(|row| row.get::<String, _>("name") == **required)
+            })
+            .copied()
+            .collect::<Vec<_>>();
+
+        if !missing.is_empty() {
+            return Err(AppError::Validation(format!(
+                "incompatible legacy Option schema in {table}; missing columns: {}",
+                missing.join(", ")
+            )));
+        }
+    }
+
+    let mut connection = pool
+        .acquire()
+        .await
+        .map_err(|e| AppError::Internal(format!("option migration transaction failed: {e}")))?;
+    let transaction_result: Result<(), sqlx::Error> =
+        Connection::transaction(&mut *connection, |transaction| {
+            Box::pin(async move {
+                (&mut **transaction)
+                    .execute(include_str!("../../migrations/0014_options_support.sql"))
+                    .await?;
+                sqlx::query("INSERT INTO _migrations (name) VALUES (?)")
+                    .bind(OPTION_MIGRATION_NAME)
+                    .execute(&mut **transaction)
+                    .await?;
+                Ok(())
+            })
+        })
+        .await;
+    transaction_result
+        .map_err(|e| AppError::Internal(format!("option migration transaction failed: {e}")))?;
 
     Ok(())
 }
