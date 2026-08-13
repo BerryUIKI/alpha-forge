@@ -5,9 +5,116 @@ use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::option::{DataSource, OptionChain, OptionContract, OptionStrategy, OptionType, StrategyType};
+use domain::option::{
+    DataSource, OptionChain, OptionContract, OptionStrategy, OptionType, StrategyType,
+};
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionChainResponse {
+    pub id: String,
+    pub workspace_id: String,
+    pub symbol: String,
+    pub underlying_price: f64,
+    pub as_of: chrono::DateTime<chrono::Utc>,
+    pub data_source: DataSource,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl From<OptionChain> for OptionChainResponse {
+    fn from(chain: OptionChain) -> Self {
+        Self {
+            id: chain.id,
+            workspace_id: chain.workspace_id,
+            symbol: chain.symbol,
+            underlying_price: chain.underlying_price,
+            as_of: chain.as_of,
+            data_source: chain.data_source,
+            created_at: chain.created_at,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionContractResponse {
+    pub id: String,
+    pub workspace_id: String,
+    pub chain_id: String,
+    pub symbol: String,
+    pub option_type: OptionType,
+    pub strike: f64,
+    pub expiration: chrono::DateTime<chrono::Utc>,
+    pub contract_multiplier: u32,
+    pub bid: f64,
+    pub ask: f64,
+    pub last: Option<f64>,
+    pub volume: u64,
+    pub open_interest: u64,
+    pub implied_volatility: f64,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl From<OptionContract> for OptionContractResponse {
+    fn from(contract: OptionContract) -> Self {
+        Self {
+            id: contract.id,
+            workspace_id: contract.workspace_id,
+            chain_id: contract.chain_id,
+            symbol: contract.symbol,
+            option_type: contract.option_type,
+            strike: contract.strike,
+            expiration: contract.expiration,
+            contract_multiplier: contract.contract_multiplier,
+            bid: contract.bid,
+            ask: contract.ask,
+            last: contract.last,
+            volume: contract.volume,
+            open_interest: contract.open_interest,
+            implied_volatility: contract.implied_volatility,
+            created_at: contract.created_at,
+            updated_at: contract.updated_at,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionStrategyResponse {
+    pub id: String,
+    pub workspace_id: String,
+    pub name: String,
+    pub strategy_type: StrategyType,
+    pub underlying: String,
+    pub total_cost: f64,
+    pub max_profit: Option<f64>,
+    pub max_loss: Option<f64>,
+    pub break_even_points: Vec<f64>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl From<OptionStrategy> for OptionStrategyResponse {
+    fn from(strategy: OptionStrategy) -> Self {
+        Self {
+            id: strategy.id,
+            workspace_id: strategy.workspace_id,
+            name: strategy.name,
+            strategy_type: strategy.strategy_type,
+            underlying: strategy.underlying,
+            total_cost: strategy.total_cost,
+            max_profit: strategy.max_profit,
+            max_loss: strategy.max_loss,
+            break_even_points: strategy.break_even_points,
+            created_at: strategy.created_at,
+            updated_at: strategy.updated_at,
+        }
+    }
+}
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FetchChainParams {
     pub symbol: String,
     pub workspace_id: String,
@@ -15,6 +122,7 @@ pub struct FetchChainParams {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CalculateGreeksParams {
     pub option_type: String,
     pub underlying_price: f64,
@@ -26,6 +134,7 @@ pub struct CalculateGreeksParams {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GreeksResponse {
     pub delta: f64,
     pub gamma: f64,
@@ -39,7 +148,7 @@ pub struct GreeksResponse {
 pub async fn fetch_option_chain(
     params: FetchChainParams,
     state: State<'_, AppState>,
-) -> Result<OptionChain, AppError> {
+) -> Result<OptionChainResponse, AppError> {
     // Validate inputs
     if params.symbol.trim().is_empty() {
         return Err(AppError::Validation("Symbol cannot be empty".to_string()));
@@ -60,6 +169,7 @@ pub async fn fetch_option_chain(
         .option_service
         .fetch_chain(&params.symbol, &params.workspace_id, source)
         .await
+        .map(Into::into)
 }
 
 /// Calculate Greeks for an option
@@ -218,6 +328,7 @@ pub async fn calculate_implied_volatility(
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CalculateIVParams {
     pub option_type: String,
     pub underlying_price: f64,
@@ -233,29 +344,30 @@ pub struct CalculateIVParams {
 // ============================================
 
 /// Get an option chain by ID
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn get_option_chain(
     id: String,
     state: State<'_, AppState>,
-) -> Result<OptionChain, AppError> {
-    state.option_service.get_chain(&id).await
+) -> Result<OptionChainResponse, AppError> {
+    state.option_service.get_chain(&id).await.map(Into::into)
 }
 
 /// List all option chains for a workspace
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn list_option_chains(
     workspace_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<OptionChain>, AppError> {
-    state.option_service.list_chains(&workspace_id).await
+) -> Result<Vec<OptionChainResponse>, AppError> {
+    state
+        .option_service
+        .list_chains(&workspace_id)
+        .await
+        .map(|chains| chains.into_iter().map(Into::into).collect())
 }
 
 /// Delete an option chain
-#[tauri::command]
-pub async fn delete_option_chain(
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<(), AppError> {
+#[tauri::command(rename_all = "camelCase")]
+pub async fn delete_option_chain(id: String, state: State<'_, AppState>) -> Result<(), AppError> {
     state.option_service.delete_chain(&id).await
 }
 
@@ -266,56 +378,60 @@ pub async fn delete_option_chain(
 /// Create a new option contract
 #[tauri::command]
 pub async fn create_option_contract(
-    contract: CreateContractParams,
+    params: CreateContractParams,
     state: State<'_, AppState>,
-) -> Result<OptionContract, AppError> {
+) -> Result<OptionContractResponse, AppError> {
     let contract = domain::option::OptionContract {
         id: uuid::Uuid::new_v4().to_string(),
-        workspace_id: contract.workspace_id,
-        chain_id: contract.chain_id,
-        symbol: contract.symbol,
-        option_type: match contract.option_type.as_str() {
+        workspace_id: params.workspace_id,
+        chain_id: params.chain_id,
+        symbol: params.symbol,
+        option_type: match params.option_type.as_str() {
             "call" => OptionType::Call,
             "put" => OptionType::Put,
             _ => return Err(AppError::Validation("Invalid option type".to_string())),
         },
-        strike: contract.strike,
-        expiration: contract.expiration,
-        contract_multiplier: contract.contract_multiplier.unwrap_or(100),
-        bid: contract.bid.unwrap_or(0.0),
-        ask: contract.ask.unwrap_or(0.0),
-        last: contract.last,
-        volume: contract.volume.unwrap_or(0),
-        open_interest: contract.open_interest.unwrap_or(0),
-        implied_volatility: contract.implied_volatility.unwrap_or(0.0),
+        strike: params.strike,
+        expiration: params.expiration,
+        contract_multiplier: params.contract_multiplier.unwrap_or(100),
+        bid: params.bid.unwrap_or(0.0),
+        ask: params.ask.unwrap_or(0.0),
+        last: params.last,
+        volume: params.volume.unwrap_or(0),
+        open_interest: params.open_interest.unwrap_or(0),
+        implied_volatility: params.implied_volatility.unwrap_or(0.0),
         created_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
     };
-    
+
     state.option_service.create_contract(&contract).await?;
-    Ok(contract)
+    Ok(contract.into())
 }
 
 /// Get an option contract by ID
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn get_option_contract(
     id: String,
     state: State<'_, AppState>,
-) -> Result<OptionContract, AppError> {
-    state.option_service.get_contract(&id).await
+) -> Result<OptionContractResponse, AppError> {
+    state.option_service.get_contract(&id).await.map(Into::into)
 }
 
 /// List all option contracts for a chain
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn list_option_contracts(
     chain_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<OptionContract>, AppError> {
-    state.option_service.list_contracts(&chain_id).await
+) -> Result<Vec<OptionContractResponse>, AppError> {
+    state
+        .option_service
+        .list_contracts(&chain_id)
+        .await
+        .map(|contracts| contracts.into_iter().map(Into::into).collect())
 }
 
 /// Delete an option contract
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn delete_option_contract(
     id: String,
     state: State<'_, AppState>,
@@ -324,6 +440,7 @@ pub async fn delete_option_contract(
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateContractParams {
     pub workspace_id: String,
     pub chain_id: String,
@@ -349,7 +466,7 @@ pub struct CreateContractParams {
 pub async fn create_option_strategy(
     params: CreateStrategyParams,
     state: State<'_, AppState>,
-) -> Result<OptionStrategy, AppError> {
+) -> Result<OptionStrategyResponse, AppError> {
     let strategy = domain::option::OptionStrategy {
         id: uuid::Uuid::new_v4().to_string(),
         workspace_id: params.workspace_id,
@@ -375,27 +492,31 @@ pub async fn create_option_strategy(
         created_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
     };
-    
+
     state.option_service.create_strategy(&strategy).await?;
-    Ok(strategy)
+    Ok(strategy.into())
 }
 
 /// Get an option strategy by ID
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn get_option_strategy(
     id: String,
     state: State<'_, AppState>,
-) -> Result<OptionStrategy, AppError> {
-    state.option_service.get_strategy(&id).await
+) -> Result<OptionStrategyResponse, AppError> {
+    state.option_service.get_strategy(&id).await.map(Into::into)
 }
 
 /// List all option strategies for a workspace
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn list_option_strategies(
     workspace_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<OptionStrategy>, AppError> {
-    state.option_service.list_strategies(&workspace_id).await
+) -> Result<Vec<OptionStrategyResponse>, AppError> {
+    state
+        .option_service
+        .list_strategies(&workspace_id)
+        .await
+        .map(|strategies| strategies.into_iter().map(Into::into).collect())
 }
 
 /// Update an option strategy
@@ -403,9 +524,9 @@ pub async fn list_option_strategies(
 pub async fn update_option_strategy(
     params: UpdateStrategyParams,
     state: State<'_, AppState>,
-) -> Result<OptionStrategy, AppError> {
+) -> Result<OptionStrategyResponse, AppError> {
     let mut strategy = state.option_service.get_strategy(&params.id).await?;
-    
+
     if let Some(name) = params.name {
         strategy.name = name;
     }
@@ -422,13 +543,13 @@ pub async fn update_option_strategy(
         strategy.break_even_points = break_even_points;
     }
     strategy.updated_at = chrono::Utc::now();
-    
+
     state.option_service.update_strategy(&strategy).await?;
-    Ok(strategy)
+    Ok(strategy.into())
 }
 
 /// Delete an option strategy
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub async fn delete_option_strategy(
     id: String,
     state: State<'_, AppState>,
@@ -437,6 +558,7 @@ pub async fn delete_option_strategy(
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateStrategyParams {
     pub workspace_id: String,
     pub name: String,
@@ -449,6 +571,7 @@ pub struct CreateStrategyParams {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateStrategyParams {
     pub id: String,
     pub name: Option<String>,
@@ -456,4 +579,93 @@ pub struct UpdateStrategyParams {
     pub max_profit: Option<f64>,
     pub max_loss: Option<f64>,
     pub break_even_points: Option<Vec<f64>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{TimeZone, Utc};
+
+    fn timestamp() -> chrono::DateTime<Utc> {
+        Utc.with_ymd_and_hms(2024, 1, 2, 3, 4, 5)
+            .single()
+            .expect("valid fixture timestamp")
+    }
+
+    #[test]
+    fn response_dtos_serialize_camel_case_without_changing_domain_models() {
+        let chain = OptionChainResponse::from(OptionChain {
+            id: "chain-1".into(),
+            workspace_id: "workspace-1".into(),
+            symbol: "AAPL".into(),
+            underlying_price: 150.0,
+            as_of: timestamp(),
+            data_source: DataSource::Demo,
+            created_at: timestamp(),
+        });
+        let contract = OptionContractResponse::from(OptionContract {
+            id: "contract-1".into(),
+            workspace_id: "workspace-1".into(),
+            chain_id: "chain-1".into(),
+            symbol: "AAPL".into(),
+            option_type: OptionType::Call,
+            strike: 150.0,
+            expiration: timestamp(),
+            contract_multiplier: 100,
+            bid: 4.0,
+            ask: 5.0,
+            last: None,
+            volume: 10,
+            open_interest: 20,
+            implied_volatility: 0.25,
+            created_at: timestamp(),
+            updated_at: timestamp(),
+        });
+        let strategy = OptionStrategyResponse::from(OptionStrategy {
+            id: "strategy-1".into(),
+            workspace_id: "workspace-1".into(),
+            name: "Demo spread".into(),
+            strategy_type: StrategyType::BullCallSpread,
+            underlying: "AAPL".into(),
+            total_cost: 100.0,
+            max_profit: None,
+            max_loss: Some(-100.0),
+            break_even_points: vec![151.0],
+            created_at: timestamp(),
+            updated_at: timestamp(),
+        });
+
+        let value = serde_json::json!({
+            "chain": chain,
+            "contract": contract,
+            "strategy": strategy,
+        });
+        assert_eq!(value["chain"]["workspaceId"], "workspace-1");
+        assert_eq!(value["chain"]["underlyingPrice"], 150.0);
+        assert!(value["chain"].get("workspace_id").is_none());
+        assert_eq!(value["contract"]["chainId"], "chain-1");
+        assert!(value["contract"].get("chain_id").is_none());
+        assert_eq!(value["strategy"]["strategyType"], "bull_call_spread");
+        assert!(value["strategy"].get("maxProfit").is_some());
+        assert!(value["strategy"].get("max_profit").is_none());
+        assert!(value["strategy"]["maxProfit"].is_null());
+    }
+
+    #[test]
+    fn request_dtos_accept_camel_case_and_reject_snake_case() {
+        let params: FetchChainParams = serde_json::from_value(serde_json::json!({
+            "symbol": "AAPL",
+            "workspaceId": "workspace-1",
+            "provider": "demo",
+        }))
+        .expect("camelCase request fixture should deserialize");
+        assert_eq!(params.workspace_id, "workspace-1");
+
+        let error = serde_json::from_value::<FetchChainParams>(serde_json::json!({
+            "symbol": "AAPL",
+            "workspace_id": "workspace-1",
+        }))
+        .expect_err("snake_case request fields must not be accepted");
+        assert!(error.to_string().contains("workspaceId"));
+    }
 }

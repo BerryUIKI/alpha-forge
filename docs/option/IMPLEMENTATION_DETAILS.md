@@ -12,7 +12,7 @@ This document translates the Option specifications into the current repository's
 | Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
 | Service           | **Completed** Existing service pattern            | `option_service.rs`, `strategy_service.rs`, `portfolio_option_service.rs` - full stack   |
 | Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
-| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | Zod schemas plus `lib/desktop-api/options.ts` - calculation commands integrated             |
+| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | CamelCase command-boundary DTOs, strict Zod response parsing, malformed-response tests, and registration parity check in `scripts/check-option-ipc-registration.mjs` |
 | Frontend state    | **Completed** TanStack Query conventions          | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                    |
 | UI                | **Completed** Shared states and layout          | `features/options` - GreeksCalculator, OptionChainList, StrategyBuilder components          |
 | Artifact          | Predefined renderer registry                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                   |
@@ -99,7 +99,7 @@ The API spec is a target, not proof every listed command belongs in the first sl
 
 ## Frontend path
 
-1. Parse every IPC result with a Zod schema; TypeScript interfaces alone do not validate untrusted values.
+1. Parse every Option IPC result with a Zod schema; TypeScript interfaces alone do not validate untrusted values. Nullable Rust `Option<T>` outputs are represented as explicit `null` values.
 2. Expose functions from `apps/desktop/src/lib/desktop-api/options.ts` and re-export them through the unified `desktopApi`.
 3. Use TanStack Query for chain, contract, strategy, and risk asynchronous state; use component state for filters and draft legs.
 4. Add route-level pages under `pages/options` and composable components under `features/options`.

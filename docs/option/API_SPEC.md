@@ -4,6 +4,10 @@
 
 This document defines the IPC (Inter-Process Communication) commands, TypeScript interfaces, and message protocols for the Option Analysis Platform. All communication between React frontend and Rust backend goes through the `desktopApi` layer.
 
+### Current implementation contract (2026-08-13)
+
+The implemented Option commands use camelCase at the IPC boundary only. Nested Rust request DTOs and explicit response DTOs use `#[serde(rename_all = "camelCase")]`; Rust domain and database models remain snake_case. The current desktop API validates every Option response with Zod, including nullable `last`, `maxProfit`, and `maxLoss` values. `fetch_option_chain` is the acquisition and persistence path; there is no `create_option_chain` command or wrapper. The focused parity check is `scripts/check-option-ipc-registration.mjs`.
+
 ---
 
 ## IPC Command Architecture
@@ -55,16 +59,16 @@ pub struct ErrorResponse {
 const chain = await desktopApi.options.fetchOptionChain('AAPL');
 ```
 
-**IPC Command**:
+**IPC Command (current implementation)**:
 ```rust
 #[tauri::command]
 pub async fn fetch_option_chain(
-    symbol: String,
-    workspace_id: String,
-    provider: Option<DataSource>,
+    params: FetchChainParams,
     state: State<'_, AppState>,
-) -> Result<OptionChain, AppError>
+) -> Result<OptionChainResponse, AppError>
 ```
+
+The `FetchChainParams` fields are `symbol`, `workspaceId`, and optional `provider`; `OptionChainResponse` fields are `workspaceId`, `underlyingPrice`, `asOf`, `dataSource`, and `createdAt` (plus `id` and `symbol`).
 
 **Parameters**:
 ```typescript

@@ -20,7 +20,7 @@ The current `dev` baseline contains:
 The runtime is not yet accepted as a complete vertical slice:
 
 - The canonical persistence baseline is implemented and focused migration verification passes; repository CRUD/isolation coverage remains pending.
-- Option IPC request/response naming is incompatible across TypeScript and Rust, and the frontend invokes an unregistered `create_option_chain` command.
+- Option IPC request/response naming is now normalized at the command boundary: Rust request/response DTOs use camelCase serde while domain and database models remain snake_case. The desktop API no longer invokes the unsupported `create_option_chain` command; `fetch_option_chain` is the acquisition and persistence path.
 - Chain selection, contract detail, and persisted-strategy UI paths are incomplete or unreachable.
 - No end-to-end Option workflow has been verified on `dev`.
 
@@ -36,6 +36,8 @@ The runtime is not yet accepted as a complete vertical slice:
 6. Route every frontend call through typed `desktopApi` functions and Zod validation.
 7. Preserve source, timestamp, calculation model, assumptions, and confidence with analytical output.
 8. Never add trading, brokerage execution, or autonomous recommendations.
+
+The repaired Option IPC contract is enforced by focused Rust serde fixtures, desktop API malformed-response tests, and `scripts/check-option-ipc-registration.mjs`, which compares every Option wrapper command with the handlers registered in `lib.rs`.
 
 ## Stage O0: Rebaseline and decision gate
 

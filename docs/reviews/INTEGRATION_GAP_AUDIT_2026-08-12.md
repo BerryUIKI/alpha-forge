@@ -97,6 +97,8 @@ The frontend also invokes `create_option_chain`, but this command is not impleme
 
 **Rectification:** Establish one versioned IPC DTO convention. Do not change database/domain naming merely to satisfy React. Add command-boundary DTOs with `#[serde(rename_all = "camelCase")]`, Zod response schemas, and serialization contract tests. Remove the unsupported wrapper or implement the command only if a real product workflow requires it.
 
+**Remediation status (2026-08-13):** Implemented in `commands/options.rs`, `src/lib/desktop-api/options.ts`, and `src/types/option.ts`. Rust emits explicit camelCase response DTOs while domain/database models remain snake_case; nested requests use camelCase serde and scalar command arguments use Tauri's camelCase boundary. The unsupported `create_option_chain` wrapper was removed; `fetch_option_chain` remains the acquisition and persistence path. Focused Rust and Vitest fixtures cover serialization and malformed responses, and `scripts/check-option-ipc-registration.mjs` verifies wrapper/registration parity. Final closure depends on the recorded PR verification and merge.
+
 ### P0-4: Separate Artifact windows open an undefined route
 
 **Backend:** `apps/desktop/src-tauri/src/artifacts/manager.rs:75`
