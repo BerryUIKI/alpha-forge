@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-12):** The dual-lockfile and npm-invoking root-script gap identified during this audit is addressed on this branch: root scripts use pnpm-native workspace commands, `pnpm-lock.yaml` is the sole tracked JavaScript lockfile, and the tracked `package-lock.json` is removed. The baseline remains subject to the verification commands listed below.
+**Remediation status (2026-08-13):** The dual-lockfile and npm-invoking root-script gap identified during this audit is addressed: root scripts use pnpm-native workspace commands, `pnpm-lock.yaml` is the sole tracked JavaScript lockfile, and the tracked `package-lock.json` is removed. The credential-contract repair replaces caller-controlled credential IPC with OpenAI-specific save, status, and delete operations; migrates the legacy `api_key` entry to `openai.api_key` in Rust; and routes Settings, Agent status, and provider lookup through that contract. Release acceptance remains subject to the verification commands listed below and the remaining stabilization work.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -40,7 +40,7 @@ This audit was code-first. Compilation and build commands were deliberately defe
 | Workspace rename/delete | Hooks and API wrappers exist | Commands and service implemented | Partial | No reachable management UI was found for rename or delete. |
 | Agent task create/list | Reachable in right sidebar | Commands, service, repository implemented | Partial | Creation and listing exist, but execution is broken as described in P0-1. |
 | Agent task queue/run | Start button exists; queue hook exists but is not used in the flow | Backend requires `created -> queued -> running` | Broken | UI calls `start_agent_task` directly for a `created` task. |
-| OpenAI credential configuration | Reachable in Settings | OS keychain and OpenAI provider implemented | Broken | Frontend uses `api_key`; provider reads `openai.api_key`. |
+| OpenAI credential configuration | Reachable in Settings | OS keychain, legacy migration, and OpenAI provider implemented | Partial | The credential identifier mismatch is repaired with provider-specific IPC and regression tests; full stabilization acceptance remains pending. |
 | Research projects/documents/sources/notes/reports | Reachable in Research | Commands, services, repositories implemented | Partial | Core CRUD is connected, but navigation query parameters are ignored and async/error states are inconsistent. |
 | Research navigation context | Layout generates `?workspace=` and `?project=` links | Not applicable | Broken | `ResearchPage` uses local state and never reads those query parameters. |
 | Thesis and knowledge graph | Reachable in Journal | Commands, services, repositories implemented | Partial | Main operations are connected; contract and workflow tests are incomplete. |
@@ -79,6 +79,8 @@ The frontend reads and writes `api_key`. The provider reads `openai.api_key`.
 **Impact:** Settings can report the Agent as configured while task execution fails with credentials unavailable.
 
 **Rectification:** Define one shared credential identifier. Prefer `openai.api_key`, migrate or deliberately remove the legacy name, and test Settings status plus provider lookup without exposing the secret value.
+
+**Remediation status (2026-08-13):** Implemented by the credential-contract repair. Rust owns the canonical and legacy identifiers, migrates only after a successful canonical write, and keeps plaintext out of React. Settings and Agent status use OpenAI-specific status/save calls, the provider shares the same migration path, and the editable Settings field no longer contains a reusable mask. Final closure depends on the recorded PR verification and merge.
 
 ### P0-3: The Option IPC contract is incompatible
 

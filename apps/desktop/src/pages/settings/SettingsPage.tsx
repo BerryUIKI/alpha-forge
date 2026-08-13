@@ -23,14 +23,11 @@ export function SettingsPage() {
 
   // Check if API key exists in secure storage on mount
   useEffect(() => {
-    desktopApi.credentials.hasCredential("api_key").then((exists) => {
-      setHasExistingKey(exists);
-      if (exists) {
-        // Key exists but we don't load the actual value for security
-        setApiKey("••••••••••••••••");
-      }
-    });
-  }, []);
+    desktopApi.credentials
+      .hasOpenAiApiKey()
+      .then(setHasExistingKey)
+      .catch(() => setAgentMessage(t("agentConfigError" as any) || "保存失败"));
+  }, [t]);
 
   const exportBackup = async () => {
     setIsExporting(true);
@@ -83,9 +80,9 @@ export function SettingsPage() {
     setAgentMessage(null);
     try {
       // ✅ SECURE: Save API key to OS keychain instead of plaintext database
-      await desktopApi.credentials.saveCredential("api_key", apiKey);
+      await desktopApi.credentials.saveOpenAiApiKey(apiKey);
       setHasExistingKey(true);
-      setApiKey("••••••••••••••••");
+      setApiKey("");
       setAgentMessage(t("agentConfigSaved" as any) || "Agent配置已保存");
     } catch {
       setAgentMessage(t("agentConfigError" as any) || "保存失败");
@@ -140,16 +137,7 @@ export function SettingsPage() {
               id="api-key"
               type="password"
               value={apiKey}
-              onChange={(e) => {
-                const value = e.target.value;
-                // If user had existing key and starts typing, clear the placeholder
-                if (hasExistingKey && value !== "••••••••••••••••") {
-                  setApiKey(value);
-                  setHasExistingKey(false);
-                } else {
-                  setApiKey(value);
-                }
-              }}
+              onChange={(e) => setApiKey(e.target.value)}
               placeholder={hasExistingKey ? t("apiKeyPlaceholder" as any) || "密钥已安全存储，输入新值以更新" : "sk-..."}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />

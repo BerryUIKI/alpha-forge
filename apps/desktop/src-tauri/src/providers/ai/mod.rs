@@ -8,9 +8,10 @@ use reqwest::Client;
 use serde::Serialize;
 use serde_json::{json, Value};
 
-use crate::security::credentials::OsKeychainCredentialStore;
+use crate::security::credentials::{
+    load_openai_api_key, CredentialStore, OsKeychainCredentialStore,
+};
 
-const OPENAI_CREDENTIAL_NAME: &str = "openai.api_key";
 const OPENAI_RESPONSES_URL: &str = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL: &str = "gpt-5.6-terra";
 
@@ -49,11 +50,7 @@ impl ResearchProvider for OpenAiResearchProvider {
         &self,
         request: ResearchCompletionRequest,
     ) -> Result<ResearchCompletion, ProviderError> {
-        let api_key = self
-            .credential_store
-            .get(OPENAI_CREDENTIAL_NAME)
-            .map_err(|_| ProviderError::CredentialsUnavailable)?
-            .ok_or(ProviderError::CredentialsUnavailable)?;
+        let api_key = provider_api_key(&self.credential_store)?;
         let payload = ResponsesRequest::new(&self.model, request);
         let response = self
             .client
@@ -74,6 +71,12 @@ impl ResearchProvider for OpenAiResearchProvider {
             &extract_output_text(&response).ok_or(ProviderError::InvalidResponse)?,
         )
     }
+}
+
+fn provider_api_key(store: &impl CredentialStore) -> Result<String, ProviderError> {
+    load_openai_api_key(store)
+        .map_err(|_| ProviderError::CredentialsUnavailable)?
+        .ok_or(ProviderError::CredentialsUnavailable)
 }
 
 #[derive(Serialize)]
@@ -146,6 +149,40 @@ fn extract_output_text(response: &Value) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::AppError;
+    use std::collections::HashMap;
+    use std::sync::Mutex;
+
+    struct FakeCredentialStore(Mutex<HashMap<String, String>>);
+
+    impl FakeCredentialStore {
+        fn with_credential(name: &str, value: &str) -> Self {
+            Self(Mutex::new(HashMap::from([(name.into(), value.into())])))
+        }
+
+        fn value(&self, name: &str) -> Option<String> {
+            self.0.lock().unwrap().get(name).cloned()
+        }
+    }
+
+    impl CredentialStore for FakeCredentialStore {
+        fn set(&self, credential_name: &str, secret: &str) -> Result<(), AppError> {
+            self.0
+                .lock()
+                .unwrap()
+                .insert(credential_name.into(), secret.into());
+            Ok(())
+        }
+
+        fn get(&self, credential_name: &str) -> Result<Option<String>, AppError> {
+            Ok(self.0.lock().unwrap().get(credential_name).cloned())
+        }
+
+        fn delete(&self, credential_name: &str) -> Result<(), AppError> {
+            self.0.lock().unwrap().remove(credential_name);
+            Ok(())
+        }
+    }
 
     #[test]
     fn builds_a_bounded_structured_request() {
@@ -171,5 +208,27 @@ mod tests {
             extract_output_text(&response),
             Some("{\"summary\":\"x\"}".into())
         );
+    }
+
+    #[test]
+    fn provider_lookup_uses_the_canonical_openai_key_and_reports_missing_keys() {
+        assert_eq!(
+            provider_api_key(&FakeCredentialStore::with_credential(
+                "openai.api_key",
+                "secret",
+            ))
+            .unwrap(),
+            "secret"
+        );
+        assert!(provider_api_key(&FakeCredentialStore(Mutex::new(HashMap::new()))).is_err());
+    }
+
+    #[test]
+    fn provider_lookup_migrates_the_legacy_openai_key() {
+        let store = FakeCredentialStore::with_credential("api_key", "legacy");
+
+        assert_eq!(provider_api_key(&store).unwrap(), "legacy");
+        assert_eq!(store.value("openai.api_key").as_deref(), Some("legacy"));
+        assert_eq!(store.value("api_key"), None);
     }
 }
