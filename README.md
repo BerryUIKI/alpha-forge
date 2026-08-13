@@ -1,41 +1,51 @@
-# AlphaForge (Investment OS)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/header-banner-dark.svg">
+  <img src="assets/header-banner-light.svg" alt="AlphaForge — Investment OS" width="480">
+</picture>
+
+<br>
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
 [![Made with Tauri](https://img.shields.io/badge/Made%20with-Tauri-24C8DB.svg)](https://tauri.app)
+[![Rust](https://img.shields.io/badge/Rust-stable-dea584.svg)](https://www.rust-lang.org)
+[![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
 
-**Desktop-first AI workspace for investment research** 🚀
+**Desktop-first AI workspace for investment research**
 
 [English](README.md) | [简体中文](README-zh_CN.md) | [日本語](README-ja.md) | [한국어](README-ko.md) | [Español](README-es.md)
 
 ---
 
-## 🎯 What is AlphaForge?
+## What is AlphaForge?
 
 AlphaForge is an **AI-native investment research workspace** designed to transform raw information into structured investment knowledge.
 
+It is **not** a brokerage terminal — it does not execute trades or make autonomous investment decisions. Instead, it provides a structured research workflow that helps you gather information, build evidence-backed theses, make informed decisions, and validate outcomes over time.
+
 ### Core Product Loop
 
-```text
-Information → Knowledge → Thesis → Decision → Validation → Review → Improvement
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/product-loop-dark.svg">
+  <img src="assets/product-loop-light.svg" alt="Core Product Loop: Information to Improvement" width="760">
+</picture>
 
 AlphaForge helps you:
-- 📊 **Research efficiently** — AI-assisted document analysis and information gathering
-- 💡 **Build theses** — Track investment theses with evidence and confidence levels
-- 📈 **Make informed decisions** — Structured research workflow, not chatbot-style interaction
-- ✅ **Validate outcomes** — Track thesis performance and learn from results
 
-> **⚠️ Important**: This is a **research workspace**, not a brokerage terminal. It does NOT execute trades or make autonomous investment decisions.
+- **Research efficiently** — AI-assisted document analysis and information gathering
+- **Build theses** — Track investment theses with evidence and confidence levels
+- **Make informed decisions** — Structured research workflow, not chatbot-style interaction
+- **Validate outcomes** — Track thesis performance and learn from results
+
+> **Important**: This is a **research workspace**, not a brokerage terminal. It does NOT execute trades or make autonomous investment decisions.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Status](#status)
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Architecture](#architecture)
@@ -45,10 +55,11 @@ AlphaForge helps you:
 - [Security](#security)
 - [Current Limitations](#current-limitations)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-## 📊 Status
+## Status
 
 **Current program state: stabilization required before local MVP acceptance.**
 
@@ -73,41 +84,37 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Implemented foundation
-- ✅ Tauri 2 desktop application shell
-- ✅ React 19 + TypeScript + Vite foundation
-- ✅ Rust backend with SQLite persistence
-- ✅ IPC communication layer
-- ✅ Comprehensive documentation (17+ documents)
-- 🚧 Agent task lifecycle and background execution require cross-layer repair
-- ✅ Real-time event streaming
-- ✅ Cancellation support
-- ✅ Artifact persistence layer
-- ✅ Artifact runtime manager
-- 🚧 Artifact window routing and isolation require completion
-- ✅ Research workspace, thesis, knowledge graph, and portfolio workflows
-- 🚧 Validated internal plugin registry and predefined renderers exist; a user-facing plugin workflow is not complete
+
+- Tauri 2 desktop application shell
+- React 19 + TypeScript + Vite foundation
+- Rust backend with SQLite persistence
+- IPC communication layer
+- Comprehensive documentation (17+ documents)
+- Agent task lifecycle and background execution require cross-layer repair
+- Real-time event streaming
+- Cancellation support
+- Artifact persistence layer
+- Artifact runtime manager
+- Artifact window routing and isolation require completion
+- Research workspace, thesis, knowledge graph, and portfolio workflows
+- Validated internal plugin registry and predefined renderers exist; a user-facing plugin workflow is not complete
 
 ### Stabilization priorities
-- 🚧 Repair Agent queue/start and OpenAI credential contracts
-- 🚧 Normalize TypeScript/Rust IPC DTOs, beginning with Option and System APIs
-- 🚧 Complete Artifact-window routing and internal-plugin reachability
-- 🚧 Revalidate Research navigation and critical asynchronous UI states
-- 🚧 Retain evidence for CI, E2E, packaged smoke, security, and release gates
-- 📋 Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
-- 📋 M10: constrained Goose Agent integration after MVP completion
+
+- Repair Agent queue/start and OpenAI credential contracts
+- Normalize TypeScript/Rust IPC DTOs, beginning with Option and System APIs
+- Complete Artifact-window routing and internal-plugin reachability
+- Revalidate Research navigation and critical asynchronous UI states
+- Retain evidence for CI, E2E, packaged smoke, security, and release gates
+- Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
+- M10: constrained Goose Agent integration after MVP completion
 
 ---
 
-## 🖼️ Screenshots
-
-> **Note**: AlphaForge is under active stabilization. Screenshots will be added after the accepted workflows and visual state are stable.
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -120,7 +127,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -153,28 +160,21 @@ cargo test --workspace
 
 ---
 
-## 🏗️ Architecture
+## Architecture
+
+AlphaForge follows a strict three-layer architecture with clear ownership boundaries.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/architecture-dark.svg">
+  <img src="assets/architecture-light.svg" alt="Architecture Overview" width="760">
+</picture>
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details.
 
 ### Key Boundaries
 
-```
-┌─────────────────────────────────────────┐
-│            Tauri 2 Desktop              │
-│  ┌────────────┐       ┌──────────────┐  │
-│  │   React    │◄─────►│    Rust      │  │
-│  │ Frontend   │  IPC  │   Backend    │  │
-│  └────────────┘       └──────────────┘  │
-│                            │             │
-│                        ┌───┴───┐         │
-│                        │SQLite │         │
-│                        └───────┘         │
-└─────────────────────────────────────────┘
-```
-
 **React** owns:
-- Pages, components, interaction
+- Pages, components, and interaction
 - Frontend state
 - User interface
 
@@ -192,7 +192,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 ### Core Documents
 
@@ -230,16 +230,16 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! 
+We welcome contributions!
 
-### 🔒 Branch Protection Notice
+### Branch Protection Notice
 
 **Main branch is protected. Direct pushes are BLOCKED.**
 
 All changes must go through Pull Request:
-1. Create feature branch
+1. Create a feature branch
 2. Make changes and commit
 3. Create Pull Request
 4. Get at least 1 approval
@@ -257,31 +257,29 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-### Development Timeline
-
-```
-M0 → M1 → M1.5 → M2 → M3 → M4 → M5 → M6 → M7 → M8 → M9 → M10
-✅    ✅    ✅      ✅    ✅    ✅    ✅    ✅    ✅    📋    📋    📋
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/roadmap-dark.svg">
+  <img src="assets/roadmap-light.svg" alt="Roadmap Timeline M0-M10" width="760">
+</picture>
 
 ### Phase Overview
 
-**Foundation (M0-M1.5)**: ✅ Complete
+**Foundation (M0–M1.5)**: ✅ Complete
 - Project setup
 - Desktop runtime
 - Application foundation
 
-**Intelligence (M2-M3)**: ✅ Complete
+**Intelligence (M2–M3)**: ✅ Complete
 - Agent runtime and artifact system
 
-**Features (M4-M6)**: ✅ Complete
+**Features (M4–M6)**: ✅ Complete
 - Research workspace, thesis tracking, and portfolio analysis
 
 **Extensibility (M7)**: ✅ Plugin ecosystem
 
-**Release and post-MVP (M8-M10)**:
+**Release and post-MVP (M8–M10)**:
 - 📋 Local MVP completion and release readiness
 - 📋 Option module integration
 - 📋 Goose Agent integration after MVP completion
@@ -290,7 +288,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for details.
 
 ---
 
-## 🔐 Security
+## Security
 
 Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 - Vulnerability reporting process
@@ -302,7 +300,7 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 
 ---
 
-## ⚠️ Current Limitations
+## Current Limitations
 
 1. **No production authentication, billing, or licensing**: These are deliberately deferred from the local MVP.
 2. **No cloud backup or automatic updates**: Users control manual local exports and manual downloads.
@@ -311,35 +309,35 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)** — see the [LICENSE](LICENSE) file for details.
 
 ### Why AGPLv3?
 
 AGPLv3 ensures that:
-- ✅ All modifications must be shared back to the community
-- ✅ Network use (SaaS) triggers copyleft requirements
-- ✅ Users always have access to the source code
-- ✅ Commercial use is allowed with proper licensing
+- All modifications must be shared back to the community
+- Network use (SaaS) triggers copyleft requirements
+- Users always have access to the source code
+- Commercial use is allowed with proper licensing
 
 This protects the open-source nature of AlphaForge while allowing sustainable development.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 AlphaForge is made possible by these open source projects:
 
-- [Tauri](https://tauri.app) - Desktop application framework
-- [React](https://react.dev) - UI library
-- [Rust](https://www.rust-lang.org) - Systems programming language
-- [shadcn/ui](https://ui.shadcn.com) - UI components
-- [Tailwind CSS](https://tailwindcss.com) - CSS framework
+- [Tauri](https://tauri.app) — Desktop application framework
+- [React](https://react.dev) — UI library
+- [Rust](https://www.rust-lang.org) — Systems programming language
+- [shadcn/ui](https://ui.shadcn.com) — UI components
+- [Tailwind CSS](https://tailwindcss.com) — CSS framework
 
 ---
 
-## 📞 Contact
+## Contact
 
 - **Issues**: [GitHub Issues](https://github.com/BerryUIKI/alpha-forge/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/BerryUIKI/alpha-forge/discussions)
@@ -347,7 +345,7 @@ AlphaForge is made possible by these open source projects:
 ---
 
 <p align="center">
-  <strong>Built with ❤️ by the AlphaForge team</strong>
+  <strong>Built with care by the AlphaForge team</strong>
 </p>
 
 <p align="center">
