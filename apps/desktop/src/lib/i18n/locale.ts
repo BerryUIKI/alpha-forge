@@ -128,6 +128,13 @@ const messages = {
     // Actions
     createNew: "新建",
     agent: "代理",
+    startTask: "开始",
+    retryStartTask: "重试启动",
+    cancelTask: "取消",
+    startingTask: "启动中...",
+    cancellingTask: "取消中...",
+    taskStartFailed: "任务启动失败，已保留在队列中；准备好后可以重试。",
+    taskQueueFailed: "任务排队失败，请重试。",
     // Workspace
     noWorkspaces: "暂无工作区",
     noWorkspacesDescription: "创建你的第一个工作区，开始整理你的研究。",
@@ -575,6 +582,13 @@ const messages = {
     // Actions
     createNew: "Create New",
     agent: "Agent",
+    startTask: "Start",
+    retryStartTask: "Retry Start",
+    cancelTask: "Cancel",
+    startingTask: "Starting...",
+    cancellingTask: "Cancelling...",
+    taskStartFailed: "Unable to start this task. It remains queued; retry when ready.",
+    taskQueueFailed: "Unable to queue this task. Please try again.",
     // Workspace
     noWorkspaces: "No workspaces yet",
     noWorkspacesDescription: "Create your first workspace to start organizing your research.",

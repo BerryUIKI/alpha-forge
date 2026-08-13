@@ -11,11 +11,14 @@ import { useState } from "react";
 import { Bot, X, Play, Square, AlertCircle, Settings, Activity } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
-import { EmptyState } from "@/components/common/EmptyState";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
 import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
-import { useAgentTask, useStartAgentTask, useCancelAgentTask } from "@/features/agent/hooks/useAgentTasks";
+import {
+  useAgentTask,
+  useRunAgentTask,
+  useCancelAgentTask,
+} from "@/features/agent/hooks/useAgentTasks";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
 import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
@@ -77,9 +80,13 @@ function AgentStatusIndicator({ status }: { status: AgentConnectionStatus }) {
   );
 }
 
-export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
+export function AgentPanel({ status: _status = "Ready" }: AgentPanelProps) {
   const { t } = useLocale();
-  const { data: workspaces, isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
+  const {
+    data: workspaces,
+    isLoading: workspacesLoading,
+    error: workspacesError,
+  } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
@@ -88,10 +95,10 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
   const workspaceId = workspaces?.[0]?.id || "";
 
   // Get agent status
-  const { status: agentStatus, hasRunningTasks } = useAgentStatus(workspaceId);
+  const { status: agentStatus } = useAgentStatus(workspaceId);
 
   // Task actions
-  const startTask = useStartAgentTask();
+  const startTask = useRunAgentTask();
   const cancelTask = useCancelAgentTask();
 
   // Selected task details
@@ -107,6 +114,8 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
   };
 
   const handleTaskSelect = (task: AgentTask) => {
+    startTask.reset();
+    cancelTask.reset();
     setSelectedTaskId(task.id);
   };
 
@@ -124,10 +133,7 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
   if (workspacesError) {
     return (
       <div className="p-4">
-        <ErrorState
-          message="Failed to load workspaces"
-          onRetry={() => window.location.reload()}
-        />
+        <ErrorState message="Failed to load workspaces" onRetry={() => window.location.reload()} />
       </div>
     );
   }
@@ -201,10 +207,7 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
           <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
             Recent Tasks
           </h4>
-          <AgentTaskList
-            workspaceId={workspaceId}
-            onSelectTask={handleTaskSelect}
-          />
+          <AgentTaskList workspaceId={workspaceId} onSelectTask={handleTaskSelect} />
         </div>
 
         {/* Selected Task Details */}
@@ -216,36 +219,62 @@ export function AgentPanel({ status = "Ready" }: AgentPanelProps) {
                 <TaskStatusBadge status={selectedTask.status} />
               </div>
               <button
-                onClick={() => setSelectedTaskId(null)}
+                onClick={() => {
+                  startTask.reset();
+                  cancelTask.reset();
+                  setSelectedTaskId(null);
+                }}
                 className="rounded-md p-1 hover:bg-accent"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             {selectedTask.description && (
-              <p className="mb-3 text-sm text-muted-foreground">
-                {selectedTask.description}
-              </p>
+              <p className="mb-3 text-sm text-muted-foreground">{selectedTask.description}</p>
+            )}
+            {startTask.isError && (
+              <div
+                className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-sm text-destructive"
+                role="alert"
+              >
+                <p>
+                  {typeof startTask.error === "object" &&
+                  startTask.error !== null &&
+                  "queued" in startTask.error &&
+                  startTask.error.queued === true
+                    ? t("taskStartFailed")
+                    : t("taskQueueFailed")}
+                </p>
+              </div>
             )}
             <div className="flex gap-2">
-              {selectedTask.status === "created" && (
+              {(selectedTask.status === "created" || selectedTask.status === "queued") && (
                 <button
-                  onClick={() => startTask.mutate(selectedTask.id)}
+                  onClick={() => {
+                    const taskStatus = selectedTask.status;
+                    if (taskStatus === "created" || taskStatus === "queued") {
+                      startTask.mutate({ taskId: selectedTask.id, status: taskStatus });
+                    }
+                  }}
                   disabled={startTask.isPending}
                   className="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   <Play className="h-3 w-3" />
-                  Start
+                  {startTask.isPending
+                    ? t("startingTask")
+                    : selectedTask.status === "queued"
+                      ? t("retryStartTask")
+                      : t("startTask")}
                 </button>
               )}
-              {(selectedTask.status === "running" || selectedTask.status === "queued") && (
+              {selectedTask.status === "running" && (
                 <button
                   onClick={() => cancelTask.mutate(selectedTask.id)}
                   disabled={cancelTask.isPending}
                   className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
                 >
                   <Square className="h-3 w-3" />
-                  Cancel
+                  {cancelTask.isPending ? t("cancellingTask") : t("cancelTask")}
                 </button>
               )}
             </div>

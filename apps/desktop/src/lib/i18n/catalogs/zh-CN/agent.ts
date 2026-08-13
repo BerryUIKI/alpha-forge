@@ -29,6 +29,15 @@ export const agent = {
   failedToLoadAgentTasks: "加载代理任务失败",
   noTasksYet: "暂无任务",
   noTasksDescription: "创建您的第一个代理任务以开始研究。",
+
+  // Task execution
+  startTask: "开始",
+  retryStartTask: "重试启动",
+  cancelTask: "取消",
+  startingTask: "启动中...",
+  cancellingTask: "取消中...",
+  taskStartFailed: "任务启动失败，已保留在队列中；准备好后可以重试。",
+  taskQueueFailed: "任务排队失败，请重试。",
 } as const;
 
 export type AgentKey = keyof typeof agent;
