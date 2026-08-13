@@ -39,7 +39,7 @@ This audit was code-first. Compilation and build commands were deliberately defe
 | Workspace create/list/select | Reachable from Today and layout | Repository and service implemented | Working by inspection | Frontend and Rust both use the existing command boundary consistently. |
 | Workspace rename/delete | Hooks and API wrappers exist | Commands and service implemented | Partial | No reachable management UI was found for rename or delete. |
 | Agent task create/list | Reachable in right sidebar | Commands, service, repository implemented | Partial | Creation and listing exist, but execution is broken as described in P0-1. |
-| Agent task queue/run | Start button exists; queue hook exists but is not used in the flow | Backend requires `created -> queued -> running` | Broken | UI calls `start_agent_task` directly for a `created` task. |
+| Agent task queue/run | Start and Retry Start actions explicitly queue created tasks before starting and retry queued tasks without requeueing | Backend requires `created -> queued -> running` | Partial — remediation implemented, verification pending | `useRunAgentTask` preserves the queued state after backend start-admission failure and exposes a recoverable retry action; focused hook/component and command/service regression tests cover the transition, while full verification remains required. |
 | OpenAI credential configuration | Reachable in Settings | OS keychain, legacy migration, and OpenAI provider implemented | Partial | The credential identifier mismatch is repaired with provider-specific IPC and regression tests; full stabilization acceptance remains pending. |
 | Research projects/documents/sources/notes/reports | Reachable in Research | Commands, services, repositories implemented | Partial | Core CRUD is connected, but navigation query parameters are ignored and async/error states are inconsistent. |
 | Research navigation context | Layout generates `?workspace=` and `?project=` links | Not applicable | Broken | `ResearchPage` uses local state and never reads those query parameters. |
@@ -64,9 +64,9 @@ This audit was code-first. Compilation and build commands were deliberately defe
 
 The UI shows Start when a task has `created` status and calls `start_agent_task`. The backend only allows `start_task` for a task already in `queued` status. A queue mutation exists but is not used by the panel.
 
-**Impact:** The core `Create task -> Run task` product loop fails.
+**Impact:** Before remediation, the core `Create task -> Run task` product loop failed.
 
-**Rectification:** Choose one explicit lifecycle contract. The least disruptive fix is to make the UI queue the created task and start only after the queued transition succeeds, with visible queued/running/error states. Add a component test and a Rust command/service integration test for the complete transition.
+**Rectification:** Implemented the least disruptive explicit lifecycle contract: the UI queues a created task and starts only after the queued transition succeeds; queued tasks expose Retry Start, running tasks expose cancellation, and executor-admission failures are recoverable through queued-state refresh. Focused hook/component and Rust command/service tests cover call order, retry, failure messaging, cancellation, and requeue recovery. Full verification remains required before closure.
 
 ### P0-2: The configured API key is never read by the OpenAI provider
 

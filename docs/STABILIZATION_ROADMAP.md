@@ -57,7 +57,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 ### Scope
 
 - Credential-contract repair completed: Rust owns `openai.api_key`, migrates the legacy `api_key` entry, and exposes only OpenAI-specific save/status/delete IPC. S1 remains blocked until the Agent lifecycle and remaining acceptance criteria pass.
-- Correct the `created -> queued -> running` transition in the UI.
+- Correct the `created -> queued -> running` transition in the UI (queue and start are now explicit, with queued recovery and retry state covered by focused hook/component and Rust command/service tests).
 - Surface progress events, failure context, cancellation, and completion.
 - Verify completed structured output is persisted and discoverable.
 
