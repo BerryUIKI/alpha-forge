@@ -7,8 +7,16 @@ import { PortfolioPage } from "@/pages/portfolio/PortfolioPage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { OptionsPage } from "@/pages/options/OptionsPage";
+import { ArtifactWindowPage } from "@/pages/artifacts/ArtifactWindowPage";
+
+const artifactWindowRoute = {
+  path: "/artifact/:artifactId/:artifactType",
+  element: <ArtifactWindowPage />,
+};
 
 export const router = createBrowserRouter([
+  // Artifact windows are intentionally isolated from the main application layout.
+  artifactWindowRoute,
   {
     path: "/",
     element: <MainLayout />,

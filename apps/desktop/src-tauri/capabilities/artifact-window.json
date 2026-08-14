@@ -1,6 +1,11 @@
 {
   "identifier": "artifact-window",
-  "description": "Artifact window capabilities — minimal permissions",
+  "description": "Artifact window capabilities — read one artifact, close, and listen for updates",
   "windows": ["artifact-*"],
-  "permissions": ["core:default"]
+  "permissions": [
+    "artifact-read",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-close"
+  ]
 }
