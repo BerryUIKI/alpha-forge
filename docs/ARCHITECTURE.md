@@ -154,7 +154,7 @@ Current integration status is maintained in the [Frontend-Backend Integration an
 
 - Agent queue/start and OpenAI credential repairs are merged with focused regression coverage; full Agent-to-Artifact verification remains pending.
 - Research, thesis, knowledge graph, and portfolio commands have reachable primary UI surfaces.
-- Artifact persistence and in-page renderers exist, but the separate Artifact-window route is incomplete.
+- Artifact persistence, in-page renderers, and the isolated Artifact-window route are merged (#88) with focused route and permission tests; packaged smoke acceptance remains pending.
 - Internal plugin commands exist, but the user-facing management and creation workflow is incomplete.
 - Option command-boundary DTOs and System information responses now use the reviewed camelCase/Zod contracts; the Option UI vertical slice remains incomplete.
 - Goose commands are registered as scaffolding; the service is disabled and the feature is not accepted.

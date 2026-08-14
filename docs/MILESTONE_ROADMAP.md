@@ -265,7 +265,7 @@ Result persisted in SQLite
 
 ## M3 — Artifact Intelligence System ⚠️
 
-**Status**: Persistence, renderers, and permission primitives exist; the isolated Artifact-window route is the next code action, so milestone acceptance remains incomplete.
+**Status**: Persistence, renderers, permission primitives, and the isolated Artifact-window route are merged (#88) with focused verification; packaged smoke acceptance remains pending, so milestone acceptance remains incomplete.
 
 ### Goal
 Enable Agents to create interactive research experiences.
@@ -839,8 +839,8 @@ All three pillars must work together.
 
 ### Next Milestones
 
-1. Add the isolated Artifact-window route (current next code action).
-2. Synchronize Research URL context and selected workspace/project state.
+1. Complete packaged Artifact-window smoke acceptance and retain route/permission evidence.
+2. Review the Research URL context and selected workspace/project synchronization implementation.
 3. Complete the Option chain-to-contract-to-strategy vertical slice and plugin reachability.
 4. Enforce CI, E2E, packaged smoke, security, and release gates before re-accepting M8/M9.
 5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.
