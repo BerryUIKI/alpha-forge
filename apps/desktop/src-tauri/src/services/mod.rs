@@ -38,3 +38,6 @@ mod workspace_service_test;
 
 #[cfg(test)]
 mod plugin_service_test;
+
+#[cfg(test)]
+mod option_service_test;

@@ -840,7 +840,7 @@ All three pillars must work together.
 ### Next Milestones
 
 1. Complete packaged Artifact-window smoke acceptance and retain route/permission evidence.
-2. Review the Research URL context and selected workspace/project synchronization implementation.
+2. Review the Option chain-to-contract view and selected contract synchronization implementation.
 3. Complete the Option chain-to-contract-to-strategy vertical slice and plugin reachability.
 4. Enforce CI, E2E, packaged smoke, security, and release gates before re-accepting M8/M9.
 5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.

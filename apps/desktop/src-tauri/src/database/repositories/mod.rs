@@ -35,6 +35,9 @@ mod agent_task_repository_test;
 mod artifact_repository_test;
 
 #[cfg(test)]
+mod option_chain_repository_test;
+
+#[cfg(test)]
 mod thesis_repository_test;
 
 pub mod research_document_repository;
