@@ -12,15 +12,31 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { useLocale } from "@/lib/i18n/useLocale";
-import { GreeksCalculator, OptionChainList, StrategyBuilder } from "@/features/options";
+import {
+  GreeksCalculator,
+  OptionChainList,
+  OptionContractTable,
+  StrategyBuilder,
+} from "@/features/options";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
+import { ErrorState } from "@/components/common/ErrorState";
+import { useFetchOptionChain } from "@/hooks/useOptions";
+
+const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
+
+function normalizeSymbol(value: string): string {
+  return value.trim().toUpperCase();
+}
 
 export function OptionsPage() {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const workspaceIdFromUrl = searchParams.get("workspace") || "";
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaceIdFromUrl);
+  const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
+  const [symbol, setSymbol] = useState("");
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const fetchMutation = useFetchOptionChain(locale);
 
   // Fetch workspaces for selection
   const { data: workspaces } = useQuery({
@@ -31,7 +47,30 @@ export function OptionsPage() {
   // Handle workspace selection
   const handleWorkspaceChange = (id: string) => {
     setSelectedWorkspaceId(id);
+    setSelectedChainId(null);
+    setSymbol("");
+    setFetchError(null);
     setSearchParams({ workspace: id });
+  };
+
+  const submitFetch = () => {
+    const normalizedSymbol = normalizeSymbol(symbol);
+    if (!SYMBOL_PATTERN.test(normalizedSymbol)) {
+      setFetchError(t("invalidOptionSymbol"));
+      return;
+    }
+
+    setFetchError(null);
+    fetchMutation.mutate(
+      { workspaceId: selectedWorkspaceId, symbol: normalizedSymbol, provider: "demo" },
+      {
+        onSuccess: (chain) => {
+          setSelectedChainId(chain.id);
+          setSymbol("");
+        },
+        onError: () => setFetchError(t("optionChainFetchFailedDescription")),
+      },
+    );
   };
 
   // No workspace selected state
@@ -39,8 +78,8 @@ export function OptionsPage() {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6">
         <EmptyState
-          title={t("selectWorkspace" as any) || "Select a Workspace"}
-          description={t("selectWorkspaceDescription" as any) || "Choose a workspace to access options analysis tools."}
+          title={t("selectWorkspace")}
+          description={t("selectWorkspaceDescription")}
         />
         {workspaces && workspaces.length > 0 && (
           <div className="mt-4 w-full max-w-xs">
@@ -49,7 +88,7 @@ export function OptionsPage() {
               value={selectedWorkspaceId}
               onChange={(e) => handleWorkspaceChange(e.target.value)}
             >
-              <option value="">{t("selectWorkspace" as any) || "Select a workspace"}</option>
+              <option value="">{t("selectWorkspace")}</option>
               {workspaces.map((workspace) => (
                 <option key={workspace.id} value={workspace.id}>
                   {workspace.name}
@@ -66,23 +105,23 @@ export function OptionsPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">{t("optionsTitle" as any) || "Options Analysis"}</h1>
+        <h1 className="text-2xl font-bold">{t("optionsTitle")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("optionsDescription" as any) || "Black-Scholes pricing, Greeks calculation, and strategy analysis."}
+          {t("optionsDescription")}
         </p>
       </div>
 
       {/* Workspace Selector */}
       <div className="max-w-xs">
         <label className="block text-sm font-medium">
-          {t("workspace" as any) || "Workspace"}
+          {t("workspace")}
         </label>
         <select
           className="mt-1 w-full rounded-lg border border-border bg-background p-2"
           value={selectedWorkspaceId}
           onChange={(e) => handleWorkspaceChange(e.target.value)}
         >
-          <option value="">{t("selectWorkspace" as any) || "Select a workspace"}</option>
+          <option value="">{t("selectWorkspace")}</option>
           {workspaces?.map((workspace) => (
             <option key={workspace.id} value={workspace.id}>
               {workspace.name}
@@ -101,13 +140,67 @@ export function OptionsPage() {
       </div>
 
       {/* Option Chains */}
-      <OptionChainList
-        workspaceId={selectedWorkspaceId}
-        onSelectChain={(chainId) => {
-          // TODO: Navigate to chain detail or show in modal
-          console.log("Selected chain:", chainId);
-        }}
-      />
+      <section className="space-y-4 rounded-lg border border-border p-4" aria-labelledby="option-chain-heading">
+        <div>
+          <h2 id="option-chain-heading" className="text-lg font-semibold">{t("demoOptionChainTitle")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t("demoOptionChainDescription")}
+          </p>
+        </div>
+        <form
+          className="flex flex-col gap-2 sm:flex-row"
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitFetch();
+          }}
+        >
+          <label className="sr-only" htmlFor="option-symbol">
+            {t("symbolLabel")}
+          </label>
+          <input
+            id="option-symbol"
+            className="min-w-0 flex-1 rounded-lg border border-border bg-background p-2"
+            value={symbol}
+            onChange={(event) => {
+              setSymbol(event.target.value);
+              if (fetchError) setFetchError(null);
+            }}
+            placeholder={t("optionSymbolPlaceholder")}
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={fetchMutation.isPending}
+            className="rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+          >
+            {fetchMutation.isPending ? t("fetchingDemoChain") : t("fetchDemoChain")}
+          </button>
+        </form>
+        {fetchError && (
+          <ErrorState
+            title={t("optionChainFetchFailed")}
+            message={fetchError}
+            onRetry={SYMBOL_PATTERN.test(normalizeSymbol(symbol)) ? submitFetch : undefined}
+          />
+        )}
+        <OptionChainList
+          workspaceId={selectedWorkspaceId}
+          selectedChainId={selectedChainId}
+          onSelectChain={setSelectedChainId}
+        />
+      </section>
+
+      {selectedChainId ? (
+        <section aria-labelledby="option-contract-heading" className="space-y-3">
+          <h2 id="option-contract-heading" className="text-lg font-semibold">{t("optionContracts")}</h2>
+          <OptionContractTable chainId={selectedChainId} />
+        </section>
+      ) : (
+        <EmptyState
+          title={t("selectOptionChain")}
+          description={t("selectOptionChainDescription")}
+        />
+      )}
     </div>
   );
 }

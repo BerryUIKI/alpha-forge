@@ -18,6 +18,8 @@ Documentation and code status are intentionally reported separately.
 
 The phrase “candidate branch” refers to `origin/integration/option` at the time of this consolidation. A branch name or historical commit message is not acceptance evidence.
 
+The current corrective slice is `codex/feat-option-chain-contract-view` (pending review). The demo provider returns a chain and its contracts as one bundle; Rust persists both atomically, and the Options page refreshes the workspace list and renders contracts for the selected chain. Persisted strategy creation remains the next separate action, so M9 is not accepted.
+
 ## Canonical document set
 
 | Document                                            | Role                                                | Status                                                                       |

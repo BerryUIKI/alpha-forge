@@ -12,7 +12,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useOptionContracts, useDeleteOptionContract } from "@/hooks/useOptions";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { OptionContract, OptionType } from "@/types/option";
+import type { OptionType } from "@/types/option";
 
 interface OptionContractTableProps {
   /** Chain ID to fetch contracts for */
@@ -36,7 +36,7 @@ export function OptionContractTable({
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [filter, setFilter] = useState<OptionType | "all">("all");
 
-  const { data: contracts, isLoading, error } = useOptionContracts(chainId);
+  const { data: contracts, isLoading, error, refetch } = useOptionContracts(chainId);
   const deleteMutation = useDeleteOptionContract("en");
 
   if (isLoading) {
@@ -48,13 +48,18 @@ export function OptionContractTable({
   }
 
   if (error) {
-    return <ErrorState message="Failed to load option contracts" />;
+    return (
+      <ErrorState
+        message={t("failedToLoadOptionContracts")}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   if (!contracts || contracts.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        {t("noContracts" as any) || "No contracts in this chain"}
+        {t("noContracts")}
       </div>
     );
   }

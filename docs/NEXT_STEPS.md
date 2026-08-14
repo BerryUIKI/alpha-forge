@@ -12,7 +12,7 @@ Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Cor
 - The 2026-08-12 code review found release-blocking cross-layer defects.
 - Rust module-tree and pnpm baseline repairs are merged (#78, #79).
 - OpenAI credential, Agent lifecycle, canonical Option schema, Option IPC, and System IPC repairs are merged (#80, #81, #83, #84, #85) with focused layer-level tests; this does not constitute M8/M9 acceptance.
-- The Artifact-window route is merged (#88) with focused route and permission tests; packaged smoke acceptance remains pending. Research URL context implementation is pending review, while internal plugin reachability and several backend-only APIs remain incomplete.
+- The Artifact-window route is merged (#88) with focused route and permission tests; packaged smoke acceptance remains pending. Research URL context is merged (#94); the Option chain-to-contract view is pending review, while internal plugin reachability and several backend-only APIs remain incomplete.
 - Goose has frontend and backend scaffolding, but the UI is unreachable, the service is disabled, and bridge operations remain placeholders.
 - Local MVP release acceptance is withdrawn until stabilization evidence is recorded.
 
@@ -28,8 +28,8 @@ Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Cor
 ## Immediate work order
 
 1. Complete packaged Artifact-window smoke acceptance and retain its route/permission evidence.
-2. Review the Research URL context and selected workspace/project synchronization implementation.
-3. Complete one Option chain-to-contract-to-strategy vertical slice.
+2. Review the Option chain-to-contract view and its persisted fetch/list/selection evidence.
+3. Complete persisted Option strategy behavior as a separate vertical slice.
 4. Add a minimal internal-plugin settings and create-Artifact workflow.
 5. Enforce frontend and Rust quality gates in CI.
 6. Re-run release acceptance and update milestone evidence.
