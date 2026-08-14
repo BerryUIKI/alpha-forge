@@ -113,6 +113,8 @@ The window manager opens `/artifact/{artifact_id}/{artifact_type}`. The React ro
 
 **Rectification:** Add a dedicated Artifact-window route and minimal provider tree, or route the new window to an existing renderer entrypoint. Verify the Artifact capability remains minimal and add an E2E test covering open, render, update, and close.
 
+**Remediation status (2026-08-14, implementation pending review):** `codex/fix-artifact-window-route` adds the isolated top-level route, route/identity validation, renderer registration, update/theme event cleanup, native-window tracking cleanup, and least-privilege Artifact capabilities. Focused tests are included; packaged desktop verification and final acceptance remain outstanding.
+
 ### P0-5: Rust declares a missing database module
 
 **File:** `apps/desktop/src-tauri/src/database/mod.rs:4`

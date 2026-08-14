@@ -106,6 +106,8 @@ System IPC normalization is merged in PR #85: `SystemInfo` has an explicit camel
 
 The next code action is the isolated Artifact-window route; Research URL context follows it.
 
+The Artifact-window route implementation is now on `codex/fix-artifact-window-route` pending review. It adds the top-level route, validates route and persisted Artifact identity, consumes update/theme events, and removes native-window tracking on destruction; focused verification and packaged smoke acceptance remain outstanding.
+
 ## S3 — Artifact and plugin vertical slice
 
 ### Scope
