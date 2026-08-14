@@ -61,9 +61,9 @@ AlphaForge helps you:
 
 ## Status
 
-**Current program state: stabilization required before local MVP acceptance.**
+**Current program state (2026-08-14): stabilization required before local MVP acceptance.**
 
-A code-first frontend/backend audit on 2026-08-12 found broken core integration paths. M8 and M9 have been reopened for stabilization; M10 remains planned and is not an available product capability. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
+The 2026-08-12 audit found broken core integration paths. Merged repairs now cover the Rust module baseline, pnpm tooling, credentials, Agent lifecycle, canonical Option schema, Option IPC, and System IPC. M8 and M9 remain reopened for stabilization; M10 remains planned and is not an available product capability. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -93,7 +93,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - Rust backend with SQLite persistence
 - IPC communication layer
 - Comprehensive documentation (17+ documents)
-- Agent task lifecycle and background execution require cross-layer repair
+- Agent task lifecycle and background execution are implemented; full end-to-end verification remains pending
 - Real-time event streaming
 - Cancellation support
 - Artifact persistence layer
@@ -104,10 +104,9 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
 ### Stabilization priorities
 
-- Repair Agent queue/start and OpenAI credential contracts
-- Normalize TypeScript/Rust IPC DTOs, beginning with Option and System APIs
 - Complete Artifact-window routing and internal-plugin reachability
 - Revalidate Research navigation and critical asynchronous UI states
+- Complete remaining cross-layer IPC coverage and retain fixture evidence
 - Retain evidence for CI, E2E, packaged smoke, security, and release gates
 - Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
 - M10: constrained Goose Agent integration after MVP completion
@@ -271,13 +270,13 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 - Desktop runtime
 - Application foundation
 
-**Intelligence (M2–M3)**: ✅ Complete
-- Agent runtime and artifact system
+**Intelligence (M2–M3)**: ⚠️ Stabilization required
+- Agent runtime repairs are merged; Artifact-window routing remains incomplete
 
-**Features (M4–M6)**: ✅ Complete
+**Features (M4–M6)**: ✅ Implemented; verification continues
 - Research workspace, thesis tracking, and portfolio analysis
 
-**Extensibility (M7)**: ✅ Plugin ecosystem
+**Extensibility (M7)**: ⚠️ Partial
 
 **Release and post-MVP (M8–M10)**:
 - 📋 Local MVP completion and release readiness
@@ -305,7 +304,7 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 1. **No production authentication, billing, or licensing**: These are deliberately deferred from the local MVP.
 2. **No cloud backup or automatic updates**: Users control manual local exports and manual downloads.
 3. **No macOS notarization in the MVP**: A Gatekeeper warning is a known release risk.
-4. **No real AI-provider integration**: Agent commands remain locally scoped.
+4. **AI-provider integration remains stabilization-scoped**: The OpenAI Responses adapter exists, but full workflow and packaged verification are not yet accepted.
 
 ---
 

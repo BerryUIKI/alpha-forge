@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-13):** The dual-lockfile and npm-invoking root-script gap identified during this audit is addressed: root scripts use pnpm-native workspace commands, `pnpm-lock.yaml` is the sole tracked JavaScript lockfile, and the tracked `package-lock.json` is removed. The credential-contract repair replaces caller-controlled credential IPC with OpenAI-specific save, status, and delete operations; migrates the legacy `api_key` entry to `openai.api_key` in Rust; and routes Settings, Agent status, and provider lookup through that contract. Release acceptance remains subject to the verification commands listed below and the remaining stabilization work.
+**Remediation status (2026-08-14):** The merged repairs cover the orphan Rust module declaration (#78), pnpm workspace and lockfile baseline (#79), OpenAI credential contract (#80), Agent lifecycle (#81), canonical Option schema (#83), Option IPC (#84), and System IPC (#85). Each repair has focused evidence at its implementation layer; release acceptance remains subject to the full verification matrix and the remaining stabilization work.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -38,21 +38,22 @@ This audit was code-first. Compilation and build commands were deliberately defe
 |---|---|---|---|---|
 | Workspace create/list/select | Reachable from Today and layout | Repository and service implemented | Working by inspection | Frontend and Rust both use the existing command boundary consistently. |
 | Workspace rename/delete | Hooks and API wrappers exist | Commands and service implemented | Partial | No reachable management UI was found for rename or delete. |
-| Agent task create/list | Reachable in right sidebar | Commands, service, repository implemented | Partial | Creation and listing exist, but execution is broken as described in P0-1. |
-| Agent task queue/run | Start and Retry Start actions explicitly queue created tasks before starting and retry queued tasks without requeueing | Backend requires `created -> queued -> running` | Partial — remediation implemented, verification pending | `useRunAgentTask` preserves the queued state after backend start-admission failure and exposes a recoverable retry action; focused hook/component and command/service regression tests cover the transition, while full verification remains required. |
-| OpenAI credential configuration | Reachable in Settings | OS keychain, legacy migration, and OpenAI provider implemented | Partial | The credential identifier mismatch is repaired with provider-specific IPC and regression tests; full stabilization acceptance remains pending. |
+| Agent task create/list | Reachable in right sidebar | Commands, service, repository implemented | Partial | Creation and listing are connected; lifecycle repair is merged, while full Agent-to-Artifact verification remains pending. |
+| Agent task queue/run | Start and Retry Start actions explicitly queue created tasks before starting and retry queued tasks without requeueing | Backend requires `created -> queued -> running` | Partial — merged repair | `useRunAgentTask` preserves queued state after backend start-admission failure and exposes recoverable retry; focused hook/component and command/service regression tests verify the transition, while full verification remains required. |
+| OpenAI credential configuration | Reachable in Settings | OS keychain, legacy migration, and OpenAI provider implemented | Partial — merged repair | Provider-specific IPC and focused keychain/provider/Settings tests verify the canonical identifier; full stabilization acceptance remains pending. |
 | Research projects/documents/sources/notes/reports | Reachable in Research | Commands, services, repositories implemented | Partial | Core CRUD is connected, but navigation query parameters are ignored and async/error states are inconsistent. |
 | Research navigation context | Layout generates `?workspace=` and `?project=` links | Not applicable | Broken | `ResearchPage` uses local state and never reads those query parameters. |
 | Thesis and knowledge graph | Reachable in Journal | Commands, services, repositories implemented | Partial | Main operations are connected; contract and workflow tests are incomplete. |
 | Portfolio accounts/positions/analysis | Reachable in Portfolio | Commands, services, repositories implemented | Partial | Main panels are connected. Several backend capabilities are not clearly exposed, including direct theme linking from the current dashboard. |
-| Option calculations | Reachable | Commands and pricing core implemented | Broken | Nested request objects use camelCase in TypeScript while Rust structs expect snake_case. |
-| Option chains/contracts/strategies | Components and wrappers exist | CRUD commands and services exist | Broken | Request/response naming is incompatible; `create_option_chain` is not registered; chain selection is a console-only TODO; `OptionStrategyPanel` and `OptionContractTable` are not connected to the route. |
+| Option calculations | Reachable | Commands and pricing core implemented | Partial — merged IPC repair | Option request/response DTOs now use the reviewed camelCase/Zod boundary; numerical and workflow acceptance remains pending. |
+| Option chains/contracts/strategies | Components and wrappers exist | CRUD commands and services exist | Partial — schema/IPC merged | Canonical migration and IPC repairs are merged; chain selection remains a console-only TODO and the CRUD components are not connected to the route. |
 | Artifact list and in-page rendering | Reachable | Persistence and predefined renderers implemented | Partial | In-page rendering exists. Separate Artifact windows are broken as described in P0-4. |
 | Artifact separate window | API hook and backend manager exist | Window manager opens `/artifact/:id/:type` | Broken | React router has no matching route. |
 | Bundled plugin registry | API wrappers and renderer registry exist | Seven plugins sync, validate, and produce Artifacts | Partial | No user-facing plugin list, enable/disable control, or Artifact creation workflow is reachable. |
 | Goose shadow analysis | Component, hook, and wrappers exist | Commands and service scaffolding exist | Planned | Component is unreachable; `AppState` sets the service to `None`; MCP functions return placeholders; cancellation parses an incompatible displayed run ID. |
 | Backup and update check | Reachable in Settings | Implemented in Rust | Working by inspection | Requires packaged smoke verification before release acceptance. |
 | Settings persistence | Locale uses persisted settings | Repository and commands implemented | Partial | Generic settings APIs exist, but most are not surfaced; API contracts are not schema-validated. |
+| System information | Internal desktop wrapper; not mounted | `SystemInfo` command response | Partial — merged IPC repair | CamelCase serialization and Zod response validation are covered by focused Rust/Vitest tests; the wrapper remains intentionally internal. |
 
 ## Confirmed findings
 
@@ -66,7 +67,9 @@ The UI shows Start when a task has `created` status and calls `start_agent_task`
 
 **Impact:** Before remediation, the core `Create task -> Run task` product loop failed.
 
-**Rectification:** Implemented the least disruptive explicit lifecycle contract: the UI queues a created task and starts only after the queued transition succeeds; queued tasks expose Retry Start, running tasks expose cancellation, and executor-admission failures are recoverable through queued-state refresh. Focused hook/component and Rust command/service tests cover call order, retry, failure messaging, cancellation, and requeue recovery. Full verification remains required before closure.
+**Rectification:** Implemented the least disruptive explicit lifecycle contract: the UI queues a created task and starts only after the queued transition succeeds; queued tasks expose Retry Start, running tasks expose cancellation, and executor-admission failures are recoverable through queued-state refresh. Focused hook/component and Rust command/service tests cover call order, retry, failure messaging, cancellation, and requeue recovery.
+
+**Remediation status (2026-08-14, merged PR #81):** The lifecycle repair is merged and verified at the command, service, hook, and component layers. Full Agent-to-Artifact E2E and release verification remain outstanding.
 
 ### P0-2: The configured API key is never read by the OpenAI provider
 
@@ -80,7 +83,7 @@ The frontend reads and writes `api_key`. The provider reads `openai.api_key`.
 
 **Rectification:** Define one shared credential identifier. Prefer `openai.api_key`, migrate or deliberately remove the legacy name, and test Settings status plus provider lookup without exposing the secret value.
 
-**Remediation status (2026-08-13):** Implemented by the credential-contract repair. Rust owns the canonical and legacy identifiers, migrates only after a successful canonical write, and keeps plaintext out of React. Settings and Agent status use OpenAI-specific status/save calls, the provider shares the same migration path, and the editable Settings field no longer contains a reusable mask. Final closure depends on the recorded PR verification and merge.
+**Remediation status (2026-08-14, merged PR #80):** Implemented by the credential-contract repair. Rust owns the canonical and legacy identifiers, migrates only after a successful canonical write, and keeps plaintext out of React. Settings and Agent status use OpenAI-specific status/save calls, the provider shares the same migration path, and the editable Settings field no longer contains a reusable mask. Focused keychain, provider, Settings, and desktop-wrapper tests verify the repaired layer; full stabilization acceptance remains pending.
 
 ### P0-3: The Option IPC contract is incompatible
 
@@ -97,7 +100,7 @@ The frontend also invokes `create_option_chain`, but this command is not impleme
 
 **Rectification:** Establish one versioned IPC DTO convention. Do not change database/domain naming merely to satisfy React. Add command-boundary DTOs with `#[serde(rename_all = "camelCase")]`, Zod response schemas, and serialization contract tests. Remove the unsupported wrapper or implement the command only if a real product workflow requires it.
 
-**Remediation status (2026-08-13):** Implemented in `commands/options.rs`, `src/lib/desktop-api/options.ts`, and `src/types/option.ts`. Rust emits explicit camelCase response DTOs while domain/database models remain snake_case; nested requests use camelCase serde and scalar command arguments use Tauri's camelCase boundary. The unsupported `create_option_chain` wrapper was removed; `fetch_option_chain` remains the acquisition and persistence path. Focused Rust and Vitest fixtures cover serialization and malformed responses, and `scripts/check-option-ipc-registration.mjs` verifies wrapper/registration parity. Final closure depends on the recorded PR verification and merge.
+**Remediation status (2026-08-14, merged PR #84; schema baseline in #83):** Implemented in `commands/options.rs`, `src/lib/desktop-api/options.ts`, and `src/types/option.ts`. Rust emits explicit camelCase response DTOs while domain/database models remain snake_case; nested requests use camelCase serde and scalar command arguments use Tauri's camelCase boundary. The unsupported `create_option_chain` wrapper was removed; `fetch_option_chain` remains the acquisition and persistence path. Focused Rust and Vitest fixtures cover serialization and malformed responses, and `scripts/check-option-ipc-registration.mjs` verifies wrapper/registration parity. The command-boundary repair is merged and verified; full Option workflow and release acceptance remain pending.
 
 ### P0-4: Separate Artifact windows open an undefined route
 
@@ -120,7 +123,7 @@ The window manager opens `/artifact/{artifact_id}/{artifact_type}`. The React ro
 
 **Rectification:** Determine from Git history whether the module was intentionally removed. Restore the required implementation or remove the orphan declaration in a narrowly scoped build-repair PR.
 
-**Remediation status (2026-08-12):** Git history shows the declaration was accidentally added by `e0ca184`; no `database/timeout.rs` module, consumer, or historical implementation exists. This branch removes the orphan declaration. The finding is closed only after the required Rust verification passes.
+**Remediation status (2026-08-14, merged PR #78):** Git history shows the declaration was accidentally added by `e0ca184`; no `database/timeout.rs` module, consumer, or historical implementation exists. PR #78 removes the orphan declaration; the source-tree repair is merged, while the full baseline verification gate remains outstanding.
 
 ### P1-1: Research navigation links do not select the requested context
 
@@ -179,7 +182,7 @@ TypeScript expects `os`, `arch`, and `version`. Rust returns `app_name`, `app_ve
 
 **Rectification:** Add an explicit camelCase IPC response DTO and a contract test before exposing the function.
 
-**Remediation status (2026-08-13, pending merge):** The remediation branch adds the explicit `SystemInfo` camelCase serialization contract, updates the internal desktop wrapper to validate unknown responses with Zod, and adds focused Rust and Vitest contract tests. The wrapper remains unmounted; release acceptance remains pending merge and the required verification matrix.
+**Remediation status (2026-08-14, merged PR #85):** The merged repair adds the explicit `SystemInfo` camelCase serialization contract, updates the internal desktop wrapper to validate unknown responses with Zod, and adds focused Rust and Vitest contract tests. The wrapper remains unmounted; release acceptance remains pending the required verification matrix.
 
 ### P1-6: Documentation contains contradictory completion claims
 
@@ -236,16 +239,17 @@ These are not release acceptance claims until their tests and packaged smoke che
 
 | Order | Branch example | Scope | Target | Required proof |
 |---|---|---|---|---|
-| 1 | `fix/rust-module-tree` | Restore or remove `database::timeout` only | `dev` | Rust format, check, Clippy, tests |
-| 2 | `fix/openai-credential-contract` | Standardize credential identifier and Agent status | `dev` | Keychain adapter tests and Settings/provider contract test |
-| 3 | `fix/agent-task-start-flow` | Queue then start, correct UI states | `dev` | Service, hook, component, and command integration tests |
-| 4 | `fix/option-ipc-contract` | Introduce compatible Option IPC DTOs and remove nonexistent call | `dev` | Serde fixtures, Zod schemas, TypeScript tests, Rust command tests |
-| 5 | `fix/artifact-window-route` | Add isolated Artifact window route | `dev` | Router, permission, and E2E window lifecycle tests |
-| 6 | `fix/research-route-context` | Consume and synchronize workspace/project parameters | `dev` | Router and Research page tests |
-| 7 | `feat/option-vertical-slice` | Chain selection to contract detail and persisted strategy | `dev` | Full Option vertical-slice tests |
-| 8 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
-| 9 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
-| 10 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
+| 1 | `#78 (merged)` | Remove the orphan `database::timeout` declaration | `dev` | Rust format, check, Clippy, tests |
+| 2 | `#79 (merged)` | Establish the pnpm workspace and lockfile baseline | `dev` | Frozen install and workspace checks |
+| 3 | `#80 (merged)` | Standardize credential identifier and Agent status | `dev` | Keychain adapter tests and Settings/provider contract test |
+| 4 | `#81 (merged)` | Queue then start, correct UI states | `dev` | Service, hook, component, and command integration tests |
+| 5 | `#83/#84/#85 (merged)` | Establish canonical Option schema and normalize Option/System IPC | `dev` | Migration, serde fixtures, Zod schemas, TypeScript tests, Rust command tests |
+| 6 | `fix/artifact-window-route` | Add isolated Artifact window route | `dev` | Router, permission, and E2E window lifecycle tests |
+| 7 | `fix/research-route-context` | Consume and synchronize workspace/project parameters | `dev` | Router and Research page tests |
+| 8 | `feat/option-vertical-slice` | Chain selection to contract detail and persisted strategy | `dev` | Full Option vertical-slice tests |
+| 9 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
+| 10 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
+| 11 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
 
 M10 Goose work should use separate post-stabilization PRs only after its documented entry gate is approved.
 
