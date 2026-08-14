@@ -37,6 +37,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ## S0 — Baseline truth and build recovery
 
+**Acceptance reference:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9)
+
 ### Scope
 
 - The orphan `database::timeout` declaration was removed in merged PR #78; S0 remains Active because its other scope and acceptance criteria remain outstanding.
@@ -54,6 +56,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 - No frontend invocation references an unregistered Tauri command.
 
 ## S1 — Core Agent loop recovery
+
+**Acceptance references:** [M2 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-3) and [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9)
 
 ### Scope
 
@@ -79,6 +83,8 @@ Configure credential
 - Initialization readiness prevents commands from racing `AppState` setup.
 
 ## S2 — IPC contract normalization
+
+**Acceptance references:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9) and [M9 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-10)
 
 ### Scope
 

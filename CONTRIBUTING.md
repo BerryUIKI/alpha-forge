@@ -320,6 +320,7 @@ cargo test <module_name>
 - **New features** → update relevant doc + README
 - **API changes** → update API documentation
 - **Behavior changes** → update user-facing docs
+- **Milestone status changes** → synchronously update every relevant status document in the same PR to prevent drift
 
 ### Documentation Standards
 
@@ -327,6 +328,7 @@ cargo test <module_name>
 - **Clear structure** - use headers, lists, and code blocks
 - **Code examples** - include runnable examples
 - **Keep current** - remove outdated information
+- **Local validation** - before committing documentation changes, contributors can run local stale-phrase and Markdown-link scans; these scans are planned for future CI but are not yet enforced there
 
 ### Agent Documentation (AGENTS.md)
 
