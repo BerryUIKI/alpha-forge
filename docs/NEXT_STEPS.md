@@ -1,6 +1,6 @@
 # AlphaForge Next Steps
 
-**Updated:** 2026-08-12
+**Updated:** 2026-08-14
 **Active milestone:** S0 — Baseline Truth and Build Recovery
 **Program decision:** M8 and M9 are reopened for stabilization; M10 remains planned.
 
@@ -10,23 +10,29 @@ Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Cor
 
 - The repository contains substantial workspace, research, thesis, portfolio, Artifact, plugin, Option, and Agent implementation.
 - The 2026-08-12 code review found release-blocking cross-layer defects.
-- The Agent create-to-run flow, OpenAI credential configuration, Option IPC contract, Artifact-window route, and Rust module tree require repair.
-- Research navigation context, internal plugin reachability, and several backend-only APIs remain incomplete.
+- Rust module-tree and pnpm baseline repairs are merged (#78, #79).
+- OpenAI credential, Agent lifecycle, canonical Option schema, Option IPC, and System IPC repairs are merged (#80, #81, #83, #84, #85) with focused layer-level tests; this does not constitute M8/M9 acceptance.
+- The Artifact-window route is still undefined, and Research URL context, internal plugin reachability, and several backend-only APIs remain incomplete.
 - Goose has frontend and backend scaffolding, but the UI is unreachable, the service is disabled, and bridge operations remain placeholders.
 - Local MVP release acceptance is withdrawn until stabilization evidence is recorded.
 
+## Completed stabilization repairs
+
+- [x] Remove the orphan Rust database module declaration (#78).
+- [x] Make pnpm the authoritative workspace tooling and lockfile baseline (#79).
+- [x] Align OpenAI credential storage, status, and provider lookup (#80).
+- [x] Repair the Agent `created -> queued -> running` flow (#81).
+- [x] Establish the canonical Option schema and migration baseline (#83).
+- [x] Normalize Option and System IPC DTOs with focused response validation (#84, #85).
+
 ## Immediate work order
 
-1. Resolve the missing Rust database module and restore a healthy baseline.
-2. Standardize the OpenAI credential identifier across Settings, Agent status, and provider lookup.
-3. Repair the Agent `created -> queued -> running` UI and command flow.
-4. Normalize Option and System command-boundary DTOs and add runtime response validation.
-5. Add the isolated Artifact-window route and narrow its command permissions.
-6. Synchronize Research URL context and selected workspace/project state.
-7. Complete one Option chain-to-contract-to-strategy vertical slice.
-8. Add a minimal internal-plugin settings and create-Artifact workflow.
-9. Enforce frontend and Rust quality gates in CI.
-10. Re-run release acceptance and update milestone evidence.
+1. Add the isolated Artifact-window route and narrow its command permissions.
+2. Synchronize Research URL context and selected workspace/project state.
+3. Complete one Option chain-to-contract-to-strategy vertical slice.
+4. Add a minimal internal-plugin settings and create-Artifact workflow.
+5. Enforce frontend and Rust quality gates in CI.
+6. Re-run release acceptance and update milestone evidence.
 
 Each numbered item should normally be a separate pull request. Branch from `dev`, target `dev`, and never develop directly on `dev` or `main`.
 
