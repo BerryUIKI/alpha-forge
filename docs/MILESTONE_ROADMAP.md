@@ -2,6 +2,8 @@
 
 > Vision: Build an AI-native investment research operating environment
 
+**Status reviewed:** 2026-08-14
+
 ## Core Product Loop
 
 ```text
@@ -38,7 +40,7 @@ This roadmap is the program entry point. Implementation agents must follow the l
 | M9 Option | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md) |
 | M10 Goose | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md) |
 
-Status in this file is authoritative at the program level. Detailed documents own work-package checklists; neither historical branch names nor unmerged code override this status.
+Status in this file is authoritative at the program level. Detailed documents own work-package checklists; historical branch names and focused layer-level tests do not override the acceptance gates.
 
 The current corrective program is defined by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Evidence for the 2026-08-12 rebaseline is recorded in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
 
@@ -186,9 +188,9 @@ All tests pass
 
 ---
 
-## M2 — Agent Runtime ✅
+## M2 — Agent Runtime ⚠️
 
-**Status**: Complete
+**Status**: Lifecycle and credential repairs are merged (#80, #81); milestone acceptance remains incomplete pending the full Agent-to-Artifact verification gates.
 
 ### Goal
 Create the core intelligence engine of AlphaForge.
@@ -261,9 +263,9 @@ Result persisted in SQLite
 
 ---
 
-## M3 — Artifact Intelligence System ✅
+## M3 — Artifact Intelligence System ⚠️
 
-**Status**: Complete
+**Status**: Persistence, renderers, and permission primitives exist; the isolated Artifact-window route is the next code action, so milestone acceptance remains incomplete.
 
 ### Goal
 Enable Agents to create interactive research experiences.
@@ -597,7 +599,7 @@ Artifact rendered
 
 ## M8 — Local MVP Completion & Release Readiness 🚧
 
-**Status**: Reopened on 2026-08-12. Release acceptance was withdrawn after the integration audit identified broken Agent, credential, Artifact, build, and verification paths.
+**Status**: Reopened on 2026-08-12. Baseline, credential, Agent, Option schema/IPC, and System IPC repairs are merged, but release acceptance remains withdrawn until Artifact routing, remaining workflows, and full verification gates pass.
 
 ### Goal
 Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services. Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.
@@ -656,7 +658,7 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ## M9 — Option Module Integration 🚧
 
-**Status**: Reopened on 2026-08-12. The implementation contains pricing and persistence code, but TypeScript/Rust request and response contracts are incompatible and the UI does not provide a complete chain-to-strategy workflow.
+**Status**: Reopened on 2026-08-12. The canonical schema and Option IPC repairs are merged (#83, #84), but the UI does not provide a complete chain-to-strategy workflow and M9 acceptance remains incomplete.
 
 ### Goal
 
@@ -671,7 +673,7 @@ Integrate evidence-grounded Option pricing, chain analysis, strategies, and port
 
 ### Execution path
 
-1. Repair Option schema application with a new append-only migration and tests.
+1. Retain the merged Option schema baseline and focused migration tests.
 2. Integrate a pure pricing/provider core with independent numerical fixtures.
 3. Deliver the Option-chain input-to-persistence UI slice.
 4. Deliver strategy construction and a controlled Artifact renderer.
@@ -826,16 +828,25 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
+
 **Stabilization S0 — Baseline truth and build recovery** is active. M8 and M9 remain reopened until the [Stabilization Roadmap](STABILIZATION_ROADMAP.md) acceptance gates are met.
 
+### Completed stabilization repairs
+
+- [x] Rust module-tree repair and pnpm workspace baseline (#78, #79)
+- [x] OpenAI credential and Agent lifecycle contracts (#80, #81)
+- [x] Canonical Option schema, Option IPC, and System IPC contracts (#83, #84, #85)
+
 ### Next Milestones
-1. Restore a healthy module tree, deterministic package management, and CI quality gates.
-2. Repair the Agent credential and task-state contracts.
-3. Normalize IPC DTOs and complete Artifact routing and plugin reachability.
-4. Re-accept the Option vertical slice and then the local MVP with retained evidence.
+
+1. Add the isolated Artifact-window route (current next code action).
+2. Synchronize Research URL context and selected workspace/project state.
+3. Complete the Option chain-to-contract-to-strategy vertical slice and plugin reachability.
+4. Enforce CI, E2E, packaged smoke, security, and release gates before re-accepting M8/M9.
 5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.
 
 ### Long-term Vision
+
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.
 
 ---

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
 
-import { checkForUpdate, exportLocalBackup } from "./system";
+import { checkForUpdate, exportLocalBackup, getSystemInfo } from "./system";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -28,5 +28,30 @@ describe("system API", () => {
 
     await expect(checkForUpdate()).resolves.toEqual(release);
     expect(mockInvoke).toHaveBeenCalledWith("check_for_update");
+  });
+
+  it("parses the camelCase system information contract", async () => {
+    const systemInfo = {
+      appName: "Investment OS",
+      appVersion: "0.1.0",
+      platform: "windows",
+      architecture: "x86_64",
+    };
+    mockInvoke.mockResolvedValueOnce(systemInfo);
+
+    await expect(getSystemInfo()).resolves.toEqual(systemInfo);
+    expect(mockInvoke).toHaveBeenCalledWith("get_system_info");
+  });
+
+  it("rejects malformed or legacy system information responses", async () => {
+    mockInvoke.mockResolvedValueOnce({
+      appName: "Investment OS",
+      appVersion: "0.1.0",
+      platform: "windows",
+    });
+    await expect(getSystemInfo()).rejects.toThrow();
+
+    mockInvoke.mockResolvedValueOnce({ os: "windows", arch: "x86_64", version: "0.1.0" });
+    await expect(getSystemInfo()).rejects.toThrow();
   });
 });

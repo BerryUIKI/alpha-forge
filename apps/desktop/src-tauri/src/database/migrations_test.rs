@@ -353,4 +353,322 @@ mod tests {
         assert_eq!(migration_count(&pool, "0014_options_support").await, 0);
         assert!(option_table_names(&pool).await.is_empty());
     }
+
+    const FINANCIAL_MIGRATIONS: &[&str] = &[
+        "0015_financial_platforms_accounts",
+        "0016_financial_assets_quotes",
+        "0017_financial_activities",
+        "0018_financial_lots",
+        "0019_financial_snapshots_valuation",
+        "0020_financial_taxonomies_allocation",
+        "0021_financial_valuation_unique",
+    ];
+
+    const FINANCIAL_TABLES: &[&str] = &[
+        "platforms",
+        "accounts",
+        "assets",
+        "quotes",
+        "import_runs",
+        "activities",
+        "lots",
+        "lot_disposals",
+        "holdings_snapshots",
+        "snapshot_positions",
+        "daily_account_valuation",
+        "taxonomies",
+        "taxonomy_categories",
+        "asset_taxonomy_assignments",
+        "allocation_targets",
+        "allocation_target_weights",
+        "allocation_target_constraints",
+    ];
+
+    async fn existing_tables(pool: &SqlitePool, tables: &[&str]) -> Vec<String> {
+        sqlx::query_scalar::<_, String>(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN (SELECT value FROM json_each(?)) ORDER BY name",
+        )
+        .bind(serde_json::to_string(tables).expect("Failed to encode table list"))
+        .fetch_all(pool)
+        .await
+        .expect("Failed to list tables")
+    }
+
+    #[tokio::test]
+    async fn financial_migrations_create_canonical_schema_and_record_once() {
+        let pool = setup_test_db().await;
+
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run financial migrations");
+
+        for name in FINANCIAL_MIGRATIONS {
+            assert_eq!(
+                migration_count(&pool, name).await,
+                1,
+                "financial migration {name} should be recorded exactly once"
+            );
+        }
+        let found = existing_tables(&pool, FINANCIAL_TABLES).await;
+        assert_eq!(found.len(), FINANCIAL_TABLES.len());
+
+        migrations::run(&pool)
+            .await
+            .expect("Financial migrations should be idempotent");
+        for name in FINANCIAL_MIGRATIONS {
+            assert_eq!(
+                migration_count(&pool, name).await,
+                1,
+                "financial migration {name} must not double-apply"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn financial_migrations_preserve_existing_placeholder_tables() {
+        let pool = setup_test_db().await;
+        sqlx::query(
+            "INSERT INTO portfolio_accounts (id, name, account_type, currency) VALUES ('pa-1', 'Legacy', 'SECURITIES', 'CNY')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert placeholder portfolio account");
+
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        let row: (String,) =
+            sqlx::query_as("SELECT name FROM portfolio_accounts WHERE id = 'pa-1'")
+                .fetch_one(&pool)
+                .await
+                .expect("Placeholder portfolio account must survive");
+        assert_eq!(row.0, "Legacy");
+        let placeholder_tables = existing_tables(
+            &pool,
+            &[
+                "portfolio_accounts",
+                "positions",
+                "transactions",
+                "watchlists",
+            ],
+        )
+        .await;
+        assert_eq!(placeholder_tables.len(), 4);
+    }
+
+    #[tokio::test]
+    async fn financial_assets_derive_instrument_key() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        sqlx::query(
+            "INSERT INTO assets (id, kind, quote_mode, quote_ccy, instrument_type, instrument_symbol, instrument_exchange_mic)
+             VALUES ('asset-equity', 'INVESTMENT', 'MARKET', 'USD', 'EQUITY', 'AAPL', 'XNAS')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert equity asset");
+        sqlx::query(
+            "INSERT INTO assets (id, kind, quote_mode, quote_ccy, instrument_type, instrument_symbol)
+             VALUES ('asset-crypto', 'INVESTMENT', 'MARKET', 'USD', 'CRYPTO', 'BTC')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert crypto asset");
+
+        let equity_key: String =
+            sqlx::query_scalar("SELECT instrument_key FROM assets WHERE id = 'asset-equity'")
+                .fetch_one(&pool)
+                .await
+                .expect("Failed to read equity instrument key");
+        assert_eq!(equity_key, "EQUITY:AAPL@XNAS");
+        let crypto_key: String =
+            sqlx::query_scalar("SELECT instrument_key FROM assets WHERE id = 'asset-crypto'")
+                .fetch_one(&pool)
+                .await
+                .expect("Failed to read crypto instrument key");
+        assert_eq!(crypto_key, "CRYPTO:BTC/USD");
+    }
+
+    #[tokio::test]
+    async fn financial_activities_enforce_idempotency_key_uniqueness() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        sqlx::query(
+            "INSERT INTO accounts (id, name, account_type, currency) VALUES ('acct-1', 'Main', 'SECURITIES', 'USD')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert account");
+        sqlx::query(
+            "INSERT INTO activities (id, account_id, activity_type, status, activity_date, currency, idempotency_key)
+             VALUES ('act-1', 'acct-1', 'BUY', 'POSTED', '2026-08-13', 'USD', 'src:1')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert activity");
+
+        let duplicate = sqlx::query(
+            "INSERT INTO activities (id, account_id, activity_type, status, activity_date, currency, idempotency_key)
+             VALUES ('act-2', 'acct-1', 'BUY', 'POSTED', '2026-08-13', 'USD', 'src:1')",
+        )
+        .execute(&pool)
+        .await;
+        assert!(
+            duplicate.is_err(),
+            "duplicate idempotency key must be rejected"
+        );
+
+        let unknown_type = sqlx::query(
+            "INSERT INTO activities (id, account_id, activity_type, status, activity_date, currency)
+             VALUES ('act-3', 'acct-1', 'HODL', 'POSTED', '2026-08-13', 'USD')",
+        )
+        .execute(&pool)
+        .await;
+        assert!(
+            unknown_type.is_err(),
+            "invalid activity_type must be rejected"
+        );
+    }
+
+    #[tokio::test]
+    async fn financial_taxonomies_seed_system_reference_data() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        let system_count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM taxonomies WHERE is_system = 1")
+                .fetch_one(&pool)
+                .await
+                .expect("Failed to count system taxonomies");
+        assert_eq!(system_count, 6);
+        let instrument_categories: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM taxonomy_categories WHERE taxonomy_id = 'instrument_type'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Failed to count instrument categories");
+        assert_eq!(instrument_categories, 49);
+        let asset_categories: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM taxonomy_categories WHERE taxonomy_id = 'asset_classes'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("Failed to count asset class categories");
+        assert_eq!(asset_categories, 79);
+    }
+
+    #[tokio::test]
+    async fn financial_allocation_target_weights_must_match_target_taxonomy() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        sqlx::query(
+            "INSERT INTO allocation_targets (id, name, scope_type, taxonomy_id)
+             VALUES ('target-1', 'Equity tilt', 'all', 'asset_classes')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert allocation target");
+
+        let mismatched = sqlx::query(
+            "INSERT INTO allocation_target_weights (id, target_id, taxonomy_id, category_id, target_bps)
+             VALUES ('weight-1', 'target-1', 'instrument_type', 'EQUITY_SECURITY', 5000)",
+        )
+        .execute(&pool)
+        .await;
+        assert!(
+            mismatched.is_err(),
+            "mismatched weight taxonomy must be rejected"
+        );
+    }
+
+    #[tokio::test]
+    async fn financial_daily_valuation_unique_per_account_date() {
+        let pool = setup_test_db().await;
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        sqlx::query(
+            "INSERT INTO accounts (id, name, account_type, currency) VALUES ('acct-1', 'Main', 'SECURITIES', 'USD')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert account");
+        sqlx::query(
+            "INSERT INTO daily_account_valuation (id, account_id, valuation_date, account_currency, base_currency, fx_rate_to_base, cash_balance, investment_market_value, total_value, cost_basis, net_contribution)
+             VALUES ('val-1', 'acct-1', '2026-08-13', 'USD', 'USD', '1', '100', '900', '1000', '800', '500')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert valuation");
+        sqlx::query(
+            "INSERT INTO daily_account_valuation (id, account_id, valuation_date, account_currency, base_currency, fx_rate_to_base, cash_balance, investment_market_value, total_value, cost_basis, net_contribution)
+             VALUES ('val-2', 'acct-1', '2026-08-12', 'USD', 'USD', '1', '50', '950', '1000', '800', '500')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Different dates must be allowed");
+
+        let duplicate = sqlx::query(
+            "INSERT INTO daily_account_valuation (id, account_id, valuation_date, account_currency, base_currency, fx_rate_to_base, cash_balance, investment_market_value, total_value, cost_basis, net_contribution)
+             VALUES ('val-3', 'acct-1', '2026-08-13', 'USD', 'USD', '1', '0', '0', '0', '0', '0')",
+        )
+        .execute(&pool)
+        .await;
+        assert!(
+            duplicate.is_err(),
+            "duplicate (account, date) valuation must be rejected"
+        );
+    }
+
+    #[tokio::test]
+    async fn financial_migration_rolls_back_tables_when_recording_fails() {
+        let pool = setup_test_db().await;
+        sqlx::query(
+            "CREATE TABLE _migrations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to create migration tracking table");
+        sqlx::query(
+            "CREATE TRIGGER fail_financial_migration_record
+             BEFORE INSERT ON _migrations
+             WHEN NEW.name = '0015_financial_platforms_accounts'
+             BEGIN SELECT RAISE(ABORT, 'forced financial migration failure'); END",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to install migration failure trigger");
+
+        let error = migrations::run(&pool)
+            .await
+            .expect_err("Forced migration record failure should surface");
+        assert!(error
+            .to_string()
+            .contains("migration transaction failed for 0015_financial_platforms_accounts"));
+        assert_eq!(
+            migration_count(&pool, "0015_financial_platforms_accounts").await,
+            0
+        );
+        assert!(
+            existing_tables(&pool, FINANCIAL_TABLES).await.is_empty(),
+            "no financial tables may survive a rolled-back migration"
+        );
+    }
 }

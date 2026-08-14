@@ -80,19 +80,19 @@ investment-os/
 ├── apps/desktop/                 Tauri 2 desktop application
 │   ├── src/                      React frontend
 │   │   ├── app/                  App entry, router, providers
-│   │   ├── pages/                6 route pages (all placeholders)
+│   │   ├── pages/                React route pages
 │   │   ├── components/           Layout, navigation, feedback, common
-│   │   ├── features/             8 feature modules (all placeholders)
-│   │   ├── lib/desktop-api/      Unified IPC layer (6 modules)
-│   │   ├── hooks/                (future)
-│   │   ├── stores/               (future)
+│   │   ├── features/             Feature modules
+│   │   ├── lib/desktop-api/      Unified IPC layer
+│   │   ├── hooks/                React hooks
+│   │   ├── stores/               Frontend state stores
 │   │   ├── styles/               Tailwind CSS 4 globals
 │   │   └── types/                Shared TypeScript types
 │   ├── src-tauri/                Rust backend
 │   │   ├── src/
 │   │   │   ├── app/              AppState, bootstrap
-│   │   │   ├── commands/         6 command modules (12 commands)
-│   │   │   ├── agent/            Agent runtime types (stubs)
+│   │   │   ├── commands/         Tauri command modules
+│   │   │   ├── agent/            Agent runtime and execution
 │   │   │   ├── database/         SQLx pool, migrations
 │   │   │   ├── security/         Credentials, sandbox, validation
 │   │   │   ├── windows/          Main + artifact window management
@@ -107,17 +107,17 @@ investment-os/
 │   └── vite.config.ts
 ├── crates/                       Rust workspace crates
 │   ├── domain/                   Core domain models
-│   ├── agent-core/               Agent execution engine (stub)
-│   ├── artifact-core/            Artifact lifecycle (stub)
-│   ├── provider-core/            Provider adapters (stub)
+│   ├── agent-core/               Agent execution engine
+│   ├── artifact-core/            Artifact lifecycle
+│   ├── provider-core/            Provider adapters
 │   └── shared/                   Error codes, shared utilities
 ├── packages/                     TypeScript workspace packages
-│   ├── ui/                       Shared UI components (stub)
-│   ├── schemas/                  Zod validation schemas (stub)
-│   ├── artifact-sdk/             Artifact plugin SDK (stub)
-│   ├── financial-components/     Finance-specific components (stub)
-│   ├── shared-types/             Shared TypeScript types (stub)
-│   └── config/                   Configuration constants (stub)
+│   ├── ui/                       Shared UI components
+│   ├── schemas/                  Zod validation schemas
+│   ├── artifact-sdk/             Artifact plugin SDK
+│   ├── financial-components/     Finance-specific components
+│   ├── shared-types/             Shared TypeScript types
+│   └── config/                   Configuration constants
 ├── plugins/                      Internal artifact plugins
 │   ├── company-comparison/
 │   ├── valuation-model/
@@ -144,17 +144,19 @@ React Component
 
 All IPC goes through the `src/lib/desktop-api/` layer. Components never call `invoke()` directly.
 
+Command-boundary DTOs use explicit camelCase serialization where required. The Option and System desktop wrappers validate unknown responses with Zod; broader cross-family fixture coverage remains part of stabilization.
+
 ## Current IPC Command Families
 
 The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, Artifacts, internal plugins, Options, and Goose scaffolding. Command registration alone is not completion evidence.
 
 Current integration status is maintained in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md). In particular:
 
-- Agent commands and UI exist, but the queue/start transition and credential identifier require repair.
+- Agent queue/start and OpenAI credential repairs are merged with focused regression coverage; full Agent-to-Artifact verification remains pending.
 - Research, thesis, knowledge graph, and portfolio commands have reachable primary UI surfaces.
 - Artifact persistence and in-page renderers exist, but the separate Artifact-window route is incomplete.
 - Internal plugin commands exist, but the user-facing management and creation workflow is incomplete.
-- Option commands exist, but command-boundary field naming is incompatible with the frontend.
+- Option command-boundary DTOs and System information responses now use the reviewed camelCase/Zod contracts; the Option UI vertical slice remains incomplete.
 - Goose commands are registered as scaffolding; the service is disabled and the feature is not accepted.
 
 ## Database
@@ -167,7 +169,7 @@ Current integration status is maintained in the [Frontend-Backend Integration an
 
 ## Security
 
-- API keys: Stored through the OS keychain; the shared credential identifier is under stabilization
+- API keys: Stored through the OS keychain under canonical `openai.api_key`; the legacy `api_key` entry is migrated by Rust, and plaintext secrets do not cross into React
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
 - Input validation: Zod is used in selected TypeScript boundaries and explicit validation is used in Rust; coverage is not yet uniform

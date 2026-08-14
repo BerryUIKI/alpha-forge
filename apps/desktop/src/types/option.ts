@@ -1,6 +1,6 @@
 /**
  * Option Analysis Platform - Type Definitions
- * 
+ *
  * TypeScript interfaces matching Rust domain models for the Option platform.
  * All entities are workspace-scoped and follow AlphaForge's data model patterns.
  */
@@ -61,7 +61,7 @@ export interface OptionContract {
   contractMultiplier: number;
   bid: number;
   ask: number;
-  last?: number;
+  last: number | null;
   volume: number;
   openInterest: number;
   impliedVolatility: number;
@@ -95,8 +95,8 @@ export interface OptionStrategy {
   strategyType: StrategyType;
   underlying: string;
   totalCost: number;
-  maxProfit?: number;
-  maxLoss?: number;
+  maxProfit: number | null;
+  maxLoss: number | null;
   breakEvenPoints: number[];
   legs?: StrategyLeg[]; // Optional legs array
   description?: string; // Optional description
@@ -411,36 +411,41 @@ export const StrategyTypeSchema = z.enum([
   'custom',
 ]);
 
-export const OptionChainSchema = z.object({
-  id: z.string().uuid(),
-  workspaceId: z.string().uuid(),
-  symbol: z.string().min(1).max(10),
-  underlyingPrice: z.number().positive(),
-  asOf: z.string().datetime(),
-  dataSource: DataSourceSchema,
-  createdAt: z.string().datetime(),
-});
+export const OptionChainSchema = z
+  .object({
+    id: z.string().uuid(),
+    workspaceId: z.string().uuid(),
+    symbol: z.string().min(1).max(10),
+    underlyingPrice: z.number().finite().positive(),
+    asOf: z.string().datetime(),
+    dataSource: DataSourceSchema,
+    createdAt: z.string().datetime(),
+  })
+  .strict();
 
-export const OptionContractSchema = z.object({
-  id: z.string().uuid(),
-  workspaceId: z.string().uuid(),
-  chainId: z.string().uuid(),
-  symbol: z.string().min(1).max(10),
-  optionType: OptionTypeSchema,
-  strike: z.number().positive(),
-  expiration: z.string().datetime(),
-  contractMultiplier: z.number().int().positive().default(100),
-  bid: z.number().nonnegative(),
-  ask: z.number().nonnegative(),
-  last: z.number().nonnegative().optional(),
-  volume: z.number().int().nonnegative().default(0),
-  openInterest: z.number().int().nonnegative().default(0),
-  impliedVolatility: z.number().positive(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-}).refine(data => data.bid <= data.ask, {
-  message: "Bid must be <= Ask",
-});
+export const OptionContractSchema = z
+  .object({
+    id: z.string().uuid(),
+    workspaceId: z.string().uuid(),
+    chainId: z.string().uuid(),
+    symbol: z.string().min(1).max(10),
+    optionType: OptionTypeSchema,
+    strike: z.number().finite().positive(),
+    expiration: z.string().datetime(),
+    contractMultiplier: z.number().finite().int().positive(),
+    bid: z.number().finite().nonnegative(),
+    ask: z.number().finite().nonnegative(),
+    last: z.number().finite().nonnegative().nullable(),
+    volume: z.number().finite().int().nonnegative(),
+    openInterest: z.number().finite().int().nonnegative(),
+    impliedVolatility: z.number().finite().nonnegative(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict()
+  .refine((data) => data.bid <= data.ask, {
+    message: "Bid must be <= Ask",
+  });
 
 export const GreeksSchema = z.object({
   id: z.string().uuid(),
@@ -455,19 +460,21 @@ export const GreeksSchema = z.object({
   calculationModel: z.enum(['black_scholes', 'binomial', 'finite_difference']),
 });
 
-export const OptionStrategySchema = z.object({
-  id: z.string().uuid(),
-  workspaceId: z.string().uuid(),
-  name: z.string().min(1).max(100),
-  strategyType: StrategyTypeSchema,
-  underlying: z.string().min(1).max(10),
-  totalCost: z.number(),
-  maxProfit: z.number().optional(),
-  maxLoss: z.number().optional(),
-  breakEvenPoints: z.array(z.number()),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+export const OptionStrategySchema = z
+  .object({
+    id: z.string().uuid(),
+    workspaceId: z.string().uuid(),
+    name: z.string().min(1).max(100),
+    strategyType: StrategyTypeSchema,
+    underlying: z.string().min(1).max(10),
+    totalCost: z.number().finite(),
+    maxProfit: z.number().finite().nullable(),
+    maxLoss: z.number().finite().nullable(),
+    breakEvenPoints: z.array(z.number().finite()),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
 
 export const StrategyLegSchema = z.object({
   id: z.string().uuid(),
