@@ -214,6 +214,7 @@ chore(deps): update Tauri to 2.0.0
 - **Do not mix unrelated changes** - refactors separate from features
 - **Write clear descriptions** - explain "why" not just "what"
 - **Reference issues** - "fixes #123" or "relates to #456"
+- **Keep local agent state private** - never commit `.zcode/plans` or `.workbuddy/memory` to public repositories
 
 ## Pull Request Process
 
