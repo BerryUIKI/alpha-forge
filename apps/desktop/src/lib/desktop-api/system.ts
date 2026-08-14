@@ -1,4 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
+import { z } from "zod";
+
+const SystemInfoSchema = z
+  .object({
+    appName: z.string(),
+    appVersion: z.string(),
+    platform: z.string(),
+    architecture: z.string(),
+  })
+  .strict();
 
 export interface ReleaseCheck {
   currentVersion: string;
@@ -8,13 +18,15 @@ export interface ReleaseCheck {
 }
 
 export interface SystemInfo {
-  os: string;
-  arch: string;
-  version: string;
+  appName: string;
+  appVersion: string;
+  platform: string;
+  architecture: string;
 }
 
-export function getSystemInfo(): Promise<SystemInfo> {
-  return invoke("get_system_info");
+export async function getSystemInfo(): Promise<SystemInfo> {
+  const response: unknown = await invoke("get_system_info");
+  return SystemInfoSchema.parse(response);
 }
 
 export function getConfigDir(): Promise<string> {
