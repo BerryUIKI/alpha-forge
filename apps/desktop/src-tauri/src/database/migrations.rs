@@ -30,6 +30,7 @@ pub async fn run(pool: &SqlitePool) -> Result<(), AppError> {
     apply_plugin_registry(pool).await?;
     apply_thesis_timestamp_normalization(pool).await?;
     apply_option_support(pool).await?;
+    apply_financial_migrations(pool).await?;
 
     info!("migrations complete");
 
@@ -499,6 +500,87 @@ async fn apply_option_support(pool: &SqlitePool) -> Result<(), AppError> {
         .await;
     transaction_result
         .map_err(|e| AppError::Internal(format!("option migration transaction failed: {e}")))?;
+
+    Ok(())
+}
+
+/// Financial domain migrations (Wealthfolio port, Phase 1 storage).
+///
+/// Each entry runs its DDL and `_migrations` record inside one transaction so
+/// a failure rolls back cleanly and the migration is retried from scratch.
+/// The SQL files are pure additive DDL — fresh tables, indexes, triggers, and
+/// reference seed data — and never touch the existing research tables.
+const FINANCIAL_MIGRATIONS: &[(&str, &str)] = &[
+    (
+        "0015_financial_platforms_accounts",
+        include_str!("../../migrations/0015_financial_platforms_accounts.sql"),
+    ),
+    (
+        "0016_financial_assets_quotes",
+        include_str!("../../migrations/0016_financial_assets_quotes.sql"),
+    ),
+    (
+        "0017_financial_activities",
+        include_str!("../../migrations/0017_financial_activities.sql"),
+    ),
+    (
+        "0018_financial_lots",
+        include_str!("../../migrations/0018_financial_lots.sql"),
+    ),
+    (
+        "0019_financial_snapshots_valuation",
+        include_str!("../../migrations/0019_financial_snapshots_valuation.sql"),
+    ),
+    (
+        "0020_financial_taxonomies_allocation",
+        include_str!("../../migrations/0020_financial_taxonomies_allocation.sql"),
+    ),
+    (
+        "0021_financial_valuation_unique",
+        include_str!("../../migrations/0021_financial_valuation_unique.sql"),
+    ),
+];
+
+async fn apply_financial_migrations(pool: &SqlitePool) -> Result<(), AppError> {
+    for (name, sql) in FINANCIAL_MIGRATIONS {
+        apply_financial_migration(pool, name, sql).await?;
+    }
+    Ok(())
+}
+
+async fn apply_financial_migration(
+    pool: &SqlitePool,
+    name: &'static str,
+    sql: &'static str,
+) -> Result<(), AppError> {
+    let already = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _migrations WHERE name = ?")
+        .bind(name)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("migration check failed for {name}: {e}")))?;
+
+    if already > 0 {
+        return Ok(());
+    }
+
+    let mut connection = pool
+        .acquire()
+        .await
+        .map_err(|e| AppError::Internal(format!("migration transaction failed for {name}: {e}")))?;
+    let transaction_result: Result<(), sqlx::Error> =
+        Connection::transaction(&mut *connection, |transaction| {
+            Box::pin(async move {
+                (&mut **transaction).execute(sql).await?;
+                sqlx::query("INSERT INTO _migrations (name) VALUES (?)")
+                    .bind(name)
+                    .execute(&mut **transaction)
+                    .await?;
+                Ok(())
+            })
+        })
+        .await;
+    transaction_result
+        .map_err(|e| AppError::Internal(format!("migration transaction failed for {name}: {e}")))?;
 
     Ok(())
 }
