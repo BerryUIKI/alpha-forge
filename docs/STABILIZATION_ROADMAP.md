@@ -2,6 +2,7 @@
 
 **Status:** Active
 **Established:** 2026-08-12
+**Last reviewed:** 2026-08-14
 **Purpose:** Restore a truthful, tested, end-to-end MVP baseline before feature expansion.
 
 ## Why stabilization is required
@@ -25,9 +26,9 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 | Milestone | Status | Outcome |
 |---|---|---|
-| S0 — Baseline truth and build recovery | Active | Repository checks can run and status documents reflect reality. |
-| S1 — Core Agent loop recovery | Blocked by S0 | A configured user can create, queue, run, cancel, and inspect a research task. |
-| S2 — IPC contract normalization | Blocked by S0 | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity. |
+| S0 — Baseline truth and build recovery | Active; acceptance incomplete | Repository checks can run and status documents reflect reality. |
+| S1 — Core Agent loop recovery | Blocked by S0; acceptance incomplete | A configured user can create, queue, run, cancel, and inspect a research task. |
+| S2 — IPC contract normalization | Blocked by S0; acceptance incomplete | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity. |
 | S3 — Artifact and plugin vertical slice | Blocked by S1-S2 | Structured output opens safely in an Artifact window and internal plugins are usable. |
 | S4 — Research and portfolio workflow closure | Blocked by S2 | Navigation and persistence workflows are complete and state-aware. |
 | S5 — Option module re-acceptance | Blocked by S2 | One evidence-grounded Option workflow works end to end. |
@@ -38,8 +39,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ### Scope
 
-- Complete the `database::timeout` module-tree repair in this PR; S0 remains Active because its other scope and acceptance criteria remain outstanding.
-- Package-manager baseline completed in this PR: pnpm 9.0.0 and the tracked `pnpm-lock.yaml` are authoritative; S0 remains Active because its other scope and acceptance criteria remain outstanding.
+- The orphan `database::timeout` declaration was removed in merged PR #78; S0 remains Active because its other scope and acceptance criteria remain outstanding.
+- The pnpm 9.0.0 and `pnpm-lock.yaml` baseline was merged in PR #79; S0 remains Active because its other scope and acceptance criteria remain outstanding.
 - Add standard CI quality gates in addition to CodeQL.
 - Align README, architecture, roadmap, and milestone status.
 - Record a command-to-wrapper static contract check.
@@ -56,8 +57,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ### Scope
 
-- Credential-contract repair completed: Rust owns `openai.api_key`, migrates the legacy `api_key` entry, and exposes only OpenAI-specific save/status/delete IPC. S1 remains blocked until the Agent lifecycle and remaining acceptance criteria pass.
-- Correct the `created -> queued -> running` transition in the UI (queue and start are now explicit, with queued recovery and retry state covered by focused hook/component and Rust command/service tests).
+- Credential-contract repair is merged in PR #80: Rust owns `openai.api_key`, migrates the legacy `api_key` entry, and exposes only OpenAI-specific save/status/delete IPC. S1 remains blocked until the remaining end-to-end Agent-to-Artifact acceptance gates pass.
+- The `created -> queued -> running` transition repair is merged in PR #81; queue/start are explicit, with queued recovery and retry state covered by focused hook/component and Rust command/service tests.
 - Surface progress events, failure context, cancellation, and completion.
 - Verify completed structured output is persisted and discoverable.
 
@@ -87,15 +88,17 @@ Configure credential
 - Repair Option and System DTO mismatches first.
 - Add automated command registration and serialization fixture tests.
 
-Option IPC normalization is implemented: command-boundary DTOs use camelCase serde, domain/database models remain snake_case, Option desktop wrappers parse responses with Zod, malformed-response fixtures are covered, and wrapper/`lib.rs` registration parity is checked by `scripts/check-option-ipc-registration.mjs`.
+Option schema and IPC normalization are merged in PRs #83 and #84: the canonical migration is applied, command-boundary DTOs use camelCase serde, domain/database models remain snake_case, Option desktop wrappers parse responses with Zod, malformed-response fixtures are covered, and wrapper/`lib.rs` registration parity is checked by `scripts/check-option-ipc-registration.mjs`.
 
-System IPC normalization is implemented on the remediation branch: `SystemInfo` now has an explicit camelCase serialization contract, and the internal desktop wrapper validates unknown responses with Zod. The focused contract tests and this documentation update are pending merge; release acceptance is unchanged until the merge and required verification matrix are complete.
+System IPC normalization is merged in PR #85: `SystemInfo` has an explicit camelCase serialization contract, and the internal desktop wrapper validates unknown responses with Zod. Focused Rust and Vitest contract tests verify this boundary; S2 acceptance remains incomplete until the broader baseline and verification gates pass.
 
 ### Acceptance criteria
 
 - TypeScript and Rust share checked fixtures for every repaired command family.
 - No UI relies on TypeScript-only assertions for runtime response shape.
 - Error responses preserve stable codes without leaking raw internal details.
+
+The next code action is the isolated Artifact-window route; Research URL context follows it.
 
 ## S3 — Artifact and plugin vertical slice
 
@@ -141,8 +144,7 @@ Validated JSON
 
 ### Scope
 
-- Repair Option IPC DTOs.
-- Canonical `0014_options_support` persistence baseline is implemented and its focused migration verification passes; broader repository CRUD/isolation acceptance remains pending.
+- Option IPC DTO repair and the canonical `0014_options_support` persistence baseline are merged and focused migration verification passes; broader repository CRUD/isolation acceptance remains pending.
 - Connect chain acquisition/list to contract detail.
 - Connect a persisted strategy workflow rather than a calculation-only mockup.
 - Display assumptions, timestamp, source, model, and uncertainty.
