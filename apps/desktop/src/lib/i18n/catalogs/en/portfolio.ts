@@ -102,6 +102,27 @@ export const portfolio = {
   failedToLoadWorkspaces: "Failed to load workspaces.",
   createWorkspaceFirst: "Create a workspace first",
   createWorkspaceFirstDescription: "Portfolio accounts are organized within a workspace.",
+
+  // Phase 3 dashboard
+  netWorth: "Net Worth",
+  totalValue: "Total Assets",
+  totalLiabilities: "Liabilities",
+  total: "Total",
+  marketValue: "Market Value",
+  gainLoss: "Gain/Loss",
+  weight: "Weight",
+  allocation: "Allocation",
+  accountValue: "Account Value Over Time",
+  recentActivity: "Recent Activity",
+  quickActions: "Quick Actions",
+  createSnapshot: "Create Snapshot",
+  creatingSnapshot: "Creating…",
+  snapshotCreated: "Snapshot created",
+  failedToCreateSnapshot: "Failed to create snapshot",
+  refresh: "Refresh",
+  noValuationData: "No valuation data",
+  noAllocationDescription: "Add holdings with a cost basis to see allocation.",
+  noRecentActivityDescription: "Import transaction history to see recent activity.",
 } as const;
 
 export type PortfolioKey = keyof typeof portfolio;

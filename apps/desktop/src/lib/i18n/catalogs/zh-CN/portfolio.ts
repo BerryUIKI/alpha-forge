@@ -102,6 +102,27 @@ export const portfolio = {
   failedToLoadWorkspaces: "加载工作区失败。",
   createWorkspaceFirst: "请先创建工作区",
   createWorkspaceFirstDescription: "投资组合账户在工作区内组织。",
+
+  // Phase 3 dashboard
+  netWorth: "净资产",
+  totalValue: "总资产",
+  totalLiabilities: "负债",
+  total: "合计",
+  marketValue: "市值",
+  gainLoss: "盈亏",
+  weight: "权重",
+  allocation: "资产配置",
+  accountValue: "账户价值趋势",
+  recentActivity: "最近活动",
+  quickActions: "快速操作",
+  createSnapshot: "创建快照",
+  creatingSnapshot: "创建中…",
+  snapshotCreated: "快照已创建",
+  failedToCreateSnapshot: "创建快照失败",
+  refresh: "刷新",
+  noValuationData: "暂无估值数据",
+  noAllocationDescription: "添加带有成本基础的持仓以查看配置。",
+  noRecentActivityDescription: "导入交易历史以查看最近活动。",
 } as const;
 
 export type PortfolioKey = keyof typeof portfolio;
