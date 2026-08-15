@@ -13,6 +13,8 @@ import { OptionsPage } from "./OptionsPage";
 const workspaceId = "00000000-0000-4000-8000-000000000001";
 const chainId = "00000000-0000-4000-8000-000000000002";
 const contractId = "00000000-0000-4000-8000-000000000003";
+const strategyId = "00000000-0000-4000-8000-000000000004";
+const legId = "00000000-0000-4000-8000-000000000005";
 const iso = "2026-08-14T00:00:00.000Z";
 
 const workspaceMock = vi.hoisted(() => ({ listWorkspaces: vi.fn() }));
@@ -20,6 +22,9 @@ const optionsMock = vi.hoisted(() => ({
   fetchOptionChain: vi.fn(),
   listOptionChains: vi.fn(),
   listOptionContracts: vi.fn(),
+  listOptionStrategies: vi.fn(),
+  createOptionStrategy: vi.fn(),
+  deleteOptionStrategy: vi.fn(),
 }));
 
 vi.mock("@/lib/desktop-api", () => ({
@@ -53,6 +58,32 @@ const contract = {
   createdAt: iso,
   updatedAt: iso,
 };
+const strategy = {
+  id: strategyId,
+  workspaceId,
+  name: "Call spread",
+  strategyType: "bull_call_spread" as const,
+  underlying: "AAPL",
+  totalCost: 500,
+  maxProfit: null,
+  maxLoss: null,
+  breakEvenPoints: [],
+  legs: [
+    {
+      id: legId,
+      strategyId,
+      optionContractId: contractId,
+      quantity: 1,
+      positionType: "long" as const,
+      premium: 5,
+      strike: 150,
+      expiration: iso,
+      optionType: "call" as const,
+    },
+  ],
+  createdAt: iso,
+  updatedAt: iso,
+};
 
 function renderWithQuery(ui: React.ReactNode) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -78,6 +109,8 @@ describe("Option chain contract view", () => {
     ]);
     optionsMock.listOptionChains.mockResolvedValue([]);
     optionsMock.listOptionContracts.mockResolvedValue([]);
+    optionsMock.listOptionStrategies.mockResolvedValue([]);
+    optionsMock.deleteOptionStrategy.mockResolvedValue(undefined);
   });
 
   it("fetches a normalized demo chain, refreshes the list, and selects its contracts", async () => {
@@ -154,5 +187,85 @@ describe("Option chain contract view", () => {
 
     expect(await screen.findByText("150.00")).toBeInTheDocument();
     expect(optionsMock.listOptionContracts).toHaveBeenCalledTimes(2);
+  });
+
+  it("creates and reloads a strategy from controlled contract selections", async () => {
+    let strategies: (typeof strategy)[] = [];
+    optionsMock.listOptionChains.mockResolvedValue([chain]);
+    optionsMock.listOptionContracts.mockResolvedValue([contract]);
+    optionsMock.listOptionStrategies.mockImplementation(async () => strategies);
+    optionsMock.createOptionStrategy.mockImplementation(async () => {
+      strategies = [strategy];
+      return strategy;
+    });
+
+    renderWithQuery(<OptionsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Select option chain AAPL" }));
+    const contractSelection = await screen.findByRole("checkbox", {
+      name: "Select contract AAPL 150.00 call",
+    });
+    fireEvent.click(contractSelection);
+    fireEvent.click(screen.getByRole("button", { name: "Create option strategy" }));
+    fireEvent.change(screen.getByLabelText("Strategy name"), {
+      target: { value: " Call spread " },
+    });
+    fireEvent.change(screen.getByLabelText("Quantity 150.00"), { target: { value: "0" } });
+    expect(screen.getByRole("button", { name: "Save strategy" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Quantity 150.00"), { target: { value: "2" } });
+    fireEvent.change(screen.getByLabelText("Direction 150.00"), {
+      target: { value: "short" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save strategy" }));
+
+    await waitFor(() =>
+      expect(optionsMock.createOptionStrategy.mock.calls[0]?.[0]).toEqual({
+        workspaceId,
+        name: "Call spread",
+        strategyType: "custom",
+        legs: [{ contractId, quantity: 2, positionType: "short" }],
+      }),
+    );
+    expect(await screen.findByText("Call spread")).toBeInTheDocument();
+    await waitFor(() => expect(optionsMock.listOptionStrategies).toHaveBeenCalledTimes(2));
+    expect(contractSelection).not.toBeChecked();
+  });
+
+  it("keeps strategy input available after a create error so the user can retry", async () => {
+    optionsMock.listOptionChains.mockResolvedValue([chain]);
+    optionsMock.listOptionContracts.mockResolvedValue([contract]);
+    optionsMock.createOptionStrategy
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(strategy);
+
+    renderWithQuery(<OptionsPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "Select option chain AAPL" }));
+    fireEvent.click(
+      await screen.findByRole("checkbox", { name: "Select contract AAPL 150.00 call" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Create option strategy" }));
+    fireEvent.change(screen.getByLabelText("Strategy name"), { target: { value: "Retry" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save strategy" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Unable to create");
+    fireEvent.click(screen.getByRole("button", { name: "Save strategy" }));
+    await waitFor(() => expect(optionsMock.createOptionStrategy).toHaveBeenCalledTimes(2));
+  });
+
+  it("deletes a persisted strategy and refreshes the empty state", async () => {
+    let strategies = [strategy];
+    optionsMock.listOptionStrategies.mockImplementation(async () => strategies);
+    optionsMock.deleteOptionStrategy.mockImplementation(async () => {
+      strategies = [];
+    });
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    renderWithQuery(<OptionsPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Delete option strategy: Call spread" }),
+    );
+
+    await waitFor(() =>
+      expect(optionsMock.deleteOptionStrategy.mock.calls[0]?.[0]).toBe(strategyId),
+    );
+    expect(await screen.findByText("No option strategies")).toBeInTheDocument();
   });
 });
