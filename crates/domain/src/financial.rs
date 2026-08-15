@@ -1314,3 +1314,44 @@ pub struct NetWorthSnapshot {
     pub net_worth: Decimal,
     pub accounts: Vec<NetWorthAccountEntry>,
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Income (Phase 2 — dividend/interest income aggregation)
+// ────────────────────────────────────────────────────────────────────────────
+
+/// Income breakdown by asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncomeByAsset {
+    pub asset_id: String,
+    pub kind: String,
+    pub symbol: String,
+    pub name: String,
+    pub income: Decimal,
+}
+
+/// Income breakdown by account.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncomeByAccount {
+    pub account_id: String,
+    pub account_name: String,
+    pub by_month: std::collections::HashMap<String, Decimal>,
+    pub total: Decimal,
+}
+
+/// Income summary for a period.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncomeSummary {
+    pub period: String,
+    pub by_month: std::collections::HashMap<String, Decimal>,
+    pub by_type: std::collections::HashMap<String, Decimal>,
+    pub by_asset: std::collections::HashMap<String, IncomeByAsset>,
+    pub by_currency: std::collections::HashMap<String, Decimal>,
+    pub by_account: std::collections::HashMap<String, IncomeByAccount>,
+    pub total_income: Decimal,
+    pub currency: String,
+    pub monthly_average: Decimal,
+    pub yoy_growth: Option<Decimal>,
+}

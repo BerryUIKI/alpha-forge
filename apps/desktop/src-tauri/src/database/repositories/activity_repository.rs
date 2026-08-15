@@ -4,13 +4,16 @@
 // `activities` is the canonical transaction ledger; `idempotency_key` makes
 // re-imports of the same source record a no-op.
 
-use chrono::Utc;
+use chrono::{NaiveDate, Utc};
+use rust_decimal::Decimal;
+use sqlx::Row;
 use sqlx::SqlitePool;
 
 use crate::database::repositories::financial_support::{
     parse_date, parse_json, parse_optional_date, parse_optional_decimal, parse_timestamp,
 };
 use crate::error::AppError;
+use crate::services::income_service::IncomeActivityRow;
 use domain::financial::{
     Activity, ActivityStatus, ActivityType, CreateActivityInput, CreateImportRunInput, ImportRun,
 };
@@ -203,6 +206,140 @@ impl ActivityRepository {
 
         rows.into_iter().map(TryInto::try_into).collect()
     }
+
+    /// Get income activities grouped by month for the given accounts.
+    pub async fn get_income_activities(
+        &self,
+        account_ids: Option<&[String]>,
+    ) -> Result<Vec<IncomeActivityRow>, AppError> {
+        let mut sql = String::from(
+            "SELECT strftime('%Y-%m', a.activity_date) as month_key, a.activity_type as income_type,
+             COALESCE(a.asset_id, 'CASH') as asset_id,
+             COALESCE(ast.kind, 'CASH') as asset_kind,
+             COALESCE(ast.display_code, 'CASH') as symbol,
+             COALESCE(ast.name, 'Cash') as symbol_name,
+             a.currency, COALESCE(a.amount, '0') as amount,
+             a.account_id, acc.name as account_name
+             FROM activities a
+             LEFT JOIN assets ast ON a.asset_id = ast.id
+             INNER JOIN accounts acc ON a.account_id = acc.id
+             WHERE a.activity_type IN ('DIVIDEND', 'INTEREST')",
+        );
+
+        if let Some(ids) = account_ids {
+            if !ids.is_empty() {
+                let placeholders: Vec<String> = ids
+                    .iter()
+                    .enumerate()
+                    .map(|(i, _)| format!("?{}", i + 1))
+                    .collect();
+                sql.push_str(&format!(
+                    " AND a.account_id IN ({})",
+                    placeholders.join(",")
+                ));
+                let mut query = sqlx::query(&sql);
+                for id in ids {
+                    query = query.bind(id);
+                }
+                let rows = query.fetch_all(&self.pool).await.map_err(|e| {
+                    AppError::Internal(format!("income activity query failed: {e}"))
+                })?;
+                return parse_income_rows(rows);
+            }
+        }
+
+        let rows = sqlx::query(&sql)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| AppError::Internal(format!("income activity query failed: {e}")))?;
+        parse_income_rows(rows)
+    }
+
+    /// Get the date of the first activity for the given accounts.
+    pub async fn get_first_activity_date(
+        &self,
+        account_ids: Option<&[String]>,
+    ) -> Result<Option<NaiveDate>, AppError> {
+        let ids = match account_ids {
+            Some(ids) if !ids.is_empty() => ids,
+            _ => return Ok(None),
+        };
+        let placeholders: Vec<String> = ids
+            .iter()
+            .enumerate()
+            .map(|(i, _)| format!("?{}", i + 1))
+            .collect();
+        let sql = format!(
+            "SELECT MIN(a.activity_date) as first_date FROM activities a WHERE a.account_id IN ({})",
+            placeholders.join(",")
+        );
+        let mut query = sqlx::query(&sql);
+        for id in ids {
+            query = query.bind(id);
+        }
+        let row = query
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| AppError::Internal(format!("failed to read first activity date: {e}")))?;
+        let date_str: Option<String> = row.try_get("first_date").map_err(|e| {
+            AppError::Internal(format!("failed to read first activity date column: {e}"))
+        })?;
+        date_str
+            .map(|d| {
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
+                    .map_err(|e| AppError::Internal(format!("invalid date: {e}")))
+            })
+            .transpose()
+    }
+
+    /// Get the overall first activity date.
+    pub async fn get_first_activity_date_overall(&self) -> Result<Option<NaiveDate>, AppError> {
+        let row = sqlx::query("SELECT MIN(activity_date) as first_date FROM activities")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| AppError::Internal(format!("failed to read first activity date: {e}")))?;
+        let date_str: Option<String> = row.try_get("first_date").map_err(|e| {
+            AppError::Internal(format!("failed to read first activity date column: {e}"))
+        })?;
+        date_str
+            .map(|d| {
+                NaiveDate::parse_from_str(&d, "%Y-%m-%d")
+                    .map_err(|e| AppError::Internal(format!("invalid date: {e}")))
+            })
+            .transpose()
+    }
+}
+
+fn parse_income_rows(
+    rows: Vec<sqlx::sqlite::SqliteRow>,
+) -> Result<Vec<IncomeActivityRow>, AppError> {
+    fn read<T: for<'r> sqlx::Decode<'r, sqlx::Sqlite> + sqlx::Type<sqlx::Sqlite>>(
+        row: &sqlx::sqlite::SqliteRow,
+        column: &str,
+    ) -> Result<T, AppError> {
+        row.try_get(column)
+            .map_err(|e| AppError::Internal(format!("failed to read column {column}: {e}")))
+    }
+
+    rows.into_iter()
+        .map(|row| {
+            let amount_text: String = read(&row, "amount")?;
+            Ok(IncomeActivityRow {
+                month_key: read(&row, "month_key")?,
+                income_type: read(&row, "income_type")?,
+                asset_id: read(&row, "asset_id")?,
+                asset_kind: read(&row, "asset_kind")?,
+                symbol: read(&row, "symbol")?,
+                symbol_name: read(&row, "symbol_name")?,
+                currency: read(&row, "currency")?,
+                amount: amount_text
+                    .parse::<Decimal>()
+                    .map_err(|e| AppError::Internal(format!("invalid amount: {e}")))?,
+                account_id: read(&row, "account_id")?,
+                account_name: read(&row, "account_name")?,
+            })
+        })
+        .collect()
 }
 
 #[derive(sqlx::FromRow)]
