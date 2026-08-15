@@ -1168,3 +1168,149 @@ pub struct AllocationTargetConstraintInput {
     pub reason: Option<String>,
     pub metadata_json: Option<serde_json::Value>,
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Service output models (Phase 2 — computed by financial services)
+// ────────────────────────────────────────────────────────────────────────────
+
+/// A single holding (aggregated position) — the sum of open lots for one
+/// asset in one account, enriched with market value, cost basis, and gains.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Holding {
+    pub account_id: String,
+    pub asset_id: String,
+    pub asset_name: Option<String>,
+    pub asset_symbol: Option<String>,
+    pub asset_kind: AssetKind,
+    pub currency: String,
+    pub quantity: Decimal,
+    pub cost_basis: Decimal,
+    pub market_value: Decimal,
+    pub unrealized_gain: Decimal,
+    pub unrealized_gain_pct: Option<Decimal>,
+    pub realized_gain: Decimal,
+    pub total_gain: Decimal,
+    pub total_gain_pct: Option<Decimal>,
+    pub fx_rate: Decimal,
+    pub cost_basis_base: Decimal,
+    pub market_value_base: Decimal,
+    pub unrealized_gain_base: Decimal,
+    pub realized_gain_base: Decimal,
+    pub weight_pct: Decimal,
+    pub open_lot_count: u32,
+}
+
+/// Summary of holdings for an account or portfolio.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HoldingsSummary {
+    pub account_id: String,
+    pub as_of_date: NaiveDate,
+    pub total_market_value: Decimal,
+    pub total_cost_basis: Decimal,
+    pub total_unrealized_gain: Decimal,
+    pub total_realized_gain: Decimal,
+    pub total_market_value_base: Decimal,
+    pub total_cost_basis_base: Decimal,
+    pub total_unrealized_gain_base: Decimal,
+    pub total_realized_gain_base: Decimal,
+    pub holdings: Vec<Holding>,
+    pub cash_balance: Decimal,
+    pub cash_balance_base: Decimal,
+}
+
+/// FIFO lot reduction result — the disposals and closures produced by a sell.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FifoReductionResult {
+    pub account_id: String,
+    pub asset_id: String,
+    pub disposal_date: NaiveDate,
+    pub total_quantity: Decimal,
+    pub total_proceeds: Decimal,
+    pub total_cost_basis: Decimal,
+    pub total_realized_pnl: Decimal,
+    pub total_proceeds_base: Decimal,
+    pub total_cost_basis_base: Decimal,
+    pub total_realized_pnl_base: Decimal,
+    pub lots_consumed: u32,
+    pub lots_partially_consumed: u32,
+}
+
+/// A single point in a performance time-series.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PerformancePoint {
+    pub date: NaiveDate,
+    pub total_value: Decimal,
+    pub total_value_base: Decimal,
+    pub net_contribution: Decimal,
+    pub net_contribution_base: Decimal,
+    pub cumulative_return_pct: Option<Decimal>,
+    pub daily_return_pct: Option<Decimal>,
+}
+
+/// Performance summary metrics for an account or portfolio.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PerformanceSummary {
+    pub account_id: String,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
+    pub total_return_pct: Option<Decimal>,
+    pub xirr_pct: Option<Decimal>,
+    pub twr_pct: Option<Decimal>,
+    pub start_value: Decimal,
+    pub end_value: Decimal,
+    pub net_contribution: Decimal,
+    pub total_gain: Decimal,
+    pub total_gain_base: Decimal,
+    pub data_quality: String,
+}
+
+/// A single allocation category with actual vs target.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllocationCategory {
+    pub category_id: String,
+    pub category_name: String,
+    pub taxonomy_id: String,
+    pub taxonomy_name: String,
+    pub actual_bps: i32,
+    pub target_bps: Option<i32>,
+    pub difference_bps: i32,
+    pub market_value: Decimal,
+    pub market_value_base: Decimal,
+    pub within_drift: bool,
+}
+
+/// Full allocation breakdown for a scope.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AllocationBreakdown {
+    pub scope_type: ScopeType,
+    pub scope_id: Option<String>,
+    pub total_market_value: Decimal,
+    pub total_market_value_base: Decimal,
+    pub categories: Vec<AllocationCategory>,
+    pub unassigned_market_value: Decimal,
+    pub unassigned_market_value_base: Decimal,
+}
+
+/// A single net-worth entry for one account.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetWorthAccountEntry {
+    pub account_id: String,
+    pub account_name: String,
+    pub account_type: AccountType,
+    pub currency: String,
+    pub total_value: Decimal,
+    pub total_value_base: Decimal,
+    pub cash_balance: Decimal,
+    pub investment_value: Decimal,
+}
+
+/// Full net-worth snapshot.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetWorthSnapshot {
+    pub as_of_date: NaiveDate,
+    pub base_currency: String,
+    pub total_assets: Decimal,
+    pub total_liabilities: Decimal,
+    pub net_worth: Decimal,
+    pub accounts: Vec<NetWorthAccountEntry>,
+}

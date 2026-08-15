@@ -30,6 +30,15 @@ pub mod system_service;
 pub mod thesis_service;
 pub mod workspace_service;
 
+// Financial services (Phase 2 — Wealthfolio port)
+pub mod allocation_service;
+pub mod holdings_service;
+pub mod lot_service;
+pub mod net_worth_service;
+pub mod performance_service;
+pub mod snapshot_service;
+pub mod valuation_service;
+
 #[cfg(test)]
 mod agent_service_test;
 
@@ -38,3 +47,24 @@ mod workspace_service_test;
 
 #[cfg(test)]
 mod plugin_service_test;
+
+#[cfg(test)]
+mod holdings_service_test;
+
+#[cfg(test)]
+mod lot_service_test;
+
+#[cfg(test)]
+mod valuation_service_test;
+
+#[cfg(test)]
+mod performance_service_test;
+
+#[cfg(test)]
+mod allocation_service_test;
+
+#[cfg(test)]
+mod snapshot_service_test;
+
+#[cfg(test)]
+mod net_worth_service_test;

@@ -1,6 +1,8 @@
 pub mod agent;
 pub mod artifacts;
 pub mod credentials;
+pub mod financial;
+pub mod goose;
 pub mod knowledge_graph;
 pub mod options;
 pub mod plugins;
@@ -10,4 +12,3 @@ pub mod settings;
 pub mod system;
 pub mod thesis;
 pub mod workspace;
-pub mod goose;

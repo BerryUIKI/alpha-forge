@@ -191,6 +191,25 @@ pub fn run() {
             commands::options::calculate_greeks,
             commands::options::calculate_option_price,
             commands::options::calculate_implied_volatility,
+            // Financial commands (Phase 2 — Wealthfolio port)
+            commands::financial::get_holdings,
+            commands::financial::get_all_holdings,
+            commands::financial::record_sell,
+            commands::financial::get_open_lots,
+            commands::financial::get_open_lots_for_account,
+            commands::financial::calculate_valuation_day,
+            commands::financial::get_valuation,
+            commands::financial::get_valuation_series,
+            commands::financial::calculate_all_valuations,
+            commands::financial::compute_performance_summary,
+            commands::financial::get_performance_time_series,
+            commands::financial::get_allocation,
+            commands::financial::check_allocation_constraints,
+            commands::financial::create_snapshot,
+            commands::financial::get_snapshot,
+            commands::financial::list_snapshots,
+            commands::financial::delete_snapshot,
+            commands::financial::compute_net_worth,
             // Goose commands (M10)
             commands::goose::start_goose_shadow_analysis,
             commands::goose::cancel_goose_analysis,
@@ -198,4 +217,4 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");
-    }
+}
