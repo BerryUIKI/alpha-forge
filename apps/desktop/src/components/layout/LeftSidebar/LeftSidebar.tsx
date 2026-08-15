@@ -16,11 +16,13 @@
  */
 
 import { useCallback } from "react";
-import { ChevronLeft, GripVertical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, GripVertical, Wallet } from "lucide-react";
 import { FunctionalViewSelector } from "./FunctionalViewSelector";
 import { ToolsList } from "./ToolsList";
 import { UserOperations } from "./UserOperations";
 import { useSidebarState, useResize } from "@/hooks/layout";
+import { useLocale } from "@/lib/i18n/useLocale";
 import type { LeftSidebarProps, UserMenuItem } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 
@@ -31,6 +33,9 @@ export function LeftSidebar({
   minWidth = DEFAULT_SIDEBAR_WIDTHS.left.min,
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
 }: LeftSidebarProps) {
+  const navigate = useNavigate();
+  const { t } = useLocale();
+
   // Use sidebar state hook for persistence
   const {
     width,
@@ -82,6 +87,16 @@ export function LeftSidebar({
           <ChevronLeft className="h-5 w-5 rotate-180" />
         </button>
 
+        {/* Portfolio icon (always visible even in collapsed state) */}
+        <button
+          onClick={() => navigate("/portfolio")}
+          className="flex h-10 items-center justify-center border-b border-border transition-colors hover:bg-accent"
+          aria-label="Portfolio"
+          title="Portfolio"
+        >
+          <Wallet className="h-5 w-5 text-primary" />
+        </button>
+
         {/* Collapsed indicator */}
         <div className="flex flex-1 items-center justify-center">
           <span className="text-xs text-muted-foreground">☰</span>
@@ -118,6 +133,19 @@ export function LeftSidebar({
 
       {/* Middle: Tools List (scrollable) */}
       <ToolsList />
+
+      {/* Permanent Portfolio navigation button */}
+      <div className="border-t border-border px-2 py-2">
+        <button
+          onClick={() => navigate("/portfolio")}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+          aria-label="Portfolio"
+          title="Portfolio"
+        >
+          <Wallet className="h-4 w-4 text-primary" />
+          <span>{t("portfolioTitle" as any) || "Portfolio"}</span>
+        </button>
+      </div>
 
       {/* Bottom: User Operations (fixed position) */}
       <UserOperations
