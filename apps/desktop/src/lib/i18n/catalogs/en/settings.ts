@@ -51,6 +51,25 @@ export const settings = {
   databaseCheckFailed: "Database health check failed.",
   databaseStatusHealthy: "Healthy",
   databaseStatusError: "Error",
+
+  // Internal plugins section
+  internalPlugins: "Internal plugins",
+  internalPluginsDescription:
+    "Review bundled plugins and control whether they may create Artifacts. Remote plugins cannot be installed here.",
+  loadingInternalPlugins: "Loading internal plugins…",
+  failedToLoadInternalPlugins: "Failed to load internal plugins.",
+  failedToUpdateInternalPlugin: "Failed to update the plugin status. Try again.",
+  noInternalPlugins: "No internal plugins",
+  noInternalPluginsDescription: "No internal plugins are registered in this build.",
+  internalPluginBadge: "Bundled",
+  pluginPermissions: "Permissions",
+  noPluginPermissions: "None",
+  pluginPermissionNetwork: "Network",
+  enableInternalPlugin: "Enable internal plugin",
+  disableInternalPlugin: "Disable internal plugin",
+  pluginEnabled: "Enabled",
+  pluginDisabled: "Disabled",
+  updatingInternalPlugin: "Updating…",
 } as const;
 
 export type SettingsKey = keyof typeof settings;

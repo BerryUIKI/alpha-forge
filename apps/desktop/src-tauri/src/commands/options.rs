@@ -5,8 +5,11 @@ use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
+use crate::services::strategy_service::{
+    CreateStrategyInput, CreateStrategyLegInput, StrategyWithLegs,
+};
 use domain::option::{
-    DataSource, OptionChain, OptionContract, OptionStrategy, OptionType, StrategyType,
+    DataSource, OptionChain, OptionContract, OptionType, PositionType, StrategyLeg, StrategyType,
 };
 
 #[derive(Debug, Serialize)]
@@ -91,12 +94,14 @@ pub struct OptionStrategyResponse {
     pub max_profit: Option<f64>,
     pub max_loss: Option<f64>,
     pub break_even_points: Vec<f64>,
+    pub legs: Vec<StrategyLegResponse>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl From<OptionStrategy> for OptionStrategyResponse {
-    fn from(strategy: OptionStrategy) -> Self {
+impl From<StrategyWithLegs> for OptionStrategyResponse {
+    fn from(details: StrategyWithLegs) -> Self {
+        let strategy = details.strategy;
         Self {
             id: strategy.id,
             workspace_id: strategy.workspace_id,
@@ -107,8 +112,39 @@ impl From<OptionStrategy> for OptionStrategyResponse {
             max_profit: strategy.max_profit,
             max_loss: strategy.max_loss,
             break_even_points: strategy.break_even_points,
+            legs: details.legs.into_iter().map(Into::into).collect(),
             created_at: strategy.created_at,
             updated_at: strategy.updated_at,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StrategyLegResponse {
+    pub id: String,
+    pub strategy_id: String,
+    pub option_contract_id: String,
+    pub quantity: i32,
+    pub position_type: PositionType,
+    pub premium: f64,
+    pub strike: f64,
+    pub expiration: chrono::DateTime<chrono::Utc>,
+    pub option_type: OptionType,
+}
+
+impl From<StrategyLeg> for StrategyLegResponse {
+    fn from(leg: StrategyLeg) -> Self {
+        Self {
+            id: leg.id,
+            strategy_id: leg.strategy_id,
+            option_contract_id: leg.option_contract_id,
+            quantity: leg.quantity,
+            position_type: leg.position_type,
+            premium: leg.premium,
+            strike: leg.strike,
+            expiration: leg.expiration,
+            option_type: leg.option_type,
         }
     }
 }
@@ -467,34 +503,24 @@ pub async fn create_option_strategy(
     params: CreateStrategyParams,
     state: State<'_, AppState>,
 ) -> Result<OptionStrategyResponse, AppError> {
-    let strategy = domain::option::OptionStrategy {
-        id: uuid::Uuid::new_v4().to_string(),
-        workspace_id: params.workspace_id,
-        name: params.name,
-        strategy_type: match params.strategy_type.as_str() {
-            "long_call" => StrategyType::LongCall,
-            "long_put" => StrategyType::LongPut,
-            "covered_call" => StrategyType::CoveredCall,
-            "protective_put" => StrategyType::ProtectivePut,
-            "bull_call_spread" => StrategyType::BullCallSpread,
-            "bear_put_spread" => StrategyType::BearPutSpread,
-            "straddle" => StrategyType::Straddle,
-            "strangle" => StrategyType::Strangle,
-            "iron_condor" => StrategyType::IronCondor,
-            "butterfly" => StrategyType::Butterfly,
-            _ => StrategyType::Custom,
-        },
-        underlying: params.underlying,
-        total_cost: params.total_cost.unwrap_or(0.0),
-        max_profit: params.max_profit,
-        max_loss: params.max_loss,
-        break_even_points: params.break_even_points.unwrap_or_default(),
-        created_at: chrono::Utc::now(),
-        updated_at: chrono::Utc::now(),
-    };
-
-    state.option_service.create_strategy(&strategy).await?;
-    Ok(strategy.into())
+    state
+        .strategy_service
+        .create_strategy(CreateStrategyInput {
+            workspace_id: params.workspace_id,
+            name: params.name,
+            strategy_type: params.strategy_type,
+            legs: params
+                .legs
+                .into_iter()
+                .map(|leg| CreateStrategyLegInput {
+                    contract_id: leg.contract_id,
+                    quantity: leg.quantity,
+                    position_type: leg.position_type,
+                })
+                .collect(),
+        })
+        .await
+        .map(Into::into)
 }
 
 /// Get an option strategy by ID
@@ -503,7 +529,11 @@ pub async fn get_option_strategy(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<OptionStrategyResponse, AppError> {
-    state.option_service.get_strategy(&id).await.map(Into::into)
+    state
+        .strategy_service
+        .get_strategy(&id)
+        .await
+        .map(Into::into)
 }
 
 /// List all option strategies for a workspace
@@ -513,7 +543,7 @@ pub async fn list_option_strategies(
     state: State<'_, AppState>,
 ) -> Result<Vec<OptionStrategyResponse>, AppError> {
     state
-        .option_service
+        .strategy_service
         .list_strategies(&workspace_id)
         .await
         .map(|strategies| strategies.into_iter().map(Into::into).collect())
@@ -525,27 +555,22 @@ pub async fn update_option_strategy(
     params: UpdateStrategyParams,
     state: State<'_, AppState>,
 ) -> Result<OptionStrategyResponse, AppError> {
-    let mut strategy = state.option_service.get_strategy(&params.id).await?;
+    let mut details = state.strategy_service.get_strategy(&params.id).await?;
 
     if let Some(name) = params.name {
-        strategy.name = name;
+        details.strategy.name = name;
     }
-    if let Some(total_cost) = params.total_cost {
-        strategy.total_cost = total_cost;
-    }
-    if let Some(max_profit) = params.max_profit {
-        strategy.max_profit = Some(max_profit);
-    }
-    if let Some(max_loss) = params.max_loss {
-        strategy.max_loss = Some(max_loss);
-    }
-    if let Some(break_even_points) = params.break_even_points {
-        strategy.break_even_points = break_even_points;
-    }
-    strategy.updated_at = chrono::Utc::now();
+    details.strategy.updated_at = chrono::Utc::now();
 
-    state.option_service.update_strategy(&strategy).await?;
-    Ok(strategy.into())
+    state
+        .option_service
+        .update_strategy(&details.strategy)
+        .await?;
+    state
+        .strategy_service
+        .get_strategy(&details.strategy.id)
+        .await
+        .map(Into::into)
 }
 
 /// Delete an option strategy
@@ -554,7 +579,7 @@ pub async fn delete_option_strategy(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<(), AppError> {
-    state.option_service.delete_strategy(&id).await
+    state.strategy_service.delete_strategy(&id).await
 }
 
 #[derive(Debug, Deserialize)]
@@ -562,12 +587,16 @@ pub async fn delete_option_strategy(
 pub struct CreateStrategyParams {
     pub workspace_id: String,
     pub name: String,
-    pub strategy_type: String,
-    pub underlying: String,
-    pub total_cost: Option<f64>,
-    pub max_profit: Option<f64>,
-    pub max_loss: Option<f64>,
-    pub break_even_points: Option<Vec<f64>>,
+    pub strategy_type: StrategyType,
+    pub legs: Vec<CreateStrategyLegParams>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateStrategyLegParams {
+    pub contract_id: String,
+    pub quantity: i32,
+    pub position_type: PositionType,
 }
 
 #[derive(Debug, Deserialize)]
@@ -575,16 +604,13 @@ pub struct CreateStrategyParams {
 pub struct UpdateStrategyParams {
     pub id: String,
     pub name: Option<String>,
-    pub total_cost: Option<f64>,
-    pub max_profit: Option<f64>,
-    pub max_loss: Option<f64>,
-    pub break_even_points: Option<Vec<f64>>,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use chrono::{TimeZone, Utc};
+    use domain::option::OptionStrategy;
 
     fn timestamp() -> chrono::DateTime<Utc> {
         Utc.with_ymd_and_hms(2024, 1, 2, 3, 4, 5)
@@ -621,18 +647,21 @@ mod tests {
             created_at: timestamp(),
             updated_at: timestamp(),
         });
-        let strategy = OptionStrategyResponse::from(OptionStrategy {
-            id: "strategy-1".into(),
-            workspace_id: "workspace-1".into(),
-            name: "Demo spread".into(),
-            strategy_type: StrategyType::BullCallSpread,
-            underlying: "AAPL".into(),
-            total_cost: 100.0,
-            max_profit: None,
-            max_loss: Some(-100.0),
-            break_even_points: vec![151.0],
-            created_at: timestamp(),
-            updated_at: timestamp(),
+        let strategy = OptionStrategyResponse::from(StrategyWithLegs {
+            strategy: OptionStrategy {
+                id: "strategy-1".into(),
+                workspace_id: "workspace-1".into(),
+                name: "Demo spread".into(),
+                strategy_type: StrategyType::BullCallSpread,
+                underlying: "AAPL".into(),
+                total_cost: 100.0,
+                max_profit: None,
+                max_loss: Some(-100.0),
+                break_even_points: vec![151.0],
+                created_at: timestamp(),
+                updated_at: timestamp(),
+            },
+            legs: Vec::new(),
         });
 
         let value = serde_json::json!({
@@ -649,6 +678,7 @@ mod tests {
         assert!(value["strategy"].get("maxProfit").is_some());
         assert!(value["strategy"].get("max_profit").is_none());
         assert!(value["strategy"]["maxProfit"].is_null());
+        assert!(value["strategy"]["legs"].is_array());
     }
 
     #[test]
@@ -667,5 +697,19 @@ mod tests {
         }))
         .expect_err("snake_case request fields must not be accepted");
         assert!(error.to_string().contains("workspaceId"));
+
+        let strategy: CreateStrategyParams = serde_json::from_value(serde_json::json!({
+            "workspaceId": "00000000-0000-4000-8000-000000000001",
+            "name": "Call spread",
+            "strategyType": "bull_call_spread",
+            "legs": [{
+                "contractId": "00000000-0000-4000-8000-000000000002",
+                "quantity": 1,
+                "positionType": "long"
+            }]
+        }))
+        .expect("strategy request fixture should deserialize");
+        assert_eq!(strategy.legs.len(), 1);
+        assert_eq!(strategy.legs[0].position_type, PositionType::Long);
     }
 }

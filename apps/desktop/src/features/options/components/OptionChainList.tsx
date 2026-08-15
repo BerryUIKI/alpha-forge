@@ -10,21 +10,29 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useOptionChains } from "@/hooks/useOptions";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 interface OptionChainListProps {
   /** Workspace ID to fetch chains for */
   workspaceId: string;
   /** Callback when a chain is selected */
   onSelectChain?: (chainId: string) => void;
+  /** Chain currently shown in the contract table */
+  selectedChainId?: string | null;
 }
 
-export function OptionChainList({ workspaceId, onSelectChain }: OptionChainListProps) {
-  const { data: chains, isLoading, error } = useOptionChains(workspaceId);
+export function OptionChainList({
+  workspaceId,
+  onSelectChain,
+  selectedChainId,
+}: OptionChainListProps) {
+  const { t } = useLocale();
+  const { data: chains, isLoading, error, refetch } = useOptionChains(workspaceId);
 
   if (isLoading) {
     return (
       <div className="p-4">
-        <h3 className="text-lg font-semibold mb-4">Option Chains</h3>
+        <h3 className="mb-4 text-lg font-semibold">{t("toolOptionChain")}</h3>
         <div className="flex justify-center">
           <LoadingSpinner />
         </div>
@@ -33,16 +41,24 @@ export function OptionChainList({ workspaceId, onSelectChain }: OptionChainListP
   }
 
   if (error) {
-    return <ErrorState message="Failed to load option chains" />;
+    return (
+      <div className="p-4">
+        <h3 className="mb-4 text-lg font-semibold">{t("toolOptionChain")}</h3>
+        <ErrorState
+          message={t("failedToLoadOptionChains")}
+          onRetry={() => void refetch()}
+        />
+      </div>
+    );
   }
 
   if (!chains || chains.length === 0) {
     return (
       <div className="p-4">
-        <h3 className="text-lg font-semibold mb-4">Option Chains</h3>
+        <h3 className="mb-4 text-lg font-semibold">{t("toolOptionChain")}</h3>
         <EmptyState
-          title="No option chains"
-          description="Fetch a chain for a symbol to get started"
+          title={t("noOptionChains")}
+          description={t("noOptionChainsDescription")}
         />
       </div>
     );
@@ -50,12 +66,19 @@ export function OptionChainList({ workspaceId, onSelectChain }: OptionChainListP
 
   return (
     <div className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Option Chains</h3>
+      <h3 className="mb-4 text-lg font-semibold">{t("toolOptionChain")}</h3>
       <div className="space-y-2">
         {chains.map((chain) => (
-          <div
+          <button
             key={chain.id}
-            className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+            type="button"
+            aria-pressed={selectedChainId === chain.id}
+            aria-label={`${t("selectOptionChain")} ${chain.symbol}`}
+            className={`block w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              selectedChainId === chain.id
+                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                : "border-border"
+            }`}
             onClick={() => onSelectChain?.(chain.id)}
           >
             <div className="flex items-center justify-between">
@@ -71,7 +94,7 @@ export function OptionChainList({ workspaceId, onSelectChain }: OptionChainListP
                 As of: {new Date(chain.asOf).toLocaleString()}
               </span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

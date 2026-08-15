@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type { ArtifactType } from "@/lib/desktop-api/artifacts";
+import type { CompanyComparisonPayload } from "@/lib/desktop-api/plugins";
 
 const ARTIFACT_KEYS = {
   all: ["artifacts"] as const,
@@ -82,6 +83,29 @@ export function useCreateArtifact() {
       }),
     onSuccess: (_, { workspaceId }) => {
       queryClient.invalidateQueries({
+        queryKey: ARTIFACT_KEYS.workspace(workspaceId),
+      });
+    },
+  });
+}
+
+/**
+ * Creates a completed Artifact through the controlled company-comparison plugin.
+ */
+export function useCreateCompanyComparisonArtifact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      workspaceId,
+      input,
+    }: {
+      workspaceId: string;
+      input: CompanyComparisonPayload;
+    }) => desktopApi.plugins.createPluginArtifact(workspaceId, "company-comparison", input),
+    onSuccess: (artifact, { workspaceId }) => {
+      queryClient.setQueryData(ARTIFACT_KEYS.artifact(artifact.id), artifact);
+      void queryClient.invalidateQueries({
         queryKey: ARTIFACT_KEYS.workspace(workspaceId),
       });
     },

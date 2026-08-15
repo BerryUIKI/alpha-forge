@@ -4,7 +4,7 @@ use chrono::{DateTime, Utc};
 use sqlx::SqlitePool;
 
 use crate::error::AppError;
-use domain::option::{DataSource, OptionChain};
+use domain::option::{DataSource, OptionChain, OptionContract};
 
 /// Repository for accessing option chains.
 pub struct OptionChainRepository {
@@ -37,6 +37,85 @@ impl OptionChainRepository {
         .execute(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to create option chain: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// Persists a fetched chain and its contracts as one transaction.
+    pub async fn create_with_contracts(
+        &self,
+        chain: &OptionChain,
+        contracts: &[OptionContract],
+    ) -> Result<(), AppError> {
+        for contract in contracts {
+            if contract.chain_id != chain.id
+                || contract.workspace_id != chain.workspace_id
+                || contract.symbol != chain.symbol
+            {
+                return Err(AppError::Validation(
+                    "Option contract scope does not match its chain".to_string(),
+                ));
+            }
+        }
+
+        let mut transaction = self.pool.begin().await.map_err(|e| {
+            AppError::Internal(format!("Failed to start option transaction: {}", e))
+        })?;
+
+        sqlx::query(
+            r#"
+                INSERT INTO option_chains (
+                    id, workspace_id, symbol, underlying_price,
+                    as_of, data_source, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            "#,
+        )
+        .bind(&chain.id)
+        .bind(&chain.workspace_id)
+        .bind(&chain.symbol)
+        .bind(chain.underlying_price)
+        .bind(chain.as_of)
+        .bind(chain.data_source.to_string())
+        .bind(chain.created_at)
+        .execute(&mut *transaction)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to create option chain: {}", e)))?;
+
+        for contract in contracts {
+            sqlx::query(
+                r#"
+                    INSERT INTO option_contracts (
+                        id, workspace_id, chain_id, symbol, option_type,
+                        strike, expiration, contract_multiplier, bid, ask,
+                        last, volume, open_interest, implied_volatility,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                "#,
+            )
+            .bind(&contract.id)
+            .bind(&contract.workspace_id)
+            .bind(&contract.chain_id)
+            .bind(&contract.symbol)
+            .bind(contract.option_type.to_string())
+            .bind(contract.strike)
+            .bind(contract.expiration)
+            .bind(contract.contract_multiplier)
+            .bind(contract.bid)
+            .bind(contract.ask)
+            .bind(contract.last)
+            .bind(contract.volume as i64)
+            .bind(contract.open_interest as i64)
+            .bind(contract.implied_volatility)
+            .bind(contract.created_at)
+            .bind(contract.updated_at)
+            .execute(&mut *transaction)
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to create option contract: {}", e)))?;
+        }
+
+        transaction.commit().await.map_err(|e| {
+            AppError::Internal(format!("Failed to commit option transaction: {}", e))
+        })?;
 
         Ok(())
     }

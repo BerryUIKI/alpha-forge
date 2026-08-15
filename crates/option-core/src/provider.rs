@@ -5,18 +5,29 @@ use crate::Result;
 use async_trait::async_trait;
 use chrono::Utc;
 use domain::option::{DataSource, OptionChain, OptionContract, OptionType};
+use uuid::Uuid;
 
 /// Provider trait for fetching option data
 #[async_trait]
 pub trait OptionsDataProvider: Send + Sync {
     /// Fetch option chain for a symbol
-    async fn fetch_chain(&self, symbol: &str, workspace_id: &str) -> Result<OptionChain>;
+    async fn fetch_chain(&self, symbol: &str, workspace_id: &str) -> Result<FetchedOptionChain>;
 
     /// Provider name
     fn name(&self) -> &str;
 
     /// Check if provider is available
     fn is_available(&self) -> bool;
+}
+
+/// A provider result containing the chain metadata and its contracts.
+///
+/// Keeping the related identifiers together prevents the persistence layer from
+/// accidentally storing a chain whose contracts use a different chain ID.
+#[derive(Debug, Clone)]
+pub struct FetchedOptionChain {
+    pub chain: OptionChain,
+    pub contracts: Vec<OptionContract>,
 }
 
 /// Demo provider - generates simulated option chains
@@ -38,10 +49,10 @@ impl DemoProvider {
 
 #[async_trait]
 impl OptionsDataProvider for DemoProvider {
-    async fn fetch_chain(&self, symbol: &str, workspace_id: &str) -> Result<OptionChain> {
+    async fn fetch_chain(&self, symbol: &str, workspace_id: &str) -> Result<FetchedOptionChain> {
         // Generate simulated chain
         let underlying_price = 150.0; // Demo price
-        let chain_id = format!("chain-{}-{}", symbol, Utc::now().timestamp());
+        let chain_id = Uuid::new_v4().to_string();
 
         // Generate strikes around underlying price
         let mut contracts = Vec::new();
@@ -50,7 +61,7 @@ impl OptionsDataProvider for DemoProvider {
 
             // Generate call
             contracts.push(self.generate_contract(
-                &format!("{}-{}-C", symbol, strike),
+                &Uuid::new_v4().to_string(),
                 workspace_id,
                 &chain_id,
                 symbol,
@@ -61,7 +72,7 @@ impl OptionsDataProvider for DemoProvider {
 
             // Generate put
             contracts.push(self.generate_contract(
-                &format!("{}-{}-P", symbol, strike),
+                &Uuid::new_v4().to_string(),
                 workspace_id,
                 &chain_id,
                 symbol,
@@ -71,14 +82,17 @@ impl OptionsDataProvider for DemoProvider {
             ));
         }
 
-        Ok(OptionChain {
-            id: chain_id,
-            workspace_id: workspace_id.to_string(),
-            symbol: symbol.to_string(),
-            underlying_price,
-            as_of: Utc::now(),
-            data_source: DataSource::Demo,
-            created_at: Utc::now(),
+        Ok(FetchedOptionChain {
+            chain: OptionChain {
+                id: chain_id,
+                workspace_id: workspace_id.to_string(),
+                symbol: symbol.to_string(),
+                underlying_price,
+                as_of: Utc::now(),
+                data_source: DataSource::Demo,
+                created_at: Utc::now(),
+            },
+            contracts,
         })
     }
 
@@ -160,7 +174,12 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(chain.symbol, "AAPL");
-        assert_eq!(chain.data_source, DataSource::Demo);
+        assert_eq!(chain.chain.symbol, "AAPL");
+        assert_eq!(chain.chain.data_source, DataSource::Demo);
+        assert!(Uuid::parse_str(&chain.chain.id).is_ok());
+        assert_eq!(chain.contracts.len(), 22);
+        assert!(chain.contracts.iter().all(|contract| {
+            contract.chain_id == chain.chain.id && Uuid::parse_str(&contract.id).is_ok()
+        }));
     }
 }

@@ -30,7 +30,10 @@ async fn service() -> PluginService {
 async fn prepares_only_enabled_plugins_with_valid_payloads() {
     let service = service().await;
     let payload = serde_json::json!({
-        "companies": [{"ticker": "AAA"}, {"ticker": "BBB"}],
+        "companies": [
+            {"ticker": "AAA", "name": "Alpha", "metrics": {"revenue": 10}},
+            {"ticker": "BBB", "name": "Beta", "metrics": {"revenue": 20}}
+        ],
         "comparisonDimensions": ["revenue"]
     });
 

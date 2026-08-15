@@ -60,7 +60,7 @@ Open Today dashboard
 - Settings: AI provider configuration, data providers, local storage management.
 - Agent runtime: single-agent, async task execution, structured output.
 - Artifact system: temporary interactive windows for agent output.
-- Five internal plugins: company comparison, valuation model, portfolio risk, industry map, research timeline.
+- Seven internal plugins: company comparison, valuation model, portfolio risk, industry map, research timeline, earnings analyzer, and macro dashboard.
 - Local SQLite persistence with migration support.
 
 ### Explicitly Out of Scope

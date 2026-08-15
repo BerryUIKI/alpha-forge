@@ -6,15 +6,45 @@ import { createPluginArtifact, listPlugins, setPluginEnabled } from "./plugins";
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
 const mockInvoke = vi.mocked(invoke);
+const pluginStatus = {
+  manifest: {
+    id: "company-comparison",
+    name: "Company Comparison",
+    version: "1.0.0",
+    entry: "src/index.ts",
+    inputSchema: "schema.json",
+    permissions: [],
+    window: { width: 900, height: 700, resizable: true },
+  },
+  enabled: true,
+};
+const artifact = {
+  id: "2a707687-3fc5-4b02-81ba-043830213244",
+  workspace_id: "workspace-1",
+  task_id: null,
+  artifact_type: "comparison_table",
+  status: "completed",
+  input: {},
+  output: {},
+  error: null,
+  created_at: "2026-08-15T00:00:00Z",
+  updated_at: "2026-08-15T00:00:00Z",
+};
 
 describe("plugin registry API", () => {
   beforeEach(() => mockInvoke.mockReset());
 
   it("lists registered plugins", async () => {
-    mockInvoke.mockResolvedValueOnce([]);
+    mockInvoke.mockResolvedValueOnce([pluginStatus]);
 
-    await expect(listPlugins()).resolves.toEqual([]);
+    await expect(listPlugins()).resolves.toEqual([pluginStatus]);
     expect(mockInvoke).toHaveBeenCalledWith("list_plugins");
+  });
+
+  it("rejects malformed plugin status responses", async () => {
+    mockInvoke.mockResolvedValueOnce([{ ...pluginStatus, enabled: "yes" }]);
+
+    await expect(listPlugins()).rejects.toThrow();
   });
 
   it("changes a plugin enabled state", async () => {
@@ -28,21 +58,49 @@ describe("plugin registry API", () => {
   });
 
   it("creates an artifact through a named plugin", async () => {
-    mockInvoke.mockResolvedValueOnce({ id: "artifact-1" });
-    const input = { companies: [{ ticker: "AAA" }, { ticker: "BBB" }], comparisonDimensions: ["revenue"] };
+    mockInvoke.mockResolvedValueOnce(artifact);
+    const input = {
+      companies: [
+        { ticker: "aaa", name: "Alpha", metrics: { revenue: 10 } },
+        { ticker: "BBB", name: "Beta", metrics: { revenue: 20 } },
+      ],
+      comparisonDimensions: ["revenue"],
+    };
 
-    await createPluginArtifact("workspace-1", "company-comparison", input);
+    await expect(
+      createPluginArtifact("workspace-1", "company-comparison", input),
+    ).resolves.toEqual(artifact);
     expect(mockInvoke).toHaveBeenCalledWith("create_plugin_artifact", {
       workspaceId: "workspace-1",
       pluginId: "company-comparison",
-      input,
+      input: {
+        ...input,
+        companies: [{ ...input.companies[0], ticker: "AAA" }, input.companies[1]],
+      },
     });
   });
 
   it("rejects invalid plugin input before invoking Tauri", async () => {
-    expect(() => createPluginArtifact("workspace-1", "company-comparison", {
-      companies: [{ ticker: "AAA" }], comparisonDimensions: [],
-    })).toThrow();
+    await expect(
+      createPluginArtifact("workspace-1", "company-comparison", {
+        companies: [{ ticker: "AAA" }],
+        comparisonDimensions: [],
+      }),
+    ).rejects.toThrow();
     expect(mockInvoke).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed artifact responses", async () => {
+    mockInvoke.mockResolvedValueOnce({ ...artifact, status: "done" });
+
+    await expect(
+      createPluginArtifact("workspace-1", "company-comparison", {
+        companies: [
+          { ticker: "AAA", name: "Alpha", metrics: { revenue: 10 } },
+          { ticker: "BBB", name: "Beta", metrics: { revenue: 20 } },
+        ],
+        comparisonDimensions: ["revenue"],
+      }),
+    ).rejects.toThrow();
   });
 });

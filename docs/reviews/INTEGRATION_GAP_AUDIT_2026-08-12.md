@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-14):** The merged repairs cover the orphan Rust module declaration (#78), pnpm workspace and lockfile baseline (#79), OpenAI credential contract (#80), Agent lifecycle (#81), canonical Option schema (#83), Option IPC (#84), and System IPC (#85). Each repair has focused evidence at its implementation layer; release acceptance remains subject to the full verification matrix and the remaining stabilization work.
+**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94), the controlled Option workflow (#95, #97, #98), and internal-plugin Settings (#99). The company-comparison Artifact slice is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -46,7 +46,7 @@ This audit was code-first. Compilation and build commands were deliberately defe
 | Thesis and knowledge graph | Reachable in Journal | Commands, services, repositories implemented | Partial | Main operations are connected; contract and workflow tests are incomplete. |
 | Portfolio accounts/positions/analysis | Reachable in Portfolio | Commands, services, repositories implemented | Partial | Main panels are connected. Several backend capabilities are not clearly exposed, including direct theme linking from the current dashboard. |
 | Option calculations | Reachable | Commands and pricing core implemented | Partial — merged IPC repair | Option request/response DTOs now use the reviewed camelCase/Zod boundary; numerical and workflow acceptance remains pending. |
-| Option chains/contracts/strategies | Components and wrappers exist | CRUD commands and services exist | Partial — schema/IPC merged | Canonical migration and IPC repairs are merged; chain selection remains a console-only TODO and the CRUD components are not connected to the route. |
+| Option chains/contracts/strategies | Controlled workflow merged | Atomic strategy persistence merged | Partial - release gates pending | PRs #95, #97, and #98 establish persisted contract selection and controlled create/read/delete behavior. |
 | Artifact list and in-page rendering | Reachable | Persistence and predefined renderers implemented | Partial | In-page rendering exists. Separate Artifact windows are broken as described in P0-4. |
 | Artifact separate window | API hook and backend manager exist | Window manager opens `/artifact/:id/:type` | Broken | React router has no matching route. |
 | Bundled plugin registry | API wrappers and renderer registry exist | Seven plugins sync, validate, and produce Artifacts | Partial | No user-facing plugin list, enable/disable control, or Artifact creation workflow is reachable. |
@@ -113,6 +113,8 @@ The window manager opens `/artifact/{artifact_id}/{artifact_type}`. The React ro
 
 **Rectification:** Add a dedicated Artifact-window route and minimal provider tree, or route the new window to an existing renderer entrypoint. Verify the Artifact capability remains minimal and add an E2E test covering open, render, update, and close.
 
+**Remediation status (2026-08-14, merged PR #88):** The isolated top-level route, route/identity validation, renderer registration, update/theme event cleanup, native-window tracking cleanup, and least-privilege Artifact capabilities are merged. Focused route and permission tests pass; packaged desktop verification and final acceptance remain outstanding.
+
 ### P0-5: Rust declares a missing database module
 
 **File:** `apps/desktop/src-tauri/src/database/mod.rs:4`
@@ -136,27 +138,33 @@ The layout navigates with `workspace` and `project` query parameters. `ResearchP
 
 **Rectification:** Make URL search parameters the initial and shareable selection source, validate referenced IDs, and keep local selection synchronized without loops.
 
+**Remediation status (2026-08-14, PR #94 merged):** The Research URL-context repair makes workspace and project query parameters authoritative, restores valid deep links after remount, preserves unrelated parameters, uses replace navigation for stale or deleted IDs, and resets dependent document selection. Focused Research route tests cover valid, invalid, loading/error, selection, cleanup, and deletion behavior; broader S4 acceptance remains outstanding.
+
 ### P1-2: Option UI components are incomplete or unreachable
 
 **Page:** `apps/desktop/src/pages/options/OptionsPage.tsx:94`
 **Components:** `OptionStrategyPanel.tsx`, `OptionContractTable.tsx`
 
-The route renders a calculation-oriented `StrategyBuilder`, but not the CRUD-oriented `OptionStrategyPanel`. `OptionContractTable` is not opened when a chain is selected; the selection handler only logs to the console.
+At the audit baseline, the route rendered a calculation-oriented `StrategyBuilder`, not the CRUD-oriented `OptionStrategyPanel`; `OptionContractTable` was not opened when a chain was selected and the handler only logged to the console.
 
 **Impact:** Backend strategy and contract CRUD functionality is not reflected in the product UI.
 
 **Rectification:** After fixing the IPC contract, choose a single coherent Option workflow and connect chain selection to contract detail and strategy persistence. Remove or clearly mark duplicate experimental components.
+
+**Remediation status (2026-08-15):** PR #95 merged the demo chain-to-contract view, PR #97 merged validated atomic strategy-and-leg persistence, and PR #98 merged controlled selected-contract create/read/delete behavior. M9 acceptance is still incomplete pending the remaining gates.
 
 ### P1-3: Plugin capabilities are not exposed to users
 
 **Frontend API:** `apps/desktop/src/lib/desktop-api/plugins.ts:53`
 **Backend:** `apps/desktop/src-tauri/src/commands/plugins.rs:26`
 
-The application can list plugins, enable or disable them, validate payloads, and create completed Artifacts. No reachable page or settings surface calls these APIs.
+At the audit baseline, the application could list plugins, enable or disable them, validate payloads, and create completed Artifacts, but no reachable page or settings surface called these APIs.
 
 **Impact:** M7 exists as backend infrastructure and renderer code, not as a complete user workflow.
 
 **Rectification:** Add a minimal internal-plugin settings surface and one controlled create-to-Artifact vertical slice. Do not add a public marketplace.
+
+**Remediation status (2026-08-15):** PR #99 adds the internal-only list and persisted enable/disable Settings surface. `codex/feat-company-comparison-artifact` adds the controlled create/open/render slice pending review.
 
 ### P1-4: Goose is scaffolding, not an integrated feature
 
@@ -244,12 +252,15 @@ These are not release acceptance claims until their tests and packaged smoke che
 | 3 | `#80 (merged)` | Standardize credential identifier and Agent status | `dev` | Keychain adapter tests and Settings/provider contract test |
 | 4 | `#81 (merged)` | Queue then start, correct UI states | `dev` | Service, hook, component, and command integration tests |
 | 5 | `#83/#84/#85 (merged)` | Establish canonical Option schema and normalize Option/System IPC | `dev` | Migration, serde fixtures, Zod schemas, TypeScript tests, Rust command tests |
-| 6 | `fix/artifact-window-route` | Add isolated Artifact window route | `dev` | Router, permission, and E2E window lifecycle tests |
-| 7 | `fix/research-route-context` | Consume and synchronize workspace/project parameters | `dev` | Router and Research page tests |
-| 8 | `feat/option-vertical-slice` | Chain selection to contract detail and persisted strategy | `dev` | Full Option vertical-slice tests |
-| 9 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
-| 10 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
-| 11 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
+| 6 | `#88 (merged)` | Add isolated Artifact window route | `dev` | Focused route/permission tests; packaged window lifecycle smoke remains pending |
+| 7 | `#94 (merged)` | Consume and synchronize workspace/project parameters | `dev` | Focused Research route tests; broader S4 acceptance remains pending |
+| 8 | `#95 (merged)` | Demo chain acquisition, persisted contracts, and contract detail | `dev` | Focused fetch/list/selection and repository/service tests |
+| 9 | `#97 (merged)` | Atomic validated strategy-and-leg persistence contract | `dev` | Rollback, validation, persistence/reload, cascade, Serde, and TypeScript fixtures |
+| 10 | `#98 (merged)` | Controlled selected-contract create/read/delete workflow | `dev` | Component integration, retry, positive quantity, direction, reload, and deletion tests |
+| 11 | `#99 (merged)` | Internal-plugin list and persisted enable/disable Settings | `dev` | Loading, empty, error, permission, toggle, persistence, and IPC schema tests |
+| 12 | `codex/feat-company-comparison-artifact` (pending review) | Controlled company-comparison create-to-Artifact workflow | `dev` | Payload, disabled-state, Artifact creation, navigation, and renderer tests |
+| 13 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
+| 14 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
 
 M10 Goose work should use separate post-stabilization PRs only after its documented entry gate is approved.
 

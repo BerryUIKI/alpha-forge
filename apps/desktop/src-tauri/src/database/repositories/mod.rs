@@ -64,6 +64,12 @@ mod asset_repository_test;
 mod lot_repository_test;
 
 #[cfg(test)]
+mod option_chain_repository_test;
+
+#[cfg(test)]
+mod option_strategy_repository_test;
+
+#[cfg(test)]
 mod snapshot_repository_test;
 
 #[cfg(test)]

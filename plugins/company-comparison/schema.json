@@ -3,7 +3,34 @@
   "type": "object",
   "required": ["companies", "comparisonDimensions"],
   "properties": {
-    "companies": { "type": "array", "minItems": 2 },
-    "comparisonDimensions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
-  }
+    "companies": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["ticker", "name", "metrics"],
+        "properties": {
+          "ticker": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "revenue": { "type": "number" },
+              "market_cap": { "type": "number" },
+              "pe_ratio": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "comparisonDimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": false
 }
