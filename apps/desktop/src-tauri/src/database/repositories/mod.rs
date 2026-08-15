@@ -38,6 +38,9 @@ mod artifact_repository_test;
 mod option_chain_repository_test;
 
 #[cfg(test)]
+mod option_strategy_repository_test;
+
+#[cfg(test)]
 mod thesis_repository_test;
 
 pub mod research_document_repository;

@@ -9,6 +9,7 @@ const workspaceId = "00000000-0000-4000-8000-000000000001";
 const chainId = "00000000-0000-4000-8000-000000000002";
 const contractId = "00000000-0000-4000-8000-000000000003";
 const strategyId = "00000000-0000-4000-8000-000000000004";
+const legId = "00000000-0000-4000-8000-000000000005";
 const scoped = { workspaceId, createdAt: iso };
 const chain = {
   id: chainId,
@@ -45,6 +46,19 @@ const strategy = {
   maxProfit: null,
   maxLoss: -100,
   breakEvenPoints: [151],
+  legs: [
+    {
+      id: legId,
+      strategyId,
+      optionContractId: contractId,
+      quantity: 1,
+      positionType: "long",
+      premium: 5,
+      strike: 150,
+      expiration: iso,
+      optionType: "call",
+    },
+  ],
   updatedAt: iso,
 };
 const pricing = {
@@ -83,7 +97,7 @@ describe("options desktop API", () => {
         workspaceId,
         name: "Demo spread",
         strategyType: "bull_call_spread",
-        underlying: "AAPL",
+        legs: [{ contractId, quantity: 1, positionType: "long" }],
       }),
     ).resolves.toEqual(strategy);
     expect(mockInvoke.mock.calls[0]).toEqual([
@@ -92,7 +106,12 @@ describe("options desktop API", () => {
     ]);
     expect(mockInvoke.mock.calls[1]).toEqual([
       "create_option_strategy",
-      { params: expect.objectContaining({ strategyType: "bull_call_spread" }) },
+      {
+        params: expect.objectContaining({
+          strategyType: "bull_call_spread",
+          legs: [{ contractId, quantity: 1, positionType: "long" }],
+        }),
+      },
     ]);
   });
   it("rejects malformed and snake_case responses", async () => {

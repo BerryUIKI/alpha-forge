@@ -259,7 +259,7 @@ pub enum StrategyType {
 - `id`: UUID primary key
 - `strategy_id`: Foreign key to parent strategy (required)
 - `option_contract_id`: Foreign key to option contract (required)
-- `quantity`: Number of contracts (positive = long, negative = short)
+- `quantity`: Positive number of contracts; `position_type` carries direction
 - `position_type`: Long or Short
 - `premium`: Price paid/received per contract
 - `strike`: Strike price (convenience field)
@@ -313,7 +313,7 @@ pub enum PositionType {
 - `workspace_id`: Foreign key to workspace (required)
 - `account_id`: Foreign key to portfolio account (optional)
 - `option_contract_id`: Foreign key to option contract (required)
-- `quantity`: Number of contracts (positive = long, negative = short)
+- `quantity`: Positive number of contracts; `position_type` carries direction
 - `cost_basis`: Total cost to establish position
 - `opened_at`: Date when position was opened
 - `closed_at`: Date when position was closed (nullable)
