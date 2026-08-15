@@ -1,6 +1,6 @@
 # Portfolio Module — API Specification
 
-> **Status:** Phase 1 complete (storage layer). Phase 2 ✅ Done (services)
+> **Status:** Phase 1 complete (storage layer). Phase 2 ✅ Done (services). Phase 2.5 ✅ Done (market data, income)
 > **Target branch:** `feature/portfolio-integration`
 > **Audience:** Main dev developer integrating portfolio into the main application.
 > **All documentation is in English.**
@@ -48,6 +48,7 @@ SQLx + SQLite (migrations/0015-0021)  ← Phase 1 ✅
 |-------|--------|------|------|
 | Phase 1 | ✅ Done | Domain models, migrations, repositories | `crates/domain/src/financial.rs`, `migrations/0015-0021`, repo files |
 | Phase 2 | ✅ Done | Financial business logic services (holdings, lots, valuation, performance, allocation, snapshots, net worth) + 18 Tauri commands in `commands/financial.rs` | `docs/portfolio/API_SPEC.md` (section 9) |
+| Phase 2.5 | ✅ Done | Market-data crate (quotes, asset profiles, providers) + income service | `docs/portfolio/ROADMAP.md`, `crates/market-data/` |
 | Phase 2.5 | 🔜 Next | Tauri commands for repository-level CRUD (create_platform, create_financial_account, create_asset, upsert_quote, create_activity, create_lot, create_taxonomy, etc.) | TBD |
 | Phase 3 | ⏳ Pending | Frontend UI (pages, components, dashboard) | `docs/portfolio/FRONTEND_INTEGRATION.md` |
 | Phase 4 | ⏳ Pending | Thesis ↔ holding linkage | `docs/portfolio/THESIS_LINKAGE.md` |

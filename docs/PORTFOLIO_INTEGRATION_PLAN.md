@@ -189,18 +189,28 @@ Phase 3**.
 - [ ] **Verify:** `cargo test` green; migration runs from clean DB;
       no `unwrap()` in new repo code.
 
-### Phase 2 — Core: financial business logic (est. 3–4 weeks)
+### Phase 2 — Core: financial business logic (est. 3–4 weeks) ✅ DONE
 
-- [ ] Port domain models into `crates/domain` (financial module), replacing
+- [x] Port domain models into `crates/domain` (financial module), replacing
       the placeholder structs. Use `rust_decimal`.
-- [ ] Port services: holdings, lots (FIFO/cost-basis), valuation,
+- [x] Port services: holdings, lots (FIFO/cost-basis), valuation,
       performance (XIRR, time-weighted), allocation/allocation-targets,
-      snapshots, net-worth, income, FIRE calculators.
-- [ ] Every ported service: typed `Result`, no panic paths; unit tests ported
+      snapshots, net-worth. (Income and FIRE deferred to Phase 2.5.)
+- [x] Every ported service: typed `Result`, no panic paths; unit tests ported
       from Wealthfolio (`crates/core` has existing tests to adapt).
-- [ ] Port `crates/market-data` as a new crate (quotes, asset profile) and
-      wire a provider registry.
-- [ ] **Verify:** `cargo test`; `pnpm type-check` unaffected (domain is Rust-only).
+- [x] **Verify:** `cargo test`; `pnpm type-check` unaffected (domain is Rust-only).
+
+### Phase 2.5 — Market data + Income ✅ Done
+
+Split from the original Phase 2 scope. Independent of the frontend — can be
+developed and tested without the main application.
+
+- [x] Port `crates/market-data` as a new workspace crate (quotes, asset profile,
+      provider registry, resolver chain, fixture + Yahoo providers).
+- [x] Port `IncomeService` — income aggregation (by month, type, asset, currency,
+      account) with YoY growth, on the existing `ActivityRepository`.
+- [x] Add domain models for income summaries to `crates/domain/src/financial.rs`.
+- [x] **Verify:** `cargo test`; `cargo clippy -- -D warnings` clean.
 
 ### Phase 3 — Frontend: portfolio UI (est. 3–4 weeks)
 

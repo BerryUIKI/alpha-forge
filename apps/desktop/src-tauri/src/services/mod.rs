@@ -33,6 +33,7 @@ pub mod workspace_service;
 // Financial services (Phase 2 — Wealthfolio port)
 pub mod allocation_service;
 pub mod holdings_service;
+pub mod income_service;
 pub mod lot_service;
 pub mod net_worth_service;
 pub mod performance_service;
@@ -68,3 +69,6 @@ mod snapshot_service_test;
 
 #[cfg(test)]
 mod net_worth_service_test;
+
+#[cfg(test)]
+mod income_service_test;
