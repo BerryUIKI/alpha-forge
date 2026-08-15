@@ -109,17 +109,17 @@ Registered → Enabled or Disabled → Validated Artifact → Rendered
 
 ## MVP Plugins
 
-The five official internal plugins are included in the initial release:
+Seven official internal plugins are bundled:
 
 | Plugin ID | Artifact Type |
 |-----------|--------------|
 | `company-comparison` | Side-by-side financial metric comparison table |
 | `valuation-model` | DCF and multiples-based company valuation |
 | `industry-map` | Visual industry landscape and competitive positioning |
+| `portfolio-risk` | Portfolio risk exposure dashboard |
+| `research-timeline` | Chronological research timeline |
 | `earnings-analyzer` | Validated earnings highlights |
 | `macro-dashboard` | Validated macro indicators |
-
-Additional internal tools: `portfolio-risk` (portfolio risk exposure) and `research-timeline` (chronological research timeline).
 
 All MVP plugins are internal — no third-party plugin loading is supported.
 

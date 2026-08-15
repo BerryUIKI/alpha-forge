@@ -110,7 +110,7 @@ The Artifact-window route implementation is merged in PR #88. It adds the top-le
 
 The Research URL-context implementation merged in PR #94. It makes workspace/project query parameters authoritative, validates and cleans stale IDs with replace navigation, preserves unrelated parameters, and resets dependent document selection; focused Research route tests are included, while S4 acceptance remains incomplete.
 
-PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list refresh, selected contract rendering, and focused loading/empty/error/retry coverage. PR #97 establishes the atomic, server-derived strategy persistence contract. `codex/feat-option-strategy-ui` now connects controlled contract selection to create/read/delete behavior pending review; S5 acceptance remains incomplete.
+PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list refresh, selected contract rendering, and focused loading/empty/error/retry coverage. PR #97 establishes the atomic, server-derived strategy persistence contract, and PR #98 connects controlled contract selection to create/read/delete behavior; S5 acceptance remains incomplete.
 
 ## S3 — Artifact and plugin vertical slice
 
@@ -119,7 +119,7 @@ PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list 
 - Retain the dedicated Artifact-window route and complete packaged smoke verification.
 - Enforce a narrow Artifact-window IPC protocol.
 - Render one completed Agent Artifact in a separate window.
-- Add a minimal internal-plugin settings surface.
+- Review the internal-plugin Settings list and enable/disable surface on `codex/feat-internal-plugin-settings`.
 - Create one validated plugin payload and open its predefined renderer.
 
 ### Acceptance criteria

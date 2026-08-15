@@ -26,6 +26,32 @@ export interface PluginStatus {
 }
 
 const nonEmptyText = z.string().trim().min(1);
+const safeRelativeFile = nonEmptyText.refine(
+  (value) => !value.startsWith("/") && !value.includes("..") && !value.includes("\\"),
+  "Plugin file references must be safe relative paths",
+);
+const PluginPermissionSchema = z.enum(["network"]);
+const PluginManifestSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9-]{1,64}$/),
+    name: nonEmptyText,
+    version: nonEmptyText,
+    entry: safeRelativeFile,
+    inputSchema: safeRelativeFile,
+    permissions: z.array(PluginPermissionSchema),
+    window: z
+      .object({
+        width: z.number().int().positive().max(1600),
+        height: z.number().int().positive().max(1200),
+        resizable: z.boolean(),
+      })
+      .strict(),
+  })
+  .strict();
+const PluginStatusSchema = z
+  .object({ manifest: PluginManifestSchema, enabled: z.boolean() })
+  .strict();
+const VoidResponseSchema = z.union([z.null(), z.undefined()]);
 const payloadSchemas = {
   "company-comparison": z.object({
     companies: z.array(z.object({ ticker: nonEmptyText }).passthrough()).min(2),
@@ -50,12 +76,14 @@ const payloadSchemas = {
 
 export type InternalPluginId = keyof typeof payloadSchemas;
 
-export function listPlugins(): Promise<PluginStatus[]> {
-  return invoke("list_plugins");
+export async function listPlugins(): Promise<PluginStatus[]> {
+  const response: unknown = await invoke("list_plugins");
+  return z.array(PluginStatusSchema).parse(response);
 }
 
-export function setPluginEnabled(pluginId: string, enabled: boolean): Promise<void> {
-  return invoke("set_plugin_enabled", { pluginId, enabled });
+export async function setPluginEnabled(pluginId: string, enabled: boolean): Promise<void> {
+  const response: unknown = await invoke("set_plugin_enabled", { pluginId, enabled });
+  VoidResponseSchema.parse(response);
 }
 
 export function createPluginArtifact(
