@@ -63,7 +63,7 @@ AlphaForge helps you:
 
 **Current program state (2026-08-15): stabilization required before local MVP acceptance.**
 
-The 2026-08-12 audit found broken core integration paths. Merged repairs now include the isolated Artifact window (#88), Research URL context (#94), and Option chain-to-contract view (#95), with focused evidence; packaged smoke acceptance remains pending. The atomic Option strategy persistence contract is the current review slice, followed by its controlled UI. M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
+The 2026-08-12 audit found broken core integration paths. Merged repairs now include the isolated Artifact window (#88), Research URL context (#94), Option chain-to-contract view (#95), and atomic strategy persistence contract (#97), with focused evidence; packaged smoke acceptance remains pending. The controlled Option strategy UI is the current review slice. M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -105,7 +105,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 ### Stabilization priorities
 
 - Complete packaged Artifact-window smoke acceptance and internal-plugin reachability
-- Review the Option strategy persistence contract, then mount its controlled UI
+- Review the controlled Option strategy create/read/delete workflow
 - Complete remaining cross-layer IPC coverage and retain fixture evidence
 - Retain evidence for CI, E2E, packaged smoke, security, and release gates
 - Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP

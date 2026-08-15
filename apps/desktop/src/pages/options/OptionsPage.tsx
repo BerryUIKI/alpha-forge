@@ -16,11 +16,12 @@ import {
   GreeksCalculator,
   OptionChainList,
   OptionContractTable,
-  StrategyBuilder,
+  OptionStrategyPanel,
 } from "@/features/options";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useFetchOptionChain } from "@/hooks/useOptions";
+import type { OptionContract } from "@/types/option";
 
 const SYMBOL_PATTERN = /^[A-Z][A-Z0-9.-]{0,9}$/;
 
@@ -34,6 +35,7 @@ export function OptionsPage() {
   const workspaceIdFromUrl = searchParams.get("workspace") || "";
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaceIdFromUrl);
   const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
+  const [selectedContracts, setSelectedContracts] = useState<OptionContract[]>([]);
   const [symbol, setSymbol] = useState("");
   const [fetchError, setFetchError] = useState<string | null>(null);
   const fetchMutation = useFetchOptionChain(locale);
@@ -48,6 +50,7 @@ export function OptionsPage() {
   const handleWorkspaceChange = (id: string) => {
     setSelectedWorkspaceId(id);
     setSelectedChainId(null);
+    setSelectedContracts([]);
     setSymbol("");
     setFetchError(null);
     setSearchParams({ workspace: id });
@@ -66,6 +69,7 @@ export function OptionsPage() {
       {
         onSuccess: (chain) => {
           setSelectedChainId(chain.id);
+          setSelectedContracts([]);
           setSymbol("");
         },
         onError: () => setFetchError(t("optionChainFetchFailedDescription")),
@@ -77,10 +81,7 @@ export function OptionsPage() {
   if (!selectedWorkspaceId) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6">
-        <EmptyState
-          title={t("selectWorkspace")}
-          description={t("selectWorkspaceDescription")}
-        />
+        <EmptyState title={t("selectWorkspace")} description={t("selectWorkspaceDescription")} />
         {workspaces && workspaces.length > 0 && (
           <div className="mt-4 w-full max-w-xs">
             <select
@@ -106,16 +107,12 @@ export function OptionsPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">{t("optionsTitle")}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t("optionsDescription")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("optionsDescription")}</p>
       </div>
 
       {/* Workspace Selector */}
       <div className="max-w-xs">
-        <label className="block text-sm font-medium">
-          {t("workspace")}
-        </label>
+        <label className="block text-sm font-medium">{t("workspace")}</label>
         <select
           className="mt-1 w-full rounded-lg border border-border bg-background p-2"
           value={selectedWorkspaceId}
@@ -130,22 +127,21 @@ export function OptionsPage() {
         </select>
       </div>
 
-      {/* Tools Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Greeks Calculator */}
+      {/* Calculation tool */}
+      <div className="max-w-3xl">
         <GreeksCalculator />
-
-        {/* Strategy Builder */}
-        <StrategyBuilder />
       </div>
 
       {/* Option Chains */}
-      <section className="space-y-4 rounded-lg border border-border p-4" aria-labelledby="option-chain-heading">
+      <section
+        className="space-y-4 rounded-lg border border-border p-4"
+        aria-labelledby="option-chain-heading"
+      >
         <div>
-          <h2 id="option-chain-heading" className="text-lg font-semibold">{t("demoOptionChainTitle")}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("demoOptionChainDescription")}
-          </p>
+          <h2 id="option-chain-heading" className="text-lg font-semibold">
+            {t("demoOptionChainTitle")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t("demoOptionChainDescription")}</p>
         </div>
         <form
           className="flex flex-col gap-2 sm:flex-row"
@@ -186,14 +182,29 @@ export function OptionsPage() {
         <OptionChainList
           workspaceId={selectedWorkspaceId}
           selectedChainId={selectedChainId}
-          onSelectChain={setSelectedChainId}
+          onSelectChain={(chainId) => {
+            setSelectedChainId(chainId);
+            setSelectedContracts([]);
+          }}
         />
       </section>
 
       {selectedChainId ? (
         <section aria-labelledby="option-contract-heading" className="space-y-3">
-          <h2 id="option-contract-heading" className="text-lg font-semibold">{t("optionContracts")}</h2>
-          <OptionContractTable chainId={selectedChainId} />
+          <h2 id="option-contract-heading" className="text-lg font-semibold">
+            {t("optionContracts")}
+          </h2>
+          <OptionContractTable
+            chainId={selectedChainId}
+            selectedContractIds={new Set(selectedContracts.map((contract) => contract.id))}
+            onToggleContract={(contract) =>
+              setSelectedContracts((current) =>
+                current.some((selected) => selected.id === contract.id)
+                  ? current.filter((selected) => selected.id !== contract.id)
+                  : [...current, contract],
+              )
+            }
+          />
         </section>
       ) : (
         <EmptyState
@@ -201,6 +212,18 @@ export function OptionsPage() {
           description={t("selectOptionChainDescription")}
         />
       )}
+
+      <section aria-labelledby="option-strategy-heading" className="space-y-3">
+        <h2 id="option-strategy-heading" className="sr-only">
+          {t("optionStrategies")}
+        </h2>
+        <OptionStrategyPanel
+          key={`${selectedWorkspaceId}:${selectedChainId ?? "none"}`}
+          workspaceId={selectedWorkspaceId}
+          selectedContracts={selectedContracts}
+          onStrategyCreated={() => setSelectedContracts([])}
+        />
+      </section>
     </div>
   );
 }

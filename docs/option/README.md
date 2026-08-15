@@ -18,7 +18,7 @@ Documentation and code status are intentionally reported separately.
 
 The phrase “candidate branch” refers to `origin/integration/option` at the time of this consolidation. A branch name or historical commit message is not acceptance evidence.
 
-PR #95 merged the chain-to-contract view. The current corrective slice, `codex/feat-option-strategy-persistence`, validates contract references, derives leg fields server-side, and persists strategies and legs atomically; its controlled UI remains the next separate PR, so M9 is not accepted.
+PR #95 merged the chain-to-contract view, and PR #97 merged validated, server-derived, atomic strategy persistence. The current corrective slice, `codex/feat-option-strategy-ui`, connects selected contracts to a controlled create/read/delete workflow without unsupported leg editing; M9 is not accepted until the remaining gates pass.
 
 ## Canonical document set
 

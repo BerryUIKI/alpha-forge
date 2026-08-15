@@ -1,28 +1,37 @@
 /**
  * Option Strategy Panel Component
  *
- * Manages option strategies: create, view, update, delete.
+ * Manages persisted option strategies: create, view, and delete.
  *
  * @module features/options/components/OptionStrategyPanel
  */
 
 import { useState } from "react";
-import { Plus, Edit2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
 import {
   useOptionStrategies,
   useCreateOptionStrategy,
-  useUpdateOptionStrategy,
   useDeleteOptionStrategy,
 } from "@/hooks/useOptions";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { OptionStrategy, StrategyType } from "@/types/option";
+import type {
+  CreateStrategyParams,
+  OptionContract,
+  OptionStrategy,
+  PositionType,
+  StrategyType,
+} from "@/types/option";
 
 interface OptionStrategyPanelProps {
   /** Workspace ID to manage strategies for */
   workspaceId: string;
+  /** Contracts selected from the active persisted chain */
+  selectedContracts: OptionContract[];
+  /** Clears the controlled selection after a successful create */
+  onStrategyCreated?: () => void;
   /** Callback when a strategy is selected */
   onSelectStrategy?: (strategy: OptionStrategy) => void;
 }
@@ -32,35 +41,23 @@ type SortOrder = "asc" | "desc";
 
 export function OptionStrategyPanel({
   workspaceId,
+  selectedContracts,
+  onStrategyCreated,
   onSelectStrategy,
 }: OptionStrategyPanelProps) {
   const { t, locale } = useLocale();
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingStrategy, setEditingStrategy] = useState<OptionStrategy | null>(
-    null
-  );
+  const [formContracts, setFormContracts] = useState<OptionContract[] | null>(null);
 
-  const { data: strategies, isLoading, error } = useOptionStrategies(workspaceId);
+  const { data: strategies, isLoading, error, refetch } = useOptionStrategies(workspaceId);
   const createMutation = useCreateOptionStrategy(locale);
-  const updateMutation = useUpdateOptionStrategy(locale);
   const deleteMutation = useDeleteOptionStrategy(locale);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t("confirmDeleteStrategy" as any) || "Delete this strategy?")) {
+  const handleDelete = (id: string) => {
+    if (window.confirm(t("confirmDeleteOptionStrategy"))) {
       deleteMutation.mutate(id);
     }
-  };
-
-  const handleEdit = (strategy: OptionStrategy) => {
-    setEditingStrategy(strategy);
-    setShowCreateForm(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingStrategy(null);
-    setShowCreateForm(false);
   };
 
   if (isLoading) {
@@ -72,7 +69,9 @@ export function OptionStrategyPanel({
   }
 
   if (error) {
-    return <ErrorState message="Failed to load option strategies" />;
+    return (
+      <ErrorState message={t("failedToLoadOptionStrategies")} onRetry={() => void refetch()} />
+    );
   }
 
   // Sort strategies
@@ -81,9 +80,7 @@ export function OptionStrategyPanel({
         const aVal = a[sortField] ?? 0;
         const bVal = b[sortField] ?? 0;
         if (typeof aVal === "string" && typeof bVal === "string") {
-          return sortOrder === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
+          return sortOrder === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         }
         return sortOrder === "asc"
           ? (aVal as number) - (bVal as number)
@@ -110,47 +107,54 @@ export function OptionStrategyPanel({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {t("optionStrategies" as any) || "Option Strategies"}
-        </h3>
+        <h3 className="text-lg font-semibold">{t("optionStrategies")}</h3>
         <button
+          type="button"
           onClick={() => {
-            setShowCreateForm(true);
-            setEditingStrategy(null);
+            createMutation.reset();
+            setFormContracts(selectedContracts);
           }}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors"
+          disabled={selectedContracts.length === 0}
+          className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
-          {t("createStrategy" as any) || "Create Strategy"}
+          {t("createOptionStrategy")}
         </button>
       </div>
 
-      {/* Create/Edit Form */}
-      {(showCreateForm || editingStrategy) && (
+      {selectedContracts.length === 0 && !formContracts && (
+        <p className="text-sm text-muted-foreground">{t("selectContractsForStrategy")}</p>
+      )}
+
+      {/* Controlled create form. Persisted legs are immutable in this slice. */}
+      {formContracts && (
         <StrategyForm
-          strategy={editingStrategy}
           workspaceId={workspaceId}
+          selectedContracts={formContracts}
           onSave={(data) => {
-            if (editingStrategy) {
-              updateMutation.mutate({ ...data, id: editingStrategy.id });
-            } else {
-              createMutation.mutate(data);
-            }
-            handleCancelEdit();
+            createMutation.mutate(data, {
+              onSuccess: () => {
+                setFormContracts(null);
+                onStrategyCreated?.();
+              },
+            });
           }}
-          onCancel={handleCancelEdit}
-          isLoading={createMutation.isPending || updateMutation.isPending}
+          onCancel={() => {
+            createMutation.reset();
+            setFormContracts(null);
+          }}
+          isLoading={createMutation.isPending}
         />
       )}
+
+      {createMutation.isError && <ErrorState message={t("failedToCreateOptionStrategy")} />}
+      {deleteMutation.isError && <ErrorState message={t("failedToDeleteOptionStrategy")} />}
 
       {/* Strategy List */}
       {!strategies || strategies.length === 0 ? (
         <EmptyState
-          title={t("noStrategies" as any) || "No strategies created"}
-          description={
-            t("noStrategiesDescription" as any) ||
-            "Create multi-leg strategies to manage option positions"
-          }
+          title={t("noOptionStrategies")}
+          description={t("noOptionStrategiesDescription")}
         />
       ) : (
         <div className="overflow-hidden rounded-lg border border-border">
@@ -162,14 +166,13 @@ export function OptionStrategyPanel({
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-1 hover:text-foreground"
                   >
-                    {t("name" as any) || "Name"}
-                    {sortField === "name" && (
-                      sortOrder === "asc" ? (
+                    {t("optionStrategyName")}
+                    {sortField === "name" &&
+                      (sortOrder === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
                       ) : (
                         <ChevronDown className="h-3 w-3" />
-                      )
-                    )}
+                      ))}
                   </button>
                 </th>
                 <th className="px-3 py-2 text-left font-medium">Type</th>
@@ -180,13 +183,12 @@ export function OptionStrategyPanel({
                     className="flex items-center gap-1 hover:text-foreground ml-auto"
                   >
                     Max Profit
-                    {sortField === "maxProfit" && (
-                      sortOrder === "asc" ? (
+                    {sortField === "maxProfit" &&
+                      (sortOrder === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
                       ) : (
                         <ChevronDown className="h-3 w-3" />
-                      )
-                    )}
+                      ))}
                   </button>
                 </th>
                 <th className="px-3 py-2 text-right font-medium">
@@ -195,13 +197,12 @@ export function OptionStrategyPanel({
                     className="flex items-center gap-1 hover:text-foreground ml-auto"
                   >
                     Max Loss
-                    {sortField === "maxLoss" && (
-                      sortOrder === "asc" ? (
+                    {sortField === "maxLoss" &&
+                      (sortOrder === "asc" ? (
                         <ChevronUp className="h-3 w-3" />
                       ) : (
                         <ChevronDown className="h-3 w-3" />
-                      )
-                    )}
+                      ))}
                   </button>
                 </th>
                 <th className="px-3 py-2 text-right font-medium">Δ</th>
@@ -219,12 +220,8 @@ export function OptionStrategyPanel({
                   onClick={() => onSelectStrategy?.(strategy)}
                 >
                   <td className="px-3 py-2 font-medium">{strategy.name}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {strategy.strategyType}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono">
-                    {strategy.legs?.length || 0}
-                  </td>
+                  <td className="px-3 py-2 text-muted-foreground">{strategy.strategyType}</td>
+                  <td className="px-3 py-2 text-right font-mono">{strategy.legs?.length || 0}</td>
                   <td className="px-3 py-2 text-right font-mono text-green-600">
                     {formatCurrency(strategy.maxProfit)}
                   </td>
@@ -246,15 +243,8 @@ export function OptionStrategyPanel({
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(strategy);
-                        }}
-                        className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
+                        type="button"
+                        aria-label={`${t("deleteOptionStrategy")}: ${strategy.name}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(strategy.id);
@@ -276,112 +266,148 @@ export function OptionStrategyPanel({
   );
 }
 
-/**
- * Strategy Create/Edit Form
- */
 interface StrategyFormProps {
-  strategy: OptionStrategy | null;
   workspaceId: string;
-  onSave: (data: any) => void;
+  selectedContracts: OptionContract[];
+  onSave: (data: CreateStrategyParams) => void;
   onCancel: () => void;
   isLoading: boolean;
 }
 
+interface LegDraft {
+  contractId: string;
+  quantity: number;
+  positionType: PositionType;
+}
+
 function StrategyForm({
-  strategy,
   workspaceId,
+  selectedContracts,
   onSave,
   onCancel,
   isLoading,
 }: StrategyFormProps) {
   const { t } = useLocale();
-  const [name, setName] = useState(strategy?.name || "");
-  const [strategyType, setStrategyType] = useState<StrategyType>(
-    strategy?.strategyType || "custom"
+  const [name, setName] = useState("");
+  const [strategyType, setStrategyType] = useState<StrategyType>("custom");
+  const [legs, setLegs] = useState<LegDraft[]>(() =>
+    selectedContracts.map((contract) => ({
+      contractId: contract.id,
+      quantity: 1,
+      positionType: "long",
+    })),
   );
-  const [description, setDescription] = useState(strategy?.description || "");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      name,
-      strategyType,
-      description,
-      workspaceId,
-      legs: [], // TODO: Add leg management UI
-    });
+  const updateLeg = (contractId: string, update: Partial<LegDraft>) => {
+    setLegs((current) =>
+      current.map((leg) => (leg.contractId === contractId ? { ...leg, ...update } : leg)),
+    );
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className="p-4 border rounded-lg bg-muted/30 space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSave({ workspaceId, name: name.trim(), strategyType, legs });
+      }}
+      className="space-y-4 rounded-lg border bg-muted/30 p-4"
     >
-      <h4 className="font-medium">
-        {strategy
-          ? t("editStrategy" as any) || "Edit Strategy"
-          : t("createStrategy" as any) || "Create Strategy"}
-      </h4>
-
+      <h4 className="font-medium">{t("createOptionStrategy")}</h4>
       <div>
-        <label className="block text-sm font-medium mb-1">
-          {t("strategyName" as any) || "Strategy Name"}
+        <label className="mb-1 block text-sm font-medium" htmlFor="option-strategy-name">
+          {t("optionStrategyName")}
         </label>
         <input
+          id="option-strategy-name"
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md"
-          placeholder="e.g., Bull Call Spread"
+          onChange={(event) => setName(event.target.value)}
+          className="w-full rounded-md border px-3 py-2"
+          placeholder={t("optionStrategyNamePlaceholder")}
+          maxLength={100}
           required
         />
       </div>
-
       <div>
-        <label className="block text-sm font-medium mb-1">
-          {t("strategyType" as any) || "Strategy Type"}
+        <label className="mb-1 block text-sm font-medium" htmlFor="option-strategy-type">
+          {t("optionStrategyType")}
         </label>
         <select
+          id="option-strategy-type"
           value={strategyType}
-          onChange={(e) => setStrategyType(e.target.value as StrategyType)}
-          className="w-full px-3 py-2 border rounded-md"
+          onChange={(event) => setStrategyType(event.target.value as StrategyType)}
+          className="w-full rounded-md border px-3 py-2"
         >
-          <option value="custom">Custom</option>
-          <option value="bull_call_spread">Bull Call Spread</option>
-          <option value="bear_put_spread">Bear Put Spread</option>
-          <option value="iron_condor">Iron Condor</option>
-          <option value="straddle">Straddle</option>
-          <option value="strangle">Strangle</option>
+          <option value="custom">{t("customOptionStrategy")}</option>
+          <option value="bull_call_spread">{t("bullCallSpread")}</option>
+          <option value="bear_put_spread">{t("bearPutSpread")}</option>
+          <option value="iron_condor">{t("ironCondor")}</option>
+          <option value="straddle">{t("straddle")}</option>
+          <option value="strangle">{t("strangle")}</option>
         </select>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">
-          {t("description" as any) || "Description"}
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md"
-          rows={3}
-          placeholder="Strategy description..."
-        />
-      </div>
-
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium">{t("selectedStrategyContracts")}</legend>
+        {selectedContracts.map((contract) => {
+          const leg = legs.find((candidate) => candidate.contractId === contract.id);
+          if (!leg) return null;
+          return (
+            <div key={contract.id} className="grid gap-2 rounded-md border p-3 sm:grid-cols-3">
+              <div className="text-sm">
+                <div className="font-medium">
+                  {contract.symbol} {contract.strike.toFixed(2)} {contract.optionType}
+                </div>
+                <div className="text-muted-foreground">
+                  {new Date(contract.expiration).toLocaleDateString()}
+                </div>
+              </div>
+              <label className="text-sm">
+                <span className="mb-1 block">{t("strategyLegQuantity")}</span>
+                <input
+                  aria-label={`${t("strategyLegQuantity")} ${contract.strike.toFixed(2)}`}
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={leg.quantity}
+                  onChange={(event) =>
+                    updateLeg(contract.id, {
+                      quantity: Number.parseInt(event.target.value, 10) || 0,
+                    })
+                  }
+                  className="w-full rounded-md border px-2 py-1"
+                  required
+                />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block">{t("strategyLegDirection")}</span>
+                <select
+                  aria-label={`${t("strategyLegDirection")} ${contract.strike.toFixed(2)}`}
+                  value={leg.positionType}
+                  onChange={(event) =>
+                    updateLeg(contract.id, {
+                      positionType: event.target.value as PositionType,
+                    })
+                  }
+                  className="w-full rounded-md border px-2 py-1"
+                >
+                  <option value="long">{t("longPosition")}</option>
+                  <option value="short">{t("shortPosition")}</option>
+                </select>
+              </label>
+            </div>
+          );
+        })}
+      </fieldset>
       <div className="flex items-center gap-2">
         <button
           type="submit"
-          disabled={isLoading || !name.trim()}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 disabled:opacity-50"
+          disabled={isLoading || !name.trim() || legs.some((leg) => leg.quantity <= 0)}
+          className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
         >
-          {isLoading ? t("saving" as any) || "Saving..." : t("save" as any) || "Save"}
+          {isLoading ? t("saving") : t("saveOptionStrategy")}
         </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 border rounded-md text-sm hover:bg-muted"
-        >
-          {t("cancel" as any) || "Cancel"}
+        <button type="button" onClick={onCancel} className="rounded-md border px-4 py-2 text-sm">
+          {t("cancel")}
         </button>
       </div>
     </form>

@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94) and the Option chain-to-contract view (#95). The atomic strategy persistence contract is pending review, while its controlled UI, packaged smoke acceptance, and the remaining stabilization matrix are still outstanding.
+**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94), the Option chain-to-contract view (#95), and atomic strategy persistence (#97). The controlled strategy UI is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -46,7 +46,7 @@ This audit was code-first. Compilation and build commands were deliberately defe
 | Thesis and knowledge graph | Reachable in Journal | Commands, services, repositories implemented | Partial | Main operations are connected; contract and workflow tests are incomplete. |
 | Portfolio accounts/positions/analysis | Reachable in Portfolio | Commands, services, repositories implemented | Partial | Main panels are connected. Several backend capabilities are not clearly exposed, including direct theme linking from the current dashboard. |
 | Option calculations | Reachable | Commands and pricing core implemented | Partial — merged IPC repair | Option request/response DTOs now use the reviewed camelCase/Zod boundary; numerical and workflow acceptance remains pending. |
-| Option chains/contracts/strategies | Chain-to-contract view merged | CRUD commands and services exist | Partial - strategy UI pending | PR #95 connects persisted demo chains to contract detail; atomic strategy persistence is under review, while its controlled UI remains incomplete. |
+| Option chains/contracts/strategies | Chain-to-contract view merged | Atomic strategy persistence merged | Partial - strategy UI pending | PRs #95 and #97 establish persisted contract selection and strategy persistence; the controlled UI is under review. |
 | Artifact list and in-page rendering | Reachable | Persistence and predefined renderers implemented | Partial | In-page rendering exists. Separate Artifact windows are broken as described in P0-4. |
 | Artifact separate window | API hook and backend manager exist | Window manager opens `/artifact/:id/:type` | Broken | React router has no matching route. |
 | Bundled plugin registry | API wrappers and renderer registry exist | Seven plugins sync, validate, and produce Artifacts | Partial | No user-facing plugin list, enable/disable control, or Artifact creation workflow is reachable. |
@@ -151,7 +151,7 @@ At the audit baseline, the route rendered a calculation-oriented `StrategyBuilde
 
 **Rectification:** After fixing the IPC contract, choose a single coherent Option workflow and connect chain selection to contract detail and strategy persistence. Remove or clearly mark duplicate experimental components.
 
-**Remediation status (2026-08-15):** PR #95 merged the demo chain-to-contract view. `codex/feat-option-strategy-persistence` adds validated, server-derived, atomic strategy-and-leg persistence pending review; its controlled UI remains a separate follow-up, and M9 acceptance is still incomplete.
+**Remediation status (2026-08-15):** PR #95 merged the demo chain-to-contract view, and PR #97 merged validated, server-derived, atomic strategy-and-leg persistence. `codex/feat-option-strategy-ui` connects selected contracts to controlled create/read/delete behavior pending review; M9 acceptance is still incomplete.
 
 ### P1-3: Plugin capabilities are not exposed to users
 
@@ -253,10 +253,11 @@ These are not release acceptance claims until their tests and packaged smoke che
 | 6 | `#88 (merged)` | Add isolated Artifact window route | `dev` | Focused route/permission tests; packaged window lifecycle smoke remains pending |
 | 7 | `#94 (merged)` | Consume and synchronize workspace/project parameters | `dev` | Focused Research route tests; broader S4 acceptance remains pending |
 | 8 | `#95 (merged)` | Demo chain acquisition, persisted contracts, and contract detail | `dev` | Focused fetch/list/selection and repository/service tests |
-| 9 | `codex/feat-option-strategy-persistence` (pending review) | Atomic validated strategy-and-leg persistence contract | `dev` | Rollback, validation, persistence/reload, cascade, Serde, and TypeScript fixtures; controlled UI remains separate |
-| 10 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
-| 11 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
-| 12 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
+| 9 | `#97 (merged)` | Atomic validated strategy-and-leg persistence contract | `dev` | Rollback, validation, persistence/reload, cascade, Serde, and TypeScript fixtures |
+| 10 | `codex/feat-option-strategy-ui` (pending review) | Controlled selected-contract create/read/delete workflow | `dev` | Component integration, retry, positive quantity, direction, reload, and deletion tests |
+| 11 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
+| 12 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
+| 13 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
 
 M10 Goose work should use separate post-stabilization PRs only after its documented entry gate is approved.
 

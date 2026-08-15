@@ -477,9 +477,7 @@ export const StrategyLegSchema = z.object({
   id: z.string().uuid(),
   strategyId: z.string().uuid(),
   optionContractId: z.string().uuid(),
-  quantity: z.number().int().refine((value) => value !== 0, {
-    message: "Quantity must not be zero",
-  }),
+  quantity: z.number().int().positive(),
   positionType: PositionTypeSchema,
   premium: z.number().nonnegative(),
   strike: z.number().positive(),
