@@ -3,7 +3,7 @@
 // SQLx persistence for `lots` and `lot_disposals` (migration 0018). Lots are
 // the FIFO cost-basis inventory; disposals record realized PnL per sell.
 
-use chrono::Utc;
+use chrono::{NaiveDate, Utc};
 use rust_decimal::Decimal;
 use sqlx::SqlitePool;
 
@@ -134,6 +134,37 @@ impl LotRepository {
         .map_err(|e| AppError::Internal(format!("failed to list account open lots: {e}")))?;
 
         rows.into_iter().map(TryInto::try_into).collect()
+    }
+
+    /// Update the remaining quantity and cost basis of a lot after a partial sale.
+    /// Marks the lot as closed when `remaining_quantity` reaches zero.
+    pub async fn update_lot_state(
+        &self,
+        lot_id: &str,
+        remaining_quantity: Decimal,
+        remaining_cost_basis: Decimal,
+        is_closed: bool,
+        close_date: Option<NaiveDate>,
+        close_activity_id: Option<String>,
+    ) -> Result<(), AppError> {
+        let now = Utc::now();
+        sqlx::query(
+            "UPDATE lots
+             SET remaining_quantity = ?, remaining_cost_basis = ?, is_closed = ?,
+                 close_date = ?, close_activity_id = ?, updated_at = ?
+             WHERE id = ?",
+        )
+        .bind(remaining_quantity.to_string())
+        .bind(remaining_cost_basis.to_string())
+        .bind(is_closed)
+        .bind(close_date.map(|d| d.to_string()))
+        .bind(&close_activity_id)
+        .bind(now.to_rfc3339())
+        .bind(lot_id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("failed to update lot state: {e}")))?;
+        Ok(())
     }
 }
 

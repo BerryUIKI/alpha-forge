@@ -1,6 +1,6 @@
 # Portfolio Module — API Specification
 
-> **Status:** Phase 1 complete (storage layer). Phase 2 (services) in progress.
+> **Status:** Phase 1 complete (storage layer). Phase 2 ✅ Done (services)
 > **Target branch:** `feature/portfolio-integration`
 > **Audience:** Main dev developer integrating portfolio into the main application.
 > **All documentation is in English.**
@@ -23,10 +23,17 @@ Frontend (React)
     ├── desktopApi.invoke('command_name', params)
     │
     ▼
-Tauri Command (Rust, commands/portfolio.rs)
+Tauri Command (Rust, commands/financial.rs)  ← Phase 2 ✅
     │
     ▼
-Service Layer (services/financial_service.rs)  ← Phase 2
+Service Layer (7 services in services/)  ← Phase 2 ✅
+    │  ├── holdings_service.rs
+    │  ├── lot_service.rs
+    │  ├── valuation_service.rs
+    │  ├── performance_service.rs
+    │  ├── allocation_service.rs
+    │  ├── snapshot_service.rs
+    │  └── net_worth_service.rs
     │
     ▼
 Repository Layer (database/repositories/*_repository.rs)  ← Phase 1 ✅
@@ -40,7 +47,8 @@ SQLx + SQLite (migrations/0015-0021)  ← Phase 1 ✅
 | Phase | Status | What | Docs |
 |-------|--------|------|------|
 | Phase 1 | ✅ Done | Domain models, migrations, repositories | `crates/domain/src/financial.rs`, `migrations/0015-0021`, repo files |
-| Phase 2 | 🔜 Next | Financial business logic services (holdings, lots, valuation, performance, allocation) | TBD |
+| Phase 2 | ✅ Done | Financial business logic services (holdings, lots, valuation, performance, allocation, snapshots, net worth) + 18 Tauri commands in `commands/financial.rs` | `docs/portfolio/API_SPEC.md` (section 9) |
+| Phase 2.5 | 🔜 Next | Tauri commands for repository-level CRUD (create_platform, create_financial_account, create_asset, upsert_quote, create_activity, create_lot, create_taxonomy, etc.) | TBD |
 | Phase 3 | ⏳ Pending | Frontend UI (pages, components, dashboard) | `docs/portfolio/FRONTEND_INTEGRATION.md` |
 | Phase 4 | ⏳ Pending | Thesis ↔ holding linkage | `docs/portfolio/THESIS_LINKAGE.md` |
 | Phase 5 | ⏳ Pending | Polish, broker sync, market data | TBD |
@@ -229,16 +237,17 @@ pub mod allocation_target_repository;
 pub mod financial_support;  // Row-parsing helpers
 ```
 
-### 5.2 New Services (Phase 2 — to be built)
+### 5.2 New Services (Phase 2 — completed)
 
 ```rust
-// In services/mod.rs — to be added in Phase 2
+// In services/mod.rs — added in Phase 2
 pub mod holdings_service;
 pub mod lot_service;
 pub mod valuation_service;
 pub mod performance_service;  // XIRR, time-weighted return
 pub mod allocation_service;
 pub mod snapshot_service;
+pub mod net_worth_service;
 ```
 
 ### 5.3 AppState Wiring
@@ -256,6 +265,14 @@ use crate::database::repositories::valuation_repository::ValuationRepository;
 use crate::database::repositories::taxonomy_repository::TaxonomyRepository;
 use crate::database::repositories::allocation_target_repository::AllocationTargetRepository;
 
+use crate::services::holdings_service::HoldingsService;
+use crate::services::lot_service::LotService;
+use crate::services::valuation_service::ValuationService;
+use crate::services::performance_service::PerformanceService;
+use crate::services::allocation_service::AllocationService;
+use crate::services::snapshot_service::SnapshotService;
+use crate::services::net_worth_service::NetWorthService;
+
 pub struct AppState {
     // ... existing fields ...
     
@@ -269,8 +286,24 @@ pub struct AppState {
     pub valuation_repo: ValuationRepository,
     pub taxonomy_repo: TaxonomyRepository,
     pub allocation_target_repo: AllocationTargetRepository,
+
+    // Financial services (Phase 2)
+    pub holdings_service: Arc<HoldingsService>,
+    pub lot_service: LotService,
+    pub valuation_service: ValuationService,
+    pub performance_service: PerformanceService,
+    pub allocation_service: AllocationService,
+    pub snapshot_service: SnapshotService,
+    pub net_worth_service: NetWorthService,
 }
 ```
+
+> **Note:** The repository-level CRUD commands (create_platform, create_financial_account,
+> create_asset, upsert_quote, create_activity, create_lot, create_taxonomy, etc.) are
+> available as Rust APIs through the repository layer but are **not yet exposed as
+> Tauri commands**. Only the Phase 2 service-level commands (section 9) are currently
+> wired as Tauri commands. The repository-level commands will be wired in a future phase
+> (Phase 2.5).
 
 ---
 
@@ -327,12 +360,80 @@ Repositories (database/repositories/*_repository.rs)
     ├── taxonomy_repository ─── TaxonomyRepository, CategoryRepository, AssignmentRepository (embedded)
     └── allocation_target_repo ─ AllocationTargetRepository, WeightRepository, ConstraintRepository (embedded)
 Services (Phase 2) ──→ Repositories
-Commands ──→ Services
+    ├── holdings_service ──→ lot_repo, valuation_repo, activity_repo, quote_repo (via asset_repo)
+    ├── lot_service ───────→ lot_repo, activity_repo
+    ├── valuation_service ──→ valuation_repo, holdings_service
+    ├── performance_service ─→ valuation_repo, activity_repo
+    ├── allocation_service ──→ holdings_service, taxonomy_repo, allocation_target_repo
+    ├── snapshot_service ────→ snapshot_repo, holdings_service
+    └── net_worth_service ───→ holdings_service, account_repo
+Commands (commands/financial.rs) ──→ Services
 ```
 
 ---
 
-## 9. Testing
+## 9. Phase 2 Tauri Commands
+
+The following 18 commands are defined in `apps/desktop/src-tauri/src/commands/financial.rs`
+and wired into `AppState`. They are registered in `commands/mod.rs` as `pub mod financial;`
+and added to the Tauri `invoke_handler()`.
+
+### 9.1 Holdings
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `get_holdings` | `account_id: String, as_of_date: String` (YYYY-MM-DD) | `HoldingsSummary` | Get current holdings for a single account |
+| `get_all_holdings` | `as_of_date: String` (YYYY-MM-DD) | `Vec<HoldingsSummary>` | Get holdings for all non-archived accounts |
+
+### 9.2 Lots
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `record_sell` | `account_id: String, asset_id: String, activity_id: String` | `FifoReductionResult` | Record a sell activity against the FIFO lot inventory |
+| `get_open_lots` | `account_id: String, asset_id: String` | `Vec<Lot>` | Get open lots for an account + asset combination |
+| `get_open_lots_for_account` | `account_id: String` | `Vec<Lot>` | Get all open lots for an account |
+
+### 9.3 Valuation
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `calculate_valuation_day` | `account_id: String, date: String` (YYYY-MM-DD) | `DailyAccountValuation` | Calculate and persist one day's valuation for an account |
+| `get_valuation` | `account_id: String, date: String` (YYYY-MM-DD) | `Option<DailyAccountValuation>` | Get a single valuation row |
+| `get_valuation_series` | `account_id: String` | `Vec<DailyAccountValuation>` | Get the full valuation series for an account |
+| `calculate_all_valuations` | `date: String` (YYYY-MM-DD) | `Vec<DailyAccountValuation>` | Calculate and persist valuations for all active accounts on a date |
+
+### 9.4 Performance
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `compute_performance_summary` | `account_id: String, start_date: String, end_date: String` (YYYY-MM-DD) | `PerformanceSummary` | Compute performance summary (XIRR, TWR) for an account |
+| `get_performance_time_series` | `account_id: String` | `Vec<PerformancePoint>` | Get the performance time-series for an account |
+
+### 9.5 Allocation
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `get_allocation` | `scope_type: String, scope_id: Option<String>, as_of_date: String` (YYYY-MM-DD) | `AllocationBreakdown` | Compute allocation breakdown for a scope |
+| `check_allocation_constraints` | `scope_type: String, scope_id: Option<String>, as_of_date: String` (YYYY-MM-DD) | `Vec<String>` | Check constraints that apply to a scope |
+
+### 9.6 Snapshots
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `create_snapshot` | `account_id: String, snapshot_date: String` (YYYY-MM-DD), `label: Option<String>` | `HoldingSnapshot` | Create a snapshot from the current holdings of an account |
+| `get_snapshot` | `id: String` | `Option<HoldingSnapshot>` | Get a snapshot by ID |
+| `list_snapshots` | `account_id: String` | `Vec<HoldingSnapshot>` | List snapshots for an account |
+| `delete_snapshot` | `id: String` | `()` | Delete a snapshot |
+
+### 9.7 Net Worth
+
+| Command | Input | Output | Description |
+|---------|-------|--------|-------------|
+| `compute_net_worth` | `as_of_date: String` (YYYY-MM-DD), `base_currency: Option<String>` (defaults to "USD") | `NetWorthSnapshot` | Compute net worth as of a given date |
+
+---
+
+## 10. Testing
 
 - Repository tests use `setup_test_db()` from `test_support.rs` — full migration
   chain on `:memory:` with FK enforcement.
