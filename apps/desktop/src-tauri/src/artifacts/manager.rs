@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tokio::sync::RwLock;
 
 use crate::error::AppError;
@@ -69,16 +69,14 @@ impl ArtifactManager {
             }
         }
 
-        // Build artifact URL
-        // For now, we'll use a simple HTML template
-        // In production, this would route to a React component
+        // Build the isolated React artifact route.
         let artifact_url = format!("/artifact/{}/{}", config.artifact_id, config.artifact_type);
 
         // Create window
         let artifact_url = artifact_url
             .parse()
             .map_err(|_| AppError::Validation("Artifact route is invalid".to_string()))?;
-        let _window = WebviewWindowBuilder::new(
+        let window = WebviewWindowBuilder::new(
             &self.app_handle,
             &window_label,
             WebviewUrl::App(artifact_url),
@@ -89,11 +87,27 @@ impl ArtifactManager {
         .build()
         .map_err(|e| AppError::Internal(format!("Failed to create artifact window: {}", e)))?;
 
-        // Track window
+        // Track the window before subscribing to destruction so a fast native
+        // close cannot remove an entry that has not been inserted yet.
+        let active_windows = Arc::clone(&self.active_windows);
+        let artifact_id = config.artifact_id.clone();
+
         {
             let mut windows = self.active_windows.write().await;
             windows.insert(config.artifact_id.clone(), window_label.clone());
         }
+
+        // A user can close the native window without calling the close command.
+        // Keep the in-memory registry in sync with that lifecycle event.
+        window.on_window_event(move |event| {
+            if matches!(event, WindowEvent::Destroyed) {
+                let active_windows = Arc::clone(&active_windows);
+                let artifact_id = artifact_id.clone();
+                tauri::async_runtime::spawn(async move {
+                    remove_tracked_window(&active_windows, &artifact_id).await;
+                });
+            }
+        });
 
         Ok(window_label)
     }
@@ -113,11 +127,8 @@ impl ArtifactManager {
                 })?;
             }
 
-            // Remove from tracking
-            {
-                let mut windows = self.active_windows.write().await;
-                windows.remove(artifact_id);
-            }
+            // Remove from tracking.
+            remove_tracked_window(&self.active_windows, artifact_id).await;
         }
 
         Ok(())
@@ -177,6 +188,14 @@ impl ArtifactManager {
         )
         .await
     }
+}
+
+async fn remove_tracked_window(
+    active_windows: &Arc<RwLock<HashMap<String, String>>>,
+    artifact_id: &str,
+) {
+    let mut windows = active_windows.write().await;
+    windows.remove(artifact_id);
 }
 
 fn validate_artifact_window_config(config: &ArtifactWindowConfig) -> Result<(), AppError> {
@@ -261,5 +280,19 @@ mod tests {
             ..unsafe_route
         };
         assert!(validate_artifact_window_config(&invalid_size).is_err());
+    }
+
+    #[tokio::test]
+    async fn destroyed_artifact_window_is_removed_from_tracking() {
+        let active_windows = Arc::new(RwLock::new(HashMap::from([
+            ("artifact-1".to_string(), "window-1".to_string()),
+            ("artifact-2".to_string(), "window-2".to_string()),
+        ])));
+
+        remove_tracked_window(&active_windows, "artifact-1").await;
+
+        let windows = active_windows.read().await;
+        assert!(!windows.contains_key("artifact-1"));
+        assert_eq!(windows.get("artifact-2"), Some(&"window-2".to_string()));
     }
 }

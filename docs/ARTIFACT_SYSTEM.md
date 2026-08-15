@@ -144,7 +144,7 @@ Artifacts that are not persisted are discarded when the window closes.
 
 ## MVP Artifact Types
 
-Five internal plugins provide the initial artifact types:
+Seven internal plugins provide the initial artifact types:
 
 | Plugin | Artifact Type | Description |
 |--------|--------------|-------------|
@@ -153,3 +153,5 @@ Five internal plugins provide the initial artifact types:
 | Portfolio Risk | `portfolio-risk` | Risk exposure and concentration dashboard |
 | Industry Map | `industry-map` | Visual industry landscape and positioning |
 | Research Timeline | `research-timeline` | Chronological view of research and thesis development |
+| Earnings Analyzer | `earnings-analyzer` | Validated earnings highlights and trends |
+| Macro Dashboard | `macro-dashboard` | Validated macroeconomic indicators |

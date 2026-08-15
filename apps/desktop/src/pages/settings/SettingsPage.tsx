@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { desktopApi } from "@/lib/desktop-api";
 import { formatMessage, LOCALES, type Locale } from "@/lib/i18n/locale";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { InternalPluginsPanel } from "@/features/plugins";
 
 export function SettingsPage() {
   const { locale, setLocale, t } = useLocale();
@@ -156,6 +157,8 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+
+      <InternalPluginsPanel />
 
       <section className="rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">

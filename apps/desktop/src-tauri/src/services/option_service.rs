@@ -64,10 +64,12 @@ impl OptionService {
         source: DataSource,
     ) -> Result<OptionChain, AppError> {
         // Validate inputs
-        if symbol.trim().is_empty() {
+        let normalized_symbol = symbol.trim().to_uppercase();
+        let normalized_workspace_id = workspace_id.trim();
+        if normalized_symbol.is_empty() {
             return Err(AppError::Validation("Symbol is required".to_string()));
         }
-        if workspace_id.trim().is_empty() {
+        if normalized_workspace_id.is_empty() {
             return Err(AppError::Validation("Workspace ID is required".to_string()));
         }
 
@@ -76,15 +78,18 @@ impl OptionService {
             .map_err(|e| AppError::Internal(format!("Failed to create provider: {}", e)))?;
 
         // Fetch chain from provider
-        let chain = provider
-            .fetch_chain(symbol, workspace_id)
+        let fetched = provider
+            .fetch_chain(&normalized_symbol, normalized_workspace_id)
             .await
             .map_err(|e| AppError::Internal(format!("Failed to fetch option chain: {}", e)))?;
 
-        // Persist chain to database
-        self.chain_repo.create(&chain).await?;
+        // Persist the chain and generated contracts together so a successful
+        // fetch always leaves a selectable contract view.
+        self.chain_repo
+            .create_with_contracts(&fetched.chain, &fetched.contracts)
+            .await?;
 
-        Ok(chain)
+        Ok(fetched.chain)
     }
 
     /// Calculates all Greeks for an option using Black-Scholes model.

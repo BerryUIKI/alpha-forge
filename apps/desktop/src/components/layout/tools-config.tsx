@@ -19,6 +19,7 @@ import {
   List,
   CandlestickChart,
   Settings,
+  Wallet,
 } from "lucide-react";
 import type { FunctionalView, ToolItem } from "./types";
 
@@ -27,6 +28,12 @@ import type { FunctionalView, ToolItem } from "./types";
  */
 export const VIEW_TOOLS: Record<FunctionalView, ToolItem[]> = {
   analyze: [
+    {
+      id: "portfolio-dashboard",
+      label: "投资组合",
+      icon: Wallet,
+      route: "/portfolio",
+    },
     {
       id: "research-projects",
       label: "研究项目",

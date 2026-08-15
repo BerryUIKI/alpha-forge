@@ -21,6 +21,10 @@ interface OptionContractTableProps {
   showDelete?: boolean;
   /** Highlight strike prices near this value */
   spotPrice?: number;
+  /** Contract IDs controlled by the parent strategy workflow */
+  selectedContractIds?: ReadonlySet<string>;
+  /** Toggle a contract for strategy creation */
+  onToggleContract?: (contract: OptionContract) => void;
 }
 
 type SortField = "strike" | "bid" | "ask" | "volume" | "openInterest" | "impliedVolatility";
@@ -30,14 +34,16 @@ export function OptionContractTable({
   chainId,
   showDelete = false,
   spotPrice,
+  selectedContractIds,
+  onToggleContract,
 }: OptionContractTableProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [sortField, setSortField] = useState<SortField>("strike");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [filter, setFilter] = useState<OptionType | "all">("all");
 
-  const { data: contracts, isLoading, error } = useOptionContracts(chainId);
-  const deleteMutation = useDeleteOptionContract("en");
+  const { data: contracts, isLoading, error, refetch } = useOptionContracts(chainId);
+  const deleteMutation = useDeleteOptionContract(locale);
 
   if (isLoading) {
     return (
@@ -48,15 +54,11 @@ export function OptionContractTable({
   }
 
   if (error) {
-    return <ErrorState message="Failed to load option contracts" />;
+    return <ErrorState message={t("failedToLoadOptionContracts")} onRetry={() => void refetch()} />;
   }
 
   if (!contracts || contracts.length === 0) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        {t("noContracts" as any) || "No contracts in this chain"}
-      </div>
-    );
+    return <div className="p-4 text-center text-muted-foreground">{t("noContracts")}</div>;
   }
 
   // Filter by type
@@ -88,8 +90,7 @@ export function OptionContractTable({
   const formatPercent = (val: number | null | undefined) =>
     val != null ? `${(val * 100).toFixed(2)}%` : "-";
 
-  const formatNumber = (val: number | null | undefined) =>
-    val != null ? val.toFixed(2) : "-";
+  const formatNumber = (val: number | null | undefined) => (val != null ? val.toFixed(2) : "-");
 
   const formatVolume = (val: number | null | undefined) =>
     val != null ? val.toLocaleString() : "-";
@@ -107,9 +108,7 @@ export function OptionContractTable({
         <button
           onClick={() => setFilter("all")}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-            filter === "all"
-              ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted"
+            filter === "all" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
           }`}
         >
           All
@@ -117,9 +116,7 @@ export function OptionContractTable({
         <button
           onClick={() => setFilter("call")}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-            filter === "call"
-              ? "bg-green-600 text-white"
-              : "hover:bg-muted"
+            filter === "call" ? "bg-green-600 text-white" : "hover:bg-muted"
           }`}
         >
           Calls
@@ -127,9 +124,7 @@ export function OptionContractTable({
         <button
           onClick={() => setFilter("put")}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-            filter === "put"
-              ? "bg-red-600 text-white"
-              : "hover:bg-muted"
+            filter === "put" ? "bg-red-600 text-white" : "hover:bg-muted"
           }`}
         >
           Puts
@@ -141,15 +136,21 @@ export function OptionContractTable({
         <table className="w-full text-sm">
           <thead className="bg-muted/50 border-b border-border">
             <tr>
+              {onToggleContract && (
+                <th className="px-3 py-2 text-left font-medium">{t("selectContract")}</th>
+              )}
               <th className="px-3 py-2 text-left font-medium">
                 <button
                   onClick={() => toggleSort("strike")}
                   className="flex items-center gap-1 hover:text-foreground"
                 >
                   Strike
-                  {sortField === "strike" && (
-                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                  )}
+                  {sortField === "strike" &&
+                    (sortOrder === "asc" ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    ))}
                 </button>
               </th>
               <th className="px-3 py-2 text-right font-medium">Bid</th>
@@ -160,9 +161,12 @@ export function OptionContractTable({
                   className="flex items-center gap-1 hover:text-foreground ml-auto"
                 >
                   Vol
-                  {sortField === "volume" && (
-                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                  )}
+                  {sortField === "volume" &&
+                    (sortOrder === "asc" ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    ))}
                 </button>
               </th>
               <th className="px-3 py-2 text-right font-medium">OI</th>
@@ -172,9 +176,12 @@ export function OptionContractTable({
                   className="flex items-center gap-1 hover:text-foreground ml-auto"
                 >
                   IV
-                  {sortField === "impliedVolatility" && (
-                    sortOrder === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                  )}
+                  {sortField === "impliedVolatility" &&
+                    (sortOrder === "asc" ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    ))}
                 </button>
               </th>
               {showDelete && <th className="px-3 py-2"></th>}
@@ -188,26 +195,29 @@ export function OptionContractTable({
                   isNearSpot(contract.strike) ? "bg-blue-500/5" : ""
                 }`}
               >
+                {onToggleContract && (
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      aria-label={`${t("selectContract")} ${contract.symbol} ${contract.strike.toFixed(2)} ${contract.optionType}`}
+                      checked={selectedContractIds?.has(contract.id) ?? false}
+                      onChange={() => onToggleContract(contract)}
+                      className="h-4 w-4 rounded border-border"
+                    />
+                  </td>
+                )}
                 <td className="px-3 py-2 font-mono">
                   <span
                     className={`${
-                      contract.optionType === "call"
-                        ? "text-green-600"
-                        : "text-red-600"
+                      contract.optionType === "call" ? "text-green-600" : "text-red-600"
                     }`}
                   >
                     {formatNumber(contract.strike)}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-right font-mono">
-                  {formatNumber(contract.bid)}
-                </td>
-                <td className="px-3 py-2 text-right font-mono">
-                  {formatNumber(contract.ask)}
-                </td>
-                <td className="px-3 py-2 text-right font-mono">
-                  {formatVolume(contract.volume)}
-                </td>
+                <td className="px-3 py-2 text-right font-mono">{formatNumber(contract.bid)}</td>
+                <td className="px-3 py-2 text-right font-mono">{formatNumber(contract.ask)}</td>
+                <td className="px-3 py-2 text-right font-mono">{formatVolume(contract.volume)}</td>
                 <td className="px-3 py-2 text-right font-mono">
                   {formatVolume(contract.openInterest)}
                 </td>

@@ -47,6 +47,24 @@ export const settings = {
   databaseCheckFailed: "数据库健康检查失败。",
   databaseStatusHealthy: "健康",
   databaseStatusError: "错误",
+
+  // Internal plugins section
+  internalPlugins: "内部插件",
+  internalPluginsDescription: "查看内置插件并控制它们是否可以创建研究产物。此处不安装远程插件。",
+  loadingInternalPlugins: "正在加载内部插件…",
+  failedToLoadInternalPlugins: "加载内部插件失败。",
+  failedToUpdateInternalPlugin: "更新插件状态失败。请重试。",
+  noInternalPlugins: "暂无内部插件",
+  noInternalPluginsDescription: "此版本没有注册任何内部插件。",
+  internalPluginBadge: "内置",
+  pluginPermissions: "权限",
+  noPluginPermissions: "无",
+  pluginPermissionNetwork: "网络",
+  enableInternalPlugin: "启用内部插件",
+  disableInternalPlugin: "禁用内部插件",
+  pluginEnabled: "已启用",
+  pluginDisabled: "已禁用",
+  updatingInternalPlugin: "更新中…",
 } as const;
 
 export type SettingsKey = keyof typeof settings;

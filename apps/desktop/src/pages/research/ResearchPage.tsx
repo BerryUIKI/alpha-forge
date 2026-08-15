@@ -4,9 +4,10 @@
  * Main page for research project management.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2, Archive, CheckCircle } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { desktopApi } from "@/lib/desktop-api";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { processAppError } from "@/lib/errors";
@@ -14,10 +15,11 @@ import { processAppError } from "@/lib/errors";
 export function ResearchPage() {
   const { t } = useLocale();
   const client = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const workspaceId = searchParams.get("workspace") || "";
+  const projectId = searchParams.get("project") || "";
 
   // State
-  const [workspaceId, setWorkspaceId] = useState("");
-  const [projectId, setProjectId] = useState("");
   const [documentId, setDocumentId] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
   const [documentTitle, setDocumentTitle] = useState("");
@@ -41,35 +43,102 @@ export function ResearchPage() {
     queryKey: ["workspaces"],
     queryFn: desktopApi.workspace.listWorkspaces,
   });
+  const workspaceIsValid =
+    workspaces.isSuccess &&
+    Boolean(workspaceId) &&
+    (workspaces.data ?? []).some((item) => item.id === workspaceId);
 
   const projects = useQuery({
     queryKey: ["research", "projects", workspaceId],
     queryFn: () => desktopApi.research.listResearchProjects(workspaceId),
-    enabled: Boolean(workspaceId),
+    enabled: workspaceIsValid,
   });
+  const projectIsValid =
+    workspaceIsValid &&
+    projects.isSuccess &&
+    Boolean(projectId) &&
+    (projects.data ?? []).some((item) => item.id === projectId);
+
+  // The URL is the source of truth for the selected research context. Clean
+  // stale IDs only after the corresponding query has succeeded, so loading
+  // and error states do not erase a deep link that may still become valid.
+  useEffect(() => {
+    if (!workspaces.isSuccess || workspaces.isFetching) return;
+
+    if (workspaceIsValid) return;
+
+    const next = new URLSearchParams(searchParams);
+    if (!next.has("workspace") && !next.has("project")) return;
+    next.delete("workspace");
+    next.delete("project");
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [
+    searchParams,
+    setSearchParams,
+    workspaceIsValid,
+    workspaces.isFetching,
+    workspaces.isSuccess,
+  ]);
+
+  useEffect(() => {
+    if (!workspaceIsValid || !projects.isSuccess || projects.isFetching) return;
+    if (!projectId && !searchParams.has("project")) return;
+    if (projectIsValid) return;
+
+    const next = new URLSearchParams(searchParams);
+    next.delete("project");
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [
+    projectId,
+    projects.isFetching,
+    projects.isSuccess,
+    projectIsValid,
+    searchParams,
+    setSearchParams,
+    workspaceIsValid,
+  ]);
+
+  useEffect(() => {
+    setDocumentId("");
+  }, [projectId, workspaceId]);
+
+  const updateContext = (workspace: string, project?: string, options?: { replace?: boolean }) => {
+    const next = new URLSearchParams(searchParams);
+    if (workspace) next.set("workspace", workspace);
+    else next.delete("workspace");
+    if (project) next.set("project", project);
+    else next.delete("project");
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, options);
+    }
+  };
 
   const documents = useQuery({
     queryKey: ["research", "documents", projectId],
     queryFn: () => desktopApi.research.listResearchDocuments(projectId),
-    enabled: Boolean(projectId),
+    enabled: projectIsValid,
   });
 
   const reports = useQuery({
     queryKey: ["research", "reports", projectId],
     queryFn: () => desktopApi.research.listResearchReports(projectId),
-    enabled: Boolean(projectId),
+    enabled: projectIsValid,
   });
 
   const notes = useQuery({
     queryKey: ["research", "notes", documentId],
     queryFn: () => desktopApi.research.listResearchNotes(documentId),
-    enabled: Boolean(documentId),
+    enabled: projectIsValid && Boolean(documentId),
   });
 
   const sources = useQuery({
     queryKey: ["research", "sources", documentId],
     queryFn: () => desktopApi.research.listResearchSources(documentId),
-    enabled: Boolean(documentId),
+    enabled: projectIsValid && Boolean(documentId),
   });
 
   const refresh = (kind: string, id: string) =>
@@ -163,8 +232,10 @@ export function ResearchPage() {
   const deleteProject = useMutation({
     mutationFn: (id: string) =>
       desktopApi.research.deleteResearchProject(id),
-    onSuccess: () => {
-      setProjectId("");
+    onSuccess: (_result, deletedProjectId) => {
+      if (deletedProjectId === projectId) {
+        updateContext(workspaceId, undefined, { replace: true });
+      }
       refresh("projects", workspaceId);
     },
   });
@@ -225,9 +296,7 @@ export function ResearchPage() {
           className="mt-1 w-full rounded border bg-background p-2"
           value={workspaceId}
           onChange={(event) => {
-            setWorkspaceId(event.target.value);
-            setProjectId("");
-            setDocumentId("");
+            updateContext(event.target.value);
           }}
         >
           <option value="">{t("selectWorkspace")}</option>
@@ -240,7 +309,7 @@ export function ResearchPage() {
       </label>
 
       {/* Projects section */}
-      {workspaceId && (
+      {workspaceIsValid && (
         <section className="space-y-3 rounded-lg border p-4">
           <h2 className="font-semibold">{t("projects")}</h2>
           <form
@@ -270,8 +339,7 @@ export function ResearchPage() {
                 <button
                   className="rounded border px-3 py-1 text-sm"
                   onClick={() => {
-                    setProjectId(item.id);
-                    setDocumentId("");
+                    updateContext(workspaceId, item.id);
                   }}
                 >
                   {item.title}
@@ -313,7 +381,7 @@ export function ResearchPage() {
       )}
 
       {/* Documents and Reports section */}
-      {projectId && (
+      {projectIsValid && (
         <section className="grid gap-4 rounded-lg border p-4 lg:grid-cols-2">
           <div className="space-y-3">
             <h2 className="font-semibold">{t("documents")}</h2>

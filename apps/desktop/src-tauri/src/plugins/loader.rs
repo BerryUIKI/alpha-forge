@@ -1,4 +1,5 @@
 use serde_json::Value;
+use std::collections::HashSet;
 
 use crate::error::AppError;
 use crate::plugins::registry::PluginManifest;
@@ -89,7 +90,65 @@ pub fn validate_bundled_payload(plugin_id: &str, payload: &Value) -> Result<(), 
         .ok_or_else(|| AppError::NotFound("Internal plugin not found".to_string()))?;
     let schema: Value = serde_json::from_str(files.input_schema)
         .map_err(|_| AppError::Internal("Bundled plugin input schema is invalid".to_string()))?;
-    validate_json_schema(payload, &schema)
+    validate_json_schema(payload, &schema)?;
+    if plugin_id == "company-comparison" {
+        validate_company_comparison_payload(payload)?;
+    }
+    Ok(())
+}
+
+fn validate_company_comparison_payload(payload: &Value) -> Result<(), AppError> {
+    const DIMENSIONS: [&str; 3] = ["revenue", "market_cap", "pe_ratio"];
+    let invalid = || AppError::Validation("Invalid company comparison payload".to_string());
+    let payload = payload.as_object().ok_or_else(&invalid)?;
+    let dimensions = payload
+        .get("comparisonDimensions")
+        .and_then(Value::as_array)
+        .and_then(|values| values.iter().map(Value::as_str).collect::<Option<Vec<_>>>())
+        .ok_or_else(&invalid)?;
+    let mut seen_dimensions = HashSet::new();
+    if dimensions
+        .iter()
+        .any(|dimension| !DIMENSIONS.contains(dimension) || !seen_dimensions.insert(*dimension))
+    {
+        return Err(invalid());
+    }
+    let companies = payload
+        .get("companies")
+        .and_then(Value::as_array)
+        .ok_or_else(&invalid)?;
+    let mut unique_tickers = HashSet::new();
+    for company in companies {
+        let company = company.as_object().ok_or_else(&invalid)?;
+        let ticker = company
+            .get("ticker")
+            .and_then(Value::as_str)
+            .ok_or_else(&invalid)?;
+        let normalized_ticker = ticker.trim().to_ascii_uppercase();
+        let name = company
+            .get("name")
+            .and_then(Value::as_str)
+            .ok_or_else(&invalid)?;
+        let metrics = company
+            .get("metrics")
+            .and_then(Value::as_object)
+            .ok_or_else(&invalid)?;
+        if normalized_ticker.is_empty()
+            || normalized_ticker.len() > 12
+            || !normalized_ticker
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'.' || byte == b'-')
+            || !unique_tickers.insert(normalized_ticker)
+            || name.trim().is_empty()
+            || name.chars().count() > 100
+            || dimensions
+                .iter()
+                .any(|dimension| metrics.get(*dimension).and_then(Value::as_f64).is_none())
+        {
+            return Err(invalid());
+        }
+    }
+    Ok(())
 }
 
 fn validate_bundled_files(
@@ -256,7 +315,10 @@ mod tests {
     #[test]
     fn validates_payloads_against_the_bundled_schema() {
         let valid = serde_json::json!({
-            "companies": [{"ticker": "AAA"}, {"ticker": "BBB"}],
+            "companies": [
+                {"ticker": "AAA", "name": "Alpha", "metrics": {"revenue": 10}},
+                {"ticker": "BBB", "name": "Beta", "metrics": {"revenue": 20}}
+            ],
             "comparisonDimensions": ["revenue"]
         });
         assert!(validate_bundled_payload("company-comparison", &valid).is_ok());
@@ -265,5 +327,32 @@ mod tests {
             &serde_json::json!({"companies": []})
         )
         .is_err());
+    }
+
+    #[test]
+    fn rejects_semantically_invalid_company_comparisons() {
+        let invalid_payloads = [
+            serde_json::json!({
+                "companies": [
+                    {"ticker": "AAA", "name": "Alpha", "metrics": {"revenue": 10}},
+                    {"ticker": "aaa", "name": "Also Alpha", "metrics": {"revenue": 20}}
+                ], "comparisonDimensions": ["revenue"]
+            }),
+            serde_json::json!({
+                "companies": [
+                    {"ticker": "AAA", "name": "Alpha", "metrics": {"revenue": 10}},
+                    {"ticker": "BBB", "name": "Beta", "metrics": {}}
+                ], "comparisonDimensions": ["revenue"]
+            }),
+            serde_json::json!({
+                "companies": [
+                    {"ticker": "AAA", "name": "Alpha", "metrics": {"profit": 10}},
+                    {"ticker": "BBB", "name": "Beta", "metrics": {"profit": 20}}
+                ], "comparisonDimensions": ["profit"]
+            }),
+        ];
+        for payload in invalid_payloads {
+            assert!(validate_bundled_payload("company-comparison", &payload).is_err());
+        }
     }
 }

@@ -70,7 +70,7 @@ Example schema for `company-comparison`:
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["ticker", "name"],
+        "required": ["ticker", "name", "metrics"],
         "properties": {
           "ticker": { "type": "string" },
           "name": { "type": "string" },
@@ -86,7 +86,7 @@ Example schema for `company-comparison`:
 }
 ```
 
-Validation fails (and the artifact does not render) if agent output does not match the schema.
+Validation fails (and the artifact does not render) if agent output does not match the schema. The controlled company-comparison workflow supports `revenue`, `market_cap`, and `pe_ratio` dimensions and requires each selected metric for every company.
 
 ## Lifecycle
 
@@ -109,17 +109,17 @@ Registered → Enabled or Disabled → Validated Artifact → Rendered
 
 ## MVP Plugins
 
-The five official internal plugins are included in the initial release:
+Seven official internal plugins are bundled:
 
 | Plugin ID | Artifact Type |
 |-----------|--------------|
 | `company-comparison` | Side-by-side financial metric comparison table |
 | `valuation-model` | DCF and multiples-based company valuation |
 | `industry-map` | Visual industry landscape and competitive positioning |
+| `portfolio-risk` | Portfolio risk exposure dashboard |
+| `research-timeline` | Chronological research timeline |
 | `earnings-analyzer` | Validated earnings highlights |
 | `macro-dashboard` | Validated macro indicators |
-
-Additional internal tools: `portfolio-risk` (portfolio risk exposure) and `research-timeline` (chronological research timeline).
 
 All MVP plugins are internal — no third-party plugin loading is supported.
 

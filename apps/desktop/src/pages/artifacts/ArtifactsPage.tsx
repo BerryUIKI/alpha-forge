@@ -4,6 +4,7 @@ import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
 import { ArtifactViewer } from "@/features/artifacts/components/ArtifactViewer";
+import { CompanyComparisonArtifactForm } from "@/features/plugins";
 import { useLocale } from "@/lib/i18n/useLocale";
 import type { Artifact } from "@/lib/desktop-api/artifacts";
 
@@ -102,6 +103,11 @@ export function ArtifactsPage() {
           </label>
         </div>
       </div>
+
+      <CompanyComparisonArtifactForm
+        workspaceId={workspaceId}
+        onArtifactCreated={setSelectedArtifactId}
+      />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">

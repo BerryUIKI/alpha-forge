@@ -98,7 +98,7 @@ export interface OptionStrategy {
   maxProfit: number | null;
   maxLoss: number | null;
   breakEvenPoints: number[];
-  legs?: StrategyLeg[]; // Optional legs array
+  legs: StrategyLeg[];
   description?: string; // Optional description
   totalDelta?: number; // Net delta
   totalGamma?: number; // Net gamma
@@ -195,13 +195,9 @@ export interface CreateStrategyParams {
 }
 
 export interface StrategyLegParams {
-  contractId?: string;
-  symbol?: string;
-  optionType?: OptionType;
-  strike?: number;
-  expiration?: string;
+  contractId: string;
   quantity: number;
-  premium: number;
+  positionType: PositionType;
 }
 
 export interface AnalyzeStrategyParams {
@@ -471,6 +467,7 @@ export const OptionStrategySchema = z
     maxProfit: z.number().finite().nullable(),
     maxLoss: z.number().finite().nullable(),
     breakEvenPoints: z.array(z.number().finite()),
+    legs: z.array(z.lazy(() => StrategyLegSchema)),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
@@ -480,9 +477,7 @@ export const StrategyLegSchema = z.object({
   id: z.string().uuid(),
   strategyId: z.string().uuid(),
   optionContractId: z.string().uuid(),
-  quantity: z.number().int().refine((value) => value !== 0, {
-    message: "Quantity must not be zero",
-  }),
+  quantity: z.number().int().positive(),
   positionType: PositionTypeSchema,
   premium: z.number().nonnegative(),
   strike: z.number().positive(),
