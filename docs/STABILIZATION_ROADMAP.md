@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Established:** 2026-08-12
-**Last reviewed:** 2026-08-14
+**Last reviewed:** 2026-08-15
 **Purpose:** Restore a truthful, tested, end-to-end MVP baseline before feature expansion.
 
 ## Why stabilization is required
@@ -104,13 +104,13 @@ System IPC normalization is merged in PR #85: `SystemInfo` has an explicit camel
 - No UI relies on TypeScript-only assertions for runtime response shape.
 - Error responses preserve stable codes without leaking raw internal details.
 
-The isolated Artifact-window route is merged in PR #88; focused route and permission verification is recorded, while packaged smoke acceptance remains outstanding. Research URL context is merged in PR #94; the Option chain-to-contract view follows as the current review item.
+The isolated Artifact-window route is merged in PR #88; focused route and permission verification is recorded, while packaged smoke acceptance remains outstanding. Research URL context is merged in PR #94, and the Option chain-to-contract view is merged in PR #95.
 
 The Artifact-window route implementation is merged in PR #88. It adds the top-level route, validates route and persisted Artifact identity, consumes update/theme events, and removes native-window tracking on destruction; focused route and permission tests pass, while packaged smoke acceptance remains outstanding.
 
 The Research URL-context implementation merged in PR #94. It makes workspace/project query parameters authoritative, validates and cleans stale IDs with replace navigation, preserves unrelated parameters, and resets dependent document selection; focused Research route tests are included, while S4 acceptance remains incomplete.
 
-The Option chain-to-contract view is on `codex/feat-option-chain-contract-view` pending review. It adds demo chain acquisition, atomic chain-and-contract persistence, list refresh, selected contract rendering, and focused loading/empty/error/retry coverage. Strategy persistence remains a separate action; S5 acceptance remains incomplete.
+PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list refresh, selected contract rendering, and focused loading/empty/error/retry coverage. `codex/feat-option-strategy-persistence` now establishes the atomic, server-derived strategy persistence contract pending review; the controlled UI remains separate and S5 acceptance remains incomplete.
 
 ## S3 — Artifact and plugin vertical slice
 

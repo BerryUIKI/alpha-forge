@@ -1,6 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { OptionChainSchema, OptionContractSchema, OptionStrategySchema } from "@/types/option";
-import type { OptionChain, OptionContract, OptionStrategy, StrategyType } from "@/types/option";
+import type {
+  OptionChain,
+  OptionContract,
+  OptionStrategy,
+  PositionType,
+  StrategyType,
+} from "@/types/option";
 import { z } from "zod";
 
 const finiteNumberSchema = z.number().finite();
@@ -85,20 +91,16 @@ export interface CreateOptionStrategyParams {
   workspaceId: string;
   name: string;
   strategyType: StrategyType;
-  underlying: string;
-  totalCost?: number;
-  maxProfit?: number;
-  maxLoss?: number;
-  breakEvenPoints?: number[];
+  legs: Array<{
+    contractId: string;
+    quantity: number;
+    positionType: PositionType;
+  }>;
 }
 
 export interface UpdateOptionStrategyParams {
   id: string;
   name?: string;
-  totalCost?: number;
-  maxProfit?: number;
-  maxLoss?: number;
-  breakEvenPoints?: number[];
 }
 
 /**

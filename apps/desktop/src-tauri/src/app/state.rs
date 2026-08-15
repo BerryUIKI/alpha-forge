@@ -93,6 +93,7 @@ impl AppState {
         let knowledge_graph_repo = KnowledgeGraphRepository::new(db_pool.clone());
         let option_chain_repo = OptionChainRepository::new(db_pool.clone());
         let option_contract_repo = OptionContractRepository::new(db_pool.clone());
+        let option_contract_repo_for_strategy = OptionContractRepository::new(db_pool.clone());
         let greeks_repo = GreeksRepository::new(db_pool.clone());
         let option_strategy_repo = OptionStrategyRepository::new(db_pool.clone());
         let option_position_repo = OptionPositionRepository::new(db_pool.clone());
@@ -124,8 +125,11 @@ impl AppState {
             Arc::new(greeks_repo),
             option_strategy_repo_arc.clone(),
         );
-        let strategy_service =
-            StrategyService::new(option_strategy_repo_arc, Arc::new(strategy_leg_repo));
+        let strategy_service = StrategyService::new(
+            option_strategy_repo_arc,
+            Arc::new(strategy_leg_repo),
+            Arc::new(option_contract_repo_for_strategy),
+        );
         let portfolio_option_service =
             PortfolioOptionService::new(option_position_repo, portfolio_repo_for_option);
         let portfolio_service = PortfolioService::new(portfolio_repo);

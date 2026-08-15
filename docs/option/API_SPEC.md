@@ -292,16 +292,13 @@ interface CreateStrategyParams {
 }
 
 interface StrategyLegParams {
-  contractId?: string;  // If selecting from chain
-  // Or specify manually:
-  symbol?: string;
-  optionType?: 'call' | 'put';
-  strike?: number;
-  expiration?: string;
-  quantity: number;  // positive = long, negative = short
-  premium: number;   // Price per contract
+  contractId: string;
+  quantity: number;  // positive integer
+  positionType: 'long' | 'short';
 }
 ```
+
+Rust validates each contract reference and derives the underlying, strike, expiration, option type, executable premium (ask for long, bid for short), and total cost before atomic persistence.
 
 **Response**:
 ```typescript
@@ -312,8 +309,8 @@ interface OptionStrategy {
   strategyType: StrategyType;
   underlying: string;
   totalCost: number;  // Negative = credit received
-  maxProfit?: number;
-  maxLoss?: number;
+  maxProfit: number | null;
+  maxLoss: number | null;
   breakEvenPoints: number[];
   createdAt: string;
   updatedAt: string;
@@ -343,20 +340,14 @@ const strategy = await desktopApi.options.createStrategy({
   strategyType: 'bull_call_spread',
   legs: [
     {
-      symbol: 'AAPL',
-      optionType: 'call',
-      strike: 150,
-      expiration: '2024-01-19T16:00:00Z',
-      quantity: 1,  // Long 1 contract
-      premium: 5.50
+      contractId: '00000000-0000-4000-8000-000000000001',
+      quantity: 1,
+      positionType: 'long'
     },
     {
-      symbol: 'AAPL',
-      optionType: 'call',
-      strike: 155,
-      expiration: '2024-01-19T16:00:00Z',
-      quantity: -1,  // Short 1 contract
-      premium: 3.00
+      contractId: '00000000-0000-4000-8000-000000000002',
+      quantity: 1,
+      positionType: 'short'
     }
   ]
 });

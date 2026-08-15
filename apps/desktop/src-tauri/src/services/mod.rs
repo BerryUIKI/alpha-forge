@@ -41,3 +41,6 @@ mod plugin_service_test;
 
 #[cfg(test)]
 mod option_service_test;
+
+#[cfg(test)]
+mod strategy_service_test;
