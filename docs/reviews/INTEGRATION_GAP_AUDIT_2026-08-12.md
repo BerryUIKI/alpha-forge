@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94) and the controlled Option strategy workflow (#95, #97, #98). Internal-plugin Settings is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
+**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94), the controlled Option workflow (#95, #97, #98), and internal-plugin Settings (#99). The company-comparison Artifact slice is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -164,7 +164,7 @@ At the audit baseline, the application could list plugins, enable or disable the
 
 **Rectification:** Add a minimal internal-plugin settings surface and one controlled create-to-Artifact vertical slice. Do not add a public marketplace.
 
-**Remediation status (2026-08-15):** `codex/feat-internal-plugin-settings` adds the internal-only list and persisted enable/disable Settings surface pending review. Artifact creation remains a separate controlled vertical slice.
+**Remediation status (2026-08-15):** PR #99 adds the internal-only list and persisted enable/disable Settings surface. `codex/feat-company-comparison-artifact` adds the controlled create/open/render slice pending review.
 
 ### P1-4: Goose is scaffolding, not an integrated feature
 
@@ -257,8 +257,8 @@ These are not release acceptance claims until their tests and packaged smoke che
 | 8 | `#95 (merged)` | Demo chain acquisition, persisted contracts, and contract detail | `dev` | Focused fetch/list/selection and repository/service tests |
 | 9 | `#97 (merged)` | Atomic validated strategy-and-leg persistence contract | `dev` | Rollback, validation, persistence/reload, cascade, Serde, and TypeScript fixtures |
 | 10 | `#98 (merged)` | Controlled selected-contract create/read/delete workflow | `dev` | Component integration, retry, positive quantity, direction, reload, and deletion tests |
-| 11 | `codex/feat-internal-plugin-settings` (pending review) | Internal-plugin list and persisted enable/disable Settings | `dev` | Loading, empty, error, permission, toggle, persistence, and IPC schema tests |
-| 12 | `feat/company-comparison-artifact` | Controlled company-comparison create-to-Artifact workflow | `dev` | Payload, disabled-state, Artifact creation, navigation, and renderer tests |
+| 11 | `#99 (merged)` | Internal-plugin list and persisted enable/disable Settings | `dev` | Loading, empty, error, permission, toggle, persistence, and IPC schema tests |
+| 12 | `codex/feat-company-comparison-artifact` (pending review) | Controlled company-comparison create-to-Artifact workflow | `dev` | Payload, disabled-state, Artifact creation, navigation, and renderer tests |
 | 13 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
 | 14 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
 

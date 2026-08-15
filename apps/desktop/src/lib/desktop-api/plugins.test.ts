@@ -18,6 +18,18 @@ const pluginStatus = {
   },
   enabled: true,
 };
+const artifact = {
+  id: "2a707687-3fc5-4b02-81ba-043830213244",
+  workspace_id: "workspace-1",
+  task_id: null,
+  artifact_type: "comparison_table",
+  status: "completed",
+  input: {},
+  output: {},
+  error: null,
+  created_at: "2026-08-15T00:00:00Z",
+  updated_at: "2026-08-15T00:00:00Z",
+};
 
 describe("plugin registry API", () => {
   beforeEach(() => mockInvoke.mockReset());
@@ -46,27 +58,49 @@ describe("plugin registry API", () => {
   });
 
   it("creates an artifact through a named plugin", async () => {
-    mockInvoke.mockResolvedValueOnce({ id: "artifact-1" });
+    mockInvoke.mockResolvedValueOnce(artifact);
     const input = {
-      companies: [{ ticker: "AAA" }, { ticker: "BBB" }],
+      companies: [
+        { ticker: "aaa", name: "Alpha", metrics: { revenue: 10 } },
+        { ticker: "BBB", name: "Beta", metrics: { revenue: 20 } },
+      ],
       comparisonDimensions: ["revenue"],
     };
 
-    await createPluginArtifact("workspace-1", "company-comparison", input);
+    await expect(
+      createPluginArtifact("workspace-1", "company-comparison", input),
+    ).resolves.toEqual(artifact);
     expect(mockInvoke).toHaveBeenCalledWith("create_plugin_artifact", {
       workspaceId: "workspace-1",
       pluginId: "company-comparison",
-      input,
+      input: {
+        ...input,
+        companies: [{ ...input.companies[0], ticker: "AAA" }, input.companies[1]],
+      },
     });
   });
 
   it("rejects invalid plugin input before invoking Tauri", async () => {
-    expect(() =>
+    await expect(
       createPluginArtifact("workspace-1", "company-comparison", {
         companies: [{ ticker: "AAA" }],
         comparisonDimensions: [],
       }),
-    ).toThrow();
+    ).rejects.toThrow();
     expect(mockInvoke).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed artifact responses", async () => {
+    mockInvoke.mockResolvedValueOnce({ ...artifact, status: "done" });
+
+    await expect(
+      createPluginArtifact("workspace-1", "company-comparison", {
+        companies: [
+          { ticker: "AAA", name: "Alpha", metrics: { revenue: 10 } },
+          { ticker: "BBB", name: "Beta", metrics: { revenue: 20 } },
+        ],
+        comparisonDimensions: ["revenue"],
+      }),
+    ).rejects.toThrow();
   });
 });

@@ -119,8 +119,8 @@ PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list 
 - Retain the dedicated Artifact-window route and complete packaged smoke verification.
 - Enforce a narrow Artifact-window IPC protocol.
 - Render one completed Agent Artifact in a separate window.
-- Review the internal-plugin Settings list and enable/disable surface on `codex/feat-internal-plugin-settings`.
-- Create one validated plugin payload and open its predefined renderer.
+- Internal-plugin Settings list and persisted enable/disable behavior merged in PR #99.
+- Review the validated company-comparison payload, completed Artifact, isolated window open/retry, and predefined renderer on `codex/feat-company-comparison-artifact`.
 
 ### Acceptance criteria
 

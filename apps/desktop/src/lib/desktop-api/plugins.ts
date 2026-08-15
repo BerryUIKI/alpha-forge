@@ -4,6 +4,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
 import type { Artifact } from "./artifacts";
 
+export const COMPANY_COMPARISON_PLUGIN_ID = "company-comparison" as const;
+export const COMPANY_COMPARISON_DIMENSIONS = ["revenue", "market_cap", "pe_ratio"] as const;
+
 export type PluginPermission = "network";
 
 export interface PluginManifest {
@@ -52,11 +55,66 @@ const PluginStatusSchema = z
   .object({ manifest: PluginManifestSchema, enabled: z.boolean() })
   .strict();
 const VoidResponseSchema = z.union([z.null(), z.undefined()]);
+const ArtifactResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    workspace_id: nonEmptyText,
+    task_id: z.string().nullable(),
+    artifact_type: nonEmptyText,
+    status: z.enum(["pending", "generating", "completed", "viewing", "closed", "failed"]),
+    input: z.unknown(),
+    output: z.unknown().nullable(),
+    error: z.string().nullable(),
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strict();
+const companyComparisonDimensionSchema = z.enum(COMPANY_COMPARISON_DIMENSIONS);
+export const CompanyComparisonPayloadSchema = z
+  .object({
+    companies: z
+      .array(
+        z
+          .object({
+            ticker: z
+              .string()
+              .trim()
+              .regex(/^[A-Za-z0-9.-]{1,12}$/)
+              .transform((ticker) => ticker.toUpperCase()),
+            name: nonEmptyText.max(100),
+            metrics: z.record(z.number().finite()),
+          })
+          .strict(),
+      )
+      .min(2),
+    comparisonDimensions: z.array(companyComparisonDimensionSchema).min(1),
+  })
+  .strict()
+  .superRefine((payload, context) => {
+    const tickers = payload.companies.map((company) => company.ticker);
+    if (new Set(tickers).size !== tickers.length) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: "Company tickers must be unique" });
+    }
+    if (new Set(payload.comparisonDimensions).size !== payload.comparisonDimensions.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Comparison dimensions must be unique",
+      });
+    }
+    payload.companies.forEach((company, companyIndex) => {
+      payload.comparisonDimensions.forEach((dimension) => {
+        if (company.metrics[dimension] === undefined) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Company metrics must include ${dimension}`,
+            path: ["companies", companyIndex, "metrics", dimension],
+          });
+        }
+      });
+    });
+  });
 const payloadSchemas = {
-  "company-comparison": z.object({
-    companies: z.array(z.object({ ticker: nonEmptyText }).passthrough()).min(2),
-    comparisonDimensions: z.array(nonEmptyText).min(1),
-  }).passthrough(),
+  "company-comparison": CompanyComparisonPayloadSchema,
   "valuation-model": z.object({
     company: nonEmptyText, ticker: nonEmptyText, currentPrice: z.number().finite(),
     methodology: nonEmptyText, scenarios: z.array(z.unknown()).min(1),
@@ -75,6 +133,8 @@ const payloadSchemas = {
 } as const;
 
 export type InternalPluginId = keyof typeof payloadSchemas;
+export type CompanyComparisonDimension = (typeof COMPANY_COMPARISON_DIMENSIONS)[number];
+export type CompanyComparisonPayload = z.infer<typeof CompanyComparisonPayloadSchema>;
 
 export async function listPlugins(): Promise<PluginStatus[]> {
   const response: unknown = await invoke("list_plugins");
@@ -86,11 +146,16 @@ export async function setPluginEnabled(pluginId: string, enabled: boolean): Prom
   VoidResponseSchema.parse(response);
 }
 
-export function createPluginArtifact(
+export async function createPluginArtifact(
   workspaceId: string,
   pluginId: InternalPluginId,
   input: unknown,
 ): Promise<Artifact> {
   const validatedInput = payloadSchemas[pluginId].parse(input);
-  return invoke("create_plugin_artifact", { workspaceId, pluginId, input: validatedInput });
+  const response: unknown = await invoke("create_plugin_artifact", {
+    workspaceId,
+    pluginId,
+    input: validatedInput,
+  });
+  return ArtifactResponseSchema.parse(response) as Artifact;
 }

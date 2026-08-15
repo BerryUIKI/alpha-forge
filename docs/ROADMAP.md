@@ -91,7 +91,7 @@ Implement the internal plugin framework.
 - [ ] Manifest and version validation.
 - [ ] Input schema validation.
 - [ ] Plugin error isolation.
-- [ ] Five internal plugins: company-comparison, valuation-model, portfolio-risk, industry-map, research-timeline.
+- [ ] Seven internal plugins: company-comparison, valuation-model, portfolio-risk, industry-map, research-timeline, earnings-analyzer, macro-dashboard.
 
 ## Phase 8 — Research Workspace
 

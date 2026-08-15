@@ -63,7 +63,7 @@ AlphaForge helps you:
 
 **Current program state (2026-08-15): stabilization required before local MVP acceptance.**
 
-The 2026-08-12 audit found broken core integration paths. Merged repairs now include the isolated Artifact window (#88), Research URL context (#94), and the Option vertical slice through its controlled strategy UI (#95, #97, #98), with focused evidence; packaged smoke acceptance remains pending. Internal-plugin Settings is the current review slice. M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
+The 2026-08-12 audit found broken core integration paths. Merged repairs now include the isolated Artifact window (#88), Research URL context (#94), the controlled Option workflow (#95, #97, #98), and internal-plugin Settings (#99), with focused evidence; packaged smoke acceptance remains pending. The company-comparison create-to-Artifact slice is pending review. M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -100,11 +100,11 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - Artifact runtime manager
 - Artifact-window routing and isolation merged in PR #88 with focused route and permission tests; packaged smoke acceptance remains pending
 - Research workspace, thesis, knowledge graph, and portfolio workflows
-- Validated internal plugin registry and predefined renderers exist; Settings management is pending review and Artifact creation remains incomplete
+- Validated internal plugin registry, predefined renderers, and Settings management are reachable; company-comparison Artifact creation is pending review
 
 ### Stabilization priorities
 
-- Review internal-plugin Settings, then complete one controlled create-to-Artifact workflow
+- Review the controlled company-comparison create-to-Artifact workflow
 - Review the controlled Option strategy create/read/delete workflow
 - Complete remaining cross-layer IPC coverage and retain fixture evidence
 - Retain evidence for CI, E2E, packaged smoke, security, and release gates

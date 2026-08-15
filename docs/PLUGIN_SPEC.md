@@ -70,7 +70,7 @@ Example schema for `company-comparison`:
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["ticker", "name"],
+        "required": ["ticker", "name", "metrics"],
         "properties": {
           "ticker": { "type": "string" },
           "name": { "type": "string" },
@@ -86,7 +86,7 @@ Example schema for `company-comparison`:
 }
 ```
 
-Validation fails (and the artifact does not render) if agent output does not match the schema.
+Validation fails (and the artifact does not render) if agent output does not match the schema. The controlled company-comparison workflow supports `revenue`, `market_cap`, and `pe_ratio` dimensions and requires each selected metric for every company.
 
 ## Lifecycle
 
