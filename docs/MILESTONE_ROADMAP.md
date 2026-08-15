@@ -840,8 +840,8 @@ All three pillars must work together.
 ### Next Milestones
 
 1. Complete packaged Artifact-window smoke acceptance and retain route/permission evidence.
-2. Review the controlled Option strategy create/read/delete workflow and retained evidence.
-3. Complete internal-plugin reachability.
+2. Review internal-plugin Settings list and enable/disable behavior.
+3. Complete one controlled internal-plugin create-to-Artifact workflow.
 4. Enforce CI, E2E, packaged smoke, security, and release gates before re-accepting M8/M9.
 5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.
 

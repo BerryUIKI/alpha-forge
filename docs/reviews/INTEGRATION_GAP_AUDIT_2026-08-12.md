@@ -19,7 +19,7 @@ The highest-priority failures are:
 
 M8 and M9 must therefore be reopened for stabilization. M10 remains planned because its frontend is unreachable, its service is disabled, and several bridge operations are placeholders.
 
-**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94), the Option chain-to-contract view (#95), and atomic strategy persistence (#97). The controlled strategy UI is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
+**Remediation status (2026-08-15):** Merged repairs now extend through Research URL context (#94) and the controlled Option strategy workflow (#95, #97, #98). Internal-plugin Settings is pending review, while packaged smoke acceptance and the remaining stabilization matrix are still outstanding.
 
 This audit was code-first. Compilation and build commands were deliberately deferred at the user's request. Findings are based on static contract tracing and direct source inspection; each rectification PR must run the prescribed verification commands before claiming completion.
 
@@ -46,7 +46,7 @@ This audit was code-first. Compilation and build commands were deliberately defe
 | Thesis and knowledge graph | Reachable in Journal | Commands, services, repositories implemented | Partial | Main operations are connected; contract and workflow tests are incomplete. |
 | Portfolio accounts/positions/analysis | Reachable in Portfolio | Commands, services, repositories implemented | Partial | Main panels are connected. Several backend capabilities are not clearly exposed, including direct theme linking from the current dashboard. |
 | Option calculations | Reachable | Commands and pricing core implemented | Partial — merged IPC repair | Option request/response DTOs now use the reviewed camelCase/Zod boundary; numerical and workflow acceptance remains pending. |
-| Option chains/contracts/strategies | Chain-to-contract view merged | Atomic strategy persistence merged | Partial - strategy UI pending | PRs #95 and #97 establish persisted contract selection and strategy persistence; the controlled UI is under review. |
+| Option chains/contracts/strategies | Controlled workflow merged | Atomic strategy persistence merged | Partial - release gates pending | PRs #95, #97, and #98 establish persisted contract selection and controlled create/read/delete behavior. |
 | Artifact list and in-page rendering | Reachable | Persistence and predefined renderers implemented | Partial | In-page rendering exists. Separate Artifact windows are broken as described in P0-4. |
 | Artifact separate window | API hook and backend manager exist | Window manager opens `/artifact/:id/:type` | Broken | React router has no matching route. |
 | Bundled plugin registry | API wrappers and renderer registry exist | Seven plugins sync, validate, and produce Artifacts | Partial | No user-facing plugin list, enable/disable control, or Artifact creation workflow is reachable. |
@@ -151,18 +151,20 @@ At the audit baseline, the route rendered a calculation-oriented `StrategyBuilde
 
 **Rectification:** After fixing the IPC contract, choose a single coherent Option workflow and connect chain selection to contract detail and strategy persistence. Remove or clearly mark duplicate experimental components.
 
-**Remediation status (2026-08-15):** PR #95 merged the demo chain-to-contract view, and PR #97 merged validated, server-derived, atomic strategy-and-leg persistence. `codex/feat-option-strategy-ui` connects selected contracts to controlled create/read/delete behavior pending review; M9 acceptance is still incomplete.
+**Remediation status (2026-08-15):** PR #95 merged the demo chain-to-contract view, PR #97 merged validated atomic strategy-and-leg persistence, and PR #98 merged controlled selected-contract create/read/delete behavior. M9 acceptance is still incomplete pending the remaining gates.
 
 ### P1-3: Plugin capabilities are not exposed to users
 
 **Frontend API:** `apps/desktop/src/lib/desktop-api/plugins.ts:53`
 **Backend:** `apps/desktop/src-tauri/src/commands/plugins.rs:26`
 
-The application can list plugins, enable or disable them, validate payloads, and create completed Artifacts. No reachable page or settings surface calls these APIs.
+At the audit baseline, the application could list plugins, enable or disable them, validate payloads, and create completed Artifacts, but no reachable page or settings surface called these APIs.
 
 **Impact:** M7 exists as backend infrastructure and renderer code, not as a complete user workflow.
 
 **Rectification:** Add a minimal internal-plugin settings surface and one controlled create-to-Artifact vertical slice. Do not add a public marketplace.
+
+**Remediation status (2026-08-15):** `codex/feat-internal-plugin-settings` adds the internal-only list and persisted enable/disable Settings surface pending review. Artifact creation remains a separate controlled vertical slice.
 
 ### P1-4: Goose is scaffolding, not an integrated feature
 
@@ -254,10 +256,11 @@ These are not release acceptance claims until their tests and packaged smoke che
 | 7 | `#94 (merged)` | Consume and synchronize workspace/project parameters | `dev` | Focused Research route tests; broader S4 acceptance remains pending |
 | 8 | `#95 (merged)` | Demo chain acquisition, persisted contracts, and contract detail | `dev` | Focused fetch/list/selection and repository/service tests |
 | 9 | `#97 (merged)` | Atomic validated strategy-and-leg persistence contract | `dev` | Rollback, validation, persistence/reload, cascade, Serde, and TypeScript fixtures |
-| 10 | `codex/feat-option-strategy-ui` (pending review) | Controlled selected-contract create/read/delete workflow | `dev` | Component integration, retry, positive quantity, direction, reload, and deletion tests |
-| 11 | `feat/internal-plugin-surface` | Minimal plugin settings and create-Artifact workflow | `dev` | Payload, disabled-state, Artifact-render tests |
-| 12 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
-| 13 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
+| 10 | `#98 (merged)` | Controlled selected-contract create/read/delete workflow | `dev` | Component integration, retry, positive quantity, direction, reload, and deletion tests |
+| 11 | `codex/feat-internal-plugin-settings` (pending review) | Internal-plugin list and persisted enable/disable Settings | `dev` | Loading, empty, error, permission, toggle, persistence, and IPC schema tests |
+| 12 | `feat/company-comparison-artifact` | Controlled company-comparison create-to-Artifact workflow | `dev` | Payload, disabled-state, Artifact creation, navigation, and renderer tests |
+| 13 | `chore/ci-quality-gates` | Enforce frontend and Rust checks | `dev` | Successful CI on Windows and supported release platforms |
+| 14 | `docs/stabilization-acceptance` | Record final evidence and milestone decisions | `dev` | Links to merged PRs and retained verification output |
 
 M10 Goose work should use separate post-stabilization PRs only after its documented entry gate is approved.
 

@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import { SettingsPage } from "./SettingsPage";
@@ -13,10 +14,15 @@ const systemMock = vi.hoisted(() => ({
   checkForUpdate: vi.fn(),
   checkDatabaseHealth: vi.fn(),
 }));
+const pluginsMock = vi.hoisted(() => ({
+  listPlugins: vi.fn(),
+  setPluginEnabled: vi.fn(),
+}));
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
     credentials: credentialsMock,
+    plugins: pluginsMock,
     system: systemMock,
   },
 }));
@@ -29,6 +35,9 @@ const messages: Record<string, string> = {
 };
 
 function renderSettings() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   return render(
     <LocaleContext.Provider
       value={{
@@ -37,7 +46,9 @@ function renderSettings() {
         t: (key) => messages[key] ?? key,
       }}
     >
-      <SettingsPage />
+      <QueryClientProvider client={queryClient}>
+        <SettingsPage />
+      </QueryClientProvider>
     </LocaleContext.Provider>,
   );
 }
@@ -47,6 +58,8 @@ describe("Settings OpenAI credentials", () => {
     vi.clearAllMocks();
     credentialsMock.hasOpenAiApiKey.mockResolvedValue(true);
     credentialsMock.saveOpenAiApiKey.mockResolvedValue(undefined);
+    pluginsMock.listPlugins.mockResolvedValue([]);
+    pluginsMock.setPluginEnabled.mockResolvedValue(undefined);
   });
 
   it("shows stored status without placing a secret mask in the editable value", async () => {
@@ -79,5 +92,12 @@ describe("Settings OpenAI credentials", () => {
     renderSettings();
 
     await waitFor(() => expect(screen.getByText("agentConfigError")).toBeInTheDocument());
+  });
+
+  it("mounts the internal plugin settings surface", async () => {
+    renderSettings();
+
+    expect(screen.getByText("internalPlugins")).toBeInTheDocument();
+    await waitFor(() => expect(pluginsMock.listPlugins).toHaveBeenCalledOnce());
   });
 });
