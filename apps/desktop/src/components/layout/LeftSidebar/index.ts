@@ -3,6 +3,5 @@
  */
 
 export { LeftSidebar } from "./LeftSidebar";
-export { WorkspaceSelector } from "./WorkspaceSelector";
-export { ScrollableList } from "./ScrollableList";
-export { UserOperations } from "./UserOperations";
+export { NavItem } from "./NavItem";
+export { NavGroup } from "./NavGroup";

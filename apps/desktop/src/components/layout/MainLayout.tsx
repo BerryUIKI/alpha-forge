@@ -3,11 +3,11 @@
  *
  * Primary layout orchestrator for the Investment OS desktop application.
  * Combines three zones:
- * - Left: Collapsible sidebar with workspace selector, project list, user operations
- * - Center: Main content area with OperationBar, routed pages, StatusBar
+ * - Left: Collapsible navigation sidebar
+ * - Center: Main content area with TopBar, routed pages, StatusBar
  * - Right: Collapsible Agent panel
  *
- * @version GUI-M2
+ * @version GUI-M0
  */
 
 import { useState, useCallback } from "react";
@@ -38,7 +38,7 @@ export function MainLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Left: Workspace Sidebar */}
+      {/* Left: Navigation Sidebar */}
       <LeftSidebar />
 
       {/* Center: Main Content Area */}
