@@ -134,12 +134,14 @@ App
 
 | ID | Name | Status | Dependencies | Est. Effort |
 |----|------|--------|-------------|-------------|
-| GUI-M0 | Core Layout Shell | 🔲 Planned | None | 1 sprint |
-| GUI-M1 | Navigation & Routing | 🔲 Planned | GUI-M0 | 1 sprint |
-| GUI-M2 | UI Component System | 🔲 Planned | None (parallel with M1) | 1 sprint |
-| GUI-M3 | Dashboard Page | 🔲 Planned | GUI-M1, GUI-M2 | 1 sprint |
-| GUI-M4 | Agent Panel Refinement | 🔲 Planned | GUI-M0 | 1 sprint |
-| GUI-M5 | Polish & Cleanup | 🔲 Planned | GUI-M3, GUI-M4 | 1 sprint |
+| GUI-M0 | Core Layout Shell | ✅ Done | None | 1 sprint |
+| GUI-M1 | Navigation & Routing | ✅ Done | GUI-M0 | 1 sprint |
+| GUI-M2 | UI Component System | ✅ Done | None (parallel with M1) | 1 sprint |
+| GUI-M3 | Dashboard Page | ✅ Done | GUI-M1, GUI-M2 | 1 sprint |
+| GUI-M4 | Agent Panel Refinement | ✅ Done | GUI-M0 | 1 sprint |
+| GUI-M5 | Polish & Cleanup | ✅ Done | GUI-M3, GUI-M4 | 1 sprint |
+| GUI-E1 | TopBar Action Buttons | 📋 Planned | GUI-M0 | 1 sprint |
+| GUI-E2 | Dashboard Data Wiring | 📋 Planned | GUI-M3 | 1 sprint |
 
 ### Dependency Graph
 
