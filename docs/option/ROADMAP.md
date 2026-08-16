@@ -6,23 +6,24 @@ The original seven-phase design is retained because it captures the intended pro
 
 ## Timeline Overview
 
-| Phase | Duration | Status | Key Deliverable |
-|-------|----------|--------|-----------------|
-| Phase 1 | Weeks 1-3 | 🚧 Partial on `dev` | Foundation & Documentation |
-| Phase 2 | Weeks 4-6 | 📋 Planned | Core Backend & Pricing Engine |
-| Phase 3 | Weeks 7-9 | 📋 Planned | Frontend Foundation |
-| Phase 4 | Weeks 10-13 | 📋 Planned | Strategy Builder |
-| Phase 5 | Weeks 14-17 | 📋 Planned | Advanced Analysis |
-| Phase 6 | Weeks 18-20 | 📋 Planned | Portfolio Integration |
-| Phase 7 | Weeks 21-24 | 📋 Planned | Testing & Polish |
+| Phase   | Duration    | Status              | Key Deliverable               |
+| ------- | ----------- | ------------------- | ----------------------------- |
+| Phase 1 | Weeks 1-3   | ✅ Present on `dev` | Foundation & Documentation    |
+| Phase 2 | Weeks 4-6   | ✅ Present on `dev` | Core Backend & Pricing Engine |
+| Phase 3 | Weeks 7-9   | ✅ Present on `dev` | Frontend Foundation           |
+| Phase 4 | Weeks 10-13 | ✅ Present on `dev` | Strategy Builder              |
+| Phase 5 | Weeks 14-17 | 📋 Planned          | Advanced Analysis             |
+| Phase 6 | Weeks 18-20 | 🚧 Partial on `dev` | Portfolio Integration         |
+| Phase 7 | Weeks 21-24 | 📋 Planned          | Testing & Polish              |
 
-**Planning estimate**: 24 weeks in the original plan. Re-estimate after the M9 rebaseline; do not treat calendar weeks as a completion claim.
+**Planning estimate**: 24 weeks in the original plan. The current `dev` baseline contains Phases 1-4 implementations and Phase 6 foundation. The M9 release gate requires completing remaining Phase 6, Phase 7, and the integration gate checklist. Do not treat calendar weeks as a completion claim.
 
 ---
 
 ## Phase 1: Foundation (Weeks 1-3)
 
 **Branches**:
+
 - `docs/option-product-spec`
 - `docs/option-architecture`
 - `docs/option-data-model`
@@ -36,6 +37,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
 ### Deliverables
 
 #### Documentation
+
 - [x] `docs/option/PRODUCT.md` - Product specification
 - [x] `docs/option/ARCHITECTURE.md` - System design
 - [x] `docs/option/DATA_MODEL.md` - Entity definitions
@@ -43,6 +45,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
 - [x] `docs/option/USE_CASES.md` - User stories
 
 #### Rust Backend
+
 - [x] Domain models in `crates/domain/src/option.rs` exist on `dev`
   - `OptionType` enum (Call/Put)
   - `OptionContract` struct
@@ -72,6 +75,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
   - `OptionPositionRepository`
 
 #### TypeScript Frontend
+
 - [x] Type definitions and Zod schemas exist in `apps/desktop/src/types/option.ts`
   - Interfaces matching Rust domain models
   - Zod schemas for validation
@@ -79,6 +83,7 @@ Establish the foundation for option analysis with comprehensive documentation, d
 ### Technical Specifications
 
 **Domain Model Design**:
+
 ```rust
 // All entities are workspace-scoped
 pub struct OptionContract {
@@ -94,6 +99,7 @@ pub struct OptionContract {
 ```
 
 **Database Design**:
+
 - Foreign key relationships to `workspaces` table
 - Indexes on frequently queried columns (symbol, expiration, strike)
 - Append-only migration strategy
@@ -140,6 +146,7 @@ All tests passing
 ## Phase 2: Core Backend (Weeks 4-6)
 
 **Branches**:
+
 - `feature/option/backend-api`
 - `feature/option/data-providers`
 
@@ -151,56 +158,57 @@ Implement the option pricing engine, Greeks calculator, and data provider infras
 
 #### New Rust Crate: `option-core`
 
-- [ ] Create `crates/option-core/` package
-- [ ] Pricing models
-  - `pricing.rs` - Black-Scholes model
-  - `binomial.rs` - Binomial tree model (American options)
-  - `traits.rs` - `OptionPricer` trait
+- [x] Create `crates/option-core/` package
+- [x] Pricing models
+  - [x] `pricing.rs` - Black-Scholes model
+  - [ ] `binomial.rs` - Binomial tree model (American options — deferred by ADR-0005)
+  - [ ] `traits.rs` - `OptionPricer` trait (deferred; single model does not need a trait)
 
-- [ ] Greeks calculations
-  - `greeks.rs` - Analytical Greeks (closed-form)
-  - `greeks_numerical.rs` - Finite difference Greeks (for complex models)
+- [x] Greeks calculations
+  - [x] `greeks.rs` - Analytical Greeks (closed-form)
+  - [ ] `greeks_numerical.rs` - Finite difference Greeks (deferred)
 
-- [ ] Volatility models
-  - `volatility.rs` - Implied volatility solver (Newton-Raphson)
-  - `volatility_surface.rs` - Surface interpolation
+- [x] Volatility models
+  - [x] `volatility.rs` - Implied volatility solver (Newton-Raphson)
+  - [ ] `volatility_surface.rs` - Surface interpolation (deferred to Phase 5)
 
-- [ ] Strategy analysis
-  - `strategy.rs` - Combined payoff calculation
-  - `strategy_risk.rs` - Net Greeks for strategies
+- [x] Strategy analysis
+  - [x] `strategy.rs` - Combined payoff calculation
+  - [ ] `strategy_risk.rs` - Net Greeks for strategies (deferred to Phase 6)
 
 #### Backend Services
 
-- [ ] `apps/desktop/src-tauri/src/services/option_service.rs`
+- [x] `apps/desktop/src-tauri/src/services/option_service.rs`
   - `OptionService` struct
   - Business logic orchestration
   - Pricing model selection
   - Greeks calculation coordination
 
-- [ ] `apps/desktop/src-tauri/src/commands/options.rs`
+- [x] `apps/desktop/src-tauri/src/commands/options.rs`
   - `fetch_option_chain` command
   - `calculate_greeks` command
-  - `price_option` command
-  - `analyze_strategy` command
+  - `calculate_option_price` command
+  - `calculate_implied_volatility` command
+  - `get_option_chain`, `list_chains`, `delete_chain` commands
+  - strategy CRUD commands
 
 #### Data Providers
 
-- [ ] Provider abstraction
-  - `providers/market_data/options_provider.rs`
-  - `OptionsDataProvider` trait
+- [x] Provider abstraction
+  - `OptionsDataProvider` trait in `crates/option-core/src/provider.rs`
 
-- [ ] Provider implementations
-  - `DemoOptionsProvider` - Simulated data using Black-Scholes
-  - `FileOptionsProvider` - CSV/JSON import
-  - `LiveOptionsProvider` - API integration (stub for now)
+- [x] Provider implementations
+  - [x] `DemoProvider` in `crates/option-core/src/provider.rs` — Simulated data using Black-Scholes
+  - [ ] `FileOptionsProvider` - CSV/JSON import (deferred by ADR-0006)
+  - [ ] `LiveOptionsProvider` - API integration (deferred by ADR-0006)
 
-- [ ] Provider factory
-  - Configuration-based provider selection
-  - Fallback mechanisms
+- [x] Provider factory
+  - `ProviderFactory` with `DataSource`-based selection in `option-core`
 
 ### Technical Specifications
 
 **Black-Scholes Implementation**:
+
 ```rust
 pub fn black_scholes_price(
     option_type: OptionType,
@@ -216,6 +224,7 @@ pub fn black_scholes_price(
 ```
 
 **Greeks Formulas**:
+
 - Delta: ∂V/∂S
 - Gamma: ∂²V/∂S²
 - Theta: ∂V/∂t (per day)
@@ -223,6 +232,7 @@ pub fn black_scholes_price(
 - Rho: ∂V/∂r (per 1% rate change)
 
 **Performance Requirements**:
+
 - Price calculation: < 10μs per option
 - Greeks calculation: < 50μs per option
 - Chain processing (100 options): < 100ms
@@ -281,51 +291,36 @@ Build the React frontend foundation for option chain visualization and Greeks di
 
 #### Pages
 
-- [ ] `apps/desktop/src/pages/options/OptionsDashboard.tsx`
-  - Main option analysis entry point
-  - Navigation to sub-features
-
-- [ ] `apps/desktop/src/pages/options/OptionChainPage.tsx`
-  - Option chain viewer
-  - Symbol selection, expiration selection
-  - Chain table with filtering
-
-- [ ] `apps/desktop/src/pages/options/GreeksPage.tsx`
-  - Greeks calculator interface
-  - Input parameters form
-  - Results visualization
+- [x] `apps/desktop/src/pages/options/OptionsPage.tsx`
+  - Main option analysis entry point (single-page with Greeks, chain, strategy panels)
+  - Workspace selection, symbol input, chain fetch, contract selection
 
 #### Feature Components
 
-- [ ] `apps/desktop/src/features/options/OptionChainViewer/`
-  - `OptionChainTable.tsx` - Main table component
-  - `ChainFilters.tsx` - Expiration, strike range, volume filters
-  - `OptionRow.tsx` - Individual option display
-  - `GreeksDisplay.tsx` - Inline Greeks visualization
-
-- [ ] `apps/desktop/src/features/options/GreeksCalculator/`
-  - `GreeksForm.tsx` - Parameter input form
-  - `GreeksResults.tsx` - Results display
-  - `GreeksChart.tsx` - Sensitivity visualization
+- [x] `apps/desktop/src/features/options/components/`
+  - `OptionChainList.tsx` - Chain list display
+  - `OptionContractTable.tsx` - Contract table with selection
+  - `GreeksCalculator.tsx` - Greeks input form and results display
+  - `OptionStrategyPanel.tsx` - Strategy analysis panel
+  - `StrategyBuilder.tsx` - Strategy construction component
 
 #### IPC Integration
 
-- [ ] `src/lib/desktop-api/options.ts`
-  - `fetchOptionChain(symbol: string)`
-  - `calculateGreeks(params: GreeksParams)`
-  - `priceOption(params: PricingParams)`
-  - Type-safe wrappers for Tauri commands
+- [x] `apps/desktop/src/lib/desktop-api/options.ts`
+  - Type-safe wrappers for all Option Tauri commands
+  - Zod validation on every response
 
 #### UI States
 
-- [ ] Loading states (skeleton loaders)
-- [ ] Error states (error boundaries, retry buttons)
-- [ ] Empty states (no options, no data)
-- [ ] Offline handling (cached data, reconnection)
+- [x] Loading states (TanStack Query pending states)
+- [x] Error states (ErrorState component, retry buttons)
+- [x] Empty states (EmptyState component, no-chain prompt)
+- [x] Offline handling (existing common patterns)
 
 ### Technical Specifications
 
 **Component Architecture**:
+
 ```typescript
 // OptionChainPage.tsx
 export function OptionChainPage() {
@@ -342,6 +337,7 @@ export function OptionChainPage() {
 ```
 
 **Data Flow**:
+
 ```text
 User selects symbol
     → React calls desktopApi.fetchOptionChain()
@@ -412,64 +408,53 @@ Implement the multi-leg strategy builder with interactive payoff diagrams and ri
 - [ ] `apps/desktop/src/pages/options/StrategyBuilderPage.tsx`
   - Strategy construction interface
 
-- [ ] `apps/desktop/src/features/options/StrategyBuilder/`
-  - `StrategySelector.tsx` - Pre-built templates
-  - `LegBuilder.tsx` - Individual leg configuration
-  - `StrategyPreview.tsx` - Real-time preview
-  - `PayoffDiagram.tsx` - Interactive P&L chart
+- [x] `apps/desktop/src/features/options/components/StrategyBuilder.tsx`
+  - Strategy construction interface (inline on OptionsPage, not separate plugin)
 
-- [ ] `apps/desktop/src/features/options/StrategyAnalysis/`
-  - `RiskMetrics.tsx` - Greeks, break-evens, max profit/loss
-  - `ProbabilityAnalysis.tsx` - PoP calculation
-  - `ScenarioComparison.tsx` - Multiple scenarios
+- [x] `apps/desktop/src/features/options/components/OptionStrategyPanel.tsx`
+  - Strategy analysis panel with risk metrics display
 
 #### Backend Services
 
-- [ ] `crates/option-core/src/strategy.rs`
-  - Payoff calculation for multi-leg strategies
-  - Break-even point solver
+- [x] `crates/option-core/src/strategy.rs`
+  - Payoff at expiry calculation
+  - Break-even point detection
   - Max profit/loss determination
 
-- [ ] `apps/desktop/src-tauri/src/services/strategy_service.rs`
+- [x] `apps/desktop/src-tauri/src/services/strategy_service.rs`
   - Strategy validation
   - Risk metric calculation
-  - Scenario analysis
+  - Create/read/list/delete CRUD operations
 
-- [ ] `apps/desktop/src-tauri/src/commands/options.rs` (extended)
-  - `build_strategy` command
-  - `analyze_strategy` command
-  - `calculate_payoff` command
+- [x] `apps/desktop/src-tauri/src/commands/options.rs` (extended)
+  - `list_strategies`, `create_strategy`, `get_strategy`, `update_strategy`, `delete_strategy`
 
 #### Plugin: `strategy-payoff`
 
-- [ ] `plugins/strategy-payoff/`
-  - `manifest.json` - Plugin metadata
-  - `schema.json` - Input schema
-  - `src/` - React components for artifact rendering
-    - `PayoffChart.tsx` - Chart.js or D3 visualization
-    - `RiskPanel.tsx` - Greeks and metrics display
-    - `ExportControls.tsx` - PDF/PNG export (future)
+- [ ] Strategy payoff Artifact (deferred by ADR-0007 — inline analysis is sufficient for M9)
 
 ### Technical Specifications
 
 **Strategy Templates**:
+
 ```typescript
 enum StrategyType {
-  LongCall = 'long_call',
-  LongPut = 'long_put',
-  CoveredCall = 'covered_call',
-  ProtectivePut = 'protective_put',
-  BullCallSpread = 'bull_call_spread',
-  BearPutSpread = 'bear_put_spread',
-  Straddle = 'straddle',
-  Strangle = 'strangle',
-  IronCondor = 'iron_condor',
-  Butterfly = 'butterfly',
-  Custom = 'custom'
+  LongCall = "long_call",
+  LongPut = "long_put",
+  CoveredCall = "covered_call",
+  ProtectivePut = "protective_put",
+  BullCallSpread = "bull_call_spread",
+  BearPutSpread = "bear_put_spread",
+  Straddle = "straddle",
+  Strangle = "strangle",
+  IronCondor = "iron_condor",
+  Butterfly = "butterfly",
+  Custom = "custom",
 }
 ```
 
 **Payoff Calculation**:
+
 ```rust
 pub fn calculate_strategy_payoff(
     legs: &[StrategyLeg],
@@ -487,6 +472,7 @@ pub fn calculate_strategy_payoff(
 ```
 
 **Plugin Input Schema**:
+
 ```json
 {
   "strategyId": "uuid",
@@ -498,7 +484,7 @@ pub fn calculate_strategy_payoff(
       "positionType": "long",
       "strike": 150,
       "type": "call",
-      "premium": 5.20
+      "premium": 5.2
     }
   ],
   "payoffData": {
@@ -615,6 +601,7 @@ Implement volatility surface visualization, term structure analysis, and scenari
 ### Technical Specifications
 
 **Volatility Surface Representation**:
+
 ```rust
 pub struct VolatilitySurface {
     pub symbol: String,
@@ -630,11 +617,13 @@ pub struct SurfacePoint {
 ```
 
 **Interpolation Method**:
+
 - Spline interpolation for smooth surfaces
 - Enforce arbitrage-free constraints
 - Handle missing data points gracefully
 
 **3D Visualization**:
+
 - X-axis: Strike price (moneyness %)
 - Y-axis: Days to expiration
 - Z-axis: Implied volatility (%)
@@ -642,6 +631,7 @@ pub struct SurfacePoint {
 - Color gradient for IV levels
 
 **Scenario Analysis**:
+
 ```rust
 pub struct Scenario {
     pub name: String,
@@ -714,21 +704,15 @@ Integrate option positions with portfolio tracking, enabling portfolio-level ris
 
 #### Portfolio Components
 
-- [ ] `apps/desktop/src/pages/options/PortfolioRiskPage.tsx`
-  - Portfolio-level risk dashboard
-
-- [ ] `apps/desktop/src/features/options/PortfolioRisk/`
-  - `GreeksAggregation.tsx` - Net Greeks display
-  - `ExposureAnalysis.tsx` - Position exposure charts
-  - `RiskBreakdown.tsx` - Risk contribution by position
-  - `HedgeRatioCalculator.tsx` - Delta-neutral hedging
+- [ ] `apps/desktop/src/pages/options/PortfolioRiskPage.tsx` (not yet created)
+- [ ] `apps/desktop/src/features/options/PortfolioRisk/` (not yet created)
 
 #### Backend Services
 
-- [ ] `apps/desktop/src-tauri/src/services/portfolio_option_service.rs`
-  - Greeks aggregation across positions
+- [x] `apps/desktop/src-tauri/src/services/portfolio_option_service.rs`
+  - Greeks aggregation across positions (basic implementation with placeholder values)
   - Net exposure calculation
-  - Risk contribution analysis
+  - Risk contribution analysis (pending)
 
 - [ ] `apps/desktop/src-tauri/src/commands/options.rs` (extended)
   - `import_option_positions` - From CSV or manual entry
@@ -755,6 +739,7 @@ Integrate option positions with portfolio tracking, enabling portfolio-level ris
 ### Technical Specifications
 
 **Greeks Aggregation**:
+
 ```rust
 pub fn aggregate_portfolio_greeks(
     positions: &[OptionPosition],
@@ -774,6 +759,7 @@ pub fn aggregate_portfolio_greeks(
 ```
 
 **Risk Contribution**:
+
 ```rust
 pub struct RiskContribution {
     pub position_id: String,
@@ -786,6 +772,7 @@ pub struct RiskContribution {
 ```
 
 **Integration with Portfolio Module**:
+
 - `option_positions` reference `portfolio_accounts` (optional)
 - Unified view combining equity and option positions
 - Greeks-adjusted portfolio analysis
@@ -937,6 +924,7 @@ Comprehensive testing, performance optimization, documentation completion, and p
 ### Technical Specifications
 
 **Test Coverage Requirements**:
+
 - Rust domain models: > 90%
 - Pricing engines: > 95%
 - Frontend components: > 70%
@@ -944,16 +932,18 @@ Comprehensive testing, performance optimization, documentation completion, and p
 - Overall: > 80%
 
 **Performance Benchmarks**:
-| Operation | Target | Actual |
-|-----------|--------|--------|
-| Chain load (100 options) | < 2s | _ |
-| Greeks (single option) | < 100μs | _ |
-| Greeks (100 options) | < 100ms | _ |
-| Surface interpolation | < 500ms | _ |
-| Payoff diagram render | < 500ms | _ |
-| 3D surface render | 30+ FPS | _ |
+
+| Operation                | Target  | Actual |
+| ------------------------ | ------- | ------ |
+| Chain load (100 options) | < 2s    | _      |
+| Greeks (single option)   | < 100μs | _      |
+| Greeks (100 options)     | < 100ms | _      |
+| Surface interpolation    | < 500ms | _      |
+| Payoff diagram render    | < 500ms | _      |
+| 3D surface render        | 30+ FPS | _      |
 
 **Validation Tests**:
+
 ```rust
 // Black-Scholes accuracy test
 #[test]
@@ -1056,6 +1046,7 @@ Ready for dev branch integration
 ### Future Enhancements (Post-MVP)
 
 Potential future features (not in current roadmap):
+
 - Live API provider implementations (Polygon.io, etc.)
 - Backtesting framework expansion
 - Exotic options support
@@ -1070,20 +1061,20 @@ Potential future features (not in current roadmap):
 
 ### Technical Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|--------------|------------|
-| Pricing model accuracy | High | Medium | Test against literature, use established libraries |
-| Performance issues | Medium | Medium | Early profiling, optimization phase |
-| Plugin rendering quality | Medium | Low | Use mature charting libraries, extensive testing |
-| API provider reliability | Medium | Medium | Multiple providers, demo fallback |
+| Risk                     | Impact | Probability | Mitigation                                         |
+| ------------------------ | ------ | ----------- | -------------------------------------------------- |
+| Pricing model accuracy   | High   | Medium      | Test against literature, use established libraries |
+| Performance issues       | Medium | Medium      | Early profiling, optimization phase                |
+| Plugin rendering quality | Medium | Low         | Use mature charting libraries, extensive testing   |
+| API provider reliability | Medium | Medium      | Multiple providers, demo fallback                  |
 
 ### Schedule Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|--------------|------------|
-| Underestimated complexity | High | Medium | Conservative estimates, phase buffers |
-| Integration challenges | Medium | Medium | Regular rebases, modular design |
-| Resource availability | High | Low | Documentation-first, knowledge transfer |
+| Risk                      | Impact | Probability | Mitigation                              |
+| ------------------------- | ------ | ----------- | --------------------------------------- |
+| Underestimated complexity | High   | Medium      | Conservative estimates, phase buffers   |
+| Integration challenges    | Medium | Medium      | Regular rebases, modular design         |
+| Resource availability     | High   | Low         | Documentation-first, knowledge transfer |
 
 ---
 
@@ -1092,6 +1083,7 @@ Potential future features (not in current roadmap):
 ### Phase Completion
 
 Each phase is considered complete when:
+
 - ✅ All deliverables implemented
 - ✅ Tests written and passing
 - ✅ Documentation updated
@@ -1102,6 +1094,7 @@ Each phase is considered complete when:
 ### Final Success Criteria
 
 The Option Analysis Platform is ready for production when:
+
 - [ ] All 7 phases complete
 - [ ] Full test suite passing
 - [ ] Performance targets met

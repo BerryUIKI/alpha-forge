@@ -2,21 +2,23 @@
 
 This document translates the Option specifications into the current repository's concrete implementation path. It is not an authorization to implement M9 before the milestone gate.
 
+**Rebaseline (M9-01):** ADRs for pricing models, data providers, and Artifact isolation are approved. See [ADR-0005](../DECISIONS/0005-option-pricing-models.md), [ADR-0006](../DECISIONS/0006-option-data-providers.md), and [ADR-0007](../DECISIONS/0007-option-artifact-isolation.md).
+
 ## Target module map
 
-| Layer             | Existing baseline to reuse                          | Planned additions or changes                                                                 |
-| ----------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Domain            | `crates/domain/src/option.rs`                       | Validate model completeness; add inputs/outputs only when a vertical slice requires them     |
-| Calculation       | **Completed** `crates/option-core`                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing     |
-| Persistence       | **Implemented baseline** Option repositories and migration | `0014_options_support.sql` is registered by the custom runner; focused migration tests cover clean, repeat, partial, legacy, preservation, and rollback paths |
-| Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core       |
-| Service           | **Completed** Existing service pattern            | `option_service.rs`, `strategy_service.rs`, `portfolio_option_service.rs` - full stack   |
-| Command           | **Completed** Existing thin command pattern       | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV   |
-| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`   | CamelCase command-boundary DTOs, strict Zod response parsing, malformed-response tests, and registration parity check in `scripts/check-option-ipc-registration.mjs` |
-| Frontend state    | **Completed** TanStack Query conventions          | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                    |
-| UI                | **Completed** Shared states and layout          | `features/options` - GreeksCalculator, OptionChainList, StrategyBuilder components          |
-| Artifact          | Predefined renderer registry                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                   |
-| Tests             | Existing Rust/Vitest patterns                       | Numerical fixtures, migrations, repositories, services, schemas, states, IPC, E2E            |
+| Layer             | Existing baseline to reuse                                          | Planned additions or changes                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain            | `crates/domain/src/option.rs`                                       | Validate model completeness; add inputs/outputs only when a vertical slice requires them                                                                             |
+| Calculation       | **Completed** `crates/option-core`                                  | Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs - 11 tests passing                                                                             |
+| Persistence       | **Implemented baseline** Option repositories and migration          | `0014_options_support.sql` is registered by the custom runner; focused migration tests cover clean, repeat, partial, legacy, preservation, and rollback paths        |
+| Provider          | **In Progress** `apps/desktop/src-tauri/src/providers/market_data/` | `OptionsDataProvider` plus demo/file implementations - DemoProvider in option-core                                                                                   |
+| Service           | **Completed** Existing service pattern                              | `option_service.rs`, `strategy_service.rs`, `portfolio_option_service.rs` - full stack                                                                               |
+| Command           | **Completed** Existing thin command pattern                         | `commands/options.rs` - fetch_option_chain, calculate_greeks, calculate_option_price, IV                                                                             |
+| Frontend protocol | **Completed** `apps/desktop/src/types/option.ts`                    | CamelCase command-boundary DTOs, strict Zod response parsing, malformed-response tests, and registration parity check in `scripts/check-option-ipc-registration.mjs` |
+| Frontend state    | **Completed** TanStack Query conventions                            | `useOptions.ts` - hooks for chains, contracts, strategies, calculations                                                                                              |
+| UI                | **Completed** Shared states and layout                              | `features/options` - GreeksCalculator, OptionChainList, StrategyBuilder components                                                                                   |
+| Artifact          | Predefined renderer registry                                        | Validated Option chain/payoff/risk renderers; no free-form privileged HTML                                                                                           |
+| Tests             | Existing Rust/Vitest patterns                                       | Numerical fixtures, migrations, repositories, services, schemas, states, IPC, E2E                                                                                    |
 
 ## Domain contracts
 
