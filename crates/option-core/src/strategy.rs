@@ -128,4 +128,88 @@ mod tests {
         let payoff_otm = calculate_payoff_at_expiry(std::slice::from_ref(&leg), 90.0).unwrap();
         assert_eq!(payoff_otm, -5.0); // 0 - 5 = -5
     }
+
+    #[test]
+    fn test_short_put_payoff() {
+        let leg = StrategyLeg {
+            option_type: OptionType::Put,
+            strike: 100.0,
+            expiration: 1.0,
+            quantity: -1,
+            premium: 4.0,
+        };
+
+        // Above strike: put expires worthless, collect premium
+        let payoff = calculate_payoff_at_expiry(std::slice::from_ref(&leg), 120.0).unwrap();
+        assert!(
+            (payoff - 4.0).abs() < 1e-9,
+            "OTM short put should keep premium"
+        );
+
+        // Below strike: put is ITM, loss = strike - price - premium
+        let payoff_itm = calculate_payoff_at_expiry(std::slice::from_ref(&leg), 90.0).unwrap();
+        assert!((payoff_itm - (-6.0)).abs() < 1e-9, "ITM short put payoff");
+    }
+
+    #[test]
+    fn test_empty_legs_rejected() {
+        let result = analyze_strategy(&[]);
+        assert!(matches!(result, Err(OptionError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_bull_call_spread_risk_reward() {
+        // Long 100C @ 5.0, short 110C @ 2.0 → net debit 3.0
+        // Max profit = (110-100) - 3.0 = 7.0 (bounded)
+        // Max loss = -3.0 (bounded)
+        // Break-even ≈ 103.0
+        let legs = vec![
+            StrategyLeg {
+                option_type: OptionType::Call,
+                strike: 100.0,
+                expiration: 1.0,
+                quantity: 1,
+                premium: 5.0,
+            },
+            StrategyLeg {
+                option_type: OptionType::Call,
+                strike: 110.0,
+                expiration: 1.0,
+                quantity: -1,
+                premium: 2.0,
+            },
+        ];
+
+        let profile = analyze_strategy(&legs).expect("strategy should analyze");
+
+        // Max profit at or above the short strike
+        let payoff_deep_itm = calculate_payoff_at_expiry(&legs, 200.0).unwrap();
+        assert!((payoff_deep_itm - 7.0).abs() < 1e-9, "Deep ITM payoff");
+
+        // Max loss below the long strike
+        let payoff_deep_otm = calculate_payoff_at_expiry(&legs, 50.0).unwrap();
+        assert!((payoff_deep_otm - (-3.0)).abs() < 1e-9, "Deep OTM payoff");
+
+        // Reported bounds
+        let max_profit = profile.max_profit.expect("max profit should be bounded");
+        let max_loss = profile.max_loss.expect("max loss should be bounded");
+        assert!((max_profit - 7.0).abs() < 0.5, "Max profit {}", max_profit);
+        assert!((max_loss - (-3.0)).abs() < 0.5, "Max loss {}", max_loss);
+
+        // At least one break-even point near 103
+        assert!(
+            !profile.break_even_points.is_empty(),
+            "Should have break-even"
+        );
+        let nearest = profile
+            .break_even_points
+            .iter()
+            .min_by(|a, b| (**a - 103.0).abs().total_cmp(&(**b - 103.0).abs()))
+            .expect("break-even points");
+        assert!(
+            (nearest - 103.0).abs() < 2.0,
+            "Break-even {} != 103",
+            nearest
+        );
+    }
 }
