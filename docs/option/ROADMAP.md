@@ -160,12 +160,12 @@ Implement the option pricing engine, Greeks calculator, and data provider infras
 
 - [x] Create `crates/option-core/` package
 - [x] Pricing models
-  - [x] `pricing.rs` - Black-Scholes model
+  - [x] `pricing.rs` - Black-Scholes model (shared `validate_pricing_input` rejects NaN/infinity/out-of-range values)
   - [ ] `binomial.rs` - Binomial tree model (American options — deferred by ADR-0005)
   - [ ] `traits.rs` - `OptionPricer` trait (deferred; single model does not need a trait)
 
 - [x] Greeks calculations
-  - [x] `greeks.rs` - Analytical Greeks (closed-form)
+  - [x] `greeks.rs` - Analytical Greeks (closed-form; gamma fixed to share the pricing `d1` and the canonical `norm_pdf`)
   - [ ] `greeks_numerical.rs` - Finite difference Greeks (deferred)
 
 - [x] Volatility models

@@ -40,6 +40,10 @@ rayon = "1.10"
 # Testing
 criterion = { version = "0.5", features = ["async_tokio"] }
 
+[[bench]]
+name = "bench"
+harness = false
+
 [features]
 default = []
 live-providers = []

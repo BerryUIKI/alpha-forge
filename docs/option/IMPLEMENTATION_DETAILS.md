@@ -67,6 +67,17 @@ Implementation rules:
 - Define units in types and docs: years versus days, decimal volatility versus percent, per-day theta, and per-1-percent vega/rho.
 - Treat expiration and zero-volatility boundaries explicitly.
 - Bound iterative solvers by tolerance, iterations, and bracket; return a typed convergence error.
+- Validate every pricing/Greeks/IV input through `pricing::validate_pricing_input`, which rejects NaN, infinity, and non-positive spot/strike/time/volatility.
+- Keep the standard-normal density consistent between Greeks and IV modules: `norm_pdf(x) = exp(-x²/2) / sqrt(2π)`.
+- Benchmark representative pricing, Greeks, IV, and strategy calls with Criterion and record hardware with results.
+
+### Verification status (M9-03)
+
+- Independent reference fixtures: Hull ATM call 10.4506 / put 5.5663, plus ITM/OTM spot-check values (call 17.66 at S=110, put 10.21 at S=90).
+- Property tests: put-call parity (with and without dividend), call/put upper bounds, volatility monotonicity, delta moneyness ordering, delta call-put relationship, gamma/vega peaking at the money, and identical gamma for call and put.
+- Boundary tests: expiring-option intrinsic convergence, near-zero volatility, and NaN/infinity/negative input rejection.
+- IV convergence tests: round-trip at 20%, 8%, and 60% volatility, tight-tolerance accuracy to 4 decimal places, non-convergence with zero iterations, and non-finite/negative market-price rejection.
+- Benchmarks: `crates/option-core/benches/bench.rs` measures Black-Scholes price, Greeks, IV solve, and two-leg strategy payoff via Criterion. Run with `cargo bench -p option-core --bench bench`.
 - Compare against independent published fixtures and property tests such as put-call parity where applicable.
 - Keep market-data retrieval, persistence, and logging outside the pure crate.
 
