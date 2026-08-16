@@ -1,79 +1,82 @@
-// Today page - Dashboard with workspace selector.
+/**
+ * TodayPage — Dashboard
+ *
+ * Main dashboard page with tabbed interface:
+ * - Overview: stat cards, top holdings, recent activity
+ * - Performance: portfolio performance chart
+ * - Activity: full activity feed
+ *
+ * @version GUI-M3
+ */
 
-import { useState } from "react";
-import { FolderOpen } from "lucide-react";
-import { WorkspaceList, CreateWorkspaceDialog } from "@/features/workspace";
-import { useLocale } from "@/lib/i18n/useLocale";
-import type { Workspace } from "@/lib/desktop-api/workspace";
+import { useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { TabBar } from "@/components/ui";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { PerformanceTab } from "./tabs/PerformanceTab";
+import { ActivityTab } from "./tabs/ActivityTab";
+import { LayoutDashboard, TrendingUp, Activity } from "lucide-react";
+
+const DASHBOARD_TABS = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "performance", label: "Performance", icon: TrendingUp },
+  { id: "activity", label: "Activity", icon: Activity },
+];
+
+const TAB_STORAGE_KEY = "dashboard-active-tab";
 
 export function TodayPage() {
-  const { t } = useLocale();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
 
-  const handleWorkspaceSelect = (workspace: Workspace) => {
-    setSelectedWorkspace(workspace);
-  };
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check URL first, then localStorage, default to "overview"
+    if (tabFromUrl && DASHBOARD_TABS.some((t) => t.id === tabFromUrl)) {
+      return tabFromUrl;
+    }
+    const stored = localStorage.getItem(TAB_STORAGE_KEY);
+    if (stored && DASHBOARD_TABS.some((t) => t.id === stored)) {
+      return stored;
+    }
+    return "overview";
+  });
 
-  const handleCreateNew = () => {
-    setShowCreateDialog(true);
-  };
-
-  const handleCreateSuccess = (workspace: { id: string; name: string }) => {
-    // Refresh will happen automatically via TanStack Query invalidation
-    setSelectedWorkspace({
-      id: workspace.id,
-      name: workspace.name,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-  };
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      setActiveTab(tabId);
+      localStorage.setItem(TAB_STORAGE_KEY, tabId);
+      // Update URL params
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", tabId);
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams],
+  );
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t("today")}</h1>
-        <p className="mt-2 text-muted-foreground">
-          {t("todayDescription")}
+    <div className="flex flex-col gap-6 p-6">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your investment research overview
         </p>
       </div>
 
-      {!selectedWorkspace ? (
-        <div className="max-w-2xl">
-          <div className="mb-4 flex items-center gap-2">
-            <FolderOpen className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">{t("selectWorkspace")}</h2>
-          </div>
-          <p className="mb-6 text-sm text-muted-foreground">
-            {t("selectWorkspaceDescription")}
-          </p>
-          <WorkspaceList
-            onSelect={handleWorkspaceSelect}
-            onCreateNew={handleCreateNew}
-          />
-        </div>
-      ) : (
-        <div className="max-w-2xl">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="mb-2 text-lg font-semibold">{selectedWorkspace.name}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("workspaceSelected")}
-            </p>
-            <button
-              onClick={() => setSelectedWorkspace(null)}
-              className="mt-4 text-sm text-primary hover:underline"
-            >
-              {t("changeWorkspace")}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <CreateWorkspaceDialog
-        isOpen={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={handleCreateSuccess}
+      {/* Tab Bar */}
+      <TabBar
+        tabs={DASHBOARD_TABS}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        className="w-fit"
       />
+
+      {/* Tab Content */}
+      {activeTab === "overview" && <OverviewTab />}
+      {activeTab === "performance" && <PerformanceTab />}
+      {activeTab === "activity" && <ActivityTab />}
     </div>
   );
 }
