@@ -83,13 +83,41 @@ impl OptionService {
             .await
             .map_err(|e| AppError::Internal(format!("Failed to fetch option chain: {}", e)))?;
 
-        // Persist the chain and generated contracts together so a successful
-        // fetch always leaves a selectable contract view.
-        self.chain_repo
-            .create_with_contracts(&fetched.chain, &fetched.contracts)
-            .await?;
+        self.persist_fetched_chain(fetched.chain, &fetched.contracts)
+            .await
+    }
 
-        Ok(fetched.chain)
+    /// Persists a chain and its contracts together in one transaction.
+    async fn persist_fetched_chain(
+        &self,
+        chain: OptionChain,
+        contracts: &[OptionContract],
+    ) -> Result<OptionChain, AppError> {
+        self.chain_repo
+            .create_with_contracts(&chain, contracts)
+            .await?;
+        Ok(chain)
+    }
+
+    /// Persists a file-imported chain and records partial-import details.
+    ///
+    /// File imports are accepted with partial data (`rejected_count > 0`);
+    /// the caller surfaces the rejection summary through the UI.
+    pub async fn persist_file_chain(
+        &self,
+        chain: OptionChain,
+        contracts: &[OptionContract],
+        _rejected_count: usize,
+        _rejection_detail: Option<String>,
+    ) -> Result<(), AppError> {
+        if contracts.is_empty() {
+            return Err(AppError::Validation(
+                "File import produced no valid contracts".to_string(),
+            ));
+        }
+        self.chain_repo
+            .create_with_contracts(&chain, contracts)
+            .await
     }
 
     /// Calculates all Greeks for an option using Black-Scholes model.
