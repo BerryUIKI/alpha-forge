@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaForge — Proposed GUI Redesign</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0b;
+      color: #e4e4e7;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ===== Main App Shell ===== */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      background: #0a0a0b;
+    }
+
+    /* ===== Left Sidebar — Navigation ===== */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background: #121214;
+      border-right: 1px solid #1e1e20;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .sidebar.expanded { width: 220px; }
+    .sidebar.collapsed { width: 64px; }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 14px;
+      border-bottom: 1px solid #1e1e20;
+      min-height: 60px;
+    }
+    .sidebar-header .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #c084fc, #818cf8);
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: #fff;
+    }
+    .sidebar-header .brand {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      color: #e4e4e7;
+    }
+    .sidebar.collapsed .brand { display: none; }
+    .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
+
+    .nav-section {
+      padding: 12px 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #52525b;
+      padding: 0 8px 8px;
+    }
+    .sidebar.collapsed .nav-section-label { display: none; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: #a1a1aa;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+    .nav-item:hover { background: #1e1e20; color: #e4e4e7; }
+    .nav-item.active { background: #1a1a2e; color: #818cf8; }
+    .nav-item .icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
+    .sidebar.collapsed .nav-item .label { display: none; }
+
+    .nav-divider {
+      height: 1px;
+      background: #1e1e20;
+      margin: 12px 8px;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid #1e1e20;
+      padding: 12px 8px;
+    }
+    .sidebar.collapsed .sidebar-footer { padding: 12px 0; }
+
+    /* ===== Collapse Toggle ===== */
+    .sidebar-toggle {
+      position: absolute;
+      top: 50%;
+      right: -12px;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      background: #1e1e20;
+      border: 1px solid #2a2a2d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      color: #a1a1aa;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    .sidebar-toggle:hover { background: #2a2a2d; color: #e4e4e7; }
+
+    /* ===== Main Content ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-bottom: 1px solid #1e1e20;
+      background: #0a0a0b;
+      min-height: 52px;
+    }
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #71717a;
+    }
+    .breadcrumb .current {
+      color: #e4e4e7;
+      font-weight: 600;
+    }
+    .breadcrumb svg { width: 14px; height: 14px; }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a1c;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 6px 12px;
+      width: 200px;
+      color: #a1a1aa;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .search-box:focus-within { border-color: #818cf8; width: 260px; }
+    .search-box svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .search-box input {
+      background: none;
+      border: none;
+      outline: none;
+      color: #e4e4e7;
+      font-size: 13px;
+      width: 100%;
+      font-family: inherit;
+    }
+    .search-box input::placeholder { color: #52525b; }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #a1a1aa;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { background: #1e1e20; color: #e4e4e7; }
+
+    /* Page Content */
+    .page-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* Dashboard Tabs */
+    .dashboard-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: #121214;
+      border-radius: 10px;
+      padding: 4px;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #71717a;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-btn:hover { color: #e4e4e7; }
+    .tab-btn.active { background: #1e1e20; color: #e4e4e7; }
+    .tab-btn svg { width: 16px; height: 16px; }
+
+    /* Dashboard Cards */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #121214;
+      border: 1px solid #1e1e20;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #e4e4e7;
+    }
+    .stat-card .change {
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    .stat-card .change.positive { color: #4ade80; }
+    .stat-card .change.negative { color: #f87171; }
+
+    /* Content Row */
+    .content-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #121214;
+      border: 1px solid #1e1e20;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #1e1e20;
+    }
+    .card-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+    .card-header .card-action {
+      font-size: 12px;
+      color: #818cf8;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .card-body { padding: 16px 20px; }
+
+    /* Holdings List */
+    .holding-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #18181b;
+    }
+    .holding-row:last-child { border-bottom: none; }
+    .holding-info { display: flex; align-items: center; gap: 12px; }
+    .holding-ticker {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #1e1e20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #a1a1aa;
+    }
+    .holding-name { font-size: 14px; font-weight: 500; }
+    .holding-sub { font-size: 12px; color: #71717a; }
+    .holding-value { text-align: right; }
+    .holding-value .amount { font-size: 14px; font-weight: 600; }
+    .holding-value .pct { font-size: 12px; }
+
+    /* Mini Chart Placeholder */
+    .mini-chart {
+      height: 80px;
+      background: linear-gradient(180deg, rgba(129, 140, 248, 0.08) 0%, transparent 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 4px;
+      gap: 4px;
+    }
+    .mini-chart .bar {
+      flex: 1;
+      background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
+      border-radius: 2px 2px 0 0;
+      min-height: 12px;
+      transition: height 0.3s;
+    }
+    .mini-chart .bar:nth-child(1) { height: 45px; }
+    .mini-chart .bar:nth-child(2) { height: 55px; }
+    .mini-chart .bar:nth-child(3) { height: 35px; }
+    .mini-chart .bar:nth-child(4) { height: 65px; }
+    .mini-chart .bar:nth-child(5) { height: 50px; }
+    .mini-chart .bar:nth-child(6) { height: 70px; }
+    .mini-chart .bar:nth-child(7) { height: 40px; }
+    .mini-chart .bar:nth-child(8) { height: 60px; }
+    .mini-chart .bar:nth-child(9) { height: 75px; }
+    .mini-chart .bar:nth-child(10) { height: 55px; }
+    .mini-chart .bar:nth-child(11) { height: 80px; }
+    .mini-chart .bar:nth-child(12) { height: 65px; }
+
+    /* Activity Feed */
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #18181b;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .activity-dot.research { background: #818cf8; }
+    .activity-dot.thesis { background: #4ade80; }
+    .activity-dot.portfolio { background: #fbbf24; }
+    .activity-text { flex: 1; font-size: 13px; }
+    .activity-text strong { font-weight: 600; color: #e4e4e7; }
+    .activity-time { font-size: 11px; color: #52525b; }
+
+    /* ===== Right Sidebar — Agent Panel ===== */
+    .agent-panel {
+      background: #121214;
+      border-left: 1px solid #1e1e20;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .agent-panel.expanded { width: 320px; }
+    .agent-panel.collapsed { width: 0; border-left: none; overflow: hidden; }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #1e1e20;
+      min-height: 52px;
+    }
+    .agent-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .agent-header .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .agent-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .agent-msg {
+      background: #1a1a1c;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .agent-msg .msg-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #818cf8;
+      margin-bottom: 4px;
+    }
+    .agent-msg .msg-text { color: #d4d4d8; }
+
+    .agent-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid #1e1e20;
+    }
+    .agent-input input {
+      flex: 1;
+      background: #1a1a1c;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #e4e4e7;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .agent-input input:focus { border-color: #818cf8; }
+    .agent-input input::placeholder { color: #52525b; }
+    .agent-input button {
+      background: #818cf8;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .agent-input button:hover { background: #6366f1; }
+
+    /* ===== Status Bar ===== */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 24px;
+      border-top: 1px solid #1e1e20;
+      background: #0a0a0b;
+      font-size: 11px;
+      color: #52525b;
+      min-height: 28px;
+    }
+    .status-bar .status-left, .status-bar .status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-bar .status-dot-sm {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    /* ===== Annotation ===== */
+    .annotation {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e1e20;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: #a1a1aa;
+      z-index: 100;
+      text-align: center;
+      max-width: 600px;
+      backdrop-filter: blur(12px);
+    }
+    .annotation strong { color: #e4e4e7; }
+    .annotation .key { 
+      background: #27272a;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #818cf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ===== LEFT SIDEBAR ===== -->
+    <aside class="sidebar expanded" id="sidebar">
+      <div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">‹</div>
+      
+      <div class="sidebar-header">
+        <div class="logo">α</div>
+        <span class="brand">AlphaForge</span>
+      </div>
+
+      <nav class="nav-section">
+        <div class="nav-section-label">Workspace</div>
+        
+        <a class="nav-item active" href="#">
+          <span class="icon">◉</span>
+          <span class="label">Dashboard</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">⊕</span>
+          <span class="label">Research</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">◆</span>
+          <span class="label">Theses</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">▣</span>
+          <span class="label">Portfolio</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">◈</span>
+          <span class="label">Knowledge</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">☰</span>
+          <span class="label">Journal</span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section-label">Tools</div>
+
+        <a class="nav-item" href="#">
+          <span class="icon">⚙</span>
+          <span class="label">Options</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="icon">⎔</span>
+          <span class="label">Artifacts</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a class="nav-item" href="#">
+          <span class="icon">⚙</span>
+          <span class="label">Settings</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <div class="breadcrumb">
+            <span>Workspace</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+            <span class="current">Dashboard</span>
+          </div>
+        </div>
+        <div class="top-bar-right">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search tickers, theses..." />
+          </div>
+          <button class="icon-btn" title="Toggle Agent Panel" onclick="toggleAgent()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <!-- Dashboard Tabs -->
+        <div class="dashboard-tabs">
+          <button class="tab-btn active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Overview
+          </button>
+          <button class="tab-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            Performance
+          </button>
+          <button class="tab-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Activity
+          </button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="label">Total Portfolio Value</div>
+            <div class="value">$847,350</div>
+            <div class="change positive">+$12,430 (1.49%)</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Research Theses Active</div>
+            <div class="value">12</div>
+            <div class="change positive">+3 this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Unrealized P&L</div>
+            <div class="value">+$43,200</div>
+            <div class="change positive">+5.4%</div>
+          </div>
+        </div>
+
+        <!-- Content Row -->
+        <div class="content-row">
+          <!-- Top Holdings -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Top Holdings</h3>
+              <span class="card-action">View All →</span>
+            </div>
+            <div class="card-body">
+              <div class="holding-row">
+                <div class="holding-info">
+                  <div class="holding-ticker">AAPL</div>
+                  <div>
+                    <div class="holding-name">Apple Inc.</div>
+                    <div class="holding-sub">Technology · 15.2%</div>
+                  </div>
+                </div>
+                <div class="holding-value">
+                  <div class="amount">$128,400</div>
+                  <div class="holding-sub" style="color:#4ade80">+2.3%</div>
+                </div>
+              </div>
+              <div class="holding-row">
+                <div class="holding-info">
+                  <div class="holding-ticker">MSFT</div>
+                  <div>
+                    <div class="holding-name">Microsoft Corp.</div>
+                    <div class="holding-sub">Technology · 12.8%</div>
+                  </div>
+                </div>
+                <div class="holding-value">
+                  <div class="amount">$108,200</div>
+                  <div class="holding-sub" style="color:#4ade80">+1.8%</div>
+                </div>
+              </div>
+              <div class="holding-row">
+                <div class="holding-info">
+                  <div class="holding-ticker">NVDA</div>
+                  <div>
+                    <div class="holding-name">NVIDIA Corp.</div>
+                    <div class="holding-sub">Semiconductors · 10.1%</div>
+                  </div>
+                </div>
+                <div class="holding-value">
+                  <div class="amount">$85,600</div>
+                  <div class="holding-sub" style="color:#f87171">-0.7%</div>
+                </div>
+              </div>
+              <div class="holding-row">
+                <div class="holding-info">
+                  <div class="holding-ticker">AMZN</div>
+                  <div>
+                    <div class="holding-name">Amazon.com Inc.</div>
+                    <div class="holding-sub">Consumer Cyclical · 8.5%</div>
+                  </div>
+                </div>
+                <div class="holding-value">
+                  <div class="amount">$72,100</div>
+                  <div class="holding-sub" style="color:#4ade80">+0.9%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity / Research Feed -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Activity</h3>
+              <span class="card-action">View All →</span>
+            </div>
+            <div class="card-body">
+              <div class="activity-item">
+                <div class="activity-dot research"></div>
+                <div class="activity-text"><strong>Research</strong> — Q2 Earnings analysis for NVDA completed</div>
+                <div class="activity-time">12m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot thesis"></div>
+                <div class="activity-text"><strong>Thesis</strong> — Updated bullish thesis on renewable energy</div>
+                <div class="activity-time">45m ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot portfolio"></div>
+                <div class="activity-text"><strong>Portfolio</strong> — Rebalanced: reduced energy exposure by 3%</div>
+                <div class="activity-time">2h ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot research"></div>
+                <div class="activity-text"><strong>Research</strong> — New article: "AI Infrastructure Spending Outlook"</div>
+                <div class="activity-time">3h ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot thesis"></div>
+                <div class="activity-text"><strong>Thesis</strong> — Bearish thesis on consumer discretionary updated</div>
+                <div class="activity-time">5h ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Chart Area -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Portfolio Performance</h3>
+            <span class="card-action" style="display:flex;align-items:center;gap:12px;">
+              <span style="color:#71717a;font-weight:400;">1W</span>
+              <span style="color:#e4e4e7;">1M</span>
+              <span style="color:#71717a;font-weight:400;">3M</span>
+              <span style="color:#71717a;font-weight:400;">1Y</span>
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="mini-chart">
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <div class="status-left">
+          <span class="status-dot-sm"></span>
+          <span>All systems operational</span>
+          <span>·</span>
+          <span>Last sync: 2m ago</span>
+        </div>
+        <div class="status-right">
+          <span>Wallet: 0x7f3e...b9c2</span>
+          <span>·</span>
+          <span>v0.1.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT SIDEBAR — Agent Panel ===== -->
+    <aside class="agent-panel expanded" id="agentPanel">
+      <div class="agent-header">
+        <h3>
+          <span class="status-dot"></span>
+          Agent
+        </h3>
+        <button class="icon-btn" onclick="toggleAgent()" title="Close Agent Panel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="agent-messages">
+        <div class="agent-msg">
+          <div class="msg-label">● Research Analysis</div>
+          <div class="msg-text">NVDA's Q2 earnings exceeded consensus by 8%. Key drivers: data center revenue up 42% YoY. <strong>Recommendation:</strong> Maintain bullish thesis, target $180.</div>
+        </div>
+        <div class="agent-msg">
+          <div class="msg-label">● Portfolio Alert</div>
+          <div class="msg-text">Sector concentration warning: Technology sector now represents 42% of portfolio. Consider rebalancing to reduce single-sector risk.</div>
+        </div>
+        <div class="agent-msg">
+          <div class="msg-label">● Thesis Update</div>
+          <div class="msg-text">Your "Renewable Energy Infrastructure" thesis has 3 new supporting articles. One contradicting source found — reviewing now.</div>
+        </div>
+      </div>
+
+      <div class="agent-input">
+        <input type="text" placeholder="Ask the agent..." />
+        <button>Send</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Annotation -->
+  <div class="annotation">
+    <strong>Proposed GUI Redesign</strong> — Inspired by Wealthfolio's clean navigation + glass-morphism cards<br>
+    ← Toggle sidebar with <span class="key">Ctrl+1</span> &nbsp;·&nbsp; Agent panel with <span class="key">Ctrl+2</span> &nbsp;·&nbsp; All panels resizable
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+      sidebar.classList.toggle('expanded');
+    }
+    function toggleAgent() {
+      const panel = document.getElementById('agentPanel');
+      panel.classList.toggle('collapsed');
+      panel.classList.toggle('expanded');
+    }
+  </script>
+</body>
+</html>
