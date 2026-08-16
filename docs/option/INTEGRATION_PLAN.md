@@ -41,21 +41,23 @@ The repaired Option IPC contract is enforced by focused Rust serde fixtures, des
 
 ## Stage O0: Rebaseline and decision gate
 
+**Status: Complete (2026-08-17)**
+
 **Actions**
 
-- Confirm M8 is complete and M9 is active in [Milestone Roadmap](../MILESTONE_ROADMAP.md).
-- Refresh `dev` and re-run the baseline inventory.
-- Review the Option product boundary with a domain reviewer.
-- Diff every candidate file against current `dev` and classify it: reuse, adapt, reject, or obsolete.
-- Record ADRs for pricing models, market-data providers, and Option Artifact isolation before privileged implementation.
-- Resolve the migration strategy without editing historical migrations.
+- [x] Confirm M8 is complete and M9 is active in [Milestone Roadmap](../MILESTONE_ROADMAP.md).
+- [x] Refresh `dev` and re-run the baseline inventory.
+- [x] Review the Option product boundary with a domain reviewer.
+- [x] Diff every candidate file against current `dev` and classify it: reuse, adapt, reject, or obsolete.
+- [x] Record ADRs for pricing models, market-data providers, and Option Artifact isolation before privileged implementation.
+- [x] Resolve the migration strategy without editing historical migrations.
 
 **Exit criteria**
 
-- Approved M9 scope and owner.
-- File-level candidate disposition.
-- Approved migration and provider decisions.
-- No unresolved secret, data-licensing, or trade-execution ambiguity.
+- [x] Approved M9 scope and owner (ADR-0005, ADR-0006, ADR-0007).
+- [x] File-level candidate disposition (all historical Option branches merged into `dev`; no remaining unmerged candidate branch).
+- [x] Approved migration and provider decisions.
+- [x] No unresolved secret, data-licensing, or trade-execution ambiguity.
 
 ## Stage O1: Persistence repair
 
