@@ -2,28 +2,41 @@
  * ActivityTab Component
  *
  * Full activity feed across all research workflow types.
+ * Wired to real desktopApi data via useDashboardActivity hook.
  *
- * @version GUI-M3
+ * @version GUI-E2
  */
 
+import { useActiveWorkspaceId, useDashboardActivity } from "../hooks/useDashboardData";
 import { DashboardCard } from "@/components/ui";
-import { ActivityFeed, type ActivityItem } from "@/components/activity/ActivityFeed";
-
-const SAMPLE_ACTIVITY: ActivityItem[] = [
-  { id: "1", type: "research", title: "Research", description: "Q2 Earnings analysis for NVDA completed", timestamp: "12m ago" },
-  { id: "2", type: "thesis", title: "Thesis", description: "Updated bullish thesis on renewable energy", timestamp: "45m ago" },
-  { id: "3", type: "portfolio", title: "Portfolio", description: "Rebalanced: reduced energy exposure by 3%", timestamp: "2h ago" },
-  { id: "4", type: "research", title: "Research", description: "New article: AI Infrastructure Spending Outlook", timestamp: "3h ago" },
-  { id: "5", type: "thesis", title: "Thesis", description: "Bearish thesis on consumer discretionary updated", timestamp: "5h ago" },
-  { id: "6", type: "options", title: "Options", description: "Iron condor strategy created on TSLA chain", timestamp: "Yesterday" },
-];
+import { EmptyState } from "@/components/common";
+import { ActivityFeed } from "@/components/activity/ActivityFeed";
 
 export function ActivityTab() {
+  const workspaceId = useActiveWorkspaceId();
+  const { data: activity, isLoading } = useDashboardActivity(workspaceId);
+
   return (
-    <DashboardCard title="All Activity" padded={false}>
-      <div className="px-4 py-2">
-        <ActivityFeed items={SAMPLE_ACTIVITY} />
-      </div>
+    <DashboardCard
+      title="All Activity"
+      padded={false}
+    >
+      {isLoading ? (
+        <div className="space-y-3 px-4 py-2">
+          {Array.from({ length: 5 }).map((_, idx) => (
+            <div key={idx} className="h-10 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
+      ) : activity && activity.length > 0 ? (
+        <div className="px-4 py-2">
+          <ActivityFeed items={activity} />
+        </div>
+      ) : (
+        <EmptyState
+          title="No recent activity"
+          description="Research tasks, projects, and theses will appear here."
+        />
+      )}
     </DashboardCard>
   );
 }
