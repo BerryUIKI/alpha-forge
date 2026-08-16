@@ -1,5 +1,9 @@
 # GUI Layout Iteration - Task Breakdown & Schedule
 
+> **⚠️ SUPERSEDED (2026-08-16)** — The Codex-style layout tasks described here
+> were replaced by the GUI redesign (PRs #105–#111, `docs/gui/GUI_MILESTONE.md`).
+> Keep this document for historical reference only.
+
 ## ⚠️ IMPORTANT: Backend Integration Notice
 
 **When implementing GUI-M1-5 and beyond**:

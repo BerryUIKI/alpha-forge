@@ -10,9 +10,11 @@
 
 ### 1.1 Sidebar Entry
 
-The portfolio sidebar entry is added under the **analyze** functional view in
-`src/components/layout/tools-config.tsx`. It navigates to `/portfolio` and uses
-the `BarChart3` icon from lucide-react.
+The portfolio sidebar entry is a **permanent nav item** in the redesigned
+`LeftSidebar` (Workspace nav group, route `/portfolio`). The old
+`src/components/layout/tools-config.tsx` (functional-view tools) was removed in
+the GUI redesign (PRs #105–#111); portfolio now always appears in the sidebar
+regardless of the selected functional view.
 
 ### 1.2 Route
 

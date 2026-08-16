@@ -162,12 +162,16 @@ the transition period.
 
 ### 6.1 Sidebar Entry
 
-A permanent **Portfolio (📊)** entry is needed in the left sidebar, bottom section
-(user area). Reference: `src/components/layout/LeftSidebar/UserOperations.tsx`.
+A permanent **Portfolio (📊)** entry is needed in the left sidebar, in the
+**Workspace** nav group. Reference: `src/components/layout/LeftSidebar/LeftSidebar.tsx`
+(NavGroup configuration, nav item with route `/portfolio`).
 
-The existing `LeftSidebar.tsx` has a `UserOperations` section at the bottom with
-settings, theme toggle, and user profile. The Portfolio entry should be placed
-there, above the user profile section.
+The old `LeftSidebar` with `UserOperations` section (settings, theme toggle,
+user profile) was removed in the GUI redesign (PRs #105–#111). The new
+`LeftSidebar` organizes navigation into three groups: Workspace (Dashboard,
+Research, Theses, Portfolio, Knowledge, Journal), Tools (Options, Artifacts),
+and Account (Settings). Portfolio is already registered as a nav item in the
+Workspace group.
 
 ### 6.2 Route
 

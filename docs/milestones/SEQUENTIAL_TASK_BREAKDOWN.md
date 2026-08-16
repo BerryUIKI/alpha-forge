@@ -153,7 +153,7 @@ Localize navigation, settings, command surfaces, dialogs, tooltips, accessibilit
 
 **Involved files**
 
-- `apps/desktop/src/components/navigation/Sidebar.tsx`
+- `apps/desktop/src/components/layout/LeftSidebar/**` (navigation groups, `NavItem`/`NavGroup`; the old `navigation/Sidebar.tsx` was removed in the GUI redesign, PRs #105–#111)
 - `apps/desktop/src/pages/settings/SettingsPage.tsx`
 - `apps/desktop/src/components/common/**`
 - `apps/desktop/src/components/CommandPalette.tsx` if present
