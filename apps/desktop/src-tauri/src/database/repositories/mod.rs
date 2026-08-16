@@ -38,6 +38,18 @@ mod artifact_repository_test;
 mod option_chain_repository_test;
 
 #[cfg(test)]
+mod greeks_repository_test;
+
+#[cfg(test)]
+mod option_contract_repository_test;
+
+#[cfg(test)]
+mod option_position_repository_test;
+
+#[cfg(test)]
+mod strategy_leg_repository_test;
+
+#[cfg(test)]
 mod option_strategy_repository_test;
 
 #[cfg(test)]
