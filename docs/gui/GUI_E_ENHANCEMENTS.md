@@ -1,7 +1,7 @@
 # GUI-E1 & GUI-E2 — Enhancement Work Packages
 
 > **Document:** `docs/gui/GUI_E_ENHANCEMENTS.md`
-> **Status:** 📋 Planned
+> **Status:** ✅ Complete
 > **Date:** 2026-08-17
 > **Base:** `dev` (after GUI-M0–M5 merged via PRs #105–#111)
 
