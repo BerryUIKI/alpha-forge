@@ -140,8 +140,8 @@ App
 | GUI-M3 | Dashboard Page | ✅ Done | GUI-M1, GUI-M2 | 1 sprint |
 | GUI-M4 | Agent Panel Refinement | ✅ Done | GUI-M0 | 1 sprint |
 | GUI-M5 | Polish & Cleanup | ✅ Done | GUI-M3, GUI-M4 | 1 sprint |
-| GUI-E1 | TopBar Action Buttons | 📋 Planned | GUI-M0 | 1 sprint |
-| GUI-E2 | Dashboard Data Wiring | 📋 Planned | GUI-M3 | 1 sprint |
+| GUI-E1 | TopBar Action Buttons | ✅ Done | GUI-M0 | 1 sprint |
+| GUI-E2 | Dashboard Data Wiring | ✅ Done | GUI-M3 | 1 sprint |
 
 ### Dependency Graph
 
