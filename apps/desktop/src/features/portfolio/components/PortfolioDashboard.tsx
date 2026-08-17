@@ -24,6 +24,11 @@ import { AllocationChart } from "./AllocationChart";
 import { ValuationChart } from "./ValuationChart";
 import { ActivityList } from "./ActivityList";
 import { QuickActions } from "./QuickActions";
+import { CreateAccountDialog } from "./CreateAccountDialog";
+import { AddAssetDialog } from "./AddAssetDialog";
+import { AddActivityDialog } from "./AddActivityDialog";
+import { useListFinancialAccounts } from "../hooks/useFinancialData";
+import { Plus, ArrowUpRight, PencilLine } from "lucide-react";
 
 /** Default view date — "today" as of the running app. */
 function todayIso(): string {
@@ -38,12 +43,27 @@ export function PortfolioDashboard() {
   const [asOfDate, setAsOfDate] = useState(todayIso());
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
+  const [isAddAssetOpen, setIsAddAssetOpen] = useState(false);
+  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+
+  const portfolioAccounts = useListFinancialAccounts(workspaceId);
+
+  const selectedAccount = portfolioAccounts.data?.find(
+    (acc) => acc.id === selectedAccountId,
+  );
+  const baseCurrency = selectedAccount?.currency ?? "USD";
+
   // Auto-select first workspace
   useEffect(() => {
     if (!workspaceId && workspaces.data?.[0]) {
       setWorkspaceId(workspaces.data[0].id);
     }
   }, [workspaceId, workspaces.data]);
+
+  const handleCreateAccount = (accountId: string) => {
+    setSelectedAccountId(accountId);
+  };
 
   // ── Loading / error / empty for workspaces ──
   if (workspaces.isLoading) return <LoadingSpinner className="p-8" />;
@@ -99,6 +119,7 @@ export function PortfolioDashboard() {
         asOfDate={asOfDate}
         selectedAccountId={selectedAccountId}
         onSelectAccount={setSelectedAccountId}
+        onAddAccount={() => setIsCreateAccountOpen(true)}
       />
 
       {/* Holdings + Allocation */}
@@ -153,6 +174,72 @@ export function PortfolioDashboard() {
           />
         </div>
       </div>
+
+      {/* Quick-create section */}
+      <div className="rounded-lg border bg-card p-4">
+        <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+          {(t as any)("newAccount") || "Create / Record"}
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setIsCreateAccountOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50"
+          >
+            <Plus className="h-4 w-4" />
+            {t("newAccount")}
+          </button>
+          <button
+            onClick={() => setIsAddAssetOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50"
+          >
+            <PencilLine className="h-4 w-4" />
+            {t("addAssetTitle")}
+          </button>
+          <button
+            onClick={() => {
+              if (selectedAccountId) {
+                setIsAddActivityOpen(true);
+              } else {
+                setSelectedAccountId("");
+                // Nudge the user to select an account first.
+                window.alert(
+                  (t as any)("selectAnAccount") ||
+                    "Select an account first",
+                );
+              }
+            }}
+            disabled={!selectedAccountId}
+            className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ArrowUpRight className="h-4 w-4" />
+            {t("addActivityTitle")}
+          </button>
+        </div>
+      </div>
+
+      {/* Dialogs */}
+      <CreateAccountDialog
+        isOpen={isCreateAccountOpen}
+        onClose={() => setIsCreateAccountOpen(false)}
+        workspaceId={workspaceId}
+        defaultCurrency={baseCurrency}
+        onSuccess={handleCreateAccount}
+      />
+      <AddAssetDialog
+        isOpen={isAddAssetOpen}
+        onClose={() => setIsAddAssetOpen(false)}
+        onSuccess={(assetId) => {
+          void assetId;
+          setIsAddAssetOpen(false);
+        }}
+      />
+      <AddActivityDialog
+        isOpen={isAddActivityOpen}
+        onClose={() => setIsAddActivityOpen(false)}
+        accountId={selectedAccountId}
+        accountCurrency={baseCurrency}
+        onSuccess={() => setIsAddActivityOpen(false)}
+      />
     </div>
   );
 }
