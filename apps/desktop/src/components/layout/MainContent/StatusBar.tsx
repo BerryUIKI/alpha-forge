@@ -20,10 +20,6 @@ export function StatusBar() {
   const { isOnline } = useNetworkStatus();
   const { data: agentStatus = "idle" } = useAgentGlobalStatus();
 
-  // Get current page name
-  const currentPath = location.pathname;
-  void currentPath;
-
   // Agent status config
   const agentStatusConfig = {
     idle: {
