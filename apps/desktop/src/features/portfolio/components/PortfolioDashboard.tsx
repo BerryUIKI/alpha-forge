@@ -27,7 +27,7 @@ import { QuickActions } from "./QuickActions";
 import { CreateAccountDialog } from "./CreateAccountDialog";
 import { AddAssetDialog } from "./AddAssetDialog";
 import { AddActivityDialog } from "./AddActivityDialog";
-import { usePortfolioAccounts } from "../hooks/usePortfolio";
+import { useListFinancialAccounts } from "../hooks/useFinancialData";
 import { Plus, ArrowUpRight, PencilLine } from "lucide-react";
 
 /** Default view date — "today" as of the running app. */
@@ -47,7 +47,7 @@ export function PortfolioDashboard() {
   const [isAddAssetOpen, setIsAddAssetOpen] = useState(false);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
 
-  const portfolioAccounts = usePortfolioAccounts(workspaceId);
+  const portfolioAccounts = useListFinancialAccounts(workspaceId);
 
   const selectedAccount = portfolioAccounts.data?.find(
     (acc) => acc.id === selectedAccountId,
@@ -119,6 +119,7 @@ export function PortfolioDashboard() {
         asOfDate={asOfDate}
         selectedAccountId={selectedAccountId}
         onSelectAccount={setSelectedAccountId}
+        onAddAccount={() => setIsCreateAccountOpen(true)}
       />
 
       {/* Holdings + Allocation */}

@@ -1,15 +1,12 @@
 /**
  * ActivityList Component
  *
- * Displays recent activities for the selected account. Uses the legacy
- * portfolio transactions command until repository-level activity CRUD
- * commands are wired (see FRONTEND_INTEGRATION.md §3.3).
- *
- * @module features/portfolio/components/ActivityList
+ * Displays recent activities for the selected account using the
+ * financial API (listActivitiesByAccount).
  */
 
 import { useLocale } from "@/lib/i18n/useLocale";
-import { usePortfolioTransactions } from "@/features/portfolio/hooks/usePortfolio";
+import { useListActivitiesByAccount } from "@/features/portfolio/hooks/useFinancialData";
 import { fmtMoney, fmtNumber } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
 
@@ -20,7 +17,7 @@ interface ActivityListProps {
 
 export function ActivityList({ accountId, limit = 6 }: ActivityListProps) {
   const { t } = useLocale();
-  const activities = usePortfolioTransactions(accountId);
+  const activities = useListActivitiesByAccount(accountId);
 
   if (activities.isLoading) {
     return <LoadingSpinner className="p-4" />;
@@ -42,26 +39,31 @@ export function ActivityList({ accountId, limit = 6 }: ActivityListProps) {
     return (
       <EmptyState
         title={t("noTransactionsImported")}
-        description="Import transaction history to see recent activity."
+        description="Record activities or import transaction history to see recent activity."
       />
     );
   }
 
+  const activityColor = (type: string) => {
+    switch (type) {
+      case "buy": return "text-green-600 dark:text-green-400";
+      case "sell": return "text-red-600 dark:text-red-400";
+      case "dividend": return "text-blue-600 dark:text-blue-400";
+      case "deposit": return "text-emerald-600 dark:text-emerald-400";
+      case "withdrawal": return "text-orange-600 dark:text-orange-400";
+      default: return "text-muted-foreground";
+    }
+  };
+
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">
-        {t("recentActivity" as any) || "Recent Activity"}
+        {(t as any)("recentActivity") || "Recent Activity"}
       </h3>
       <div className="space-y-1">
         {recent.map((tx) => {
-          const isBuy = tx.transaction_type === "buy";
-          const isSell = tx.transaction_type === "sell";
-          const adjective = isBuy ? "BUY" : isSell ? "SELL" : tx.transaction_type;
-          const color = isBuy
-            ? "text-green-600 dark:text-green-400"
-            : isSell
-              ? "text-red-600 dark:text-red-400"
-              : "text-muted-foreground";
+          const adjective = tx.activity_type;
+          const color = activityColor(tx.activity_type);
 
           return (
             <div
@@ -70,19 +72,25 @@ export function ActivityList({ accountId, limit = 6 }: ActivityListProps) {
             >
               <div className="flex items-center gap-2">
                 <span className="font-mono text-muted-foreground">
-                  {tx.executed_at?.slice(0, 10) ?? ""}
+                  {tx.activity_date?.slice(0, 10) ?? ""}
                 </span>
                 <span className={`font-medium uppercase ${color}`}>
                   {adjective}
                 </span>
-                <span className="font-mono">{tx.symbol}</span>
-                <span className="text-muted-foreground">
-                  x{fmtNumber(tx.quantity.toString(), 4)}
-                </span>
+                {tx.quantity && (
+                  <>
+                    <span className="text-muted-foreground">x</span>
+                    <span className="font-mono">
+                      {fmtNumber(tx.quantity, 4)}
+                    </span>
+                  </>
+                )}
               </div>
-              <span className="font-mono">
-                {fmtMoney(tx.price?.toString() ?? "0", "USD")}
-              </span>
+              {tx.amount && (
+                <span className="font-mono">
+                  {fmtMoney(tx.amount, tx.currency)}
+                </span>
+              )}
             </div>
           );
         })}
