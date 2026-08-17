@@ -1,6 +1,7 @@
 # Portfolio Module — Frontend Integration Guide
 
-> **Status:** Phase 3 (frontend) — ✅ Implementation in progress.
+> **Status:** Phase 3 (frontend) — ✅ Complete.
+> **Phase 3.5 (CRUD commands)** — ✅ Complete.
 > **Audience:** Main dev developer building the portfolio UI.
 > **All documentation is in English.**
 
@@ -107,20 +108,23 @@ These are the Tauri commands wired in `commands/financial.rs`:
 | `create_snapshot` | Take a snapshot | QuickActions |
 | `list_snapshots` | List snapshots | (future) |
 
-### 3.3 Missing Commands (Future Phase)
+### 3.3 CRUD Commands (Phase 3.5 — Complete)
 
-The following repository-level CRUD commands are NOT yet exposed as Tauri commands
-and will be needed for full account/asset/activity management:
+All repository-level CRUD commands are now exposed as Tauri commands in
+`commands/financial_crud.rs` and consumed by the frontend:
 
-- `list_financial_accounts` — needed for AccountCards
-- `create_financial_account` — needed for AddAccount
-- `list_activities_by_account` — needed for ActivityList
-- `create_activity` — needed for AddActivity
-- `list_assets` / `create_asset` — needed for asset management
+- `list_financial_accounts` / `create_financial_account` / `archive_financial_account` — **wired** in AccountCards / CreateAccountDialog
+- `list_activities_by_account` / `create_activity` — **wired** in ActivityList / AddActivityDialog
+- `list_active_assets` / `create_asset` — **wired** in AddAssetDialog / AddActivityDialog
+- Plus quote, lot, taxonomy, import-run, and allocation-target CRUD
 
-**Workaround:** The old placeholder portfolio commands (`desktopApi.portfolio.*`)
-still provide `listPortfolioAccounts` which returns the old `PortfolioAccount` type.
-Phase 3 uses this for account listing until the repository CRUD commands are wired.
+**Migration complete:** `AccountCards` and `ActivityList` now use the canonical
+financial API hooks (`useListFinancialAccounts`, `useListActivitiesByAccount`)
+instead of the legacy `usePortfolioAccounts` / `usePortfolioTransactions`.
+
+The old `usePortfolio.ts` hooks (`usePortfolioAccounts`, `usePortfolioTransactions`,
+`usePortfolioPositions`) are retained for backward compatibility with the legacy
+placeholder commands but are no longer used by the portfolio dashboard.
 
 ---
 
@@ -186,15 +190,18 @@ Not used for portfolio state. Keep cross-page state minimal.
 |------|--------|---------|
 | `src/pages/portfolio/PortfolioPage.tsx` | ✅ Updated (Phase 3) | Route page wrapping dashboard |
 | `src/features/portfolio/components/PortfolioDashboard.tsx` | ✅ Replaced (Phase 3) | Main orchestrator |
-| `src/features/portfolio/components/AccountCards.tsx` | ✅ New (Phase 3) | Account summary cards |
+| `src/features/portfolio/components/AccountCards.tsx` | ✅ Updated (Phase 3.5) | Account cards + net worth; financial API |
 | `src/features/portfolio/components/HoldingsTable.tsx` | ✅ New (Phase 3) | Holdings data table |
 | `src/features/portfolio/components/AllocationChart.tsx` | ✅ New (Phase 3) | Donut chart |
 | `src/features/portfolio/components/ValuationChart.tsx` | ✅ New (Phase 3) | Line chart |
-| `src/features/portfolio/components/ActivityList.tsx` | ✅ New (Phase 3) | Activity feed |
+| `src/features/portfolio/components/ActivityList.tsx` | ✅ Updated (Phase 3.5) | Activity feed; financial API |
 | `src/features/portfolio/components/QuickActions.tsx` | ✅ New (Phase 3) | Action buttons |
-| `src/features/portfolio/hooks/useFinancialData.ts` | ✅ New (Phase 3) | TanStack Query hooks |
+| `src/features/portfolio/components/CreateAccountDialog.tsx` | ✅ New (Phase 3.5) | Create financial account |
+| `src/features/portfolio/components/AddAssetDialog.tsx` | ✅ New (Phase 3.5) | Create asset/instrument |
+| `src/features/portfolio/components/AddActivityDialog.tsx` | ✅ New (Phase 3.5) | Record activity |
+| `src/features/portfolio/hooks/useFinancialData.ts` | ✅ New (Phase 3/3.5) | TanStack Query hooks |
 | `src/features/portfolio/hooks/usePortfolio.ts` | ⏳ Legacy (kept) | Old hooks for legacy portfolio commands |
-| `src/lib/desktop-api/financial.ts` | ✅ New (Phase 3) | IPC client for Phase 2 commands |
+| `src/lib/desktop-api/financial.ts` | ✅ New (Phase 3/3.5) | IPC client for financial commands |
 | `src/lib/desktop-api/portfolio.ts` | ⏳ Legacy (kept) | Old IPC client (placeholder) |
 | `src/types/financial.ts` | ✅ New (Phase 3) | TypeScript domain types |
 | `src/components/layout/tools-config.tsx` | ✅ Updated (Phase 3) | Portfolio sidebar entry |
@@ -294,19 +301,18 @@ New keys added for Phase 3 components:
 
 ## 10. Desktop API Client
 
-The file `src/lib/desktop-api/financial.ts` wraps all 18 Phase 2 Tauri commands
-with camelCase function names. See `API_SPEC.md` Section 9 for the full command
-reference.
+The file `src/lib/desktop-api/financial.ts` wraps all 60+ Phase 2/3.5 Tauri commands
+with camelCase function names. See `API_SPEC.md` Section 2 for the full CRUD command
+reference and Section 9 for the service commands.
 
-The existing `src/lib/desktop-api/portfolio.ts` is kept for backward compatibility
-with the old placeholder commands (used for account listing until repository CRUD
-commands are wired).
+The existing `src/lib/desktop-api/portfolio.ts` and `src/features/portfolio/hooks/usePortfolio.ts`
+are kept for backward compatibility with the old placeholder commands but are no longer
+consumed by any portfolio dashboard component. All active components use the canonical
+financial API.
 
 ---
 
 ## 11. Future Work
 
-- **Phase 3.5:** Wire repository-level CRUD Tauri commands (create_platform,
-  list_financial_accounts, create_asset, list_activities, etc.)
 - **Phase 4:** Thesis ↔ holding linkage
 - **Phase 5:** Broker sync, market data integration, CSV import via new commands
