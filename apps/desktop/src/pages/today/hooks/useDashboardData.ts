@@ -7,7 +7,6 @@
  * @version GUI-E2
  */
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";

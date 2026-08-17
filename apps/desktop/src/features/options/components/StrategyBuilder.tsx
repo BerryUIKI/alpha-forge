@@ -7,8 +7,6 @@
  */
 
 import { useState } from "react";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { useCalculateIV } from "@/hooks/useOptions";
 import type { OptionType, PositionType } from "@/types/option";
 
 interface StrategyLeg {

@@ -7,38 +7,18 @@
  * @version GUI-M0
  */
 
-import { useLocation } from "react-router-dom";
 import { Wifi, WifiOff, Bot, Activity, Settings, AlertCircle } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
-
-// Route to page name mapping
-const ROUTE_PAGE_NAMES: Record<string, string> = {
-  "/": "today",
-  "/today": "today",
-  "/research": "research",
-  "/journal": "journal",
-  "/portfolio": "portfolio",
-  "/knowledge": "knowledge",
-  "/artifacts": "artifacts",
-  "/settings": "settings",
-  "/options": "options",
-};
 
 // Version from package.json (would be injected at build time)
 const APP_VERSION = "0.1.0";
 
 export function StatusBar() {
   const { t } = useLocale();
-  const location = useLocation();
   const { isOnline } = useNetworkStatus();
   const { data: agentStatus = "idle" } = useAgentGlobalStatus();
-
-  // Get current page name
-  const currentPath = location.pathname;
-  const pageKey = ROUTE_PAGE_NAMES[currentPath] || "today";
-  const pageName = t(pageKey as any);
 
   // Agent status config
   const agentStatusConfig = {

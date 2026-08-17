@@ -15,7 +15,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type { Locale } from "@/lib/i18n/locale";
 import { processAppError } from "@/lib/errors";
-import type { Workspace } from "@/lib/desktop-api/workspace";
 
 // Re-export Workspace type for convenience
 export type { Workspace } from "@/lib/desktop-api/workspace";
@@ -67,7 +66,7 @@ export function useWorkspace(id: string, enabled = !!id) {
  * const createMutation = useCreateWorkspace();
  * createMutation.mutate("My Workspace");
  */
-export function useCreateWorkspace(locale: Locale) {
+export function useCreateWorkspace(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -93,7 +92,7 @@ export function useCreateWorkspace(locale: Locale) {
  * const updateMutation = useUpdateWorkspace();
  * updateMutation.mutate({ id: workspaceId, name: "New Name" });
  */
-export function useUpdateWorkspace(locale: Locale) {
+export function useUpdateWorkspace(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -118,7 +117,7 @@ export function useUpdateWorkspace(locale: Locale) {
  * const deleteMutation = useDeleteWorkspace();
  * deleteMutation.mutate(workspaceId);
  */
-export function useDeleteWorkspace(locale: Locale) {
+export function useDeleteWorkspace(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({

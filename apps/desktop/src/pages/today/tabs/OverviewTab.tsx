@@ -9,7 +9,7 @@
 
 import { useDashboardSummary, useActiveWorkspaceId, useDashboardActivity } from "../hooks/useDashboardData";
 import { DashboardCard, StatCard } from "@/components/ui";
-import { LoadingSpinner, ErrorState, EmptyState } from "@/components/common";
+import { ErrorState, EmptyState } from "@/components/common";
 import { HoldingsList } from "@/components/portfolio/HoldingsList";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
 

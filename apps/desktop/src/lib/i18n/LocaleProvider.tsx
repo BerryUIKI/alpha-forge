@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { desktopApi } from "@/lib/desktop-api";
 import { LocaleContext, type LocaleContextValue } from "./locale-context";
-import { DEFAULT_LOCALE, LOCALE_SETTING_KEY, parseLocale, detectSystemLocale, translate, type Locale } from "./locale";
+import { LOCALE_SETTING_KEY, parseLocale, detectSystemLocale, translate, type Locale } from "./locale";
+
+const DEFAULT_LOCALE: Locale = "en";
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(() => {
     // On first render, use system locale as default
     // This will be overridden if a saved preference exists
-    return detectSystemLocale();
+    return detectSystemLocale() ?? DEFAULT_LOCALE;
   });
   const hasUserSelectedLocale = useRef(false);
 

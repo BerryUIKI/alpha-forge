@@ -23,7 +23,7 @@ import { NavGroup } from "./NavGroup";
 import { useSidebarState, useResize } from "@/hooks/layout";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils";
-import type { LeftSidebarProps, NavItem as NavItemType, NavGroup as NavGroupType } from "../types";
+import type { LeftSidebarProps, NavGroup as NavGroupType } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 
 export function LeftSidebar({

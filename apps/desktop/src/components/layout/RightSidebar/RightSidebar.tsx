@@ -30,7 +30,6 @@ export function RightSidebar({
 }: RightSidebarProps) {
   // Use sidebar state hook for persistence
   const {
-    state: internalState,
     width,
     toggleState,
     setWidth,
