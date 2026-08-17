@@ -4,6 +4,7 @@
 import * as agentApi from "./agent";
 import * as artifactsApi from "./artifacts";
 import * as credentialsApi from "./credentials";
+import * as financialApi from "./financial";
 import * as researchApi from "./research";
 import * as portfolioApi from "./portfolio";
 import * as pluginsApi from "./plugins";
@@ -19,6 +20,7 @@ export const desktopApi = {
   agent: agentApi,
   artifacts: artifactsApi,
   credentials: credentialsApi,
+  financial: financialApi,
   research: researchApi,
   portfolio: portfolioApi,
   plugins: pluginsApi,

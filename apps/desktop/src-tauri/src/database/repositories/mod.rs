@@ -28,11 +28,40 @@ pub mod option_position_repository;
 pub mod option_strategy_repository;
 pub mod strategy_leg_repository;
 
+// Financial repositories (Wealthfolio port, Phase 1 storage)
+pub mod account_repository;
+pub mod activity_repository;
+pub mod allocation_target_repository;
+pub mod asset_repository;
+pub mod financial_support;
+pub mod lot_repository;
+pub mod snapshot_repository;
+pub mod taxonomy_repository;
+pub mod valuation_repository;
+
+#[cfg(test)]
+pub mod test_support;
+
+#[cfg(test)]
+mod account_repository_test;
+
+#[cfg(test)]
+mod activity_repository_test;
+
 #[cfg(test)]
 mod agent_task_repository_test;
 
 #[cfg(test)]
+mod allocation_target_repository_test;
+
+#[cfg(test)]
 mod artifact_repository_test;
+
+#[cfg(test)]
+mod asset_repository_test;
+
+#[cfg(test)]
+mod lot_repository_test;
 
 #[cfg(test)]
 mod option_chain_repository_test;
@@ -53,7 +82,16 @@ mod strategy_leg_repository_test;
 mod option_strategy_repository_test;
 
 #[cfg(test)]
+mod snapshot_repository_test;
+
+#[cfg(test)]
+mod taxonomy_repository_test;
+
+#[cfg(test)]
 mod thesis_repository_test;
+
+#[cfg(test)]
+mod valuation_repository_test;
 
 pub mod research_document_repository;
 pub mod research_note_repository;

@@ -700,6 +700,29 @@ Vibe coding means using AI to accelerate implementation while preserving a codeb
 
 ---
 
+## 18. Portfolio Integration (Wealthfolio → Investment OS)
+
+The Portfolio module is being upgraded to full financial capability by
+integrating functionality from the Wealthfolio codebase (AGPL-3.0, local
+clone at `F:\dev\wealthfolio`).
+
+**READ FIRST before touching anything portfolio-related:**
+[`docs/PORTFOLIO_INTEGRATION_PLAN.md`](docs/PORTFOLIO_INTEGRATION_PLAN.md)
+
+Key rules:
+
+- Work on `feature/portfolio-integration` (forked from `dev`), never `main`.
+- Financial persistence uses **SQLx** (same as the rest of this repo).
+  Do not introduce Diesel.
+- **Do not copy Wealthfolio's unwrap/expect panic points** — port business
+  logic with typed, recoverable errors only.
+- Keep research and financial domains as separate modules in `crates/domain`,
+  linked by foreign keys (`theses.portfolio_holding_id` → `holdings.id`).
+- Reference docs: `docs/wealthfolio-audit/` (14 audit documents of Wealthfolio).
+- Follow the phase plan; each phase must end with a green build + tests.
+
+---
+
 ## 17. Product Alignment Test
 
 Every feature should improve at least one part of this loop:

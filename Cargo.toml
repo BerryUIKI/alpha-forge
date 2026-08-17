@@ -5,6 +5,7 @@ members = [
   "crates/domain",
   "crates/agent-core",
   "crates/artifact-core",
+  "crates/market-data",
   "crates/option-core",
   "crates/provider-core",
   "crates/shared",
@@ -25,5 +26,6 @@ anyhow = "1"
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono", "uuid"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
+rust_decimal = { version = "1", features = ["serde"] }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 csv = "1.3"
