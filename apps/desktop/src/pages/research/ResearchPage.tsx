@@ -608,7 +608,7 @@ export function ResearchPage() {
                       className="underline"
                       href={item.url}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       {item.title || item.url}
                     </a>

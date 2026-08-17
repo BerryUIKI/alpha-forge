@@ -25,13 +25,6 @@ import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useLocale } from "@/lib/i18n/useLocale";
 
-interface AgentPanelProps {
-  status?: string;
-  placeholder?: string;
-}
-
-// --- Agent Message Types ---
-
 interface AgentMessage {
   id: string;
   type: "research" | "alert" | "thesis" | "info";
@@ -125,7 +118,7 @@ function AgentInput() {
 
 // --- Main Component ---
 
-export function AgentPanel(_props: AgentPanelProps) {
+export function AgentPanel() {
   const { t } = useLocale();
   const { data: workspaces, isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);

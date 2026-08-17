@@ -109,10 +109,7 @@ export function RightSidebar({
       </div>
 
       {/* Agent Panel Content */}
-      <AgentPanel
-        status="Ready to assist"
-        placeholder="Agent capabilities coming soon"
-      />
+      <AgentPanel />
 
       {/* Drag-to-resize handle */}
       <div
