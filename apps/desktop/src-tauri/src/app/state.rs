@@ -30,8 +30,12 @@ use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 
 // Financial repositories (Phase 2 — Wealthfolio port)
-use crate::database::repositories::account_repository::AccountRepository;
-use crate::database::repositories::activity_repository::ActivityRepository;
+use crate::database::repositories::account_repository::{
+    AccountRepository, PlatformRepository,
+};
+use crate::database::repositories::activity_repository::{
+    ActivityRepository, ImportRunRepository,
+};
 use crate::database::repositories::allocation_target_repository::AllocationTargetRepository;
 use crate::database::repositories::asset_repository::{AssetRepository, QuoteRepository};
 use crate::database::repositories::lot_repository::{LotDisposalRepository, LotRepository};
@@ -87,6 +91,19 @@ pub struct AppState {
     pub portfolio_service: PortfolioService,
     pub plugin_service: PluginService,
     pub system_service: SystemService,
+    // Financial repositories (Phase 3.5 — CRUD commands)
+    pub platform_repo: Arc<PlatformRepository>,
+    pub account_repo: Arc<AccountRepository>,
+    pub asset_repo: Arc<AssetRepository>,
+    pub quote_repo: Arc<QuoteRepository>,
+    pub activity_repo: Arc<ActivityRepository>,
+    pub import_run_repo: Arc<ImportRunRepository>,
+    pub lot_repo: Arc<LotRepository>,
+    pub disposal_repo: Arc<LotDisposalRepository>,
+    pub valuation_repo: Arc<ValuationRepository>,
+    pub taxonomy_repo: Arc<TaxonomyRepository>,
+    pub target_repo: Arc<AllocationTargetRepository>,
+    pub snapshot_repo: Arc<SnapshotRepository>,
     // Financial services (Phase 2 — Wealthfolio port)
     pub holdings_service: Arc<HoldingsService>,
     pub lot_service: LotService,
@@ -163,12 +180,14 @@ impl AppState {
         let system_service = SystemService::new(app_handle.clone(), db_pool.clone());
 
         // Financial repositories (Phase 2 — Wealthfolio port)
+        let platform_repo = Arc::new(PlatformRepository::new(db_pool.clone()));
         let account_repo = Arc::new(AccountRepository::new(db_pool.clone()));
         let asset_repo = Arc::new(AssetRepository::new(db_pool.clone()));
         let quote_repo = Arc::new(QuoteRepository::new(db_pool.clone()));
         let lot_repo = Arc::new(LotRepository::new(db_pool.clone()));
         let disposal_repo = Arc::new(LotDisposalRepository::new(db_pool.clone()));
         let activity_repo = Arc::new(ActivityRepository::new(db_pool.clone()));
+        let import_run_repo = Arc::new(ImportRunRepository::new(db_pool.clone()));
         let valuation_repo = Arc::new(ValuationRepository::new(db_pool.clone()));
         let taxonomy_repo = Arc::new(TaxonomyRepository::new(db_pool.clone()));
         let target_repo = Arc::new(AllocationTargetRepository::new(db_pool.clone()));
@@ -243,6 +262,19 @@ impl AppState {
             portfolio_service,
             plugin_service,
             system_service,
+            // Financial repositories (Phase 3.5 — CRUD commands)
+            platform_repo,
+            account_repo,
+            asset_repo,
+            quote_repo,
+            activity_repo,
+            import_run_repo,
+            lot_repo,
+            disposal_repo,
+            valuation_repo,
+            taxonomy_repo,
+            target_repo,
+            snapshot_repo,
             // Financial services (Phase 2 — Wealthfolio port)
             holdings_service,
             lot_service,
