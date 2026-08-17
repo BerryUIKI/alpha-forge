@@ -1,7 +1,7 @@
 /**
  * RightSidebar Component
  *
- * Main container for the right collapsible sidebar (Module C - Agent panel).
+ * Main container for the right collapsible sidebar (Agent panel).
  * Mirrors left sidebar interaction patterns with persistence and resize.
  *
  * Features:
@@ -10,11 +10,12 @@
  * - State persistence via localStorage
  * - Synchronized toggle with MainContent operation bar
  *
- * @version GUI-M1-1
+ * @version GUI-M0
  */
 
 import { useCallback } from "react";
 import { ChevronRight, GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { RightSidebarProps } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AgentPanel } from "./AgentPanel";
@@ -60,14 +61,14 @@ export function RightSidebar({
     // Collapsed state - minimal UI (just toggle button)
     return (
       <aside
-        className="flex h-full flex-col border-l border-border bg-card transition-all duration-300 ease-in-out"
+        className="flex h-full flex-col border-l border-border bg-card transition-[width] duration-300 ease-in-out"
         style={{ width: "48px" }}
         aria-label="Right sidebar (collapsed)"
       >
         {/* Expand Button */}
         <button
           onClick={handleToggle}
-          className="flex h-12 items-center justify-center border-b border-border transition-colors hover:bg-accent"
+          className="flex h-14 items-center justify-center border-b border-border transition-colors hover:bg-accent"
           aria-label="Expand agent sidebar"
           title="Expand agent sidebar (Ctrl+2)"
         >
@@ -85,17 +86,22 @@ export function RightSidebar({
   // Expanded state with resize handle
   return (
     <aside
-      className={`relative flex h-full flex-col border-l border-border bg-card transition-all duration-300 ease-in-out ${
-        isResizing ? "select-none" : ""
-      }`}
+      className={cn(
+        "relative flex h-full flex-col border-l border-border bg-card transition-[width] duration-300 ease-in-out",
+        isResizing && "select-none",
+      )}
       style={{ width: `${width}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
       aria-label="Right sidebar (Agent panel)"
     >
-      {/* Collapse Button */}
-      <div className="flex items-center justify-start border-b border-border p-2">
+      {/* Header with collapse button */}
+      <div className="flex items-center justify-between border-b border-border pl-4 pr-2 h-14">
+        <h3 className="flex items-center gap-2 text-sm font-semibold">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          Agent
+        </h3>
         <button
           onClick={handleToggle}
-          className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
+          className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-accent"
           aria-label="Collapse agent sidebar"
           title="Collapse agent sidebar (Ctrl+2)"
         >

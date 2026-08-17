@@ -1,9 +1,9 @@
 /**
  * Layout Components Module
  *
- * Hybrid layout combining Codex-style workspace selection with route-based navigation.
- * - LeftSidebar: Workspace selector, project list, user operations
- * - MainContent: OperationBar, routed pages, StatusBar
+ * Three-zone layout:
+ * - LeftSidebar: navigation with NavItem/NavGroup
+ * - MainContent: TopBar, routed pages, StatusBar
  * - RightSidebar: Collapsible Agent panel
  */
 
@@ -11,10 +11,13 @@
 export { MainLayout } from "./MainLayout";
 
 // Left Sidebar components
-export { LeftSidebar, WorkspaceSelector, ScrollableList, UserOperations } from "./LeftSidebar";
+export { LeftSidebar, NavItem, NavGroup } from "./LeftSidebar";
 
 // Main Content components
-export { MainContent, OperationBar, StatusBar } from "./MainContent";
+export { MainContent, StatusBar } from "./MainContent";
+
+// Top Bar components
+export { TopBar } from "./TopBar";
 
 // Right Sidebar components
 export { RightSidebar, AgentPanel } from "./RightSidebar";
@@ -23,19 +26,15 @@ export { RightSidebar, AgentPanel } from "./RightSidebar";
 export type {
   SidebarState,
   AppStatus,
-  WorkspaceType,
-  UserMenuItem,
+  NavItem as NavItemType,
+  NavGroup as NavGroupType,
   LeftSidebarProps,
-  WorkspaceSelectorProps,
-  ScrollableListProps,
-  ScrollableListItem,
-  UserOperationsProps,
+  TopBarProps,
+  MainContentProps,
+  StatusBarProps,
   RightSidebarProps,
   AgentPanelProps,
-  MainContentProps,
-  OperationBarProps,
-  StatusBarProps,
 } from "./types";
 
 // Constants
-export { WORKSPACE_OPTIONS, DEFAULT_SIDEBAR_WIDTHS } from "./types";
+export { DEFAULT_SIDEBAR_WIDTHS } from "./types";

@@ -2,8 +2,10 @@ import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { TodayPage } from "@/pages/today/TodayPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
+import { ThesesPage } from "@/pages/theses/ThesesPage";
 import { JournalPage } from "@/pages/journal/JournalPage";
 import { PortfolioPage } from "@/pages/portfolio/PortfolioPage";
+import { KnowledgePage } from "@/pages/knowledge/KnowledgePage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { OptionsPage } from "@/pages/options/OptionsPage";
@@ -24,8 +26,10 @@ export const router = createBrowserRouter([
       { index: true, element: <TodayPage /> },
       { path: "today", element: <TodayPage /> },
       { path: "research", element: <ResearchPage /> },
+      { path: "theses", element: <ThesesPage /> },
       { path: "journal", element: <JournalPage /> },
       { path: "portfolio", element: <PortfolioPage /> },
+      { path: "knowledge", element: <KnowledgePage /> },
       { path: "artifacts", element: <ArtifactsPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "options", element: <OptionsPage /> },

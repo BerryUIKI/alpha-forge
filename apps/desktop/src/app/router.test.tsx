@@ -1,4 +1,4 @@
-// Tests for route rendering with GUI-M1 layout
+// Tests for route rendering with the redesigned GUI layout
 
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -11,10 +11,13 @@ import { LocaleProvider } from "@/lib/i18n";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { TodayPage } from "@/pages/today/TodayPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
+import { ThesesPage } from "@/pages/theses/ThesesPage";
 import { JournalPage } from "@/pages/journal/JournalPage";
 import { PortfolioPage } from "@/pages/portfolio/PortfolioPage";
+import { KnowledgePage } from "@/pages/knowledge/KnowledgePage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
+import { OptionsPage } from "@/pages/options/OptionsPage";
 
 function renderWithRouter(initialEntry: string = "/") {
   const queryClient = new QueryClient({
@@ -34,10 +37,13 @@ function renderWithRouter(initialEntry: string = "/") {
           { index: true, element: <TodayPage /> },
           { path: "today", element: <TodayPage /> },
           { path: "research", element: <ResearchPage /> },
+          { path: "theses", element: <ThesesPage /> },
           { path: "journal", element: <JournalPage /> },
           { path: "portfolio", element: <PortfolioPage /> },
+          { path: "knowledge", element: <KnowledgePage /> },
           { path: "artifacts", element: <ArtifactsPage /> },
           { path: "settings", element: <SettingsPage /> },
+          { path: "options", element: <OptionsPage /> },
         ],
       },
     ],
@@ -71,6 +77,11 @@ describe("Router - Basic Rendering", () => {
     expect(container.firstChild).toBeTruthy();
   });
 
+  it("renders Theses page without crashing", () => {
+    const { container } = renderWithRouter("/theses");
+    expect(container.firstChild).toBeTruthy();
+  });
+
   it("renders Journal page without crashing", () => {
     const { container } = renderWithRouter("/journal");
     expect(container.firstChild).toBeTruthy();
@@ -78,6 +89,11 @@ describe("Router - Basic Rendering", () => {
 
   it("renders Portfolio page without crashing", () => {
     const { container } = renderWithRouter("/portfolio");
+    expect(container.firstChild).toBeTruthy();
+  });
+
+  it("renders Knowledge page without crashing", () => {
+    const { container } = renderWithRouter("/knowledge");
     expect(container.firstChild).toBeTruthy();
   });
 
@@ -90,26 +106,30 @@ describe("Router - Basic Rendering", () => {
     const { container } = renderWithRouter("/settings");
     expect(container.firstChild).toBeTruthy();
   });
+
+  it("renders Options page without crashing", () => {
+    const { container } = renderWithRouter("/options");
+    expect(container.firstChild).toBeTruthy();
+  });
 });
 
-describe("Router - GUI-M1 Layout Structure", () => {
+describe("Router - GUI Layout Structure", () => {
   it("renders left sidebar", () => {
     renderWithRouter("/");
     const sidebar = screen.getByLabelText(/left sidebar/i);
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("renders workspace selector", () => {
+  it("renders dashboard page with tab bar", () => {
     renderWithRouter("/");
-    // The Today page shows a workspace selection heading
-    const heading = screen.getByRole("heading", { name: /选择工作区|select.*workspace/i });
-    expect(heading).toBeInTheDocument();
+    // The dashboard shows tabs
+    expect(screen.getByRole("button", { name: /overview/i })).toBeInTheDocument();
   });
 
   it("renders main content area", () => {
     renderWithRouter("/");
-    // Main content area exists (might not have role="main")
-    const main = document.querySelector("main, [class*='main-content'], [class*='flex-1']");
+    // Main content area exists (flex-1 container)
+    const main = document.querySelector("[class*='flex-1']");
     expect(main).toBeTruthy();
   });
 });

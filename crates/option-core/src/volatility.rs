@@ -28,8 +28,21 @@ pub fn calculate_implied_volatility(
     max_iterations: usize,
     precision: f64,
 ) -> Result<f64> {
+    crate::pricing::validate_pricing_input(s, k, t, 0.01)?;
+
+    if !market_price.is_finite() || market_price <= 0.0 {
+        return Err(OptionError::InvalidParameters(
+            "Market price must be finite and positive".to_string(),
+        ));
+    }
+
     // Initial guess for volatility
     let mut sigma = 0.5; // Start with 50% volatility as initial guess
+
+    // Bound sigma to a sane range so the solver cannot drift outside
+    // financially meaningful values.
+    const MIN_SIGMA: f64 = 0.001;
+    const MAX_SIGMA: f64 = 5.0;
 
     for _ in 0..max_iterations {
         // Calculate price with current sigma
@@ -53,10 +66,11 @@ pub fn calculate_implied_volatility(
 
         sigma -= diff / vega;
 
-        // Ensure sigma stays positive
-        if sigma <= 0.0 {
-            sigma = 0.01;
+        // Keep sigma within the bounded range
+        if !sigma.is_finite() {
+            return Err(OptionError::IvConvergenceFailed);
         }
+        sigma = sigma.clamp(MIN_SIGMA, MAX_SIGMA);
     }
 
     Err(OptionError::IvConvergenceFailed)
@@ -119,6 +133,161 @@ mod tests {
         assert!(
             (iv - true_sigma).abs() < 0.01,
             "IV {} != {}",
+            iv,
+            true_sigma
+        );
+    }
+
+    #[test]
+    fn test_iv_roundtrip_high_volatility() {
+        // Roundtrip with high vol (60%) — tests the solver at the edge of the
+        // initial-guess neighborhood
+        let true_sigma = 0.60;
+        let market_price =
+            black_scholes_price(OptionType::Call, 100.0, 100.0, 1.0, 0.05, true_sigma, 0.0)
+                .unwrap();
+
+        let iv = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            market_price,
+            100,
+            0.0001,
+        )
+        .unwrap();
+
+        assert!(
+            (iv - true_sigma).abs() < 0.01,
+            "IV {} != {}",
+            iv,
+            true_sigma
+        );
+    }
+
+    #[test]
+    fn test_iv_roundtrip_low_volatility() {
+        let true_sigma = 0.08;
+        let market_price =
+            black_scholes_price(OptionType::Call, 100.0, 100.0, 1.0, 0.05, true_sigma, 0.0)
+                .unwrap();
+
+        let iv = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            market_price,
+            100,
+            0.0001,
+        )
+        .unwrap();
+
+        assert!(
+            (iv - true_sigma).abs() < 0.01,
+            "IV {} != {}",
+            iv,
+            true_sigma
+        );
+    }
+
+    #[test]
+    fn test_iv_fails_when_max_iterations_exhausted() {
+        // A single iteration cannot converge from 50% toward 20%
+        let market_price =
+            black_scholes_price(OptionType::Call, 100.0, 100.0, 1.0, 0.05, 0.20, 0.0).unwrap();
+
+        let result = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            market_price,
+            0,
+            0.0001,
+        );
+        assert!(matches!(result, Err(OptionError::IvConvergenceFailed)));
+    }
+
+    #[test]
+    fn test_iv_rejects_non_finite_market_price() {
+        let result = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            f64::NAN,
+            100,
+            0.0001,
+        );
+        assert!(matches!(result, Err(OptionError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_iv_rejects_non_positive_market_price() {
+        let result = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            -1.0,
+            100,
+            0.0001,
+        );
+        assert!(matches!(result, Err(OptionError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_iv_rejects_invalid_options() {
+        let result = calculate_implied_volatility(
+            OptionType::Call,
+            -100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            5.0,
+            100,
+            0.0001,
+        );
+        assert!(matches!(result, Err(OptionError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_iv_accuracy_tight_tolerance() {
+        // With a tight tolerance, the recovered IV is accurate to 4 decimal places
+        let true_sigma = 0.25;
+        let market_price =
+            black_scholes_price(OptionType::Call, 100.0, 100.0, 1.0, 0.05, true_sigma, 0.0)
+                .unwrap();
+
+        let iv = calculate_implied_volatility(
+            OptionType::Call,
+            100.0,
+            100.0,
+            1.0,
+            0.05,
+            0.0,
+            market_price,
+            200,
+            1e-6,
+        )
+        .unwrap();
+
+        assert!(
+            (iv - true_sigma).abs() < 1e-4,
+            "IV {} != {} within 4 decimal places",
             iv,
             true_sigma
         );

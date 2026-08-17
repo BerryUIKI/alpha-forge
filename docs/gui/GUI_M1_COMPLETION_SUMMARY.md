@@ -1,5 +1,11 @@
 # GUI-M1 Milestone - Completion Summary
 
+> **⚠️ SUPERSEDED (2026-08-16)** — The GUI-M1 Codex-style layout described here
+> was superseded by the GUI redesign (PRs #105–#111, `docs/gui/GUI_MILESTONE.md`).
+> The new `LeftSidebar` uses `NavItem`/`NavGroup` navigation groups, and the
+> `FunctionalViewSelector`, `ToolsList`, `UserOperations`, `OperationBar`, and
+> related components were removed. Keep this document for historical reference only.
+
 ## Overview
 
 This document summarizes the completion of **GUI-M1: Layout Restructuring** milestone, which implements a Codex-style desktop interface for Investment OS.

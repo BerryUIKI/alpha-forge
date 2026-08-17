@@ -130,6 +130,12 @@ The window manager opens `/artifact/{artifact_id}/{artifact_type}`. The React ro
 ### P1-1: Research navigation links do not select the requested context
 
 **Navigation producers:** `apps/desktop/src/components/layout/MainContent/OperationBar.tsx:53`, `WorkspaceDropdown.tsx:31`
+>
+> **UPDATE (2026-08-16):** `OperationBar.tsx` and `WorkspaceDropdown.tsx` have been
+> removed in the GUI redesign (PRs #105–#111). The new `TopBar` uses a direct
+> route-based breadcrumb navigation. Research context is now set via URL search
+> params (`?workspace=`) and the `TopBar` breadcrumb follows the current route.
+> Re-assess this finding against the current layout.
 **Consumer:** `apps/desktop/src/pages/research/ResearchPage.tsx:14`
 
 The layout navigates with `workspace` and `project` query parameters. `ResearchPage` never reads them.
