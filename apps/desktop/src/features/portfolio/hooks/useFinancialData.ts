@@ -21,6 +21,8 @@ import type {
   CreateAccountInput,
   CreateAssetInput,
   CreateActivityInput,
+  CreateLotInput,
+  FifoReductionResult,
 } from "@/types/financial";
 
 // ── Query Key Factory ──────────────────────────────────────────────────────
@@ -199,5 +201,36 @@ export function useListActivitiesByAccount(accountId: string | undefined) {
     queryKey: financialKeys.activities(accountId ?? ""),
     queryFn: () => desktopApi.financial.listActivitiesByAccount(accountId!),
     enabled: Boolean(accountId),
+  });
+}
+
+// ── Lot CRUD + Sell (Phase 3.5) ────────────────────────────────────────────
+
+export function useCreateLot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateLotInput) =>
+      desktopApi.financial.createLot(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useRecordSell() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      accountId,
+      assetId,
+      activityId,
+    }: {
+      accountId: string;
+      assetId: string;
+      activityId: string;
+    }) => desktopApi.financial.recordSell(accountId, assetId, activityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
   });
 }
