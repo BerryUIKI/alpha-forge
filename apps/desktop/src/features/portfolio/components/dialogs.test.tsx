@@ -18,6 +18,8 @@ const financialMock = vi.hoisted(() => ({
   createFinancialAccount: vi.fn(),
   createAsset: vi.fn(),
   createActivity: vi.fn(),
+  createLot: vi.fn(),
+  recordSell: vi.fn(),
   listActiveAssets: vi.fn(),
 }));
 
@@ -354,6 +356,7 @@ describe("AddActivityDialog", () => {
 
   it("submits form and calls onSuccess for buy activity", async () => {
     financialMock.createActivity.mockResolvedValue({ id: "activity-1" });
+    financialMock.createLot.mockResolvedValue({ id: "lot-1" });
     renderWithProviders(<AddActivityDialog {...defaultProps} />);
     await assetOptionsLoaded();
     fireEvent.change(screen.getByLabelText("Asset name"), {
