@@ -153,7 +153,7 @@ export function useOptionStrategy(id: string) {
  * const fetchMutation = useFetchOptionChain();
  * fetchMutation.mutate({ workspaceId, symbol: "AAPL" });
  */
-export function useFetchOptionChain(locale: Locale) {
+export function useFetchOptionChain(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -188,7 +188,7 @@ export function useFetchOptionChain(locale: Locale) {
  * const deleteMutation = useDeleteOptionChain();
  * deleteMutation.mutate(chainId);
  */
-export function useDeleteOptionChain(locale: Locale) {
+export function useDeleteOptionChain(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -266,7 +266,7 @@ export function useCalculateIV() {
  * const createMutation = useCreateOptionStrategy();
  * createMutation.mutate({ name: "Bull Call Spread", strategyType: "bull_call_spread", workspaceId });
  */
-export function useCreateOptionStrategy(locale: Locale) {
+export function useCreateOptionStrategy(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -290,7 +290,7 @@ export function useCreateOptionStrategy(locale: Locale) {
  * const updateMutation = useUpdateOptionStrategy();
  * updateMutation.mutate({ id: strategyId, name: "Updated Name" });
  */
-export function useUpdateOptionStrategy(locale: Locale) {
+export function useUpdateOptionStrategy(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -314,7 +314,7 @@ export function useUpdateOptionStrategy(locale: Locale) {
  * const deleteMutation = useDeleteOptionStrategy();
  * deleteMutation.mutate(strategyId);
  */
-export function useDeleteOptionStrategy(locale: Locale) {
+export function useDeleteOptionStrategy(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -335,7 +335,7 @@ export function useDeleteOptionStrategy(locale: Locale) {
  * const deleteMutation = useDeleteOptionContract();
  * deleteMutation.mutate(contractId);
  */
-export function useDeleteOptionContract(locale: Locale) {
+export function useDeleteOptionContract(_locale: Locale) {
   const queryClient = useQueryClient();
 
   return useMutation({

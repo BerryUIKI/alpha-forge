@@ -17,7 +17,6 @@ import type {
   ActivityType,
   ActivityStatus,
   CreateActivityInput,
-  Asset,
 } from "@/types/financial";
 
 const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [

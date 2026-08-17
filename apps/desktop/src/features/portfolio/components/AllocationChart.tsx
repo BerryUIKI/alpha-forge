@@ -9,7 +9,7 @@
 
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useAllocation } from "@/features/portfolio/hooks/useFinancialData";
-import { fmtMoney, fmtPercent } from "./helpers";
+import { fmtMoney } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 

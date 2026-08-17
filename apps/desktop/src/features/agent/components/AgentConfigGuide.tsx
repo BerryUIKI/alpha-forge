@@ -30,7 +30,6 @@ export function AgentConfigGuide({ isOpen, onClose, status }: AgentConfigGuidePr
   };
 
   const isError = status === "error";
-  const isUnconfigured = status === "unconfigured";
 
   return (
     <div

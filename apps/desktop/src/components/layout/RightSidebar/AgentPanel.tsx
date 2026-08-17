@@ -8,7 +8,7 @@
  */
 
 import { useState } from "react";
-import { Bot, X, Play, Square, AlertCircle, Settings, Activity, Send, MessageSquare } from "lucide-react";
+import { Bot, X, Play, Square, Send } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
@@ -24,7 +24,6 @@ import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { AgentConnectionStatus } from "@/components/layout/types";
 
 interface AgentPanelProps {
   status?: string;
@@ -72,29 +71,7 @@ const SAMPLE_MESSAGES: AgentMessage[] = [
   },
 ];
 
-// --- Sub-components ---
-
-function AgentStatusIndicator({ status }: { status: AgentConnectionStatus }) {
-  const { t } = useLocale();
-
-  const statusConfig = {
-    idle: { color: "bg-gray-400", text: t("statusIdle"), icon: Bot, animate: "" },
-    running: { color: "bg-blue-500", text: t("statusRunning"), icon: Activity, animate: "animate-pulse" },
-    unconfigured: { color: "bg-yellow-500", text: t("statusUnconfigured"), icon: Settings, animate: "" },
-    error: { color: "bg-red-500", text: t("statusError"), icon: AlertCircle, animate: "" },
-  };
-
-  const config = statusConfig[status];
-  const Icon = config.icon;
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className={`h-1.5 w-1.5 rounded-full ${config.color} ${config.animate}`} />
-      <Icon className="h-3 w-3 text-muted-foreground" />
-      <span className="text-xs text-muted-foreground">{config.text}</span>
-    </div>
-  );
-}
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function AgentMessageItem({ message }: { message: AgentMessage }) {
   const style = MESSAGE_TYPE_STYLES[message.type];

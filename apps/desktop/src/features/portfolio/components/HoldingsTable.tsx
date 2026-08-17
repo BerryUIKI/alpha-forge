@@ -9,7 +9,6 @@
 
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useHoldings } from "@/features/portfolio/hooks/useFinancialData";
-import { usePortfolioPositions } from "@/features/portfolio/hooks/usePortfolio";
 import { fmtMoney, fmtNumber, fmtPercent, fmtGainLoss, gainLossClass } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
 import { TrendingUp, TrendingDown } from "lucide-react";

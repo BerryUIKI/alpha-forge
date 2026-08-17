@@ -4,7 +4,6 @@ import {
   getLocalizedErrorDescription,
   processErrorResponse,
   isKnownErrorCode,
-  type ErrorCode,
 } from "./errorMessages";
 
 describe("errorMessages", () => {

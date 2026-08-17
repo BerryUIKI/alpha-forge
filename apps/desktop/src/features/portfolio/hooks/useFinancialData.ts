@@ -10,19 +10,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type {
-  HoldingsSummary,
-  DailyAccountValuation,
-  AllocationBreakdown,
-  NetWorthSnapshot,
-  HoldingSnapshot,
-  FinancialAccount,
-  Asset,
-  Activity,
   CreateAccountInput,
   CreateAssetInput,
   CreateActivityInput,
   CreateLotInput,
-  FifoReductionResult,
 } from "@/types/financial";
 
 // ── Query Key Factory ──────────────────────────────────────────────────────

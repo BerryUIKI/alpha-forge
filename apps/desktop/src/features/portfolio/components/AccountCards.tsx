@@ -14,7 +14,7 @@ import { useListFinancialAccounts } from "@/features/portfolio/hooks/useFinancia
 import { useNetWorth } from "@/features/portfolio/hooks/useFinancialData";
 import { fmtMoney } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
-import { Wallet, TrendingUp, TrendingDown, Banknote, Plus } from "lucide-react";
+import { Wallet, Banknote, Plus } from "lucide-react";
 
 interface AccountCardsProps {
   workspaceId: string;

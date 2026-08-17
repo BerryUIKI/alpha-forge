@@ -17,7 +17,6 @@ import { processAppError } from "@/lib/errors";
 import type {
   StartShadowAnalysisInput,
   ShadowAnalysisResult,
-  GooseHealthStatus,
 } from "@/lib/desktop-api/goose";
 
 // Re-export types for convenience

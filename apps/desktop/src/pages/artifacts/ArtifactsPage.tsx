@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText } from "lucide-react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
@@ -72,8 +72,6 @@ export function ArtifactsPage() {
     );
   }
 
-  const selectedArtifact = artifacts.data?.find((a) => a.id === selectedArtifactId);
-
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -137,7 +135,7 @@ export function ArtifactsPage() {
                   artifact={artifact}
                   isSelected={selectedArtifactId === artifact.id}
                   onSelect={() => setSelectedArtifactId(artifact.id)}
-                  onDelete={() => handleDeleteArtifact(artifact.id)}
+                  _onDelete={() => handleDeleteArtifact(artifact.id)}
                   t={t}
                 />
               ))}
@@ -167,7 +165,7 @@ interface ArtifactListItemProps {
   artifact: Artifact;
   isSelected: boolean;
   onSelect: () => void;
-  onDelete: () => void;
+  _onDelete: () => void;
   t: (key: any) => string;
 }
 
@@ -175,9 +173,10 @@ function ArtifactListItem({
   artifact,
   isSelected,
   onSelect,
-  onDelete,
+  _onDelete,
   t,
 }: ArtifactListItemProps) {
+  void _onDelete;
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
