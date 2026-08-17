@@ -376,6 +376,68 @@ pub struct CalculateIVParams {
 }
 
 // ============================================
+// File-based Option Chain Import
+// ============================================
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportOptionChainParams {
+    pub workspace_id: String,
+    /// Absolute path to the `.csv` or `.json` file selected by the user.
+    pub file_path: String,
+}
+
+/// Import an option chain from a validated local file.
+///
+/// Rust owns the file read, schema validation, and persistence. React only
+/// supplies the workspace ID and the selected file path. The endpoint limits
+/// file size (10 MB), rejects path traversal, and reports partial imports.
+#[tauri::command(rename_all = "camelCase")]
+pub async fn import_option_chain_file(
+    params: ImportOptionChainParams,
+    state: State<'_, AppState>,
+) -> Result<OptionChainResponse, AppError> {
+    if params.workspace_id.trim().is_empty() {
+        return Err(AppError::Validation(
+            "Workspace ID cannot be empty".to_string(),
+        ));
+    }
+    let file_path = std::path::Path::new(&params.file_path);
+
+    let import = crate::providers::market_data::file_provider::import_option_chain_file(
+        file_path,
+        &params.workspace_id,
+    )
+    .map_err(|e| match e {
+        AppError::Validation(_) | AppError::NotFound(_) => e,
+        e => AppError::Internal(format!("File import failed: {}", e)),
+    })?;
+
+    let now = chrono::Utc::now();
+    let chain = OptionChain {
+        id: uuid::Uuid::new_v4().to_string(),
+        workspace_id: params.workspace_id.clone(),
+        symbol: import.symbol,
+        underlying_price: import.underlying_price,
+        as_of: now,
+        data_source: DataSource::File,
+        created_at: now,
+    };
+
+    state
+        .option_service
+        .persist_file_chain(
+            chain.clone(),
+            &import.contracts,
+            import.rejected_count,
+            import.rejection_detail,
+        )
+        .await?;
+
+    Ok(chain.into())
+}
+
+// ============================================
 // Option Chain CRUD Commands
 // ============================================
 

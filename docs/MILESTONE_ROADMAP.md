@@ -14,31 +14,31 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 
 ## Milestone Overview
 
-| Milestone | Status | Timeline | Description |
-|-----------|--------|----------|-------------|
-| M0 | ✅ Complete | Week 1-2 | Project Foundation |
-| M1 | ✅ Complete | Week 3-4 | Desktop Runtime Foundation |
-| M1.5 | ✅ Complete | Week 5-6 | Application Foundation |
-| M2 | ⚠️ Stabilization required | Week 7-10 | Agent Runtime |
-| M3 | ⚠️ Stabilization required | Week 11-14 | Artifact Intelligence System |
-| M4 | ✅ Complete | Week 15-18 | Research Workspace |
-| M5 | ✅ Complete | Week 19-22 | Investment Knowledge System |
-| M6 | ✅ Complete | Week 23-26 | Portfolio Intelligence |
-| M7 | ⚠️ Partial | Week 27-30 | Internal Plugin Ecosystem |
-| M8 | 🚧 Reopened | Rebaseline 2026-08-12 | Local MVP Completion & Release Readiness |
-| M9 | 🚧 Reopened | Rebaseline 2026-08-12 | Option Module Integration |
-| M10 | 📋 Planned | After stabilization | Goose Agent Integration |
+| Milestone | Status                    | Timeline              | Description                              |
+| --------- | ------------------------- | --------------------- | ---------------------------------------- |
+| M0        | ✅ Complete               | Week 1-2              | Project Foundation                       |
+| M1        | ✅ Complete               | Week 3-4              | Desktop Runtime Foundation               |
+| M1.5      | ✅ Complete               | Week 5-6              | Application Foundation                   |
+| M2        | ⚠️ Stabilization required | Week 7-10             | Agent Runtime                            |
+| M3        | ⚠️ Stabilization required | Week 11-14            | Artifact Intelligence System             |
+| M4        | ✅ Complete               | Week 15-18            | Research Workspace                       |
+| M5        | ✅ Complete               | Week 19-22            | Investment Knowledge System              |
+| M6        | ✅ Complete               | Week 23-26            | Portfolio Intelligence                   |
+| M7        | ⚠️ Partial                | Week 27-30            | Internal Plugin Ecosystem                |
+| M8        | 🚧 Reopened               | Rebaseline 2026-08-12 | Local MVP Completion & Release Readiness |
+| M9        | 🚧 Reopened               | Rebaseline 2026-08-12 | Option Module Integration                |
+| M10       | 📋 Planned                | After stabilization   | Goose Agent Integration                  |
 
 ## Delivery document registry
 
 This roadmap is the program entry point. Implementation agents must follow the linked execution documents for the active milestone.
 
-| Milestone/workstream | Supporting documents |
-|---|---|
-| All milestones | [Sequential Task Breakdown](milestones/SEQUENTIAL_TASK_BREAKDOWN.md), [Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md), [Git Workflow](GIT_WORKFLOW.md), [Architecture](ARCHITECTURE.md), [Security](SECURITY.md) |
-| M8 i18n | [i18n Index](i18n/README.md), [i18n Architecture](i18n/ARCHITECTURE.md), [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), [Terminology Guide](i18n/TERMINOLOGY_GUIDE.md), [String Inventory](i18n/STRING_INVENTORY.md), [M8 Decision Record](M8_DECISION_RECORD.md) |
-| M9 Option | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md) |
-| M10 Goose | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md) |
+| Milestone/workstream | Supporting documents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All milestones       | [Sequential Task Breakdown](milestones/SEQUENTIAL_TASK_BREAKDOWN.md), [Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md), [Git Workflow](GIT_WORKFLOW.md), [Architecture](ARCHITECTURE.md), [Security](SECURITY.md)                                                                                                                                                                                                                                                                                                                                                                                           |
+| M8 i18n              | [i18n Index](i18n/README.md), [i18n Architecture](i18n/ARCHITECTURE.md), [i18n Implementation Plan](i18n/IMPLEMENTATION_PLAN.md), [Terminology Guide](i18n/TERMINOLOGY_GUIDE.md), [String Inventory](i18n/STRING_INVENTORY.md), [M8 Decision Record](M8_DECISION_RECORD.md)                                                                                                                                                                                                                                                                                                                                     |
+| M9 Option            | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md), [ADR-0005 Pricing](DECISIONS/0005-option-pricing-models.md), [ADR-0006 Providers](DECISIONS/0006-option-data-providers.md), [ADR-0007 Artifact Isolation](DECISIONS/0007-option-artifact-isolation.md) |
+| M10 Goose            | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md)                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 Status in this file is authoritative at the program level. Detailed documents own work-package checklists; historical branch names and focused layer-level tests do not override the acceptance gates.
 
@@ -51,9 +51,11 @@ The current corrective program is defined by the [Stabilization Roadmap](STABILI
 **Status**: Complete
 
 ### Goal
+
 Create a stable foundation for AI-assisted development.
 
 ### Deliverables
+
 - ✓ Repository structure (pnpm + Cargo workspaces)
 - ✓ Documentation system
 - ✓ `AGENTS.md` — coding standards and agent rules
@@ -62,11 +64,13 @@ Create a stable foundation for AI-assisted development.
 - ✓ Complete documentation suite
 
 ### Key Documents
+
 - [AGENTS.md](../AGENTS.md) — Development guidelines
 - [docs/ARCHITECTURE.md](ARCHITECTURE.md) — System architecture
 - [docs/GIT_WORKFLOW.md](GIT_WORKFLOW.md) — Branching and PR process
 
 ### Acceptance Criteria
+
 ```text
 Repository initialized
     ↓
@@ -84,9 +88,11 @@ Ready for development
 **Status**: Complete
 
 ### Goal
+
 Build the native desktop application foundation.
 
 ### Deliverables
+
 - ✓ Tauri 2 application shell
 - ✓ Rust backend structure
 - ✓ React frontend setup
@@ -96,15 +102,17 @@ Build the native desktop application foundation.
 - ✓ Basic application shell
 
 ### Tech Stack
-| Layer | Technology |
-|-------|-----------|
-| Desktop Shell | Tauri 2 |
-| Backend | Rust, Tokio, SQLx |
-| Frontend | React 19, TypeScript, Vite 6 |
-| UI | Tailwind CSS 4, shadcn/ui |
-| Quality | ESLint, Prettier, Vitest, Clippy |
+
+| Layer         | Technology                       |
+| ------------- | -------------------------------- |
+| Desktop Shell | Tauri 2                          |
+| Backend       | Rust, Tokio, SQLx                |
+| Frontend      | React 19, TypeScript, Vite 6     |
+| UI            | Tailwind CSS 4, shadcn/ui        |
+| Quality       | ESLint, Prettier, Vitest, Clippy |
 
 ### Acceptance Criteria
+
 ```text
 Launch application
     ↓
@@ -124,11 +132,13 @@ Application closes cleanly
 **Status**: Complete
 
 ### Goal
+
 Transform the technical skeleton into an extensible application platform.
 
 ### Deliverables
 
 #### Backend (Rust)
+
 - ✅ Service layer architecture
 - ✅ Repository layer abstraction
 - ✅ Workspace domain models
@@ -136,6 +146,7 @@ Transform the technical skeleton into an extensible application platform.
 - ✅ Desktop API expansion (22+ commands)
 
 #### Frontend (React)
+
 - ✅ Shared UI foundation (shadcn/ui integration)
 - ✅ Error/loading states
 - ✅ Toast notification system
@@ -143,6 +154,7 @@ Transform the technical skeleton into an extensible application platform.
 - ✅ Global error boundary
 
 #### Testing
+
 - ✅ Vitest test suite setup
 - ✅ Component tests
 - ✅ Hook tests
@@ -150,6 +162,7 @@ Transform the technical skeleton into an extensible application platform.
 - ✅ Repository tests (48 tests total)
 
 ### Architecture Layers
+
 ```text
 ┌─────────────────────────────────────┐
 │         React Frontend              │
@@ -167,6 +180,7 @@ Transform the technical skeleton into an extensible application platform.
 ```
 
 ### Acceptance Criteria
+
 ```text
 User creates Workspace
     ↓
@@ -180,6 +194,7 @@ All tests pass
 ```
 
 ### Definition of Done
+
 - [ ] All deliverables complete
 - [ ] Tests written and passing
 - [ ] Documentation updated
@@ -193,11 +208,13 @@ All tests pass
 **Status**: Lifecycle and credential repairs are merged (#80, #81); milestone acceptance remains incomplete pending the full Agent-to-Artifact verification gates.
 
 ### Goal
+
 Create the core intelligence engine of AlphaForge.
 
 ### Deliverables
 
 #### Agent Task System
+
 - ✅ Task lifecycle management
 - ✅ Background execution (Tokio)
 - ✅ Event streaming (Tauri events)
@@ -206,17 +223,20 @@ Create the core intelligence engine of AlphaForge.
 - ✅ Timeout enforcement
 
 #### Context System
+
 - ✅ Workspace context
 - 📋 Conversation context (Future)
 - 📋 Research context (Future)
 
 #### Tool System
+
 - 📋 Document tools (Future)
 - 📋 Search tools (Future)
 - 📋 Data tools (Future)
 - 📋 Calculation tools (Future)
 
 #### Provider Integration
+
 - ✅ Typed provider contract and validated structured research-output parser
 - ✅ OpenAI Responses API adapter with keychain-only credential lookup, bounded output, and strict structured output
 - ✅ Agent executor routes tasks through the configured provider with timeout and cancellation handling
@@ -224,6 +244,7 @@ Create the core intelligence engine of AlphaForge.
 - ✅ Safe provider failure messages are persisted and streamed without exposing credentials or raw provider responses
 
 ### Task Lifecycle
+
 ```text
 Create Task
     ↓
@@ -239,16 +260,18 @@ Persist Result
 ```
 
 ### Task States
-| State | Description |
-|-------|-------------|
-| `queued` | Waiting for execution |
-| `running` | Actively executing |
-| `waiting_for_input` | Awaiting user input |
-| `completed` | Successfully finished |
-| `failed` | Error occurred |
-| `cancelled` | User cancelled |
+
+| State               | Description           |
+| ------------------- | --------------------- |
+| `queued`            | Waiting for execution |
+| `running`           | Actively executing    |
+| `waiting_for_input` | Awaiting user input   |
+| `completed`         | Successfully finished |
+| `failed`            | Error occurred        |
+| `cancelled`         | User cancelled        |
 
 ### Acceptance Criteria
+
 ```text
 User inputs research request
     ↓
@@ -268,17 +291,20 @@ Result persisted in SQLite
 **Status**: Persistence, renderers, permission primitives, and the isolated Artifact-window route are merged (#88) with focused verification; packaged smoke acceptance remains pending, so milestone acceptance remains incomplete.
 
 ### Goal
+
 Enable Agents to create interactive research experiences.
 
 ### Deliverables
 
 #### Artifact Runtime
+
 - ✅ Structured output schema
 - ✅ Temporary window creation
 - ✅ Renderer system (predefined React components)
 - ✅ Permission isolation
 
 #### Persistence Layer
+
 - ✅ Artifact database migration
 - ✅ ArtifactRepository with CRUD operations
 - ✅ ArtifactService with business logic
@@ -286,6 +312,7 @@ Enable Agents to create interactive research experiences.
 - ✅ Frontend artifact API and hooks
 
 #### Built-in Artifacts
+
 - ✅ Comparison table renderer
 - ✅ Timeline renderer
 - ✅ Industry map renderer
@@ -293,6 +320,7 @@ Enable Agents to create interactive research experiences.
 - ✅ Risk dashboard renderer
 
 ### Artifact Flow
+
 ```text
 Agent produces validated JSON
     ↓
@@ -310,7 +338,9 @@ Result persisted (optional)
 ```
 
 ### Permission Model
+
 Artifacts are isolated from main application:
+
 - ✓ Receive validated JSON input only
 - ✗ No SQLite access
 - ✗ No filesystem access
@@ -318,10 +348,12 @@ Artifacts are isolated from main application:
 - ✗ No shell execution
 
 ### Verification
+
 - ✅ Rust repository and artifact-runtime tests cover artifact persistence, safe window configuration, and renderer data flow
 - ✅ Frontend artifact API and renderer registry are covered by the workspace test suite
 
 ### Acceptance Criteria
+
 ```text
 Agent generates research result
     ↓
@@ -339,11 +371,13 @@ Artifact closes cleanly
 **Status**: Complete
 
 ### Goal
+
 Turn AlphaForge into a complete AI research environment.
 
 ### Deliverables
 
 #### Research Projects
+
 - [x] Project CRUD operations
 - [x] Document management
 - [x] Source management with recorded provenance and validated public HTTPS links
@@ -351,6 +385,7 @@ Turn AlphaForge into a complete AI research environment.
 - [x] Report persistence
 
 #### Document Intelligence
+
 - [x] Local content parsing, chunking, and lexical query-ranking primitives
 - [x] PDF parsing through a Rust-owned native picker (25 MB limit; extracted text only)
 - [x] Web source extraction through bounded Rust-side HTTPS retrieval
@@ -359,6 +394,7 @@ Turn AlphaForge into a complete AI research environment.
 The current local primitives normalize plain text and HTML supplied to the app, extract text from a user-selected PDF in Rust, retrieve validated public HTTPS pages in Rust, split content into deterministic chunks, and rank matching chunks through the Research page. PDF imports are limited to 25 MB and persist extracted text and title, never the selected local path. Web imports accept HTML or plain text only, cap responses at 5 MB, use a 15-second timeout, validate every redirect (maximum three), and preserve source provenance. Semantic mode is local and explainable: it expands a curated investment vocabulary (for example, revenue/sales and earnings/profit), while exact matches retain the highest score. It does not send content to an external embedding provider or generate investment recommendations.
 
 #### Research Workflow
+
 ```text
 Collect Sources
     ↓
@@ -372,15 +408,17 @@ Persist Knowledge
 ```
 
 ### Data Model
-| Entity | Purpose |
-|--------|---------|
-| ResearchProject | Container for research work |
-| Document | PDFs, web pages, notes |
-| Source | External references with provenance |
-| Note | User annotations |
-| Report | Generated outputs |
+
+| Entity          | Purpose                             |
+| --------------- | ----------------------------------- |
+| ResearchProject | Container for research work         |
+| Document        | PDFs, web pages, notes              |
+| Source          | External references with provenance |
+| Note            | User annotations                    |
+| Report          | Generated outputs                   |
 
 ### Acceptance Criteria
+
 ```text
 User creates research project
     ↓
@@ -400,11 +438,13 @@ All artifacts persisted
 **Status**: Complete
 
 ### Goal
+
 Build persistent investment intelligence.
 
 ### Deliverables
 
 #### Thesis Management
+
 - [x] Investment thesis CRUD
 - [x] Evidence collection
 - [x] Counter-evidence tracking
@@ -413,6 +453,7 @@ Build persistent investment intelligence.
 - [x] Validation scheduling
 
 #### Knowledge Graph
+
 - ✅ Company entities
 - ✅ Industry entities
 - ✅ Technology entities
@@ -420,6 +461,7 @@ Build persistent investment intelligence.
 - ✅ Relationship mapping and thesis links
 
 ### Knowledge Graph Example
+
 ```text
 NVIDIA
     ↓ (produces)
@@ -433,6 +475,7 @@ HBM Memory
 ```
 
 ### Thesis Lifecycle
+
 ```text
 Create Thesis
     ↓
@@ -448,6 +491,7 @@ Review and Improve
 ```
 
 ### Acceptance Criteria
+
 ```text
 User creates investment thesis
     ↓
@@ -463,6 +507,7 @@ Records validation results
 ### Implementation
 
 #### Backend (Rust)
+
 - ✅ Domain models: `InvestmentThesis`, `ThesisEvidence`, `ThesisStatus`, `EvidenceDirection`
 - ✅ Database migration: `0006_theses.sql`
 - ✅ Thesis repository with CRUD operations
@@ -472,26 +517,28 @@ Records validation results
 - ✅ Migration reconciliation for legacy schemas
 
 #### Frontend (TypeScript)
+
 - ✅ Thesis management UI in the Journal workspace
 - ✅ Evidence collection interface with supporting and contradicting evidence
 - ✅ Confidence visualization, immutable history, and lifecycle controls
 
 #### Tauri Commands
-| Command | Description |
-|---------|-------------|
-| `create_thesis` | Create a new investment thesis |
-| `get_thesis` | Get thesis by ID |
-| `list_theses` | List all theses in workspace |
-| `activate_thesis` | Activate a draft thesis |
-| `start_thesis_validation` | Begin validation process |
-| `complete_thesis_validation` | Record validation outcome |
-| `update_thesis_confidence` | Update confidence score |
-| `close_thesis` | Close a thesis |
-| `delete_thesis` | Delete a thesis |
-| `add_thesis_evidence` | Add supporting/contradicting evidence |
-| `list_thesis_evidence` | List all evidence for thesis |
-| `delete_thesis_evidence` | Remove evidence |
-| `list_thesis_confidence_history` | Review confidence changes over time |
+
+| Command                          | Description                           |
+| -------------------------------- | ------------------------------------- |
+| `create_thesis`                  | Create a new investment thesis        |
+| `get_thesis`                     | Get thesis by ID                      |
+| `list_theses`                    | List all theses in workspace          |
+| `activate_thesis`                | Activate a draft thesis               |
+| `start_thesis_validation`        | Begin validation process              |
+| `complete_thesis_validation`     | Record validation outcome             |
+| `update_thesis_confidence`       | Update confidence score               |
+| `close_thesis`                   | Close a thesis                        |
+| `delete_thesis`                  | Delete a thesis                       |
+| `add_thesis_evidence`            | Add supporting/contradicting evidence |
+| `list_thesis_evidence`           | List all evidence for thesis          |
+| `delete_thesis_evidence`         | Remove evidence                       |
+| `list_thesis_confidence_history` | Review confidence changes over time   |
 
 ---
 
@@ -500,11 +547,13 @@ Records validation results
 **Status**: Complete
 
 ### Goal
+
 Connect research with actual investment decisions.
 
 ### Deliverables
 
 #### Portfolio Management
+
 - [x] Account management — workspace-scoped accounts with a desktop UI
 - [x] Holdings tracking — manual position capture and account-level review
 - [x] Transaction import — validated CSV import into immutable account history
@@ -512,12 +561,14 @@ Connect research with actual investment decisions.
 - [x] Exposure calculation — per-symbol and cross-account concentration weights
 
 #### AI Analysis
+
 - [x] Risk concentration analysis — transparent cost-basis thresholds (moderate 10%, high 25%)
 - [x] Theme exposure mapping — explicit symbol-to-knowledge-entity links with cost-basis aggregation
 - [x] Thesis alignment checking — transparent held-symbol matches against workspace thesis content
 - [x] Historical review automation — on-demand review summarizing concentration and unaligned symbols
 
 ### Important Constraints
+
 ```text
 ✓ Portfolio tracking and analysis
 ✓ Research-thesis alignment
@@ -528,6 +579,7 @@ Connect research with actual investment decisions.
 ```
 
 ### Acceptance Criteria
+
 ```text
 User imports portfolio
     ↓
@@ -547,11 +599,13 @@ User reviews insights
 **Status**: Complete
 
 ### Goal
+
 Make AlphaForge extensible.
 
 ### Deliverables
 
 #### Plugin SDK
+
 - [x] Plugin manifest specification — strict internal manifest validation and safe relative-path checks
 - [x] Permission model — declared permissions are persisted and checked against the validated manifest
 - [x] Input/output schemas — bundled JSON Schemas validate payloads before a plugin artifact is created
@@ -559,6 +613,7 @@ Make AlphaForge extensible.
 - [x] Lifecycle management — bundled manifests synchronize at startup; users can enable or disable a registered plugin
 
 #### Official Plugins
+
 1. **company-comparison** — Compare multiple companies side-by-side
 2. **valuation-model** — Interactive valuation scenarios
 3. **industry-map** — Visualize industry relationships
@@ -566,6 +621,7 @@ Make AlphaForge extensible.
 5. **macro-dashboard** — Macro indicator dashboard
 
 ### Plugin Architecture
+
 ```text
 Plugin Manifest
     ↓
@@ -581,6 +637,7 @@ Output Rendering
 ```
 
 ### Acceptance Criteria
+
 ```text
 Plugin registered
     ↓
@@ -602,11 +659,13 @@ Artifact rendered
 **Status**: Reopened on 2026-08-12. Baseline, credential, Agent, Option schema/IPC, and System IPC repairs are merged, but release acceptance remains withdrawn until Artifact routing, remaining workflows, and full verification gates pass.
 
 ### Goal
+
 Ship a safe, local-first, documentable desktop MVP and close the release-quality gaps without adding unapproved commercial services. Prepare AlphaForge for a free, open-source, local desktop MVP while deferring commercial services.
 
 ### Deliverables
 
 #### Infrastructure
+
 - [x] Record the local-only MVP decisions (launch market, locale, platform, privacy, support, release-owner)
 - [x] Complete the `en` and `zh-CN` i18n foundation and critical-workflow rollout
 - [x] Add user-controlled local SQLite backup export
@@ -618,10 +677,12 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [ ] Cloud backup (deferred)
 
 #### Marketplace
+
 - [x] Keep the third-party plugin marketplace deferred; MVP plugins remain internal
 - [x] Document bundled research templates and internal plugin compatibility where shipped
 
 #### Deployment
+
 - [x] Finalize application identity and icons
 - [x] Configure DMG and Windows EXE (NSIS) targets
 - [x] Define signing/notarization, update, rollback, and release-ownership policy
@@ -630,6 +691,7 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [ ] Signing and release automation (release-owner operation)
 
 ### Release Readiness
+
 - [x] Performance optimization
 - [x] Security hardening
 - [x] Documentation review
@@ -658,7 +720,7 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ## M9 — Option Module Integration 🚧
 
-**Status**: Reopened on 2026-08-12. The canonical schema and Option IPC repairs are merged (#83, #84), but the UI does not provide a complete chain-to-strategy workflow and M9 acceptance remains incomplete.
+**Status**: In execution. The rebaseline and decision gate (M9-01) is complete on 2026-08-17: the Option baseline was revalidated against current `dev` (canonical schema and Option IPC repairs merged via #83 and #84; chain-to-strategy UI merged via #95, #97, and #98), and pricing-model, data-provider, and Artifact-isolation decisions are approved in [ADR-0005](DECISIONS/0005-option-pricing-models.md), [ADR-0006](DECISIONS/0006-option-data-providers.md), and [ADR-0007](DECISIONS/0007-option-artifact-isolation.md). M9 acceptance remains incomplete until the remaining vertical slices and the release gate pass.
 
 ### Goal
 
@@ -666,10 +728,10 @@ Integrate evidence-grounded Option pricing, chain analysis, strategies, and port
 
 ### Entry gate
 
-- M8 local MVP is complete unless the product owner explicitly changes the order.
-- [Option baseline](option/README.md) is revalidated against current `dev`.
-- Pricing-model, provider, migration, and Artifact decisions are approved.
-- Historical `integration/option` code has a file-level reuse/reject audit.
+- [x] M8 local MVP is complete.
+- [x] [Option baseline](option/README.md) is revalidated against current `dev` (M9-01).
+- [x] Pricing-model, provider, migration, and Artifact decisions are approved ([ADR-0005](DECISIONS/0005-option-pricing-models.md), [ADR-0006](DECISIONS/0006-option-data-providers.md), [ADR-0007](DECISIONS/0007-option-artifact-isolation.md)).
+- [x] Historical `integration/option` code consensus: all historical Option branches have been merged into `dev`; no remaining unmerged candidate branch exists.
 
 ### Execution path
 
@@ -740,6 +802,7 @@ Authentication, billing, licensing enforcement, cloud sync, telemetry, and a pub
 The first complete product experience spans M1.5 through M2.
 
 ### User Journey
+
 ```text
 Launch AlphaForge
     ↓
@@ -763,6 +826,7 @@ User reviews later
 ```
 
 ### Technical Requirements
+
 - [x] Workspace persistence (M1.5)
 - [x] Agent task execution (M2)
 - [x] Progress event streaming (M2)
@@ -775,13 +839,16 @@ User reviews later
 ## Development Principles
 
 ### 1. Documentation Before Implementation
+
 Every feature starts with documentation:
+
 - What problem does it solve?
 - What is the user journey?
 - What are the technical constraints?
 - How does it fit the architecture?
 
 ### 2. Build Foundations Before Features
+
 - M0 → M1 → M1.5 establish the platform
 - M2 → M3 add intelligence capabilities
 - M4 → M5 build research workflows
@@ -791,7 +858,9 @@ Every feature starts with documentation:
 - M10 integrates Goose only after the MVP boundary is complete
 
 ### 3. Complete Vertical Slices
+
 Every milestone delivers an end-to-end experience:
+
 ```text
 Input → Processing → Output → Persistence
 ```
@@ -799,6 +868,7 @@ Input → Processing → Output → Persistence
 Not isolated modules, but working features.
 
 ### 4. AI Capability Architecture
+
 ```text
 Agent (Intelligence)
     +
@@ -812,12 +882,14 @@ All three pillars must work together.
 ### 5. Product Identity Guardrails
 
 **AlphaForge is:**
+
 - An AI-native investment research workspace
 - A thesis development and tracking tool
 - A knowledge management system
 - A research collaboration environment
 
 **AlphaForge is NOT:**
+
 - A trading terminal
 - A stock recommendation engine
 - A simple AI chatbot

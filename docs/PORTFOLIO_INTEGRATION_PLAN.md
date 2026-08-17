@@ -48,7 +48,7 @@ phases.
 | D3 | **ORM = SQLx.** Wealthfolio uses Diesel; we migrate all financial persistence to SQLx. | Matches this repo's existing ORM. No Diesel in this repo. |
 | D4 | **Domain model unification.** Financial domain (Account, Holding, Activity, Lot, Portfolio, Snapshot) and research domain (Thesis, Research, Artifact, KnowledgeGraph) remain separate modules in the same `crates/domain` crate, linked by foreign keys. | Keeps modules independent; avoids a god-model. |
 | D5 | **Data linking:** `InvestmentThesis.portfolio_holding_id: Option<String>` links a thesis to a specific holding (user-optional). | Core product synergy: research → decision → validation loop. |
-| D6 | **Sidebar placement:** permanent **Portfolio (📊)** entry in the left sidebar (bottom, user area). | User-approved mockup. |
+| D6 | **Sidebar placement:** permanent **Portfolio (📊)** entry in the left sidebar (Workspace group). | User-approved mockup. Note (2026-08-16): implemented in the redesigned `LeftSidebar` nav groups (`NavItem`, route `/portfolio`). |
 | D7 | **Phased execution** so the app never freezes. | Development continuity. |
 | D8 | **Do NOT copy Wealthfolio's debt:** 3,264 unwrap/expect panic points, Diesel-specific repo layer, hardcoded prod URLs, addon runtime. | Debt resolution is a primary goal. |
 | D9 | **Parallel agents allowed** for independent workstreams (e.g., migration + UI). | User approved multi-agent parallel work. |
@@ -107,8 +107,10 @@ Thin Tauri commands (14) wrapping the service — the existing pattern to follow
   ConcentrationPanel, ThemeExposurePanel, AlignmentReviewPanel).
 - Hooks: `features/portfolio/hooks/usePortfolio.ts` (TanStack Query).
 - Desktop API client: `src/lib/desktop-api/portfolio.ts`.
-- Sidebar: `src/components/layout/LeftSidebar/` — `LeftSidebar.tsx`
-  (top: FunctionalViewSelector, middle: ToolsList, bottom: UserOperations).
+- Sidebar: redesigned `LeftSidebar` with `NavItem`/`NavGroup` navigation groups
+  (Workspace: Dashboard, Research, Theses, Portfolio, Knowledge, Journal;
+   Tools: Options, Artifacts; Account: Settings). The old `FunctionalViewSelector`,
+  `ToolsList`, `UserOperations` were removed in the GUI redesign (PRs #105–#111).
 - i18n catalogs exist for Portfolio (zh/en) — extend, don't fork.
 
 ---
@@ -214,8 +216,9 @@ developed and tested without the main application.
 
 ### Phase 3 — Frontend: portfolio UI (est. 3–4 weeks)
 
-- [ ] Sidebar: add permanent **Portfolio (📊)** entry (bottom user area) per
-      D6 — see `LeftSidebar.tsx` + `UserOperations.tsx`.
+- [ ] Sidebar: add permanent **Portfolio (📊)** entry (Workspace nav group) per
+      D6 — see `LeftSidebar.tsx` NavGroup configuration (portfolio nav item
+      already exists in the redesigned sidebar).
 - [ ] Build pages from Wealthfolio's frontend (`apps/frontend/src/features/`
       portfolio pages, charts from `@wealthfolio/ui` — but reuse this repo's
       `packages/ui` design system instead of importing the package).
@@ -270,7 +273,7 @@ developed and tested without the main application.
 |-------|------|
 | A (storage) | `migrations/` financial tables, `database/repositories/` new repos |
 | B (core) | `crates/domain` financial module, `services/` financial services |
-| C (frontend) | `src/features/portfolio/`, `src/pages/portfolio/`, `src/components/layout/LeftSidebar/`, i18n |
+| C (frontend) | `src/features/portfolio/`, `src/pages/portfolio/`, i18n, `LeftSidebar` nav groups |
 | D (linkage) | `theses` migration + thesis service + portfolio review (after B) |
 
 ---

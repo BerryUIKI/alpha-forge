@@ -1,5 +1,10 @@
 # GUI-M1-0: Architecture Setup - Implementation Guide
 
+> **⚠️ SUPERSEDED (2026-08-16)** — The Codex-style GUI-M1 layout was replaced by
+> the GUI redesign (PRs #105–#111, `docs/gui/GUI_MILESTONE.md`). The redesigned
+> `LeftSidebar` no longer uses `WorkspaceSelector`/`ScrollableList`/`UserOperations`
+> from this plan. Keep this document for historical reference only.
+
 ## Overview
 
 **Work Package**: GUI-M1-0

@@ -1,5 +1,11 @@
 # GUI Layout Iteration - Complete Requirements
 
+> **⚠️ SUPERSEDED (2026-08-16)** — This plan describes the earlier Codex-inspired
+> layout iteration. The current layout is the **GUI redesign** (`docs/gui/GUI_MILESTONE.md`),
+> merged to `dev` via PRs #105–#111. The redesigned layout uses navigation groups
+> (`NavItem`/`NavGroup`) instead of the FunctionalViewSelector + ToolsList approach
+> described here. Keep this document for historical reference only.
+
 ## Overview
 
 This document outlines the GUI layout restructuring for AlphaForge desktop application, inspired by OpenAI Codex desktop client layout style.

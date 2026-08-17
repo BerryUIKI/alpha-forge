@@ -153,7 +153,7 @@ Localize navigation, settings, command surfaces, dialogs, tooltips, accessibilit
 
 **Involved files**
 
-- `apps/desktop/src/components/navigation/Sidebar.tsx`
+- `apps/desktop/src/components/layout/LeftSidebar/**` (navigation groups, `NavItem`/`NavGroup`; the old `navigation/Sidebar.tsx` was removed in the GUI redesign, PRs #105–#111)
 - `apps/desktop/src/pages/settings/SettingsPage.tsx`
 - `apps/desktop/src/components/common/**`
 - `apps/desktop/src/components/CommandPalette.tsx` if present
@@ -535,16 +535,29 @@ Run the complete M8 quality, accessibility, localization, security, migration, b
 
 ### M9-01 — Rebaseline Option scope and approve implementation decisions
 
+**Status: Complete (2026-08-17)**
+
 **Task objective**
 
 Reinspect current `dev`, audit historical Option candidate branches file by file, and approve the pricing-model, exercise-style, data-provider, migration, provenance, and Artifact decisions before code integration.
 
 **Acceptance criteria**
 
-- Every candidate path is classified as reuse, adapt, reject, or obsolete.
-- ADRs define calculation units/tolerances, supported contracts, provider boundary, data freshness, and Artifact permissions.
-- Product scope excludes trade execution, brokerage order routing, and autonomous recommendations.
-- The Option roadmap and baseline matrix reflect current `dev` accurately.
+- [x] Every candidate path is classified as reuse, adapt, reject, or obsolete.
+- [x] ADRs define calculation units/tolerances, supported contracts, provider boundary, data freshness, and Artifact permissions.
+- [x] Product scope excludes trade execution, brokerage order routing, and autonomous recommendations.
+- [x] The Option roadmap and baseline matrix reflect current `dev` accurately.
+
+**Deliverables**
+
+- [ADR-0005 Option Pricing Models](../DECISIONS/0005-option-pricing-models.md) — Accepted
+- [ADR-0006 Option Data Providers](../DECISIONS/0006-option-data-providers.md) — Accepted
+- [ADR-0007 Option Artifact Isolation](../DECISIONS/0007-option-artifact-isolation.md) — Accepted
+- Updated Option README (rebaseline status, ADR links)
+- Updated Option ROADMAP (phase checkboxes, candidate-branch note)
+- Updated Option INTEGRATION_PLAN (O0 marked complete)
+- Updated Option IMPLEMENTATION_DETAILS (rebaseline note)
+- Updated MILESTONE_ROADMAP (entry gate checkboxes, ADR links)
 
 **Involved files**
 
@@ -552,8 +565,11 @@ Reinspect current `dev`, audit historical Option candidate branches file by file
 - `docs/option/ROADMAP.md`
 - `docs/option/INTEGRATION_PLAN.md`
 - `docs/option/IMPLEMENTATION_DETAILS.md`
-- new Option ADRs under `docs/DECISIONS/`
-- current Option code and candidate branches (read-only audit)
+- `docs/DECISIONS/0005-option-pricing-models.md` (new)
+- `docs/DECISIONS/0006-option-data-providers.md` (new)
+- `docs/DECISIONS/0007-option-artifact-isolation.md` (new)
+- `docs/MILESTONE_ROADMAP.md`
+- current Option code and candidate branches (read-only audit — all historical branches merged into `dev`)
 
 **Target branch type**
 
@@ -563,10 +579,10 @@ Reinspect current `dev`, audit historical Option candidate branches file by file
 
 **Verification checklist**
 
-- [ ] Product, architecture, Option-domain, and security reviewers approve the decisions.
-- [ ] Markdown formatting and links pass.
-- [ ] `git diff --check` passes.
-- [ ] All documentation is English and no implementation completion is overstated.
+- [x] Product, architecture, Option-domain, and security reviewers approve the decisions.
+- [x] Markdown formatting and links pass.
+- [x] `git diff --check` passes.
+- [x] All documentation is English and no implementation completion is overstated.
 
 ### M9-02 — Repair Option schema application and repositories
 

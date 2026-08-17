@@ -1,7 +1,18 @@
 # GUI Unification & Backend Connectivity Plan
 
-> **Status:** Draft  
-> **Created:** 2026-08-03  
+> **Status:** ⚠️ **SUPERSEDED (2026-08-16)** — The GUI redesign (PRs #105–#111, `feat/gui-redesign/*`) has been fully merged to `dev`. The architecture described in this document pre-dates the redesign.
+>
+> **What changed:**
+> - `Sidebar.tsx` and the WorkspaceView system were removed entirely
+> - `LeftSidebar` was rebuilt with `NavItem`/`NavGroup` navigation groups (Workspace/Tools/Account) — collapsible, resizable, with active route highlighting
+> - `OperationBar`/`WorkspaceDropdown` were removed, replaced by `TopBar` (breadcrumb + search + agent toggle)
+> - `useWorkspaceState`, `useFunctionalView`, `tools-config.tsx`, `WorkspaceSelector`, `ScrollableList`, `UserOperations` were all removed
+> - The routed pages (`Outlet`) are now the primary content mechanism, with all routes registered in `router.tsx`
+>
+> **See current architecture:**
+> - [`docs/gui/GUI_MILESTONE.md`](gui/GUI_MILESTONE.md) — layout architecture, component tree, nav model
+> - [`docs/gui/GUI_M2_COMPLETION_SUMMARY.md`](gui/GUI_M2_COMPLETION_SUMMARY.md) — complete change inventory
+>
 > **Scope:** Merge the two parallel navigation architectures, eliminate all placeholder UI, and ensure every button invokes a real backend command or a documented deferred action.
 
 ---

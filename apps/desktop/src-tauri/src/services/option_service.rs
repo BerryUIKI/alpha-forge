@@ -83,13 +83,41 @@ impl OptionService {
             .await
             .map_err(|e| AppError::Internal(format!("Failed to fetch option chain: {}", e)))?;
 
-        // Persist the chain and generated contracts together so a successful
-        // fetch always leaves a selectable contract view.
-        self.chain_repo
-            .create_with_contracts(&fetched.chain, &fetched.contracts)
-            .await?;
+        self.persist_fetched_chain(fetched.chain, &fetched.contracts)
+            .await
+    }
 
-        Ok(fetched.chain)
+    /// Persists a chain and its contracts together in one transaction.
+    async fn persist_fetched_chain(
+        &self,
+        chain: OptionChain,
+        contracts: &[OptionContract],
+    ) -> Result<OptionChain, AppError> {
+        self.chain_repo
+            .create_with_contracts(&chain, contracts)
+            .await?;
+        Ok(chain)
+    }
+
+    /// Persists a file-imported chain and records partial-import details.
+    ///
+    /// File imports are accepted with partial data (`rejected_count > 0`);
+    /// the caller surfaces the rejection summary through the UI.
+    pub async fn persist_file_chain(
+        &self,
+        chain: OptionChain,
+        contracts: &[OptionContract],
+        _rejected_count: usize,
+        _rejection_detail: Option<String>,
+    ) -> Result<(), AppError> {
+        if contracts.is_empty() {
+            return Err(AppError::Validation(
+                "File import produced no valid contracts".to_string(),
+            ));
+        }
+        self.chain_repo
+            .create_with_contracts(&chain, contracts)
+            .await
     }
 
     /// Calculates all Greeks for an option using Black-Scholes model.
@@ -254,9 +282,10 @@ impl OptionService {
 
     /// Gets an option chain by ID.
     pub async fn get_chain(&self, id: &str) -> Result<OptionChain, AppError> {
-        self.chain_repo.get(id).await?.ok_or_else(|| {
-            AppError::NotFound(format!("Option chain '{}' not found", id))
-        })
+        self.chain_repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Option chain '{}' not found", id)))
     }
 
     /// Lists all option chains for a workspace.
@@ -291,9 +320,10 @@ impl OptionService {
 
     /// Gets an option contract by ID.
     pub async fn get_contract(&self, id: &str) -> Result<OptionContract, AppError> {
-        self.contract_repo.get(id).await?.ok_or_else(|| {
-            AppError::NotFound(format!("Option contract '{}' not found", id))
-        })
+        self.contract_repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Option contract '{}' not found", id)))
     }
 
     /// Lists all option contracts for a chain.
@@ -314,10 +344,14 @@ impl OptionService {
     pub async fn create_strategy(&self, strategy: &OptionStrategy) -> Result<(), AppError> {
         // Validate required fields
         if strategy.name.trim().is_empty() {
-            return Err(AppError::Validation("Strategy name is required".to_string()));
+            return Err(AppError::Validation(
+                "Strategy name is required".to_string(),
+            ));
         }
         if strategy.underlying.trim().is_empty() {
-            return Err(AppError::Validation("Underlying symbol is required".to_string()));
+            return Err(AppError::Validation(
+                "Underlying symbol is required".to_string(),
+            ));
         }
 
         self.strategy_repo.create(strategy).await
@@ -325,20 +359,26 @@ impl OptionService {
 
     /// Gets an option strategy by ID.
     pub async fn get_strategy(&self, id: &str) -> Result<OptionStrategy, AppError> {
-        self.strategy_repo.get(id).await?.ok_or_else(|| {
-            AppError::NotFound(format!("Option strategy '{}' not found", id))
-        })
+        self.strategy_repo
+            .get(id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Option strategy '{}' not found", id)))
     }
 
     /// Lists all option strategies for a workspace.
-    pub async fn list_strategies(&self, workspace_id: &str) -> Result<Vec<OptionStrategy>, AppError> {
+    pub async fn list_strategies(
+        &self,
+        workspace_id: &str,
+    ) -> Result<Vec<OptionStrategy>, AppError> {
         self.strategy_repo.list_by_workspace(workspace_id).await
     }
 
     /// Updates an existing option strategy.
     pub async fn update_strategy(&self, strategy: &OptionStrategy) -> Result<(), AppError> {
         if strategy.name.trim().is_empty() {
-            return Err(AppError::Validation("Strategy name is required".to_string()));
+            return Err(AppError::Validation(
+                "Strategy name is required".to_string(),
+            ));
         }
 
         self.strategy_repo.update(strategy).await

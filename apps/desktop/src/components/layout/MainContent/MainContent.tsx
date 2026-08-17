@@ -1,14 +1,14 @@
 /**
  * MainContent Component
  *
- * Main content area container combining OperationBar, page content, and StatusBar.
+ * Main content area container combining TopBar, page content, and StatusBar.
  * Renders routed pages via children (Outlet).
  *
- * @version GUI-M1-4
+ * @version GUI-M0
  */
 
 import type { MainContentProps } from "../types";
-import { OperationBar } from "./OperationBar";
+import { TopBar } from "../TopBar";
 import { StatusBar } from "./StatusBar";
 
 export function MainContent({
@@ -18,8 +18,8 @@ export function MainContent({
 }: MainContentProps) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Top: Operation Bar */}
-      <OperationBar
+      {/* Top: Top Bar */}
+      <TopBar
         isRightSidebarExpanded={isRightSidebarExpanded}
         onToggleRightSidebar={onToggleRightSidebar}
       />

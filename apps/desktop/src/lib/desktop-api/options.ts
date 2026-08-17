@@ -110,6 +110,19 @@ export async function fetchOptionChain(params: FetchChainParams): Promise<Option
   return invokeOption("fetch_option_chain", { params }, OptionChainSchema);
 }
 
+/**
+ * Import an option chain from a user-selected local file (CSV or JSON).
+ *
+ * Rust owns the file read, validation, and persistence. React passes only
+ * the workspace ID and the absolute path selected by the native file dialog.
+ */
+export async function importOptionChainFile(params: {
+  workspaceId: string;
+  filePath: string;
+}): Promise<OptionChain> {
+  return invokeOption("import_option_chain_file", { params }, OptionChainSchema);
+}
+
 /** Get an existing option chain by ID. */
 export async function getOptionChain(id: string): Promise<OptionChain> {
   return invokeOption("get_option_chain", { id }, OptionChainSchema);
