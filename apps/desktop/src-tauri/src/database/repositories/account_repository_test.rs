@@ -83,6 +83,54 @@ async fn account_repository_creates_and_lists_by_workspace() {
 }
 
 #[tokio::test]
+async fn account_repository_archives_existing_account() {
+    let pool = setup_test_db().await;
+    sqlx::query("INSERT INTO workspaces (id, name) VALUES ('ws-1', 'Test Workspace')")
+        .execute(&pool)
+        .await
+        .expect("Failed to seed workspace");
+    let repo = AccountRepository::new(pool);
+
+    let account = repo
+        .create(CreateAccountInput {
+            workspace_id: Some("ws-1".to_string()),
+            name: "Archive Me".to_string(),
+            account_type: AccountType::Cash,
+            group_name: None,
+            currency: "USD".to_string(),
+            is_default: false,
+            platform_id: None,
+            account_number: None,
+            tracking_mode: TrackingMode::Transactions,
+        })
+        .await
+        .expect("Failed to create account");
+
+    repo.archive(&account.id)
+        .await
+        .expect("Failed to archive account");
+
+    let fetched = repo
+        .get(&account.id)
+        .await
+        .expect("Failed to get account after archive");
+    let fetched = fetched.expect("account must still exist after archive");
+    assert!(fetched.is_archived, "account should be archived");
+}
+
+#[tokio::test]
+async fn account_repository_archive_missing_returns_not_found() {
+    let pool = setup_test_db().await;
+    let repo = AccountRepository::new(pool);
+
+    let result = repo.archive("does-not-exist").await;
+    assert!(
+        matches!(result, Err(crate::error::AppError::NotFound(_))),
+        "archiving a missing account must return NotFound"
+    );
+}
+
+#[tokio::test]
 async fn account_repository_rejects_missing_workspace_fk() {
     let pool = setup_test_db().await;
     let repo = AccountRepository::new(pool);

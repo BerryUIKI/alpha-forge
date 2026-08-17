@@ -2,6 +2,7 @@ pub mod agent;
 pub mod artifacts;
 pub mod credentials;
 pub mod financial;
+pub mod financial_crud;
 pub mod goose;
 pub mod knowledge_graph;
 pub mod options;

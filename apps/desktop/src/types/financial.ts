@@ -369,3 +369,288 @@ export interface NetWorthSnapshot {
   net_worth: string;
   accounts: NetWorthAccountEntry[];
 }
+
+// ── Additional Domain Models (Phase 3.5 — CRUD types) ───────────────────────
+
+export interface ImportRun {
+  id: string;
+  account_id: string;
+  source_system: string;
+  run_type: string;
+  mode: string;
+  status: string;
+  started_at: string;
+  finished_at: string | null;
+  review_mode: string;
+  applied_at: string | null;
+  checkpoint_in: string | null;
+  checkpoint_out: string | null;
+  summary: string | null;
+  warnings: string | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Taxonomy {
+  id: string;
+  name: string;
+  color: string;
+  description: string | null;
+  is_system: boolean;
+  is_single_select: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaxonomyCategory {
+  id: string;
+  taxonomy_id: string;
+  parent_id: string | null;
+  name: string;
+  key: string;
+  color: string;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssetTaxonomyAssignment {
+  id: string;
+  asset_id: string;
+  taxonomy_id: string;
+  category_id: string;
+  weight: number;
+  source: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AllocationTarget {
+  id: string;
+  name: string;
+  scope_type: ScopeType;
+  scope_id: string | null;
+  taxonomy_id: string;
+  trigger_type: string;
+  drift_band_bps: number;
+  rebalance_goal: string;
+  min_trade_amount: string;
+  whole_shares_only: boolean;
+  allow_sells: boolean;
+  max_turnover_bps: number | null;
+  created_at: string;
+  updated_at: string;
+  archived_at: string | null;
+}
+
+export interface AllocationTargetWeight {
+  id: string;
+  target_id: string;
+  taxonomy_id: string;
+  category_id: string;
+  target_bps: number;
+  is_locked: boolean;
+  is_required: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AllocationTargetConstraint {
+  id: string;
+  target_id: string;
+  subject_type: string;
+  subject_id: string;
+  action: string;
+  effect: string;
+  reason: string | null;
+  metadata_json: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Input types (Phase 3.5 — CRUD commands) ────────────────────
+
+export interface CreatePlatformInput {
+  name: string | null;
+  url: string;
+  kind: string;
+}
+
+export interface CreateAccountInput {
+  workspace_id: string | null;
+  name: string;
+  account_type: AccountType;
+  group_name: string | null;
+  currency: string;
+  is_default: boolean;
+  platform_id: string | null;
+  account_number: string | null;
+  tracking_mode: TrackingMode;
+}
+
+export interface CreateAssetInput {
+  kind: AssetKind;
+  name: string | null;
+  display_code: string | null;
+  notes: string | null;
+  is_active: boolean;
+  quote_mode: QuoteMode;
+  quote_ccy: string;
+  instrument_type: InstrumentType | null;
+  instrument_symbol: string | null;
+  instrument_exchange_mic: string | null;
+  provider_config: Record<string, unknown> | null;
+}
+
+export interface UpsertQuoteInput {
+  asset_id: string;
+  day: string;
+  source: string;
+  open: string | null;
+  high: string | null;
+  low: string | null;
+  close: string;
+  adjclose: string | null;
+  volume: string | null;
+  currency: string;
+  notes: string | null;
+}
+
+export interface CreateActivityInput {
+  account_id: string;
+  asset_id: string | null;
+  activity_type: ActivityType;
+  activity_type_override: string | null;
+  source_type: string | null;
+  subtype: string | null;
+  status: ActivityStatus;
+  activity_date: string;
+  settlement_date: string | null;
+  quantity: string | null;
+  unit_price: string | null;
+  amount: string | null;
+  fee: string | null;
+  tax: string | null;
+  currency: string;
+  fx_rate: string | null;
+  notes: string | null;
+  metadata: Record<string, unknown> | null;
+  source_system: string | null;
+  source_record_id: string | null;
+  source_group_id: string | null;
+  idempotency_key: string | null;
+  import_run_id: string | null;
+}
+
+export interface CreateImportRunInput {
+  account_id: string;
+  source_system: string;
+  run_type: string;
+  mode: string;
+  status: string;
+  review_mode: string;
+}
+
+export interface CreateLotInput {
+  account_id: string;
+  asset_id: string;
+  open_date: string;
+  open_activity_id: string | null;
+  original_quantity: string;
+  cost_per_unit: string;
+  original_cost_basis: string;
+  fee_allocated: string;
+  currency: string;
+  base_currency: string;
+  fx_rate_to_base: string;
+  fx_rate_to_account: string | null;
+  account_currency: string | null;
+  cost_basis_method: CostBasisMethod;
+}
+
+export interface UpsertValuationInput {
+  account_id: string;
+  valuation_date: string;
+  account_currency: string;
+  base_currency: string;
+  fx_rate_to_base: string;
+  cash_balance: string;
+  investment_market_value: string;
+  total_value: string;
+  cost_basis: string;
+  net_contribution: string;
+  cash_balance_base: string;
+  investment_market_value_base: string;
+  total_value_base: string;
+  cost_basis_base: string;
+  net_contribution_base: string;
+  external_inflow_base: string;
+  external_outflow_base: string;
+  performance_eligible_value_base: string;
+  external_flow_source: string;
+  value_status: ValuationStatus;
+  basis_status: BasisStatus;
+}
+
+export interface CreateTaxonomyInput {
+  name: string;
+  color: string;
+  description: string | null;
+  is_system: boolean;
+  is_single_select: boolean;
+  sort_order: number;
+}
+
+export interface CreateTaxonomyCategoryInput {
+  taxonomy_id: string;
+  parent_id: string | null;
+  name: string;
+  key: string;
+  color: string;
+  description: string | null;
+  sort_order: number;
+}
+
+export interface AssetTaxonomyAssignmentInput {
+  asset_id: string;
+  taxonomy_id: string;
+  category_id: string;
+  weight: number;
+  source: string;
+}
+
+export interface CreateAllocationTargetInput {
+  name: string;
+  scope_type: ScopeType;
+  scope_id: string | null;
+  taxonomy_id: string;
+  trigger_type: string;
+  drift_band_bps: number;
+  rebalance_goal: string;
+  min_trade_amount: string;
+  whole_shares_only: boolean;
+  allow_sells: boolean;
+  max_turnover_bps: number | null;
+}
+
+export interface AllocationTargetWeightInput {
+  target_id: string;
+  taxonomy_id: string;
+  category_id: string;
+  target_bps: number;
+  is_locked: boolean;
+  is_required: boolean;
+}
+
+export interface AllocationTargetConstraintInput {
+  target_id: string;
+  subject_type: string;
+  subject_id: string;
+  action: string;
+  effect: string;
+  reason: string | null;
+  metadata_json: Record<string, unknown> | null;
+}
