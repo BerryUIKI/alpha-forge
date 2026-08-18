@@ -176,7 +176,9 @@ impl GooseAdapter {
         cmd.env("GOOSE_MAX_TURNS", budget.max_turns.to_string());
 
         // Spawn process
-        let mut child = cmd.spawn().map_err(|e| GooseError::SpawnFailed { source: e })?;
+        let mut child = cmd
+            .spawn()
+            .map_err(|e| GooseError::SpawnFailed { source: e })?;
 
         let pid = child.id().unwrap_or(0);
         info!(run_id = ?run_id, pid = pid, "Goose process started");
@@ -323,10 +325,8 @@ impl GooseAdapter {
         }
 
         // Parse and validate output
-        let response: StructuredResponse =
-            serde_json::from_slice(&output_buffer).map_err(|e| GooseError::OutputParseError {
-                source: e,
-            })?;
+        let response: StructuredResponse = serde_json::from_slice(&output_buffer)
+            .map_err(|e| GooseError::OutputParseError { source: e })?;
 
         response.validate()?;
 

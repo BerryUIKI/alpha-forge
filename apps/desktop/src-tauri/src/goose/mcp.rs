@@ -129,7 +129,11 @@ impl McpBridge {
     }
 
     /// Validate a tool call and return the authorized workspace ID
-    async fn validate_call(&self, tool_name: &str, workspace_id_from_input: Option<&str>) -> Result<String, GooseError> {
+    async fn validate_call(
+        &self,
+        tool_name: &str,
+        workspace_id_from_input: Option<&str>,
+    ) -> Result<String, GooseError> {
         // Check tool is allowlisted
         if !ALLOWLISTED_TOOLS.contains(&tool_name) {
             return Err(GooseError::OutputValidationFailed {
@@ -139,9 +143,9 @@ impl McpBridge {
 
         // Get authorized scope
         let scope = self.scope.read().await;
-        let authorized = scope.as_ref().ok_or_else(|| GooseError::Internal(
-            "No scope set - call set_scope before execution".into()
-        ))?;
+        let authorized = scope.as_ref().ok_or_else(|| {
+            GooseError::Internal("No scope set - call set_scope before execution".into())
+        })?;
 
         // If input contains workspace_id, validate it matches authorized scope
         if let Some(input_workspace_id) = workspace_id_from_input {
@@ -166,13 +170,14 @@ impl McpBridge {
         let tool_name = input.name.as_str();
 
         // Extract workspace_id from arguments if present
-        let workspace_id_from_input = input.arguments
-            .get("workspace_id")
-            .and_then(|v| v.as_str());
+        let workspace_id_from_input = input.arguments.get("workspace_id").and_then(|v| v.as_str());
 
         match self.validate_call(tool_name, workspace_id_from_input).await {
             Ok(workspace_id) => {
-                match self.execute_tool(tool_name, workspace_id, input.arguments).await {
+                match self
+                    .execute_tool(tool_name, workspace_id, input.arguments)
+                    .await
+                {
                     Ok(result) => ToolOutput {
                         success: true,
                         result: Some(result),
@@ -202,7 +207,9 @@ impl McpBridge {
     ) -> Result<serde_json::Value, GooseError> {
         match tool_name {
             "get_workspace_summary" => self.get_workspace_summary(workspace_id).await,
-            "search_research_sources" => self.search_research_sources(workspace_id, arguments).await,
+            "search_research_sources" => {
+                self.search_research_sources(workspace_id, arguments).await
+            }
             "get_research_source" => self.get_research_source(workspace_id, arguments).await,
             "get_thesis_context" => self.get_thesis_context(workspace_id, arguments).await,
             "list_related_artifacts" => self.list_related_artifacts(workspace_id, arguments).await,
@@ -213,17 +220,23 @@ impl McpBridge {
     }
 
     /// Get workspace summary (names and counts, no credentials)
-    async fn get_workspace_summary(&self, workspace_id: String) -> Result<serde_json::Value, GooseError> {
-        let workspace = self.workspace_service
+    async fn get_workspace_summary(
+        &self,
+        workspace_id: String,
+    ) -> Result<serde_json::Value, GooseError> {
+        let workspace = self
+            .workspace_service
             .get(&workspace_id)
             .await
             .map_err(|e| GooseError::Internal(format!("Failed to get workspace: {}", e)))?;
 
         let workspace = match workspace {
             Some(w) => w,
-            None => return Err(GooseError::OutputValidationFailed {
-                reason: "Workspace not found".into(),
-            }),
+            None => {
+                return Err(GooseError::OutputValidationFailed {
+                    reason: "Workspace not found".into(),
+                })
+            }
         };
 
         // Return only summary information, no sensitive data
@@ -310,16 +323,19 @@ impl McpBridge {
                 reason: "Missing 'thesis_id' parameter".into(),
             })?;
 
-        let thesis = self.thesis_service
+        let thesis = self
+            .thesis_service
             .get_thesis(thesis_id)
             .await
             .map_err(|e| GooseError::Internal(format!("Failed to get thesis: {}", e)))?;
 
         let thesis = match thesis {
             Some(t) => t,
-            None => return Err(GooseError::OutputValidationFailed {
-                reason: "Thesis not found".into(),
-            }),
+            None => {
+                return Err(GooseError::OutputValidationFailed {
+                    reason: "Thesis not found".into(),
+                })
+            }
         };
 
         // Validate workspace ownership
@@ -330,16 +346,20 @@ impl McpBridge {
         }
 
         // Get evidence links
-        let evidence = self.thesis_service
+        let evidence = self
+            .thesis_service
             .list_evidence(thesis_id)
             .await
             .map_err(|e| GooseError::Internal(format!("Failed to get evidence: {}", e)))?;
 
         // Get confidence history
-        let confidence_history = self.thesis_service
+        let confidence_history = self
+            .thesis_service
             .list_confidence_history(thesis_id)
             .await
-            .map_err(|e| GooseError::Internal(format!("Failed to get confidence history: {}", e)))?;
+            .map_err(|e| {
+                GooseError::Internal(format!("Failed to get confidence history: {}", e))
+            })?;
 
         Ok(serde_json::json!({
             "id": thesis.id,
@@ -360,13 +380,9 @@ impl McpBridge {
         workspace_id: String,
         arguments: serde_json::Value,
     ) -> Result<serde_json::Value, GooseError> {
-        let entity_type = arguments
-            .get("entity_type")
-            .and_then(|v| v.as_str());
+        let entity_type = arguments.get("entity_type").and_then(|v| v.as_str());
 
-        let entity_id = arguments
-            .get("entity_id")
-            .and_then(|v| v.as_str());
+        let entity_id = arguments.get("entity_id").and_then(|v| v.as_str());
 
         let _limit = arguments
             .get("limit")

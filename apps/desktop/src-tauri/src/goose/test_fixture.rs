@@ -15,7 +15,7 @@ use crate::goose::recipe::Recipe;
 pub fn test_config() -> GooseConfig {
     GooseConfig {
         binary_path: PathBuf::from("/usr/bin/true"), // Always succeeds on Unix
-        binary_checksum: String::new(), // Skip integrity check in tests
+        binary_checksum: String::new(),              // Skip integrity check in tests
         timeout: std::time::Duration::from_secs(30),
         max_output_bytes: 1024 * 1024,
         max_turns: 10,

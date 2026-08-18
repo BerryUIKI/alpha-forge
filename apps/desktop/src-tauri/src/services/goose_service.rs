@@ -22,10 +22,8 @@ use crate::agent::events;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
 use crate::goose::{
-    GooseAdapter, GooseConfig, McpBridge, Recipe,
-    adapter::RunId,
-    config::ExecutionBudget,
-    output::StructuredResponse,
+    adapter::RunId, config::ExecutionBudget, output::StructuredResponse, GooseAdapter, GooseConfig,
+    McpBridge, Recipe,
 };
 use crate::services::thesis_service::ThesisService;
 use crate::services::workspace_service::WorkspaceService;
@@ -152,7 +150,11 @@ impl GooseService {
         );
 
         // Emit start event
-        events::emit_progress(&self.app_handle, &run_id.to_string(), "Starting Goose shadow analysis");
+        events::emit_progress(
+            &self.app_handle,
+            &run_id.to_string(),
+            "Starting Goose shadow analysis",
+        );
 
         // Set MCP scope
         self.mcp_bridge
@@ -185,7 +187,11 @@ impl GooseService {
         }
 
         // Execute Goose
-        events::emit_progress(&self.app_handle, &run_id.to_string(), "Executing Goose recipe");
+        events::emit_progress(
+            &self.app_handle,
+            &run_id.to_string(),
+            "Executing Goose recipe",
+        );
 
         let result = self
             .adapter
@@ -197,7 +203,11 @@ impl GooseService {
         self.mcp_bridge.clear_scope().await;
 
         // Emit completion event
-        events::emit_completion(&self.app_handle, &run_id.to_string(), Some("Shadow analysis completed"));
+        events::emit_completion(
+            &self.app_handle,
+            &run_id.to_string(),
+            Some("Shadow analysis completed"),
+        );
 
         info!(
             run_id = ?run_id,
@@ -218,13 +228,16 @@ impl GooseService {
 
     /// Cancel a running analysis
     pub async fn cancel_analysis(&self, run_id: &str) -> Result<(), AppError> {
-        let run_id_parsed = RunId(run_id.parse().map_err(|_| {
-            AppError::Validation("Invalid run ID".to_string())
-        })?);
+        let run_id_parsed = RunId(
+            run_id
+                .parse()
+                .map_err(|_| AppError::Validation("Invalid run ID".to_string()))?,
+        );
 
-        self.adapter.cancel(run_id_parsed).await.map_err(|e| {
-            AppError::Internal(format!("Failed to cancel analysis: {}", e))
-        })?;
+        self.adapter
+            .cancel(run_id_parsed)
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to cancel analysis: {}", e)))?;
 
         events::emit_cancellation(&self.app_handle, run_id);
 

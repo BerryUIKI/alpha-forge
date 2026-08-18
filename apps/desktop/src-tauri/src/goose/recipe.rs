@@ -158,28 +158,27 @@ impl Recipe {
     /// Load a recipe from a YAML file
     pub async fn from_file(path: &Path) -> Result<Self, GooseError> {
         if !path.exists() {
-            return Err(GooseError::RecipeNotFound { path: path.to_path_buf() });
+            return Err(GooseError::RecipeNotFound {
+                path: path.to_path_buf(),
+            });
         }
 
         let contents = tokio::fs::read_to_string(path)
             .await
             .map_err(GooseError::Io)?;
 
-        let recipe: Recipe = serde_yaml::from_str(&contents).map_err(|e| {
-            GooseError::RecipeValidationFailed {
+        let recipe: Recipe =
+            serde_yaml::from_str(&contents).map_err(|e| GooseError::RecipeValidationFailed {
                 reason: format!("YAML parse error: {}", e),
-            }
-        })?;
+            })?;
 
         Ok(recipe)
     }
 
     /// Write recipe to a YAML file
     pub async fn write_to_file(&self, path: &Path) -> Result<(), GooseError> {
-        let contents = serde_yaml::to_string(self).map_err(|e| GooseError::Internal(format!(
-            "Failed to serialize recipe: {}",
-            e
-        )))?;
+        let contents = serde_yaml::to_string(self)
+            .map_err(|e| GooseError::Internal(format!("Failed to serialize recipe: {}", e)))?;
 
         tokio::fs::write(path, contents)
             .await
@@ -214,7 +213,12 @@ impl Recipe {
             }
 
             // No shell commands in extensions
-            if ext.cmd.as_ref().map(|c| c.contains("sh") || c.contains("bash") || c.contains("cmd")).unwrap_or(false) {
+            if ext
+                .cmd
+                .as_ref()
+                .map(|c| c.contains("sh") || c.contains("bash") || c.contains("cmd"))
+                .unwrap_or(false)
+            {
                 return Err(GooseError::RecipeValidationFailed {
                     reason: format!("Extension '{}' contains shell command", ext.name),
                 });
