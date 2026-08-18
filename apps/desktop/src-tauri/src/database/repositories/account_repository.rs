@@ -184,14 +184,15 @@ impl AccountRepository {
     /// Soft-delete an account by setting the `is_archived` flag.
     pub async fn archive(&self, id: &str) -> Result<(), AppError> {
         let now = Utc::now();
-        let result = sqlx::query(
-            "UPDATE accounts SET is_archived = 1, updated_at = ? WHERE id = ?",
-        )
-        .bind(now.to_rfc3339())
-        .bind(id)
-        .execute(&self.pool)
-        .await
-        .map_err(|e| AppError::Internal(format!("failed to archive financial account: {e}")))?;
+        let result =
+            sqlx::query("UPDATE accounts SET is_archived = 1, updated_at = ? WHERE id = ?")
+                .bind(now.to_rfc3339())
+                .bind(id)
+                .execute(&self.pool)
+                .await
+                .map_err(|e| {
+                    AppError::Internal(format!("failed to archive financial account: {e}"))
+                })?;
 
         if result.rows_affected() == 0 {
             return Err(AppError::NotFound(format!("account {id} not found")));

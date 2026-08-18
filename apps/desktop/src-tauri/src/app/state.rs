@@ -30,12 +30,8 @@ use crate::database::repositories::thesis_repository::ThesisRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 
 // Financial repositories (Phase 2 — Wealthfolio port)
-use crate::database::repositories::account_repository::{
-    AccountRepository, PlatformRepository,
-};
-use crate::database::repositories::activity_repository::{
-    ActivityRepository, ImportRunRepository,
-};
+use crate::database::repositories::account_repository::{AccountRepository, PlatformRepository};
+use crate::database::repositories::activity_repository::{ActivityRepository, ImportRunRepository};
 use crate::database::repositories::allocation_target_repository::AllocationTargetRepository;
 use crate::database::repositories::asset_repository::{AssetRepository, QuoteRepository};
 use crate::database::repositories::lot_repository::{LotDisposalRepository, LotRepository};
