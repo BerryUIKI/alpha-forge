@@ -14,13 +14,12 @@ use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
 use domain::financial::{
-    Activity, AllocationTarget, AllocationTargetConstraint,
-    AllocationTargetConstraintInput, AllocationTargetWeight, AllocationTargetWeightInput,
-    Asset, AssetTaxonomyAssignment, AssetTaxonomyAssignmentInput, CreateAccountInput,
-    CreateActivityInput, CreateAllocationTargetInput, CreateAssetInput, CreateImportRunInput,
-    CreateLotInput, CreatePlatformInput, CreateTaxonomyCategoryInput,
-    CreateTaxonomyInput, DailyAccountValuation, FinancialAccount, ImportRun,
-    Lot, Platform, Quote, Taxonomy, TaxonomyCategory,
+    Activity, AllocationTarget, AllocationTargetConstraint, AllocationTargetConstraintInput,
+    AllocationTargetWeight, AllocationTargetWeightInput, Asset, AssetTaxonomyAssignment,
+    AssetTaxonomyAssignmentInput, CreateAccountInput, CreateActivityInput,
+    CreateAllocationTargetInput, CreateAssetInput, CreateImportRunInput, CreateLotInput,
+    CreatePlatformInput, CreateTaxonomyCategoryInput, CreateTaxonomyInput, DailyAccountValuation,
+    FinancialAccount, ImportRun, Lot, Platform, Quote, Taxonomy, TaxonomyCategory,
     UpsertQuoteInput, UpsertValuationInput,
 };
 
@@ -35,9 +34,7 @@ pub async fn create_platform(
 }
 
 #[tauri::command]
-pub async fn list_platforms(
-    state: State<'_, AppState>,
-) -> Result<Vec<Platform>, AppError> {
+pub async fn list_platforms(state: State<'_, AppState>) -> Result<Vec<Platform>, AppError> {
     state.platform_repo.list().await
 }
 
@@ -101,10 +98,7 @@ pub async fn create_asset(
 }
 
 #[tauri::command]
-pub async fn get_asset(
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<Option<Asset>, AppError> {
+pub async fn get_asset(id: String, state: State<'_, AppState>) -> Result<Option<Asset>, AppError> {
     state.asset_repo.get(&id).await
 }
 
@@ -117,9 +111,7 @@ pub async fn find_asset_by_instrument_key(
 }
 
 #[tauri::command]
-pub async fn list_active_assets(
-    state: State<'_, AppState>,
-) -> Result<Vec<Asset>, AppError> {
+pub async fn list_active_assets(state: State<'_, AppState>) -> Result<Vec<Asset>, AppError> {
     state.asset_repo.list_active().await
 }
 
@@ -142,7 +134,10 @@ pub async fn get_quote_for_day(
 ) -> Result<Option<Quote>, AppError> {
     let parsed = NaiveDate::parse_from_str(&date, "%Y-%m-%d")
         .map_err(|e| AppError::Validation(format!("invalid date '{date}': {e}")))?;
-    state.quote_repo.get_for_day(&asset_id, &parsed, &source).await
+    state
+        .quote_repo
+        .get_for_day(&asset_id, &parsed, &source)
+        .await
 }
 
 #[tauri::command]
@@ -216,10 +211,7 @@ pub async fn create_lot(
 }
 
 #[tauri::command]
-pub async fn get_lot(
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<Option<Lot>, AppError> {
+pub async fn get_lot(id: String, state: State<'_, AppState>) -> Result<Option<Lot>, AppError> {
     state.lot_repo.get(&id).await
 }
 
@@ -247,7 +239,10 @@ pub async fn delete_valuation_for_date(
     date: String,
     state: State<'_, AppState>,
 ) -> Result<(), AppError> {
-    state.valuation_repo.delete_for_date(&account_id, &date).await
+    state
+        .valuation_repo
+        .delete_for_date(&account_id, &date)
+        .await
 }
 
 // ── Taxonomy ────────────────────────────────────────────────────────────────
@@ -269,9 +264,7 @@ pub async fn get_taxonomy(
 }
 
 #[tauri::command]
-pub async fn list_taxonomies(
-    state: State<'_, AppState>,
-) -> Result<Vec<Taxonomy>, AppError> {
+pub async fn list_taxonomies(state: State<'_, AppState>) -> Result<Vec<Taxonomy>, AppError> {
     state.taxonomy_repo.list().await
 }
 
@@ -304,7 +297,10 @@ pub async fn list_assignments_for_asset(
     asset_id: String,
     state: State<'_, AppState>,
 ) -> Result<Vec<AssetTaxonomyAssignment>, AppError> {
-    state.taxonomy_repo.list_assignments_for_asset(&asset_id).await
+    state
+        .taxonomy_repo
+        .list_assignments_for_asset(&asset_id)
+        .await
 }
 
 #[tauri::command]
@@ -312,7 +308,10 @@ pub async fn list_assignments_by_taxonomy(
     taxonomy_id: String,
     state: State<'_, AppState>,
 ) -> Result<Vec<AssetTaxonomyAssignment>, AppError> {
-    state.taxonomy_repo.list_assignments_by_taxonomy(&taxonomy_id).await
+    state
+        .taxonomy_repo
+        .list_assignments_by_taxonomy(&taxonomy_id)
+        .await
 }
 
 #[tauri::command]
