@@ -34,7 +34,7 @@ impl Default for GooseConfig {
             binary_path: PathBuf::from("goose"),
             binary_checksum: String::new(), // Must be set in production
             timeout: Duration::from_secs(300), // 5 minutes
-            max_output_bytes: 1024 * 1024, // 1MB
+            max_output_bytes: 1024 * 1024,  // 1MB
             max_turns: 50,
             max_concurrent: 1,
             working_directory: std::env::temp_dir().join("alphaforge-goose"),

@@ -4,7 +4,9 @@ use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
-use crate::services::goose_service::{GooseHealthStatus, ShadowAnalysisResult, StartShadowAnalysisInput};
+use crate::services::goose_service::{
+    GooseHealthStatus, ShadowAnalysisResult, StartShadowAnalysisInput,
+};
 
 /// Start a Goose shadow analysis
 #[tauri::command]
@@ -36,9 +38,7 @@ pub async fn cancel_goose_analysis(
 
 /// Check Goose service health
 #[tauri::command]
-pub async fn check_goose_health(
-    state: State<'_, AppState>,
-) -> Result<GooseHealthStatus, AppError> {
+pub async fn check_goose_health(state: State<'_, AppState>) -> Result<GooseHealthStatus, AppError> {
     let goose_service = state
         .goose_service
         .as_ref()

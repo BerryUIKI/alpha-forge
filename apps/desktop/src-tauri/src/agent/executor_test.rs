@@ -2,19 +2,21 @@
 
 #[cfg(test)]
 mod tests {
+    use async_trait::async_trait;
+    use chrono::Utc;
     use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
     use std::time::Duration;
     use tokio::time::sleep;
-    use async_trait::async_trait;
-    use chrono::Utc;
 
     use crate::agent::executor::ExecutorConfig;
     use crate::database::repositories::agent_task_repository::AgentTaskRepository;
     use domain::task::{AgentTask, TaskStatus};
-    use provider_core::{ProviderError, ResearchCompletion, ResearchCompletionRequest, ResearchProvider};
+    use provider_core::{
+        ProviderError, ResearchCompletion, ResearchCompletionRequest, ResearchProvider,
+    };
 
     async fn setup_test_db() -> SqlitePool {
         let pool = SqlitePoolOptions::new()
@@ -34,14 +36,14 @@ mod tests {
         ))
         .execute(&pool)
         .await
-            .expect("Failed to run agent tasks migration");
+        .expect("Failed to run agent tasks migration");
 
         sqlx::query(include_str!(
             "../../migrations/0003_fix_status_constraint.sql"
         ))
         .execute(&pool)
         .await
-            .expect("Failed to run status constraint fix");
+        .expect("Failed to run status constraint fix");
 
         pool
     }
@@ -101,7 +103,7 @@ mod tests {
 
         // Simulate multiple concurrent task registrations
         let mut registration_handles = vec![];
-        
+
         for i in 0..5 {
             let count_clone = call_count.clone();
             let handle = tokio::spawn(async move {
@@ -141,10 +143,14 @@ mod tests {
     #[test]
     fn test_task_creation_with_unique_ids() {
         let mut task_ids = std::collections::HashSet::new();
-        
+
         for i in 0..10 {
             let task = AgentTask {
-                id: format!("task-{}-{}", i, Utc::now().timestamp_nanos_opt().unwrap_or(0)),
+                id: format!(
+                    "task-{}-{}",
+                    i,
+                    Utc::now().timestamp_nanos_opt().unwrap_or(0)
+                ),
                 workspace_id: "workspace-1".to_string(),
                 title: format!("Task {}", i),
                 description: None,
@@ -152,11 +158,11 @@ mod tests {
                 created_at: Utc::now(),
                 updated_at: Utc::now(),
             };
-            
+
             // Verify each task has a unique ID
             assert!(task_ids.insert(task.id), "Task IDs should be unique");
         }
-        
+
         assert_eq!(task_ids.len(), 10);
     }
 }

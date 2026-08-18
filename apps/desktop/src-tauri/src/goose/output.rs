@@ -169,10 +169,7 @@ impl StructuredResponse {
         for evidence in &self.evidence {
             if !claim_ids.contains(&evidence.claim_id.as_str()) {
                 return Err(GooseError::OutputValidationFailed {
-                    reason: format!(
-                        "Evidence references unknown claim '{}'",
-                        evidence.claim_id
-                    ),
+                    reason: format!("Evidence references unknown claim '{}'", evidence.claim_id),
                 });
             }
         }
@@ -223,10 +220,8 @@ pub struct GooseOutput {
 impl GooseOutput {
     /// Parse stdout into structured response
     pub fn parse(&self) -> Result<StructuredResponse, GooseError> {
-        let response: StructuredResponse =
-            serde_json::from_slice(&self.stdout).map_err(|e| GooseError::OutputParseError {
-                source: e,
-            })?;
+        let response: StructuredResponse = serde_json::from_slice(&self.stdout)
+            .map_err(|e| GooseError::OutputParseError { source: e })?;
 
         response.validate()?;
 
