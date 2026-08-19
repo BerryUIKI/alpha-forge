@@ -49,6 +49,7 @@ const LOCALE_LABELS: Record<Locale, string> = {
 export function TopBar({
   isRightSidebarExpanded = false,
   onToggleRightSidebar,
+  onOpenSearch,
 }: TopBarProps) {
   const { t, locale, setLocale } = useLocale();
   const { theme, setTheme } = useTheme();
@@ -111,13 +112,19 @@ export function TopBar({
       {/* Right: Search + Actions */}
       <div className="flex items-center gap-1.5">
         {/* Search */}
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary hover:border-primary/60"
+          aria-label="Open search"
+          title="Search (Ctrl+K)"
+        >
           <Search className="h-4 w-4" />
           <span className="text-xs text-muted-foreground/50">Search...</span>
           <kbd className="hidden rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/60 md:inline-flex">
             ⌘K
           </kbd>
-        </div>
+        </button>
 
         {/* Divider */}
         <div className="mx-1 h-5 w-px bg-border/60" />
