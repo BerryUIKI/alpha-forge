@@ -47,6 +47,9 @@ export function useAgentTask(taskId: string) {
     queryKey: AGENT_KEYS.task(taskId),
     queryFn: () => desktopApi.agent.getAgentTask(taskId),
     enabled: !!taskId,
+    // Poll so a selected task's status advances without a manual refresh.
+    // Matches the 5s interval already used by useAgentStatus.
+    refetchInterval: 5000,
   });
 }
 

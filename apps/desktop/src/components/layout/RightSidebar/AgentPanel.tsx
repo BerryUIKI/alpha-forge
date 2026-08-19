@@ -2,9 +2,13 @@
  * AgentPanel Component
  *
  * Right sidebar content for Agent interaction.
- * Combines task management with a message-based chat interface.
+ * Combines task management with a message-based chat interface. Sending a
+ * message in the chat input creates and auto-starts a research task; the
+ * created task is shown in the task-detail card below.
  *
- * @version GUI-M4
+ * Design: docs/GLOBAL_SEARCH_AGENT_CHAT.md
+ *
+ * @version GUI-M5
  */
 
 import { useState } from "react";
@@ -18,80 +22,54 @@ import {
   useAgentTask,
   useRunAgentTask,
   useCancelAgentTask,
+  useCreateAgentTask,
 } from "@/features/agent/hooks/useAgentTasks";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
 import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { MessageKey } from "@/lib/i18n/locale";
 
-interface AgentMessage {
+interface ConversationMessage {
   id: string;
-  type: "research" | "alert" | "thesis" | "info";
-  label: string;
-  content: string;
-  timestamp: string;
+  role: "user" | "info";
+  text: string;
 }
 
-const MESSAGE_TYPE_STYLES = {
-  research: { dot: "bg-indigo-400", label: "text-indigo-400" },
-  alert: { dot: "bg-amber-400", label: "text-amber-400" },
-  thesis: { dot: "bg-green-500", label: "text-green-500" },
-  info: { dot: "bg-sky-400", label: "text-sky-400" },
-};
-
-// Sample/demo messages rendered until the chat is wired to real agent output.
-function getSampleMessages(t: (key: MessageKey) => string): AgentMessage[] {
-  return [
-    {
-      id: "m1",
-      type: "research",
-      label: t("agentSampleResearchLabel"),
-      content: t("agentSampleResearchContent"),
-      timestamp: t("agentSampleResearchTime"),
-    },
-    {
-      id: "m2",
-      type: "alert",
-      label: t("agentSampleAlertLabel"),
-      content: t("agentSampleAlertContent"),
-      timestamp: t("agentSampleAlertTime"),
-    },
-    {
-      id: "m3",
-      type: "thesis",
-      label: t("agentSampleThesisLabel"),
-      content: t("agentSampleThesisContent"),
-      timestamp: t("agentSampleThesisTime"),
-    },
-  ];
+let messageSeq = 0;
+function nextMessageId(): string {
+  messageSeq += 1;
+  return `conversation-${messageSeq}`;
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function AgentMessageItem({ message }: { message: AgentMessage }) {
-  const style = MESSAGE_TYPE_STYLES[message.type];
-
-  return (
-    <div className="rounded-lg border border-border/60 bg-card/50 p-3">
-      <div className="mb-1 flex items-center gap-2">
-        <div className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-        <span className={`text-xs font-semibold ${style.label}`}>{message.label}</span>
-        <span className="ml-auto text-[10px] text-muted-foreground/60">{message.timestamp}</span>
+function ConversationItem({ message }: { message: ConversationMessage }) {
+  if (message.role === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-lg rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+          {message.text}
+        </div>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{message.content}</p>
+    );
+  }
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-card/50 p-3">
+      <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+      <p className="text-xs leading-relaxed text-muted-foreground">{message.text}</p>
     </div>
   );
 }
 
-function AgentInput() {
+function AgentInput({ onSend }: { onSend: (text: string) => void }) {
   const { t } = useLocale();
   const [input, setInput] = useState("");
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    // TODO: wire up to actual agent chat
+    const text = input.trim();
+    if (!text) return;
+    onSend(text);
     setInput("");
   };
 
@@ -129,13 +107,18 @@ export function AgentPanel() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
-  const messages = getSampleMessages(t);
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
 
   const workspaceId = workspaces?.[0]?.id || "";
   const { status: agentStatus } = useAgentStatus(workspaceId);
   const startTask = useRunAgentTask();
   const cancelTask = useCancelAgentTask();
+  const createTask = useCreateAgentTask();
   const { data: selectedTask } = useAgentTask(selectedTaskId || "");
+
+  const appendMessage = (message: ConversationMessage) => {
+    setConversation((prev) => [...prev, message]);
+  };
 
   const handleCreateClick = () => {
     if (agentStatus === "unconfigured" || agentStatus === "error") {
@@ -154,6 +137,33 @@ export function AgentPanel() {
   const handleTaskCreated = (taskId: string) => {
     setSelectedTaskId(taskId);
     setShowCreateForm(false);
+  };
+
+  const handleSend = (text: string) => {
+    // Unconfigured/error agents cannot run research; guide the user to configure.
+    if (agentStatus === "unconfigured" || agentStatus === "error") {
+      appendMessage({ id: nextMessageId(), role: "user", text });
+      appendMessage({ id: nextMessageId(), role: "info", text: t("agentChatNeedsConfig") });
+      setShowConfigGuide(true);
+      return;
+    }
+
+    appendMessage({ id: nextMessageId(), role: "user", text });
+
+    createTask.mutate(
+      { workspaceId, title: text },
+      {
+        onSuccess: (task) => {
+          // Show the task card, then queue and start execution automatically.
+          setSelectedTaskId(task.id);
+          setShowCreateForm(false);
+          startTask.mutate({ taskId: task.id, status: "created" });
+        },
+        onError: () => {
+          appendMessage({ id: nextMessageId(), role: "info", text: t("agentChatSendFailed") });
+        },
+      },
+    );
   };
 
   // Loading state
@@ -187,9 +197,12 @@ export function AgentPanel() {
     <div className="flex h-full flex-col">
       {/* Messages Area */}
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
-        {/* Agent Messages */}
-        {messages.map((message) => (
-          <AgentMessageItem key={message.id} message={message} />
+        {/* Welcome message */}
+        <ConversationItem message={{ id: "welcome", role: "info", text: t("agentChatWelcome") }} />
+
+        {/* Conversation */}
+        {conversation.map((message) => (
+          <ConversationItem key={message.id} message={message} />
         ))}
 
         {/* Create Task Section */}
@@ -284,7 +297,7 @@ export function AgentPanel() {
       </div>
 
       {/* Input */}
-      <AgentInput />
+      <AgentInput onSend={handleSend} />
 
       {/* Agent Config Guide Dialog */}
       <AgentConfigGuide
