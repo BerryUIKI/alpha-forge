@@ -10,7 +10,9 @@ import { LocaleContext } from "@/lib/i18n/locale-context";
 import { translate } from "@/lib/i18n/locale";
 import { OptionsPage } from "./OptionsPage";
 
-const workspaceId = "00000000-0000-4000-8000-000000000001";
+// Deterministic workspace for all page-level interactions; the deep-link
+// resolution itself is covered by useActiveWorkspace.test.tsx.
+const workspaceId = vi.hoisted(() => "00000000-0000-4000-8000-000000000001");
 const chainId = "00000000-0000-4000-8000-000000000002";
 const contractId = "00000000-0000-4000-8000-000000000003";
 const strategyId = "00000000-0000-4000-8000-000000000004";
@@ -29,6 +31,10 @@ const optionsMock = vi.hoisted(() => ({
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: { workspace: workspaceMock, options: optionsMock },
+}));
+
+vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+  useActiveWorkspaceId: () => workspaceId,
 }));
 
 const chain = {

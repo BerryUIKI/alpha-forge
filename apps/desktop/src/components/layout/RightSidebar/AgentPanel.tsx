@@ -16,6 +16,7 @@ import { Bot, X, Play, Square, Send } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
 import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
 import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
 import {
@@ -103,13 +104,15 @@ function AgentInput({ onSend }: { onSend: (text: string) => void }) {
 
 export function AgentPanel() {
   const { t } = useLocale();
-  const { data: workspaces, isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
+  const { isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
 
-  const workspaceId = workspaces?.[0]?.id || "";
+  // Loading/error states come from the workspace list query; the active
+  // workspace itself comes from the global context (ADR-0008).
+  const workspaceId = useActiveWorkspaceId();
   const { status: agentStatus } = useAgentStatus(workspaceId);
   const startTask = useRunAgentTask();
   const cancelTask = useCancelAgentTask();

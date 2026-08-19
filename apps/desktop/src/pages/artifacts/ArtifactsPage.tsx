@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FileText, Trash2 } from "lucide-react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
 import { ArtifactViewer } from "@/features/artifacts/components/ArtifactViewer";
 import { CompanyComparisonArtifactForm } from "@/features/plugins";
@@ -11,25 +12,19 @@ import type { Artifact } from "@/lib/desktop-api/artifacts";
 
 export function ArtifactsPage() {
   const { t } = useLocale();
+  // Loading/error states come from the workspace list query; the active
+  // workspace itself comes from the global context (ADR-0008).
   const workspaces = useWorkspaces();
-  const [workspaceId, setWorkspaceId] = useState("");
+  const workspaceId = useActiveWorkspaceId();
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const artifacts = useArtifacts(workspaceId);
   const deleteArtifact = useDeleteArtifact();
 
-  // Auto-select first workspace
+  // Reset the selected artifact when the active workspace changes.
   useEffect(() => {
-    if (!workspaceId && workspaces.data?.[0]) {
-      setWorkspaceId(workspaces.data[0].id);
-    }
-  }, [workspaceId, workspaces.data]);
-
-  // Handle workspace change
-  const handleWorkspaceChange = (newWorkspaceId: string) => {
-    setWorkspaceId(newWorkspaceId);
     setSelectedArtifactId(null);
-  };
+  }, [workspaceId]);
 
   // Handle artifact deletion
   const handleDeleteArtifact = async (id: string) => {
@@ -82,30 +77,10 @@ export function ArtifactsPage() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b border-border p-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{t("artifactsTitle")}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("artifactsDescription")}
-            </p>
-          </div>
-
-          {/* Workspace Selector */}
-          <label className="block max-w-xs text-sm font-medium">
-            {t("workspace")}
-            <select
-              value={workspaceId}
-              onChange={(e) => handleWorkspaceChange(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              {workspaces.data.map((workspace) => (
-                <option key={workspace.id} value={workspace.id}>
-                  {workspace.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <h1 className="text-2xl font-bold">{t("artifactsTitle")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("artifactsDescription")}
+        </p>
       </div>
 
       {deleteError && (

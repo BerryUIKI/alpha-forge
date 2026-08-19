@@ -13,9 +13,8 @@
 
 import { useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
 import { desktopApi } from "@/lib/desktop-api";
-import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
 
 export type SearchSectionId =
   | "projects"
@@ -48,14 +47,13 @@ function textOf(value: unknown): string {
 /**
  * Aggregates and filters every searchable entity for the active workspace.
  *
- * The active workspace is the URL `workspace` parameter when present, otherwise
- * the first workspace. Passing `query` is cheap: filtering happens on the
+ * The active workspace comes from the global active-workspace context
+ * (ADR-0008); search-result links keep the `?workspace=` parameter as a
+ * deep-link entry point. Passing `query` is cheap: filtering happens on the
  * in-memory query cache, not the backend.
  */
 export function useGlobalSearch(query: string) {
-  const [searchParams] = useSearchParams();
-  const workspaces = useWorkspaces();
-  const workspaceId = searchParams.get("workspace") || workspaces.data?.[0]?.id || "";
+  const workspaceId = useActiveWorkspaceId();
 
   const projects = useQuery({
     queryKey: ["research", "projects", workspaceId],

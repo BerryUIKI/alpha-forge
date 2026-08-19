@@ -22,6 +22,7 @@ import {
 import { useTheme } from "next-themes";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { LOCALES, type Locale } from "@/lib/i18n/locale";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import type { TopBarProps } from "../types";
 
 /**
@@ -86,27 +87,30 @@ export function TopBar({
 
   return (
     <header className="flex h-13 items-center justify-between border-b border-border bg-background px-6">
-      {/* Left: Breadcrumb */}
-      <div className="flex items-center gap-2">
-        {pageInfo.groupKey && (
-          <span className="text-sm text-muted-foreground/70">
-            {t(pageInfo.groupKey as never)}
-          </span>
-        )}
-        {pageInfo.groupKey && (
-          <svg
-            className="h-3.5 w-3.5 text-muted-foreground/40"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        )}
-        {pageInfo.labelKey && (
-          <span className="text-sm font-semibold">{t(pageInfo.labelKey as never)}</span>
-        )}
+      {/* Left: Workspace switcher + Breadcrumb */}
+      <div className="flex items-center gap-3">
+        <WorkspaceSwitcher />
+        <div className="flex items-center gap-2">
+          {pageInfo.groupKey && (
+            <span className="text-sm text-muted-foreground/70">
+              {t(pageInfo.groupKey as never)}
+            </span>
+          )}
+          {pageInfo.groupKey && (
+            <svg
+              className="h-3.5 w-3.5 text-muted-foreground/40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          )}
+          {pageInfo.labelKey && (
+            <span className="text-sm font-semibold">{t(pageInfo.labelKey as never)}</span>
+          )}
+        </div>
       </div>
 
       {/* Right: Search + Actions */}

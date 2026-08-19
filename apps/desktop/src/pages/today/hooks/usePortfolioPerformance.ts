@@ -1,8 +1,8 @@
 /**
  * usePortfolioPerformance Hook — dashboard Performance tab.
  *
- * Fetches the whole-workspace portfolio value history by:
- * 1. listPortfolioAccounts(workspaceId)  — legacy dev command
+ * Fetches the global portfolio value history by:
+ * 1. listAllFinancialAccounts()  — canonical accounts, all workspaces (ADR-0008)
  * 2. Promise.all(accounts → getPerformanceTimeSeries(accountId))
  * 3. merging per-account series by date (sum total_value_base)
  * 4. filtering by the selected time period
@@ -68,13 +68,13 @@ export function mergePerformanceSeries(
 /**
  * Hook for the dashboard Performance tab.
  *
- * R1: workspace aggregation — fetch per-account series, merge by date.
+ * R1: global aggregation — fetch per-account series for every account,
+ *     merge by date.
  * R2: period selection — 1W/1M/3M/1Y filter.
  * R4: base-currency consolidation via total_value_base.
  * R7: zero accounts → empty points, not an error.
  */
 export function usePortfolioPerformance(
-  workspaceId: string,
   period: PortfolioPerformancePeriod = "1M",
 ) {
   const today = new Date().toISOString().slice(0, 10);
@@ -86,9 +86,9 @@ export function usePortfolioPerformance(
   }, [period]);
 
   return useQuery({
-    queryKey: [...financialKeys.all, "workspace", "performance", workspaceId, period, startDate, endDate],
+    queryKey: [...financialKeys.all, "global", "performance", period, startDate, endDate],
     queryFn: async (): Promise<PortfolioPerformance> => {
-      const accounts = await desktopApi.portfolio.listPortfolioAccounts(workspaceId);
+      const accounts = await desktopApi.financial.listAllFinancialAccounts();
 
       // R7 — no accounts → empty series, no error
       if (accounts.length === 0) {
@@ -144,7 +144,6 @@ export function usePortfolioPerformance(
         accountCount: accounts.length,
       };
     },
-    enabled: !!workspaceId,
     staleTime: 30_000,
   });
 }

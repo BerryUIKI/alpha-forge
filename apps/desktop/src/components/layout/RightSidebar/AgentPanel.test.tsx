@@ -59,6 +59,10 @@ vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
   }),
 }));
 
+vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+  useActiveWorkspaceId: () => "workspace-1",
+}));
+
 vi.mock("@/hooks/useAgentStatus", () => ({
   useAgentStatus: () => agentStatusMock,
 }));

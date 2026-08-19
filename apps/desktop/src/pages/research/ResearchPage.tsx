@@ -2,7 +2,8 @@
  * Research Page
  *
  * Main page for research project management.
- * URL params are the source of truth for workspace/project/document context.
+ * The active workspace comes from the global active-workspace context (ADR-0008);
+ * the URL `project` parameter remains a deep-link for the selected project.
  *
  * @module pages/research/ResearchPage
  */
@@ -13,6 +14,7 @@ import { useSearchParams } from "react-router-dom";
 import { desktopApi } from "@/lib/desktop-api";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { processAppError } from "@/lib/errors";
+import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace";
 import { ResearchProjectsSection } from "./components/ResearchProjectsSection";
 import { ResearchDocumentsSection } from "./components/ResearchDocumentsSection";
 import { ResearchNotesSection } from "./components/ResearchNotesSection";
@@ -21,7 +23,7 @@ export function ResearchPage() {
   const { t } = useLocale();
   const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const workspaceId = searchParams.get("workspace") || "";
+  const { workspaceId, workspaces, isLoading } = useActiveWorkspace();
   const projectId = searchParams.get("project") || "";
 
   // State
@@ -43,15 +45,10 @@ export function ResearchPage() {
   );
   const [error, setError] = useState("");
 
-  // Queries
-  const workspaces = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: desktopApi.workspace.listWorkspaces,
-  });
+  // The active workspace is always valid once resolved; it can only be "" while
+  // loading or when no workspace exists yet.
   const workspaceIsValid =
-    workspaces.isSuccess &&
-    Boolean(workspaceId) &&
-    (workspaces.data ?? []).some((item) => item.id === workspaceId);
+    !isLoading && Boolean(workspaceId) && workspaces.some((item) => item.id === workspaceId);
 
   const projects = useQuery({
     queryKey: ["research", "projects", workspaceId],
@@ -64,29 +61,10 @@ export function ResearchPage() {
     Boolean(projectId) &&
     (projects.data ?? []).some((item) => item.id === projectId);
 
-  // The URL is the source of truth for the selected research context. Clean
-  // stale IDs only after the corresponding query has succeeded, so loading
-  // and error states do not erase a deep link that may still become valid.
-  useEffect(() => {
-    if (!workspaces.isSuccess || workspaces.isFetching) return;
-
-    if (workspaceIsValid) return;
-
-    const next = new URLSearchParams(searchParams);
-    if (!next.has("workspace") && !next.has("project")) return;
-    next.delete("workspace");
-    next.delete("project");
-    if (next.toString() !== searchParams.toString()) {
-      setSearchParams(next, { replace: true });
-    }
-  }, [
-    searchParams,
-    setSearchParams,
-    workspaceIsValid,
-    workspaces.isFetching,
-    workspaces.isSuccess,
-  ]);
-
+  // The URL `project` parameter is the source of truth for the selected
+  // project. Clean a stale project id only after the corresponding query has
+  // succeeded, so loading and error states do not erase a deep link that may
+  // still become valid.
   useEffect(() => {
     if (!workspaceIsValid || !projects.isSuccess || projects.isFetching) return;
     if (!projectId && !searchParams.has("project")) return;
@@ -111,10 +89,8 @@ export function ResearchPage() {
     setDocumentId("");
   }, [projectId, workspaceId]);
 
-  const updateContext = (workspace: string, project?: string, options?: { replace?: boolean }) => {
+  const updateContext = (project?: string, options?: { replace?: boolean }) => {
     const next = new URLSearchParams(searchParams);
-    if (workspace) next.set("workspace", workspace);
-    else next.delete("workspace");
     if (project) next.set("project", project);
     else next.delete("project");
     if (next.toString() !== searchParams.toString()) {
@@ -239,7 +215,7 @@ export function ResearchPage() {
       desktopApi.research.deleteResearchProject(id),
     onSuccess: (_result, deletedProjectId) => {
       if (deletedProjectId === projectId) {
-        updateContext(workspaceId, undefined, { replace: true });
+        updateContext(undefined, { replace: true });
       }
       refresh("projects", workspaceId);
     },
@@ -309,24 +285,17 @@ export function ResearchPage() {
         </p>
       )}
 
-      {/* Workspace selector */}
-      <label className="block max-w-md text-sm font-medium">
-        {t("workspace")}
-        <select
-          className="mt-1 w-full rounded border bg-background p-2"
-          value={workspaceId}
-          onChange={(event) => {
-            updateContext(event.target.value);
-          }}
-        >
-          <option value="">{t("selectWorkspace")}</option>
-          {workspaces.data?.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {/* No workspace empty state */}
+      {!isLoading && workspaces.length === 0 && (
+        <div className="rounded-lg border border-dashed border-border p-8 text-center">
+          <p className="text-sm font-semibold text-foreground">
+            {t("createWorkspaceFirst")}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("createWorkspaceFirstDescription")}
+          </p>
+        </div>
+      )}
 
       {/* Projects section */}
       {workspaceIsValid && (
@@ -336,7 +305,7 @@ export function ResearchPage() {
           onProjectTitleChange={setProjectTitle}
           createPending={createProject.isPending}
           onCreateProject={() => run(() => createProject.mutateAsync())}
-          onSelectProject={(id) => updateContext(workspaceId, id)}
+          onSelectProject={(id) => updateContext(id)}
           archiveProject={(id) => archiveProject.mutate(id)}
           completeProject={(id) => completeProject.mutate(id)}
           deleteProject={(id) => deleteProject.mutate(id)}

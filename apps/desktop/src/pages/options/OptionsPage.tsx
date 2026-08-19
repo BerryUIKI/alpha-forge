@@ -3,14 +3,15 @@
  *
  * Options analysis page using M9 components.
  * Displays Greeks Calculator, Option Chains, and Strategy Builder.
+ * Workspace-scoped analysis tool: the active workspace comes from the global
+ * active-workspace context (ADR-0008); the per-page workspace selector is gone.
  *
  * @module pages/options/OptionsPage
  */
 
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { desktopApi } from "@/lib/desktop-api";
+import { useEffect, useState } from "react";
+import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
   GreeksCalculator,
@@ -20,6 +21,7 @@ import {
 } from "@/features/options";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useFetchOptionChain } from "@/hooks/useOptions";
 import type { OptionContract } from "@/types/option";
 
@@ -31,33 +33,27 @@ function normalizeSymbol(value: string): string {
 
 export function OptionsPage() {
   const { locale, t } = useLocale();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const workspaceIdFromUrl = searchParams.get("workspace") || "";
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(workspaceIdFromUrl);
+  // Loading/error states come from the workspace list query; the active
+  // workspace itself comes from the global context (ADR-0008).
+  const { data: workspaces, isLoading, error, refetch } = useWorkspaces();
+  const workspaceId = useActiveWorkspaceId();
   const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
   const [selectedContracts, setSelectedContracts] = useState<OptionContract[]>([]);
   const [symbol, setSymbol] = useState("");
   const [fetchError, setFetchError] = useState<string | null>(null);
   const fetchMutation = useFetchOptionChain(locale);
 
-  // Fetch workspaces for selection
-  const { data: workspaces } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: desktopApi.workspace.listWorkspaces,
-  });
-
-  // Handle workspace selection
-  const handleWorkspaceChange = (id: string) => {
-    setSelectedWorkspaceId(id);
+  // Reset the analysis state when the active workspace changes.
+  useEffect(() => {
     setSelectedChainId(null);
     setSelectedContracts([]);
     setSymbol("");
     setFetchError(null);
-    setSearchParams({ workspace: id });
-  };
+  }, [workspaceId]);
 
   const submitFetch = () => {
     const normalizedSymbol = normalizeSymbol(symbol);
+    if (!workspaceId) return;
     if (!SYMBOL_PATTERN.test(normalizedSymbol)) {
       setFetchError(t("invalidOptionSymbol"));
       return;
@@ -65,7 +61,7 @@ export function OptionsPage() {
 
     setFetchError(null);
     fetchMutation.mutate(
-      { workspaceId: selectedWorkspaceId, symbol: normalizedSymbol, provider: "demo" },
+      { workspaceId, symbol: normalizedSymbol, provider: "demo" },
       {
         onSuccess: (chain) => {
           setSelectedChainId(chain.id);
@@ -77,27 +73,25 @@ export function OptionsPage() {
     );
   };
 
-  // No workspace selected state
-  if (!selectedWorkspaceId) {
+  if (isLoading) {
+    return <LoadingSpinner className="p-8" ariaLabel={t("loading")} />;
+  }
+  if (error) {
+    return (
+      <ErrorState
+        message={t("failedToLoadWorkspaces")}
+        retryLabel={t("retry")}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+  if (!workspaces?.length) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6">
-        <EmptyState title={t("selectWorkspace")} description={t("selectWorkspaceDescription")} />
-        {workspaces && workspaces.length > 0 && (
-          <div className="mt-4 w-full max-w-xs">
-            <select
-              className="w-full rounded-lg border border-border bg-background p-2"
-              value={selectedWorkspaceId}
-              onChange={(e) => handleWorkspaceChange(e.target.value)}
-            >
-              <option value="">{t("selectWorkspace")}</option>
-              {workspaces.map((workspace) => (
-                <option key={workspace.id} value={workspace.id}>
-                  {workspace.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <EmptyState
+          title={t("createWorkspaceFirst")}
+          description={t("createWorkspaceFirstDescription")}
+        />
       </div>
     );
   }
@@ -108,23 +102,6 @@ export function OptionsPage() {
       <div>
         <h1 className="text-2xl font-bold">{t("optionsTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("optionsDescription")}</p>
-      </div>
-
-      {/* Workspace Selector */}
-      <div className="max-w-xs">
-        <label className="block text-sm font-medium">{t("workspace")}</label>
-        <select
-          className="mt-1 w-full rounded-lg border border-border bg-background p-2"
-          value={selectedWorkspaceId}
-          onChange={(e) => handleWorkspaceChange(e.target.value)}
-        >
-          <option value="">{t("selectWorkspace")}</option>
-          {workspaces?.map((workspace) => (
-            <option key={workspace.id} value={workspace.id}>
-              {workspace.name}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Calculation tool */}
@@ -180,7 +157,7 @@ export function OptionsPage() {
           />
         )}
         <OptionChainList
-          workspaceId={selectedWorkspaceId}
+          workspaceId={workspaceId}
           selectedChainId={selectedChainId}
           onSelectChain={(chainId) => {
             setSelectedChainId(chainId);
@@ -218,8 +195,8 @@ export function OptionsPage() {
           {t("optionStrategies")}
         </h2>
         <OptionStrategyPanel
-          key={`${selectedWorkspaceId}:${selectedChainId ?? "none"}`}
-          workspaceId={selectedWorkspaceId}
+          key={`${workspaceId}:${selectedChainId ?? "none"}`}
+          workspaceId={workspaceId}
           selectedContracts={selectedContracts}
           onStrategyCreated={() => setSelectedContracts([])}
         />

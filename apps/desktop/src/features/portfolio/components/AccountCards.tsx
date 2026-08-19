@@ -2,22 +2,21 @@
  * AccountCards Component
  *
  * Displays a horizontal scrollable row of account summary cards plus
- * a net worth overview card. Fetches data via the legacy portfolio
- * commands (listPortfolioAccounts) and the new financial commands
- * (computeNetWorth).
+ * a net worth overview card. Portfolio is a global dimension (ADR-0008):
+ * all accounts are shown regardless of the active workspace, so the data
+ * comes from the canonical `accounts` model (listAllFinancialAccounts).
  *
  * @module features/portfolio/components/AccountCards
  */
 
 import { useLocale } from "@/lib/i18n/useLocale";
-import { useListFinancialAccounts } from "@/features/portfolio/hooks/useFinancialData";
+import { useListAllFinancialAccounts } from "@/features/portfolio/hooks/useFinancialData";
 import { useNetWorth } from "@/features/portfolio/hooks/useFinancialData";
 import { fmtMoney } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
 import { Wallet, Banknote, Plus } from "lucide-react";
 
 interface AccountCardsProps {
-  workspaceId: string;
   asOfDate: string;
   selectedAccountId: string;
   onSelectAccount: (accountId: string) => void;
@@ -25,14 +24,13 @@ interface AccountCardsProps {
 }
 
 export function AccountCards({
-  workspaceId,
   asOfDate,
   selectedAccountId,
   onSelectAccount,
   onAddAccount,
 }: AccountCardsProps) {
   const { t } = useLocale();
-  const accounts = useListFinancialAccounts(workspaceId);
+  const accounts = useListAllFinancialAccounts();
   const netWorth = useNetWorth(asOfDate);
 
   // ── Loading ──

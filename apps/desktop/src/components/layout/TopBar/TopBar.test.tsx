@@ -14,6 +14,17 @@ vi.mock("@/lib/i18n/useLocale", () => ({
   useLocale: vi.fn(),
 }));
 
+// Mock the active-workspace context: no workspaces, so the switcher is hidden.
+vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+  useActiveWorkspace: () => ({
+    workspaceId: "",
+    workspace: null,
+    workspaces: [],
+    isLoading: false,
+    setActiveWorkspace: vi.fn(),
+  }),
+}));
+
 import { useTheme } from "next-themes";
 import { useLocale } from "@/lib/i18n/useLocale";
 import type { Locale } from "@/lib/i18n/locale";

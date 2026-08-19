@@ -7,6 +7,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { useMemo, useState, type PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GlobalSearchDialog } from "./GlobalSearchDialog";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import { translate, type MessageKey } from "@/lib/i18n/locale";
 
@@ -69,9 +70,11 @@ function renderDialog(initialOpen: boolean) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={["/research"]}>
-        <EnLocaleProvider>
-          <Harness initialOpen={initialOpen} />
-        </EnLocaleProvider>
+        <ActiveWorkspaceProvider>
+          <EnLocaleProvider>
+            <Harness initialOpen={initialOpen} />
+          </EnLocaleProvider>
+        </ActiveWorkspaceProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -129,7 +132,8 @@ describe("GlobalSearchDialog", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("path")).toHaveTextContent(
-        "/research?workspace=workspace-1&project=project-1",
+        // The workspace deep link is consumed and stripped by the provider.
+        "/research?project=project-1",
       ),
     );
     // Palette is closed, so the dialog unmounts.
