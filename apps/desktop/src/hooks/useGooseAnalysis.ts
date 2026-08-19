@@ -11,6 +11,7 @@
  * @module hooks/goose
  */
 
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { processAppError } from "@/lib/errors";
@@ -92,9 +93,6 @@ export function useStartShadowAnalysis() {
         result
       );
     },
-    onError: (error: Error) => {
-      console.error("Shadow analysis failed:", error);
-    },
   });
 }
 
@@ -155,6 +153,14 @@ export function useGooseShadowAnalysis(workspaceId: string) {
   const healthQuery = useGooseHealth();
   const startMutation = useStartShadowAnalysis();
   const cancelMutation = useCancelAnalysis();
+  const [validationError, setValidationError] = useState(false);
+
+  // Auto-clear the validation error once a workspace becomes available.
+  useEffect(() => {
+    if (workspaceId) {
+      setValidationError(false);
+    }
+  }, [workspaceId]);
 
   const isReady =
     healthQuery.data?.binary_available &&
@@ -166,10 +172,11 @@ export function useGooseShadowAnalysis(workspaceId: string) {
     instructions?: string;
   }) => {
     if (!workspaceId) {
-      console.error("No workspace ID provided");
+      setValidationError(true);
       return;
     }
 
+    setValidationError(false);
     startMutation.mutate({
       workspace_id: workspaceId,
       ...options,
@@ -190,6 +197,7 @@ export function useGooseShadowAnalysis(workspaceId: string) {
     startAnalysis,
     isStarting: startMutation.isPending,
     result: startMutation.data,
+    validationError,
     startError: startMutation.error
       ? processAppError("en", startMutation.error)
       : null,
