@@ -36,7 +36,7 @@ export function ValuationChart({ accountId }: ValuationChartProps) {
   if (valuations.error) {
     return (
       <ErrorState
-        message={t("failedToLoadTransactions" as any) || "Failed to load valuation data"}
+        message={t("failedToLoadTransactions")}
         onRetry={() => valuations.refetch()}
       />
     );
@@ -46,8 +46,8 @@ export function ValuationChart({ accountId }: ValuationChartProps) {
   if (!data || data.length === 0) {
     return (
       <EmptyState
-        title={t("noValuationData" as any) || "No valuation data"}
-        description="Add accounts and run valuation calculations to see the chart."
+        title={t("noValuationData")}
+        description={t("noRecentActivityDescription")}
       />
     );
   }
@@ -62,7 +62,7 @@ export function ValuationChart({ accountId }: ValuationChartProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">
-        {t("accountValue" as any) || "Account Value Over Time"}
+        {t("accountValue")}
       </h3>
 
       <div className="h-52">

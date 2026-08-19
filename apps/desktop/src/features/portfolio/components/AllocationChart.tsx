@@ -62,7 +62,7 @@ export function AllocationChart({ scopeType, scopeId, asOfDate }: AllocationChar
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">
-        {t("allocation" as any) || "Allocation"}
+        {t("allocation")}
       </h3>
 
       <div className="flex items-center gap-4">
@@ -125,7 +125,7 @@ export function AllocationChart({ scopeType, scopeId, asOfDate }: AllocationChar
 
       {/* Summary */}
       <div className="text-xs text-muted-foreground">
-        {t("totalValue" as any) || "Total"}: {fmtMoney(data.total_market_value, "USD")}
+        {t("totalValue")}: {fmtMoney(data.total_market_value, "USD")}
       </div>
     </div>
   );

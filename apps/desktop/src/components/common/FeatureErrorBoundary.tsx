@@ -84,6 +84,10 @@ function FeatureErrorState({
     options: t("optionsFeature"),
     goose: t("gooseFeature"),
     artifacts: t("artifactsFeature"),
+    today: t("todayFeature"),
+    journal: t("journalFeature"),
+    knowledge: t("knowledgeFeature"),
+    settings: t("settingsFeature"),
   };
 
   const featureName = featureNames[feature] || feature;

@@ -78,6 +78,11 @@ Cargo.lock
 *.bak
 *.backup
 *~
+_tmp_*
+
+# Claude Code local settings
+.claude/settings.local.json
+.claude/launch.json
 
 # Archives
 *.tgz

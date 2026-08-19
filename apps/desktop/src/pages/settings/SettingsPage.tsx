@@ -27,7 +27,7 @@ export function SettingsPage() {
     desktopApi.credentials
       .hasOpenAiApiKey()
       .then(setHasExistingKey)
-      .catch(() => setAgentMessage(t("agentConfigError" as any) || "保存失败"));
+      .catch(() => setAgentMessage(t("agentConfigError")));
   }, [t]);
 
   const exportBackup = async () => {
@@ -84,9 +84,9 @@ export function SettingsPage() {
       await desktopApi.credentials.saveOpenAiApiKey(apiKey);
       setHasExistingKey(true);
       setApiKey("");
-      setAgentMessage(t("agentConfigSaved" as any) || "Agent配置已保存");
+      setAgentMessage(t("agentConfigSaved"));
     } catch {
-      setAgentMessage(t("agentConfigError" as any) || "保存失败");
+      setAgentMessage(t("agentConfigError"));
     } finally {
       setIsSavingAgent(false);
     }
@@ -123,9 +123,9 @@ export function SettingsPage() {
         <div className="flex items-start gap-3">
           <Bot className="mt-0.5 h-5 w-5" />
           <div className="flex-1">
-            <h2 className="font-semibold">{t("agentConfig" as any) || "Agent配置"}</h2>
+            <h2 className="font-semibold">{t("agentConfig")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("agentConfigDescription" as any) || "配置AI助手的API密钥和模型参数"}
+              {t("agentConfigDescription")}
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export function SettingsPage() {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={hasExistingKey ? t("apiKeyPlaceholder" as any) || "密钥已安全存储，输入新值以更新" : "sk-..."}
+              placeholder={hasExistingKey ? t("apiKeyPlaceholder") : "sk-..."}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -149,7 +149,7 @@ export function SettingsPage() {
               disabled={isSavingAgent || !apiKey.trim()}
               className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
-              {isSavingAgent ? (t("saving" as any) || "保存中...") : (t("save" as any) || "保存")}
+              {isSavingAgent ? t("saving") : t("save")}
             </button>
             {agentMessage && (
               <span className="text-sm text-muted-foreground">{agentMessage}</span>

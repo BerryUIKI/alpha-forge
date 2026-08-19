@@ -49,10 +49,10 @@ export function HoldingsTable({ accountId, asOfDate }: HoldingsTableProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">
-          {t("accounts" as any) || "Holdings"} ({summary.holdings.length})
+          {t("accounts")} ({summary.holdings.length})
         </h3>
         <span className="text-xs text-muted-foreground">
-          {t("totalValue" as any) || "Total"}: {fmtMoney(summary.total_market_value, summary.holdings[0]?.currency)}
+          {t("totalValue")}: {fmtMoney(summary.total_market_value, summary.holdings[0]?.currency)}
         </span>
       </div>
 
@@ -61,22 +61,22 @@ export function HoldingsTable({ accountId, asOfDate }: HoldingsTableProps) {
           <thead>
             <tr className="border-b bg-muted/50">
               <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                {t("symbolLabel" as any) || "Symbol"}
+                {t("symbolLabel")}
               </th>
               <th className="px-3 py-2 text-right font-medium text-muted-foreground">
-                {t("quantityLabel" as any) || "Qty"}
+                {t("quantityLabel")}
               </th>
               <th className="px-3 py-2 text-right font-medium text-muted-foreground">
-                {t("marketValue" as any) || "Mkt Value"}
+                {t("marketValue")}
               </th>
               <th className="px-3 py-2 text-right font-medium text-muted-foreground">
-                {t("costBasisLabel" as any) || "Cost Basis"}
+                {t("costBasisLabel")}
               </th>
               <th className="px-3 py-2 text-right font-medium text-muted-foreground">
-                {t("gainLoss" as any) || "Gain/Loss"}
+                {t("gainLoss")}
               </th>
               <th className="px-3 py-2 text-right font-medium text-muted-foreground">
-                {t("weight" as any) || "Weight"}
+                {t("weight")}
               </th>
             </tr>
           </thead>
@@ -135,7 +135,7 @@ export function HoldingsTable({ accountId, asOfDate }: HoldingsTableProps) {
           <tfoot>
             <tr className="border-t bg-muted/30 font-medium">
               <td className="px-3 py-2 text-xs text-muted-foreground">
-                {t("total" as any) || "Total"}
+                {t("total")}
               </td>
               <td className="px-3 py-2 text-right font-mono text-xs">
                 {fmtNumber(
