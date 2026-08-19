@@ -12,8 +12,11 @@ import { DashboardCard, StatCard } from "@/components/ui";
 import { ErrorState, EmptyState } from "@/components/common";
 import { HoldingsList } from "@/components/portfolio/HoldingsList";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
+import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage, translate } from "@/lib/i18n/locale";
 
 export function OverviewTab() {
+  const { t, locale } = useLocale();
   const workspaceId = useActiveWorkspaceId();
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useDashboardSummary(workspaceId);
   const { data: activity, isLoading: activityLoading, error: activityError } = useDashboardActivity(workspaceId);
@@ -39,7 +42,7 @@ export function OverviewTab() {
   if (summaryError || activityError) {
     return (
       <ErrorState
-        message="Failed to load dashboard data"
+        message={t("failedToLoadDashboardData")}
         onRetry={() => window.location.reload()}
       />
     );
@@ -52,13 +55,13 @@ export function OverviewTab() {
     return (
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <StatCard label="Total Portfolio Value" value="—" />
-          <StatCard label="Active Theses" value="0" />
-          <StatCard label="Unrealized P&L" value="—" />
+          <StatCard label={t("totalPortfolioValue")} value="—" />
+          <StatCard label={t("activeTheses")} value="0" />
+          <StatCard label={t("unrealizedPL")} value="—" />
         </div>
         <EmptyState
-          title="No data yet"
-          description="Create a workspace and start researching to see your dashboard."
+          title={t("noDataYet")}
+          description={t("noDashboardDataDescription")}
         />
       </div>
     );
@@ -69,32 +72,39 @@ export function OverviewTab() {
       {/* Stats Row */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCard
-          label="Total Portfolio Value"
+          label={t("totalPortfolioValue")}
           value={summary?.portfolioValue
             ? `$${summary.portfolioValue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`
             : "—"
           }
-          change={summary?.portfolioValue ? "Last updated from portfolio" : undefined}
+          change={summary?.portfolioValue ? t("lastUpdatedFromPortfolio") : undefined}
           isPositive
         />
         <StatCard
-          label="Active Theses"
+          label={t("activeTheses")}
           value={String(summary?.activeTheses ?? 0)}
-          change={summary?.activeTheses ? `${summary.activeTheses} active thesis${summary.activeTheses !== 1 ? "es" : ""}` : undefined}
+          change={summary?.activeTheses
+            ? formatMessage(
+                summary.activeTheses !== 1
+                  ? translate(locale, "activeThesesCount")
+                  : translate(locale, "activeThesisCount"),
+                { count: String(summary.activeTheses) },
+              )
+            : undefined}
           isPositive
         />
         <StatCard
-          label="Unrealized P&L"
+          label={t("unrealizedPL")}
           value="—"
-          change="Coming with position tracking"
+          change={t("comingWithPositionTracking")}
         />
       </div>
 
       {/* Holdings + Activity */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <DashboardCard
-          title="Top Holdings"
-          meta="View all"
+          title={t("topHoldings")}
+          meta={t("viewAll")}
           padded={false}
         >
           <div className="px-4">
@@ -102,15 +112,15 @@ export function OverviewTab() {
               <HoldingsList holdings={summary.holdings} />
             ) : (
               <p className="py-4 text-center text-sm text-muted-foreground">
-                No holdings yet
+                {t("noHoldingsYet")}
               </p>
             )}
           </div>
         </DashboardCard>
 
         <DashboardCard
-          title="Recent Activity"
-          meta="View all"
+          title={t("recentActivity")}
+          meta={t("viewAll")}
           padded={false}
         >
           <div className="px-4">
@@ -118,7 +128,7 @@ export function OverviewTab() {
               <ActivityFeed items={activity} />
             ) : (
               <p className="py-4 text-center text-sm text-muted-foreground">
-                No recent activity
+                {t("noRecentActivity")}
               </p>
             )}
           </div>

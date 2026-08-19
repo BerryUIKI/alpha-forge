@@ -15,19 +15,21 @@ import { TabBar } from "@/components/ui";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { PerformanceTab } from "./tabs/PerformanceTab";
 import { ActivityTab } from "./tabs/ActivityTab";
+import { useLocale } from "@/lib/i18n/useLocale";
 import { LayoutDashboard, TrendingUp, Activity } from "lucide-react";
-
-const DASHBOARD_TABS = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "performance", label: "Performance", icon: TrendingUp },
-  { id: "activity", label: "Activity", icon: Activity },
-];
 
 const TAB_STORAGE_KEY = "dashboard-active-tab";
 
 export function TodayPage() {
+  const { t } = useLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
+
+  const DASHBOARD_TABS = [
+    { id: "overview", label: t("todayOverviewTab"), icon: LayoutDashboard },
+    { id: "performance", label: t("todayPerformanceTab"), icon: TrendingUp },
+    { id: "activity", label: t("todayActivityTab"), icon: Activity },
+  ];
 
   const [activeTab, setActiveTab] = useState(() => {
     // Check URL first, then localStorage, default to "overview"
@@ -59,9 +61,9 @@ export function TodayPage() {
     <div className="flex flex-col gap-6 p-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("todayTitle")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your investment research overview
+          {t("todayDescription")}
         </p>
       </div>
 

@@ -11,6 +11,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
+import type { MessageKey } from "@/lib/i18n/locale";
 import { useCreateFinancialAccount } from "../hooks/useFinancialData";
 import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
 import type {
@@ -31,6 +32,18 @@ const TRACKING_MODES: TrackingMode[] = [
   "transactions",
   "holdings",
 ];
+
+const ACCOUNT_TYPE_KEYS: Record<AccountType, MessageKey> = {
+  securities: "accountTypeSecurities",
+  cash: "accountTypeCash",
+  credit_card: "accountTypeCreditCard",
+  cryptocurrency: "accountTypeCryptocurrency",
+};
+
+const TRACKING_MODE_KEYS: Record<Exclude<TrackingMode, "not_set">, MessageKey> = {
+  transactions: "trackingModeTransactions",
+  holdings: "trackingModeHoldings",
+};
 
 interface CreateAccountDialogProps {
   isOpen: boolean;
@@ -183,7 +196,7 @@ export function CreateAccountDialog({
             >
               {ACCOUNT_TYPES.map((type) => (
                 <option key={type} value={type}>
-                  {t(`accountType${capitalize(type)}` as any)}
+                  {t(ACCOUNT_TYPE_KEYS[type])}
                 </option>
               ))}
             </select>
@@ -244,8 +257,8 @@ export function CreateAccountDialog({
               {TRACKING_MODES.map((mode) => (
                 <option key={mode} value={mode}>
                   {mode === "not_set"
-                    ? t("cancel" as any)
-                    : t(`trackingMode${capitalize(mode)}` as any)}
+                    ? t("cancel")
+                    : t(TRACKING_MODE_KEYS[mode])}
                 </option>
               ))}
             </select>
@@ -273,8 +286,4 @@ export function CreateAccountDialog({
       </div>
     </div>
   );
-}
-
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

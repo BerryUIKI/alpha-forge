@@ -46,6 +46,7 @@ export function ShadowAnalysis({
     isRunning,
     result,
     startError,
+    validationError,
     cancelAnalysis,
   } = useGooseShadowAnalysis(workspaceId);
 
@@ -104,6 +105,15 @@ export function ShadowAnalysis({
   }
 
   // Error state
+  if (validationError) {
+    return (
+      <ErrorState
+        title={translate(locale, "shadowAnalysis")}
+        message={translate(locale, "shadowAnalysisWorkspaceRequired")}
+      />
+    );
+  }
+
   if (startError) {
     const errorMessage = startError.description || translate(locale, "analysisFailed");
     return (

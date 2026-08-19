@@ -7,6 +7,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
+import { LocaleContext } from "@/lib/i18n/locale-context";
+import { translate, type MessageKey } from "@/lib/i18n/locale";
 import { PerformanceTab } from "./PerformanceTab";
 import { desktopApi } from "@/lib/desktop-api";
 
@@ -34,7 +36,15 @@ function renderTab() {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <PerformanceTab />
+        <LocaleContext.Provider
+          value={{
+            locale: "en",
+            setLocale: async () => undefined,
+            t: (key: MessageKey) => translate("en", key),
+          }}
+        >
+          <PerformanceTab />
+        </LocaleContext.Provider>
       </MemoryRouter>
     </QueryClientProvider>,
   );

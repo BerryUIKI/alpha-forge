@@ -11,14 +11,16 @@ import { useActiveWorkspaceId, useDashboardActivity } from "../hooks/useDashboar
 import { DashboardCard } from "@/components/ui";
 import { EmptyState } from "@/components/common";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 export function ActivityTab() {
+  const { t } = useLocale();
   const workspaceId = useActiveWorkspaceId();
   const { data: activity, isLoading } = useDashboardActivity(workspaceId);
 
   return (
     <DashboardCard
-      title="All Activity"
+      title={t("allActivity")}
       padded={false}
     >
       {isLoading ? (
@@ -33,8 +35,8 @@ export function ActivityTab() {
         </div>
       ) : (
         <EmptyState
-          title="No recent activity"
-          description="Research tasks, projects, and theses will appear here."
+          title={t("noRecentActivity")}
+          description={t("noActivityDescription")}
         />
       )}
     </DashboardCard>

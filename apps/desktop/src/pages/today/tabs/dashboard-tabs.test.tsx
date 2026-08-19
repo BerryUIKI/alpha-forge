@@ -4,6 +4,8 @@ import { render, screen } from "@testing-library/react";
 import { type ReactElement } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
+import { LocaleContext } from "@/lib/i18n/locale-context";
+import { translate, type MessageKey } from "@/lib/i18n/locale";
 import { OverviewTab } from "./OverviewTab";
 import { ActivityTab } from "./ActivityTab";
 
@@ -22,7 +24,15 @@ function renderTab(Component: () => ReactElement) {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <Component />
+        <LocaleContext.Provider
+          value={{
+            locale: "en",
+            setLocale: async () => undefined,
+            t: (key: MessageKey) => translate("en", key),
+          }}
+        >
+          <Component />
+        </LocaleContext.Provider>
       </MemoryRouter>
     </QueryClientProvider>,
   );

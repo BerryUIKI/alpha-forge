@@ -175,9 +175,6 @@ export function useFetchOptionChain(_locale: Locale) {
       // Set the individual chain cache
       queryClient.setQueryData(["optionChain", data.id], data);
     },
-    onError: (error) => {
-      console.error("Failed to fetch option chain:", error);
-    },
   });
 }
 
@@ -197,9 +194,6 @@ export function useDeleteOptionChain(_locale: Locale) {
       // Invalidate all chain lists
       queryClient.invalidateQueries({ queryKey: ["optionChains"] });
     },
-    onError: (error) => {
-      console.error("Failed to delete option chain:", error);
-    },
   });
 }
 
@@ -217,9 +211,6 @@ export function useDeleteOptionChain(_locale: Locale) {
 export function useCalculateGreeks() {
   return useMutation({
     mutationFn: desktopApi.options.calculateGreeks,
-    onError: (error) => {
-      console.error("Failed to calculate Greeks:", error);
-    },
   });
 }
 
@@ -233,9 +224,6 @@ export function useCalculateGreeks() {
 export function useCalculateOptionPrice() {
   return useMutation({
     mutationFn: desktopApi.options.calculateOptionPrice,
-    onError: (error) => {
-      console.error("Failed to calculate option price:", error);
-    },
   });
 }
 
@@ -249,9 +237,6 @@ export function useCalculateOptionPrice() {
 export function useCalculateIV() {
   return useMutation({
     mutationFn: desktopApi.options.calculateImpliedVolatility,
-    onError: (error) => {
-      console.error("Failed to calculate implied volatility:", error);
-    },
   });
 }
 
@@ -277,9 +262,6 @@ export function useCreateOptionStrategy(_locale: Locale) {
       });
       queryClient.setQueryData(["optionStrategy", data.id], data);
     },
-    onError: (error) => {
-      console.error("Failed to create option strategy:", error);
-    },
   });
 }
 
@@ -301,9 +283,6 @@ export function useUpdateOptionStrategy(_locale: Locale) {
         queryKey: ["optionStrategies", data.workspaceId],
       });
     },
-    onError: (error) => {
-      console.error("Failed to update option strategy:", error);
-    },
   });
 }
 
@@ -322,9 +301,6 @@ export function useDeleteOptionStrategy(_locale: Locale) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["optionStrategies"] });
     },
-    onError: (error) => {
-      console.error("Failed to delete option strategy:", error);
-    },
   });
 }
 
@@ -342,9 +318,6 @@ export function useDeleteOptionContract(_locale: Locale) {
     mutationFn: (id: string) => desktopApi.options.deleteOptionContract(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["optionContracts"] });
-    },
-    onError: (error) => {
-      console.error("Failed to delete option contract:", error);
     },
   });
 }

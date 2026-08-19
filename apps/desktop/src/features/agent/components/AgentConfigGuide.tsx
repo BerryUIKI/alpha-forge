@@ -48,15 +48,13 @@ export function AgentConfigGuide({ isOpen, onClose, status }: AgentConfigGuidePr
               <Settings className="h-5 w-5 text-yellow-500" />
             )}
             <h2 id="dialog-title" className="text-lg font-semibold">
-              {isError
-                ? (t("agentConnectionFailed" as any) || "Agent连接失败")
-                : (t("agentNeedsConfig" as any) || "完成Agent配置")}
+              {isError ? t("agentConnectionFailed") : t("agentNeedsConfig")}
             </h2>
           </div>
           <button
             onClick={onClose}
             className="rounded-md p-1 hover:bg-accent"
-            aria-label={t("cancel" as any) || "Close"}
+            aria-label={t("cancel")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -67,42 +65,40 @@ export function AgentConfigGuide({ isOpen, onClose, status }: AgentConfigGuidePr
           {isError ? (
             <>
               <p className="mb-3 text-sm text-muted-foreground">
-                {t("agentConnectionErrorDesc" as any) ||
-                  "Agent无法连接到AI服务。可能的原因："}
+                {t("agentConnectionErrorDesc")}
               </p>
               <ul className="mb-4 space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-red-500">•</span>
-                  <span>API密钥无效或已过期</span>
+                  <span>{t("agentErrorInvalidApiKey")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500">•</span>
-                  <span>网络代理配置错误</span>
+                  <span>{t("agentErrorProxyConfig")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-red-500">•</span>
-                  <span>AI服务暂时不可用</span>
+                  <span>{t("agentErrorServiceUnavailable")}</span>
                 </li>
               </ul>
               <p className="text-sm text-muted-foreground">
-                {t("checkAgentSettings" as any) || "请检查Agent设置后重试。"}
+                {t("checkAgentSettings")}
               </p>
             </>
           ) : (
             <>
               <p className="mb-3 text-sm text-muted-foreground">
-                {t("agentNotConfiguredDesc" as any) ||
-                  "要使用Agent创建研究任务，您需要先配置API密钥和模型参数。"}
+                {t("agentNotConfiguredDesc")}
               </p>
               <div className="rounded-lg bg-yellow-500/10 p-3">
                 <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
-                  {t("configStepsTitle" as any) || "配置步骤："}
+                  {t("configStepsTitle")}
                 </p>
                 <ol className="mt-2 space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
-                  <li>1. 点击下方按钮进入设置页面</li>
-                  <li>2. 输入您的API密钥</li>
-                  <li>3. 选择AI模型</li>
-                  <li>4. 保存配置</li>
+                  <li>1. {t("configStep1")}</li>
+                  <li>2. {t("configStep2")}</li>
+                  <li>3. {t("configStep3")}</li>
+                  <li>4. {t("configStep4")}</li>
                 </ol>
               </div>
             </>
@@ -115,14 +111,14 @@ export function AgentConfigGuide({ isOpen, onClose, status }: AgentConfigGuidePr
             onClick={onClose}
             className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
           >
-            {t("cancel" as any) || "取消"}
+            {t("cancel")}
           </button>
           <button
             onClick={handleGoToSettings}
             className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Settings className="h-4 w-4" />
-            {t("goToSettings" as any) || "去设置"}
+            {t("goToSettings")}
           </button>
         </div>
       </div>
