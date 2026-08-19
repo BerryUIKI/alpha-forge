@@ -84,7 +84,7 @@ export function AccountCards({
             <div className="flex items-center gap-2">
               <Banknote className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium text-muted-foreground">
-                {t("netWorth" as any) || "Net Worth"}
+                {t("netWorth")}
               </span>
             </div>
             <span className="text-2xl font-bold">
@@ -93,10 +93,10 @@ export function AccountCards({
           </div>
           <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
             <span>
-              {t("totalValue" as any) || "Total Assets"}: {fmtMoney(netWorthData.total_assets, netWorthData.base_currency)}
+              {t("totalValue")}: {fmtMoney(netWorthData.total_assets, netWorthData.base_currency)}
             </span>
             <span>
-              {t("totalLiabilities" as any) || "Liabilities"}: {fmtMoney(netWorthData.total_liabilities, netWorthData.base_currency)}
+              {t("totalLiabilities")}: {fmtMoney(netWorthData.total_liabilities, netWorthData.base_currency)}
             </span>
           </div>
         </div>
@@ -134,7 +134,7 @@ export function AccountCards({
                   </span>
                   {account.is_default && (
                     <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      {t("defaultAccount" as any) || "DEFAULT"}
+                      {t("defaultAccount")}
                     </span>
                   )}
                 </div>

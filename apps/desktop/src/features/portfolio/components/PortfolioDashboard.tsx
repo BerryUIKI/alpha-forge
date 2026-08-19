@@ -178,7 +178,7 @@ export function PortfolioDashboard() {
       {/* Quick-create section */}
       <div className="rounded-lg border bg-card p-4">
         <h3 className="mb-2 text-sm font-medium text-muted-foreground">
-          {(t as any)("newAccount") || "Create / Record"}
+          {t("newAccount")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <button
@@ -202,10 +202,7 @@ export function PortfolioDashboard() {
               } else {
                 setSelectedAccountId("");
                 // Nudge the user to select an account first.
-                window.alert(
-                  (t as any)("selectAnAccount") ||
-                    "Select an account first",
-                );
+                window.alert(t("selectAnAccount"));
               }
             }}
             disabled={!selectedAccountId}

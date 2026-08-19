@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { FeatureErrorBoundary } from "@/components/common/FeatureErrorBoundary";
 import { TodayPage } from "@/pages/today/TodayPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
 import { ThesesPage } from "@/pages/theses/ThesesPage";
@@ -10,6 +11,11 @@ import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { OptionsPage } from "@/pages/options/OptionsPage";
 import { ArtifactWindowPage } from "@/pages/artifacts/ArtifactWindowPage";
+import type { ReactNode } from "react";
+
+function withFeatureBoundary(feature: string, element: ReactNode) {
+  return <FeatureErrorBoundary feature={feature}>{element}</FeatureErrorBoundary>;
+}
 
 const artifactWindowRoute = {
   path: "/artifact/:artifactId/:artifactType",
@@ -23,16 +29,16 @@ export const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />,
     children: [
-      { index: true, element: <TodayPage /> },
-      { path: "today", element: <TodayPage /> },
-      { path: "research", element: <ResearchPage /> },
-      { path: "theses", element: <ThesesPage /> },
-      { path: "journal", element: <JournalPage /> },
-      { path: "portfolio", element: <PortfolioPage /> },
-      { path: "knowledge", element: <KnowledgePage /> },
-      { path: "artifacts", element: <ArtifactsPage /> },
-      { path: "settings", element: <SettingsPage /> },
-      { path: "options", element: <OptionsPage /> },
+      { index: true, element: withFeatureBoundary("today", <TodayPage />) },
+      { path: "today", element: withFeatureBoundary("today", <TodayPage />) },
+      { path: "research", element: withFeatureBoundary("research", <ResearchPage />) },
+      { path: "theses", element: withFeatureBoundary("thesis", <ThesesPage />) },
+      { path: "journal", element: withFeatureBoundary("journal", <JournalPage />) },
+      { path: "portfolio", element: withFeatureBoundary("portfolio", <PortfolioPage />) },
+      { path: "knowledge", element: withFeatureBoundary("knowledge", <KnowledgePage />) },
+      { path: "artifacts", element: withFeatureBoundary("artifacts", <ArtifactsPage />) },
+      { path: "settings", element: withFeatureBoundary("settings", <SettingsPage />) },
+      { path: "options", element: withFeatureBoundary("options", <OptionsPage />) },
     ],
   },
 ]);

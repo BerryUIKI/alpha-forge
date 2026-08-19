@@ -39,7 +39,7 @@ export function ActivityList({ accountId, limit = 6 }: ActivityListProps) {
     return (
       <EmptyState
         title={t("noTransactionsImported")}
-        description="Record activities or import transaction history to see recent activity."
+        description={t("noRecentActivityDescription")}
       />
     );
   }
@@ -58,7 +58,7 @@ export function ActivityList({ accountId, limit = 6 }: ActivityListProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-muted-foreground">
-        {(t as any)("recentActivity") || "Recent Activity"}
+        {t("recentActivity")}
       </h3>
       <div className="space-y-1">
         {recent.map((tx) => {
