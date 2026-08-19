@@ -24,6 +24,7 @@ import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useLocale } from "@/lib/i18n/useLocale";
+import type { MessageKey } from "@/lib/i18n/locale";
 
 interface AgentMessage {
   id: string;
@@ -40,29 +41,32 @@ const MESSAGE_TYPE_STYLES = {
   info: { dot: "bg-sky-400", label: "text-sky-400" },
 };
 
-const SAMPLE_MESSAGES: AgentMessage[] = [
-  {
-    id: "m1",
-    type: "research",
-    label: "Research Analysis",
-    content: "NVDA's Q2 earnings exceeded consensus by 8%. Key drivers: data center revenue up 42% YoY. Maintaining bullish thesis.",
-    timestamp: "12m ago",
-  },
-  {
-    id: "m2",
-    type: "alert",
-    label: "Portfolio Alert",
-    content: "Sector concentration warning: Technology sector now represents 42% of portfolio. Consider rebalancing.",
-    timestamp: "2h ago",
-  },
-  {
-    id: "m3",
-    type: "thesis",
-    label: "Thesis Update",
-    content: "Your 'Renewable Energy Infrastructure' thesis has 3 new supporting articles. Reviewing now.",
-    timestamp: "5h ago",
-  },
-];
+// Sample/demo messages rendered until the chat is wired to real agent output.
+function getSampleMessages(t: (key: MessageKey) => string): AgentMessage[] {
+  return [
+    {
+      id: "m1",
+      type: "research",
+      label: t("agentSampleResearchLabel"),
+      content: t("agentSampleResearchContent"),
+      timestamp: t("agentSampleResearchTime"),
+    },
+    {
+      id: "m2",
+      type: "alert",
+      label: t("agentSampleAlertLabel"),
+      content: t("agentSampleAlertContent"),
+      timestamp: t("agentSampleAlertTime"),
+    },
+    {
+      id: "m3",
+      type: "thesis",
+      label: t("agentSampleThesisLabel"),
+      content: t("agentSampleThesisContent"),
+      timestamp: t("agentSampleThesisTime"),
+    },
+  ];
+}
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -82,6 +86,7 @@ function AgentMessageItem({ message }: { message: AgentMessage }) {
 }
 
 function AgentInput() {
+  const { t } = useLocale();
   const [input, setInput] = useState("");
 
   const handleSend = () => {
@@ -102,7 +107,7 @@ function AgentInput() {
             handleSend();
           }
         }}
-        placeholder="Ask the agent..."
+        placeholder={t("askTheAgent")}
         className="flex-1 rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground/40 focus:border-primary focus:ring-1 focus:ring-primary"
       />
       <button
@@ -124,7 +129,7 @@ export function AgentPanel() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showConfigGuide, setShowConfigGuide] = useState(false);
-  const [messages] = useState<AgentMessage[]>(SAMPLE_MESSAGES);
+  const messages = getSampleMessages(t);
 
   const workspaceId = workspaces?.[0]?.id || "";
   const { status: agentStatus } = useAgentStatus(workspaceId);
@@ -160,7 +165,7 @@ export function AgentPanel() {
   if (workspacesError) {
     return (
       <div className="p-4">
-        <ErrorState message="Failed to load workspaces" onRetry={() => window.location.reload()} />
+        <ErrorState message={t("failedToLoadWorkspaces")} onRetry={() => window.location.reload()} />
       </div>
     );
   }
@@ -170,9 +175,9 @@ export function AgentPanel() {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <Bot className="h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-4 text-lg font-semibold">No Workspace</h3>
+        <h3 className="mt-4 text-lg font-semibold">{t("noWorkspace")}</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Create a workspace first to use the Agent
+          {t("createWorkspaceFirstUseAgent")}
         </p>
       </div>
     );
@@ -212,7 +217,7 @@ export function AgentPanel() {
                   : "hover:border-primary hover:text-primary"
               }`}
             >
-              + New Research Task
+              + {t("newResearchTask")}
             </button>
           )}
         </div>
@@ -220,7 +225,7 @@ export function AgentPanel() {
         {/* Task List */}
         <div>
           <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-            Recent Tasks
+            {t("recentTasks")}
           </h4>
           <AgentTaskList workspaceId={workspaceId} onSelectTask={handleTaskSelect} />
         </div>

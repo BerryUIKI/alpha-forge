@@ -10,6 +10,7 @@
 import { useState } from "react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useCalculateGreeks } from "@/hooks/useOptions";
+import { useLocale } from "@/lib/i18n/useLocale";
 import type { OptionType } from "@/types/option";
 
 interface GreeksCalculatorProps {
@@ -26,6 +27,7 @@ export function GreeksCalculator({
   defaultStrike = 100,
   defaultVolatility = 0.25,
 }: GreeksCalculatorProps) {
+  const { t } = useLocale();
   const [optionType, setOptionType] = useState<OptionType>("call");
   const [underlyingPrice, setUnderlyingPrice] = useState(defaultUnderlyingPrice.toString());
   const [strike, setStrike] = useState(defaultStrike.toString());
@@ -54,29 +56,35 @@ export function GreeksCalculator({
 
   return (
     <div className="p-4 border rounded-lg">
-      <h3 className="text-lg font-semibold mb-4">Greeks Calculator</h3>
+      <h3 className="text-lg font-semibold mb-4">{t("greeksCalculatorTitle")}</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Calculate option Greeks using the Black-Scholes model
+        {t("greeksCalculatorDescription")}
       </p>
 
       {/* Option Type */}
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Option Type</label>
+        <label className="block text-sm font-medium mb-1" htmlFor="greeks-option-type">
+          {t("optionType")}
+        </label>
         <select
+          id="greeks-option-type"
           className="w-full p-2 border rounded"
           value={optionType}
           onChange={(e) => setOptionType(e.target.value as OptionType)}
         >
-          <option value="call">Call</option>
-          <option value="put">Put</option>
+          <option value="call">{t("callOption")}</option>
+          <option value="put">{t("putOption")}</option>
         </select>
       </div>
 
       {/* Price Inputs Grid */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Underlying Price</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-underlying">
+            {t("underlyingPrice")}
+          </label>
           <input
+            id="greeks-underlying"
             type="number"
             className="w-full p-2 border rounded"
             value={underlyingPrice}
@@ -86,8 +94,11 @@ export function GreeksCalculator({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Strike Price</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-strike">
+            {t("strikePrice")}
+          </label>
           <input
+            id="greeks-strike"
             type="number"
             className="w-full p-2 border rounded"
             value={strike}
@@ -97,8 +108,11 @@ export function GreeksCalculator({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Time to Expiry (Years)</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-expiry">
+            {t("timeToExpiryYears")}
+          </label>
           <input
+            id="greeks-expiry"
             type="number"
             className="w-full p-2 border rounded"
             value={expirationYears}
@@ -108,8 +122,11 @@ export function GreeksCalculator({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Volatility (σ)</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-volatility">
+            {t("volatility")}
+          </label>
           <input
+            id="greeks-volatility"
             type="number"
             className="w-full p-2 border rounded"
             value={volatility}
@@ -119,8 +136,11 @@ export function GreeksCalculator({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Risk-Free Rate</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-risk-free">
+            {t("riskFreeRate")}
+          </label>
           <input
+            id="greeks-risk-free"
             type="number"
             className="w-full p-2 border rounded"
             value={riskFreeRate}
@@ -129,8 +149,11 @@ export function GreeksCalculator({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Dividend Yield</label>
+          <label className="block text-sm font-medium mb-1" htmlFor="greeks-dividend">
+            {t("dividendYield")}
+          </label>
           <input
+            id="greeks-dividend"
             type="number"
             className="w-full p-2 border rounded"
             value={dividendYield}
@@ -147,7 +170,7 @@ export function GreeksCalculator({
         disabled={calculateMutation.isPending}
         className="w-full p-2 bg-primary text-primary-foreground rounded hover:opacity-90 disabled:opacity-50"
       >
-        {calculateMutation.isPending ? "Calculating..." : "Calculate Greeks"}
+        {calculateMutation.isPending ? t("calculating") : t("calculateGreeks")}
       </button>
 
       {/* Loading State */}
@@ -161,23 +184,23 @@ export function GreeksCalculator({
       {greeks && !calculateMutation.isPending && (
         <div className="grid grid-cols-5 gap-2 mt-4">
           <div className="text-center p-2 bg-muted rounded">
-            <div className="text-xs text-muted-foreground">Delta</div>
+            <div className="text-xs text-muted-foreground">{t("greeksDelta")}</div>
             <div className="font-mono font-semibold">{greeks.delta.toFixed(4)}</div>
           </div>
           <div className="text-center p-2 bg-muted rounded">
-            <div className="text-xs text-muted-foreground">Gamma</div>
+            <div className="text-xs text-muted-foreground">{t("greeksGamma")}</div>
             <div className="font-mono font-semibold">{greeks.gamma.toFixed(4)}</div>
           </div>
           <div className="text-center p-2 bg-muted rounded">
-            <div className="text-xs text-muted-foreground">Theta</div>
+            <div className="text-xs text-muted-foreground">{t("greeksTheta")}</div>
             <div className="font-mono font-semibold">{greeks.theta.toFixed(4)}</div>
           </div>
           <div className="text-center p-2 bg-muted rounded">
-            <div className="text-xs text-muted-foreground">Vega</div>
+            <div className="text-xs text-muted-foreground">{t("greeksVega")}</div>
             <div className="font-mono font-semibold">{greeks.vega.toFixed(4)}</div>
           </div>
           <div className="text-center p-2 bg-muted rounded">
-            <div className="text-xs text-muted-foreground">Rho</div>
+            <div className="text-xs text-muted-foreground">{t("greeksRho")}</div>
             <div className="font-mono font-semibold">{greeks.rho.toFixed(4)}</div>
           </div>
         </div>
@@ -186,7 +209,7 @@ export function GreeksCalculator({
       {/* Error State */}
       {calculateMutation.isError && (
         <div className="mt-4 p-2 bg-destructive/10 text-destructive rounded text-sm">
-          Failed to calculate Greeks. Please check your inputs.
+          {t("greeksCalculationFailed")}
         </div>
       )}
     </div>

@@ -40,7 +40,7 @@ export function CreateResearchProjectDialog({
       onClose();
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : t("saveError" as any) || "Failed to create project");
+      setError(err instanceof Error && err.message ? err.message : t("failedToCreateProject"));
     },
   });
 
@@ -51,12 +51,12 @@ export function CreateResearchProjectDialog({
 
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError(t("projectTitle" as any) || "Project title is required");
+      setError(t("projectTitleRequired"));
       return;
     }
 
     if (trimmedTitle.length > 200) {
-      setError("Title must be less than 200 characters");
+      setError(t("projectTitleTooLong"));
       return;
     }
 
@@ -73,12 +73,12 @@ export function CreateResearchProjectDialog({
       <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 id="dialog-title" className="text-lg font-semibold">
-            {t("createNew" as any) || "Create New Project"}
+            {t("createNewProject")}
           </h2>
           <button
             onClick={onClose}
             className="rounded-md p-1 hover:bg-accent"
-            aria-label={t("cancel" as any) || "Cancel"}
+            aria-label={t("cancel")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -87,7 +87,7 @@ export function CreateResearchProjectDialog({
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="project-title" className="mb-2 block text-sm font-medium">
-              {t("projectTitle" as any) || "Project Title"}
+              {t("projectTitle")}
             </label>
             <input
               id="project-title"
@@ -97,7 +97,7 @@ export function CreateResearchProjectDialog({
                 setTitle(e.target.value);
                 setError("");
               }}
-              placeholder={t("projectTitle" as any) || "Enter project title"}
+              placeholder={t("projectTitle")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               autoFocus
             />
@@ -110,14 +110,14 @@ export function CreateResearchProjectDialog({
               onClick={onClose}
               className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
             >
-              {t("cancel" as any) || "Cancel"}
+              {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={createMutation.isPending || !title.trim()}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {createMutation.isPending ? t("creating" as any) || "Creating..." : t("create" as any) || "Create"}
+              {createMutation.isPending ? t("creating") : t("create")}
             </button>
           </div>
         </form>

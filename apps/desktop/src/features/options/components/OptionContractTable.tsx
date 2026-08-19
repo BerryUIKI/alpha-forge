@@ -82,7 +82,7 @@ export function OptionContractTable({
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t("confirmDeleteContract" as any) || "Delete this contract?")) {
+    if (window.confirm(t("confirmDeleteContract"))) {
       deleteMutation.mutate(id);
     }
   };
@@ -111,7 +111,7 @@ export function OptionContractTable({
             filter === "all" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
           }`}
         >
-          All
+          {t("optionFilterAll")}
         </button>
         <button
           onClick={() => setFilter("call")}
@@ -119,7 +119,7 @@ export function OptionContractTable({
             filter === "call" ? "bg-green-600 text-white" : "hover:bg-muted"
           }`}
         >
-          Calls
+          {t("optionFilterCalls")}
         </button>
         <button
           onClick={() => setFilter("put")}
@@ -127,7 +127,7 @@ export function OptionContractTable({
             filter === "put" ? "bg-red-600 text-white" : "hover:bg-muted"
           }`}
         >
-          Puts
+          {t("optionFilterPuts")}
         </button>
       </div>
 
@@ -144,7 +144,7 @@ export function OptionContractTable({
                   onClick={() => toggleSort("strike")}
                   className="flex items-center gap-1 hover:text-foreground"
                 >
-                  Strike
+                  {t("optionStrike")}
                   {sortField === "strike" &&
                     (sortOrder === "asc" ? (
                       <ChevronUp className="h-3 w-3" />
@@ -153,14 +153,14 @@ export function OptionContractTable({
                     ))}
                 </button>
               </th>
-              <th className="px-3 py-2 text-right font-medium">Bid</th>
-              <th className="px-3 py-2 text-right font-medium">Ask</th>
+              <th className="px-3 py-2 text-right font-medium">{t("optionBid")}</th>
+              <th className="px-3 py-2 text-right font-medium">{t("optionAsk")}</th>
               <th className="px-3 py-2 text-right font-medium">
                 <button
                   onClick={() => toggleSort("volume")}
                   className="flex items-center gap-1 hover:text-foreground ml-auto"
                 >
-                  Vol
+                  {t("optionVolume")}
                   {sortField === "volume" &&
                     (sortOrder === "asc" ? (
                       <ChevronUp className="h-3 w-3" />
@@ -169,13 +169,13 @@ export function OptionContractTable({
                     ))}
                 </button>
               </th>
-              <th className="px-3 py-2 text-right font-medium">OI</th>
+              <th className="px-3 py-2 text-right font-medium">{t("optionOpenInterest")}</th>
               <th className="px-3 py-2 text-right font-medium">
                 <button
                   onClick={() => toggleSort("impliedVolatility")}
                   className="flex items-center gap-1 hover:text-foreground ml-auto"
                 >
-                  IV
+                  {t("optionImpliedVolatility")}
                   {sortField === "impliedVolatility" &&
                     (sortOrder === "asc" ? (
                       <ChevronUp className="h-3 w-3" />
@@ -240,6 +240,12 @@ export function OptionContractTable({
           </tbody>
         </table>
       </div>
+
+      {deleteMutation.isError && (
+        <div className="p-3 border-t border-border text-sm text-destructive">
+          {t("failedToDeleteOptionContract")}
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ import {
 import { DashboardCard } from "@/components/ui";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/useLocale";
 import { useActiveWorkspaceId } from "@/pages/today/hooks/useDashboardData";
 import {
   usePortfolioPerformance,
@@ -40,6 +41,7 @@ function fmtUsd(value: number, withSymbol = true): string {
 }
 
 export function PerformanceTab() {
+  const { t } = useLocale();
   const [selectedPeriod, setSelectedPeriod] =
     useState<PortfolioPerformancePeriod>("1M");
   const workspaceId = useActiveWorkspaceId();
@@ -51,7 +53,7 @@ export function PerformanceTab() {
   return (
     <div className="flex flex-col gap-6">
       <DashboardCard
-        title="Portfolio Performance"
+        title={t("portfolioPerformance")}
         action={
           <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
             {TIME_PERIODS.map((period) => (
@@ -77,7 +79,7 @@ export function PerformanceTab() {
         {/* R3 — error state with retry */}
         {isError && (
           <ErrorState
-            message="Failed to load portfolio performance data"
+            message={t("failedToLoadPortfolioPerformance")}
             onRetry={() => refetch()}
           />
         )}
@@ -85,8 +87,8 @@ export function PerformanceTab() {
         {/* R3/R7 — empty state (no accounts or no valuations in this period) */}
         {!isLoading && !isError && (!data || data.points.length === 0) && (
           <EmptyState
-            title="No valuation data for this period"
-            description="Add accounts and record activities to see your portfolio performance over time."
+            title={t("noValuationDataForPeriod")}
+            description={t("noValuationDataDescription")}
           />
         )}
 
@@ -96,21 +98,21 @@ export function PerformanceTab() {
             {/* R5 — performance summary chips */}
             <div className="mb-4 flex flex-wrap gap-3">
               <PerformanceChip
-                label="Total Return"
+                label={t("totalReturn")}
                 value={data.totalReturnPct}
                 format={(v) => `${(v * 100).toFixed(2)}%`}
               />
               <PerformanceChip
-                label="XIRR"
+                label={t("xirr")}
                 value={data.xirrPct}
                 format={(v) => `${(v * 100).toFixed(2)}%`}
               />
               <PerformanceChip
-                label="TWR"
+                label={t("twr")}
                 value={data.twrPct}
                 format={(v) => `${(v * 100).toFixed(2)}%`}
               />
-              <PerformanceChip label="Accounts" value={data.accountCount} format={(v) => String(v)} />
+              <PerformanceChip label={t("accounts")} value={data.accountCount} format={(v) => String(v)} />
             </div>
 
             {/* R4 — base-currency line chart */}
