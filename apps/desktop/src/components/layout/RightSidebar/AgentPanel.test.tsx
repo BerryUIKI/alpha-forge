@@ -43,6 +43,12 @@ const hookMocks = vi.hoisted(() => ({
     error: null as unknown,
   },
   cancel: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
+  create: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
+}));
+
+const agentStatusMock = vi.hoisted(() => ({
+  status: "idle",
+  hasRunningTasks: false,
 }));
 
 vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
@@ -54,7 +60,7 @@ vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
 }));
 
 vi.mock("@/hooks/useAgentStatus", () => ({
-  useAgentStatus: () => ({ status: "idle", hasRunningTasks: false }),
+  useAgentStatus: () => agentStatusMock,
 }));
 
 vi.mock("@/features/agent/hooks/useAgentTasks", () => ({
@@ -70,6 +76,7 @@ vi.mock("@/features/agent/hooks/useAgentTasks", () => ({
   }),
   useRunAgentTask: () => hookMocks.run,
   useCancelAgentTask: () => hookMocks.cancel,
+  useCreateAgentTask: () => hookMocks.create,
 }));
 
 vi.mock("@/features/agent/components/AgentTaskList", () => ({
@@ -93,7 +100,7 @@ vi.mock("@/features/agent/components/CreateAgentTask", () => ({
 }));
 
 vi.mock("@/features/agent/components/AgentConfigGuide", () => ({
-  AgentConfigGuide: () => null,
+  AgentConfigGuide: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div>agent config guide</div> : null),
 }));
 
 vi.mock("@/features/agent/components/TaskStatusBadge", () => ({
@@ -116,6 +123,10 @@ vi.mock("@/lib/i18n/useLocale", () => ({
         cancellingTask: "Cancelling...",
         taskStartFailed: "Unable to start this task. It remains queued; retry when ready.",
         taskQueueFailed: "Unable to queue this task. Please try again.",
+        agentChatWelcome: "Ask a research question below; it will be queued as a research task.",
+        agentChatSendFailed: "Failed to create the research task",
+        agentChatNeedsConfig: "Configure the Agent before asking",
+        askTheAgent: "Ask the agent...",
       })[key] ?? key,
   }),
 }));
@@ -127,10 +138,13 @@ function renderPanel() {
 describe("AgentPanel task actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    agentStatusMock.status = "idle";
     hookMocks.run.isPending = false;
     hookMocks.run.isError = false;
     hookMocks.run.error = null;
     hookMocks.cancel.isPending = false;
+    hookMocks.create.isPending = false;
+    hookMocks.create.isError = false;
   });
 
   it("shows a recoverable start error and a queued retry action", () => {
@@ -194,5 +208,42 @@ describe("AgentPanel task actions", () => {
 
     expect(hookMocks.run.reset).toHaveBeenCalledTimes(2);
     expect(hookMocks.cancel.reset).toHaveBeenCalledTimes(2);
+  });
+
+  it("sends a message, creates a task, auto-starts it, and shows a user bubble", () => {
+    hookMocks.create.mutate.mockImplementation((_vars: unknown, callbacks?: { onSuccess?: (task: AgentTask) => void }) => {
+      callbacks?.onSuccess?.(tasks.created);
+    });
+    renderPanel();
+
+    const input = screen.getByPlaceholderText("Ask the agent...");
+    fireEvent.change(input, { target: { value: "Analyze NVDA" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(hookMocks.create.mutate).toHaveBeenCalledWith(
+      { workspaceId: "workspace-1", title: "Analyze NVDA" },
+      expect.any(Object),
+    );
+    expect(hookMocks.run.mutate).toHaveBeenCalledWith({
+      taskId: tasks.created.id,
+      status: "created",
+    });
+    // User bubble and the created task's detail card are both visible.
+    expect(screen.getByText("Analyze NVDA")).toBeInTheDocument();
+    expect(screen.getByText("Created task")).toBeInTheDocument();
+  });
+
+  it("opens the config guide instead of creating a task when unconfigured", () => {
+    agentStatusMock.status = "unconfigured";
+    renderPanel();
+
+    const input = screen.getByPlaceholderText("Ask the agent...");
+    fireEvent.change(input, { target: { value: "Analyze NVDA" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(hookMocks.create.mutate).not.toHaveBeenCalled();
+    expect(hookMocks.run.mutate).not.toHaveBeenCalled();
+    expect(screen.getByText("Configure the Agent before asking")).toBeInTheDocument();
+    expect(screen.getByText("agent config guide")).toBeInTheDocument();
   });
 });

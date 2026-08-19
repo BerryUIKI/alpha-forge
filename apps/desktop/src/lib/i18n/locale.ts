@@ -177,18 +177,9 @@ const messages = {
     askTheAgent: "向 Agent 提问…",
     newResearchTask: "+ 新建研究任务",
     recentTasks: "最近任务",
-    agentSampleResearchLabel: "研究分析",
-    agentSampleResearchContent:
-      "英伟达第二季度财报超出市场预期 8%。关键驱动因素：数据中心收入同比增长 42%。维持看涨论点。",
-    agentSampleAlertLabel: "投资组合提醒",
-    agentSampleAlertContent:
-      "行业集中度警告：科技板块目前占投资组合的 42%。建议考虑再平衡。",
-    agentSampleThesisLabel: "论点更新",
-    agentSampleThesisContent:
-      "你的『可再生能源基础设施』论点新增了 3 篇支持文章。正在审阅中。",
-    agentSampleResearchTime: "12 分钟前",
-    agentSampleAlertTime: "2 小时前",
-    agentSampleThesisTime: "5 小时前",
+    agentChatWelcome: "在下方输入研究问题，将以研究任务的形式排队执行。",
+    agentChatSendFailed: "创建研究任务失败",
+    agentChatNeedsConfig: "请先完成 Agent 配置后再提问",
     // Workspace
     noWorkspaces: "暂无工作区",
     noWorkspacesDescription: "创建你的第一个工作区，开始整理你的研究。",
@@ -938,18 +929,9 @@ const messages = {
     askTheAgent: "Ask the agent...",
     newResearchTask: "+ New Research Task",
     recentTasks: "Recent Tasks",
-    agentSampleResearchLabel: "Research Analysis",
-    agentSampleResearchContent:
-      "NVDA's Q2 earnings exceeded consensus by 8%. Key drivers: data center revenue up 42% YoY. Maintaining bullish thesis.",
-    agentSampleAlertLabel: "Portfolio Alert",
-    agentSampleAlertContent:
-      "Sector concentration warning: Technology sector now represents 42% of portfolio. Consider rebalancing.",
-    agentSampleThesisLabel: "Thesis Update",
-    agentSampleThesisContent:
-      "Your 'Renewable Energy Infrastructure' thesis has 3 new supporting articles. Reviewing now.",
-    agentSampleResearchTime: "12m ago",
-    agentSampleAlertTime: "2h ago",
-    agentSampleThesisTime: "5h ago",
+    agentChatWelcome: "Ask a research question below; it will be queued as a research task.",
+    agentChatSendFailed: "Failed to create the research task",
+    agentChatNeedsConfig: "Configure the Agent before asking",
     // Workspace
     noWorkspaces: "No workspaces yet",
     noWorkspacesDescription: "Create your first workspace to start organizing your research.",
