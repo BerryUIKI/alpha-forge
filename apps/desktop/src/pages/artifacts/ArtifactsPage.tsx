@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
 import { ArtifactViewer } from "@/features/artifacts/components/ArtifactViewer";
 import { CompanyComparisonArtifactForm } from "@/features/plugins";
 import { useLocale } from "@/lib/i18n/useLocale";
+import type { MessageKey } from "@/lib/i18n/locale";
 import type { Artifact } from "@/lib/desktop-api/artifacts";
 
 export function ArtifactsPage() {
@@ -13,6 +14,7 @@ export function ArtifactsPage() {
   const workspaces = useWorkspaces();
   const [workspaceId, setWorkspaceId] = useState("");
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const artifacts = useArtifacts(workspaceId);
   const deleteArtifact = useDeleteArtifact();
 
@@ -31,13 +33,17 @@ export function ArtifactsPage() {
 
   // Handle artifact deletion
   const handleDeleteArtifact = async (id: string) => {
+    if (!window.confirm(t("confirmDeleteArtifact"))) {
+      return;
+    }
+    setDeleteError(null);
     try {
       await deleteArtifact.mutateAsync(id);
       if (selectedArtifactId === id) {
         setSelectedArtifactId(null);
       }
-    } catch (error) {
-      console.error("Failed to delete artifact:", error);
+    } catch {
+      setDeleteError(t("failedToDeleteArtifact"));
     }
   };
 
@@ -101,6 +107,15 @@ export function ArtifactsPage() {
           </label>
         </div>
       </div>
+
+      {deleteError && (
+        <div
+          className="border-b border-destructive/30 bg-destructive/10 px-6 py-2 text-sm text-destructive"
+          role="alert"
+        >
+          {deleteError}
+        </div>
+      )}
 
       <CompanyComparisonArtifactForm
         workspaceId={workspaceId}
@@ -166,7 +181,7 @@ interface ArtifactListItemProps {
   isSelected: boolean;
   onSelect: () => void;
   _onDelete: () => void;
-  t: (key: any) => string;
+  t: (key: MessageKey) => string;
 }
 
 function ArtifactListItem({
@@ -176,7 +191,6 @@ function ArtifactListItem({
   _onDelete,
   t,
 }: ArtifactListItemProps) {
-  void _onDelete;
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
@@ -203,9 +217,18 @@ function ArtifactListItem({
   };
 
   return (
-    <button
+    <div
       onClick={onSelect}
-      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`group w-full text-left p-3 rounded-lg border transition-colors cursor-pointer ${
         isSelected
           ? "border-primary bg-primary/5"
           : "border-border hover:bg-accent"
@@ -232,7 +255,19 @@ function ArtifactListItem({
             </div>
           )}
         </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            _onDelete();
+          }}
+          aria-label={t("deleteArtifact")}
+          title={t("deleteArtifact")}
+          className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus:opacity-100"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
-    </button>
+    </div>
   );
 }

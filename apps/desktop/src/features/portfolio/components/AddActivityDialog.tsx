@@ -5,6 +5,9 @@
  * Submits a CreateActivityInput to the create_activity Tauri command via
  * the desktop API layer.
  *
+ * Container component: owns form state, mutations, and submit logic;
+ * delegates the editable field rendering to ActivityFormFields.
+ *
  * @module features/portfolio/components/AddActivityDialog
  */
 
@@ -13,30 +16,12 @@ import { X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useCreateActivity, useCreateLot, useRecordSell, useListActiveAssets } from "../hooks/useFinancialData";
 import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
+import { ActivityFormFields } from "./ActivityFormFields";
 import type {
   ActivityType,
   ActivityStatus,
   CreateActivityInput,
 } from "@/types/financial";
-
-const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
-  { value: "buy", label: "activityTypeBuy" },
-  { value: "sell", label: "activityTypeSell" },
-  { value: "dividend", label: "activityTypeDividend" },
-  { value: "interest", label: "activityTypeInterest" },
-  { value: "deposit", label: "activityTypeDeposit" },
-  { value: "withdrawal", label: "activityTypeWithdrawal" },
-  { value: "transfer_in", label: "activityTypeTransferIn" },
-  { value: "transfer_out", label: "activityTypeTransferOut" },
-  { value: "fee", label: "activityTypeFee" },
-  { value: "tax", label: "activityTypeTax" },
-  { value: "credit", label: "activityTypeCredit" },
-  { value: "adjustment", label: "activityTypeAdjustment" },
-  { value: "split", label: "activityTypeSplit" },
-  { value: "cash_journal", label: "activityTypeCashJournal" },
-];
-
-const STATUSES: ActivityStatus[] = ["posted", "pending", "canceled"];
 
 /** Activity types that require an asset (quantity × price semantics). */
 const ASSET_REQUIRED_TYPES: ActivityType[] = ["buy", "sell", "split"];
@@ -219,9 +204,6 @@ export function AddActivityDialog({
     }
   };
 
-  const inputClass =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -252,253 +234,40 @@ export function AddActivityDialog({
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Activity type */}
-          <div className="mb-4">
-            <label
-              htmlFor="activity-type"
-              className="mb-2 block text-sm font-medium"
-            >
-              {t("activityTypeLabel")}
-            </label>
-            <select
-              id="activity-type"
-              value={activityType}
-              onChange={(e) => {
-                setActivityType(e.target.value as ActivityType);
-                setError("");
-              }}
-              className={inputClass}
-            >
-              {ACTIVITY_TYPES.map((at) => (
-                <option key={at.value} value={at.value}>
-                  {t(at.label as any)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Asset selector (shown for buy/sell/split) */}
-          {needsAsset && (
-            <div className="mb-4">
-              <label
-                htmlFor="activity-asset"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("assetNameLabel")}
-              </label>
-              <select
-                id="activity-asset"
-                value={assetId}
-                onChange={(e) => {
-                  setAssetId(e.target.value);
-                  setError("");
-                }}
-                className={inputClass}
-              >
-                <option value="">
-                  -- {t("cancel" as any) || "Select"} --
-                </option>
-                {assets?.map((asset) => (
-                  <option key={asset.id} value={asset.id}>
-                    {asset.display_code ?? asset.name ?? asset.id}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Date fields */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="mb-4">
-              <label
-                htmlFor="activity-date"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("activityDateLabel")}
-              </label>
-              <input
-                id="activity-date"
-                type="date"
-                value={activityDate}
-                onChange={(e) => setActivityDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="settlement-date"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("settlementDateLabel")}
-              </label>
-              <input
-                id="settlement-date"
-                type="date"
-                value={settlementDate}
-                onChange={(e) => setSettlementDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          {/* Quantity & price (for buy/sell) */}
-          {needsAsset && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="mb-4">
-                <label
-                  htmlFor="activity-quantity"
-                  className="mb-2 block text-sm font-medium"
-                >
-                  {t("quantityLabel")}
-                </label>
-                <input
-                  id="activity-quantity"
-                  type="text"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  placeholder="100"
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="unit-price"
-                  className="mb-2 block text-sm font-medium"
-                >
-                  {t("unitPriceLabel")}
-                </label>
-                <input
-                  id="unit-price"
-                  type="text"
-                  value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
-                  placeholder={t("unitPricePlaceholder")}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Amount, fee, tax */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="mb-4">
-              <label
-                htmlFor="activity-amount"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("amountLabel")}
-              </label>
-              <input
-                id="activity-amount"
-                type="text"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder={t("amountPlaceholder")}
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="activity-fee"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("feeLabel")}
-              </label>
-              <input
-                id="activity-fee"
-                type="text"
-                value={fee}
-                onChange={(e) => setFee(e.target.value)}
-                placeholder="0"
-                className={inputClass}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="activity-tax"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("taxLabel")}
-              </label>
-              <input
-                id="activity-tax"
-                type="text"
-                value={tax}
-                onChange={(e) => setTax(e.target.value)}
-                placeholder="0"
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          {/* Currency & status */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="mb-4">
-              <label
-                htmlFor="activity-currency"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("accountCurrencyLabel")}
-              </label>
-              <input
-                id="activity-currency"
-                type="text"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className={inputClass}
-                maxLength={3}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="activity-status"
-                className="mb-2 block text-sm font-medium"
-              >
-                {t("statusLabel")}
-              </label>
-              <select
-                id="activity-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ActivityStatus)}
-                className={inputClass}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {t(
-                      s === "posted"
-                        ? "statusPosted"
-                        : s === "pending"
-                          ? "statusPending"
-                          : "statusCanceled",
-                    )}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="mb-4">
-            <label
-              htmlFor="activity-notes"
-              className="mb-2 block text-sm font-medium"
-            >
-              {t("notesLabel")}
-            </label>
-            <textarea
-              id="activity-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("notesPlaceholder")}
-              rows={2}
-              className={inputClass}
-            />
-          </div>
+          <ActivityFormFields
+            activityType={activityType}
+            onActivityTypeChange={(value) => {
+              setActivityType(value);
+              setError("");
+            }}
+            needsAsset={needsAsset}
+            assetId={assetId}
+            onAssetIdChange={(value) => {
+              setAssetId(value);
+              setError("");
+            }}
+            assets={assets}
+            activityDate={activityDate}
+            onActivityDateChange={setActivityDate}
+            settlementDate={settlementDate}
+            onSettlementDateChange={setSettlementDate}
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            unitPrice={unitPrice}
+            onUnitPriceChange={setUnitPrice}
+            amount={amount}
+            onAmountChange={setAmount}
+            fee={fee}
+            onFeeChange={setFee}
+            tax={tax}
+            onTaxChange={setTax}
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            status={status}
+            onStatusChange={setStatus}
+            notes={notes}
+            onNotesChange={setNotes}
+          />
 
           {error && (
             <p className="mb-4 text-sm text-destructive" role="alert">
