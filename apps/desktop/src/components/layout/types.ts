@@ -90,6 +90,8 @@ export interface TopBarProps {
   isRightSidebarExpanded?: boolean;
   /** Callback to toggle right sidebar */
   onToggleRightSidebar?: () => void;
+  /** Callback to open the global search palette */
+  onOpenSearch?: () => void;
 }
 
 /**
@@ -102,6 +104,8 @@ export interface MainContentProps {
   isRightSidebarExpanded?: boolean;
   /** Callback to toggle right sidebar */
   onToggleRightSidebar?: () => void;
+  /** Callback to open the global search palette */
+  onOpenSearch?: () => void;
 }
 
 /**

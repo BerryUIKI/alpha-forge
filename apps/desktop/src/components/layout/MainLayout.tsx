@@ -15,12 +15,15 @@ import { Outlet } from "react-router-dom";
 import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
-import { useSidebarShortcuts } from "@/hooks/layout";
+import { GlobalSearchDialog } from "@/features/search";
+import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 
 export function MainLayout() {
   // Right sidebar state (Agent panel)
   const [rightState, setRightState] = useState<SidebarState>("collapsed");
+  // Global search palette state
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleRightStateChange = useCallback((state: SidebarState) => {
     setRightState(state);
@@ -30,10 +33,20 @@ export function MainLayout() {
     setRightState((prev) => (prev === "expanded" ? "collapsed" : "expanded"));
   }, []);
 
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
   // Setup keyboard shortcuts
   useSidebarShortcuts({
     onToggleRight: toggleRightSidebar,
     enabled: true,
+  });
+
+  // Cmd/Ctrl+K: open global search
+  useKeyboardShortcut({
+    key: "k",
+    modifiers: ["ctrl"],
+    callback: openSearch,
   });
 
   return (
@@ -45,6 +58,7 @@ export function MainLayout() {
       <MainContent
         isRightSidebarExpanded={rightState === "expanded"}
         onToggleRightSidebar={toggleRightSidebar}
+        onOpenSearch={openSearch}
       >
         <Outlet />
       </MainContent>
@@ -54,6 +68,9 @@ export function MainLayout() {
         state={rightState}
         onStateChange={handleRightStateChange}
       />
+
+      {/* Global Search Palette */}
+      <GlobalSearchDialog isOpen={searchOpen} onClose={closeSearch} />
     </div>
   );
 }

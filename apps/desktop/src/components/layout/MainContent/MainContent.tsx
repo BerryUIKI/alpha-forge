@@ -15,6 +15,7 @@ export function MainContent({
   children,
   isRightSidebarExpanded = false,
   onToggleRightSidebar,
+  onOpenSearch,
 }: MainContentProps) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -22,6 +23,7 @@ export function MainContent({
       <TopBar
         isRightSidebarExpanded={isRightSidebarExpanded}
         onToggleRightSidebar={onToggleRightSidebar}
+        onOpenSearch={onOpenSearch}
       />
 
       {/* Middle: Page Content (Outlet) */}
