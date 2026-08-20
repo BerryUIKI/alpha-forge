@@ -38,6 +38,25 @@ export const agent = {
   cancellingTask: "取消中...",
   taskStartFailed: "任务启动失败，已保留在队列中；准备好后可以重试。",
   taskQueueFailed: "任务排队失败，请重试。",
+
+  // Task failure & progress
+  taskFailureReason: "失败原因",
+  taskCompleted: "研究已完成",
+  taskProgressPrefix: "代理",
+  taskCancelledMessage: "任务已取消",
+
+  // Structured research results
+  researchSummary: "摘要",
+  researchClaims: "核心观点",
+  researchEvidence: "证据",
+  researchRisks: "风险",
+  researchConfidence: "置信度",
+  noResultsAvailable: "暂无结构化结果",
+  viewResearchResults: "查看结果",
+
+  // App readiness
+  appInitializing: "初始化中...",
+  appInitFailed: "应用初始化失败",
 } as const;
 
 export type AgentKey = keyof typeof agent;
