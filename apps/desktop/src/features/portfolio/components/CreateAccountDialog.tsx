@@ -48,8 +48,7 @@ const TRACKING_MODE_KEYS: Record<Exclude<TrackingMode, "not_set">, MessageKey> =
 interface CreateAccountDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  workspaceId: string;
-  /** Base currency for new accounts, usually the workspace currency. */
+  /** Base currency for new accounts, usually the selected account currency. */
   defaultCurrency?: string;
   onSuccess?: (accountId: string) => void;
 }
@@ -57,7 +56,6 @@ interface CreateAccountDialogProps {
 export function CreateAccountDialog({
   isOpen,
   onClose,
-  workspaceId,
   defaultCurrency = "USD",
   onSuccess,
 }: CreateAccountDialogProps) {
@@ -111,7 +109,9 @@ export function CreateAccountDialog({
     }
 
     const input: CreateAccountInput = {
-      workspace_id: workspaceId,
+      // Accounts belong to the global portfolio dimension (ADR-0008):
+      // workspace_id is an ownership marker, and NULL means global.
+      workspace_id: null,
       name: trimmedName,
       account_type: accountType,
       group_name: groupName.trim() || null,

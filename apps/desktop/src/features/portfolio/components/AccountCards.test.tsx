@@ -9,7 +9,7 @@ import { desktopApi } from "@/lib/desktop-api";
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
     financial: {
-      listFinancialAccounts: vi.fn(),
+      listAllFinancialAccounts: vi.fn(),
       computeNetWorth: vi.fn(),
     },
   },
@@ -63,14 +63,13 @@ beforeEach(() => {
 
 describe("AccountCards", () => {
   it("shows empty state when no accounts", async () => {
-    vi.mocked(desktopApi.financial.listFinancialAccounts).mockResolvedValue([]);
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([]);
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
     const { container } = render(
       <QueryClientProvider
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <AccountCards
-          workspaceId="ws-1"
           asOfDate="2026-08-18"
           selectedAccountId=""
           onSelectAccount={() => {}}
@@ -81,7 +80,7 @@ describe("AccountCards", () => {
   });
 
   it("shows loading spinner while fetching", () => {
-    vi.mocked(desktopApi.financial.listFinancialAccounts).mockReturnValue(
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockReturnValue(
       new Promise(() => {}),
     );
     vi.mocked(desktopApi.financial.computeNetWorth).mockReturnValue(
@@ -92,7 +91,6 @@ describe("AccountCards", () => {
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <AccountCards
-          workspaceId="ws-1"
           asOfDate="2026-08-18"
           selectedAccountId=""
           onSelectAccount={() => {}}
@@ -103,7 +101,7 @@ describe("AccountCards", () => {
   });
 
   it("shows error state when accounts fail", async () => {
-    vi.mocked(desktopApi.financial.listFinancialAccounts).mockRejectedValue(
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockRejectedValue(
       new Error("API error"),
     );
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
@@ -112,7 +110,6 @@ describe("AccountCards", () => {
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <AccountCards
-          workspaceId="ws-1"
           asOfDate="2026-08-18"
           selectedAccountId=""
           onSelectAccount={() => {}}
@@ -123,7 +120,7 @@ describe("AccountCards", () => {
   });
 
   it("renders account cards when data exists", async () => {
-    vi.mocked(desktopApi.financial.listFinancialAccounts).mockResolvedValue([account] as any);
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([account] as any);
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({
       as_of_date: "2026-08-18",
       base_currency: "USD",
@@ -137,7 +134,6 @@ describe("AccountCards", () => {
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <AccountCards
-          workspaceId="ws-1"
           asOfDate="2026-08-18"
           selectedAccountId=""
           onSelectAccount={() => {}}
@@ -149,7 +145,7 @@ describe("AccountCards", () => {
   });
 
   it("calls onSelectAccount when a card is clicked", async () => {
-    vi.mocked(desktopApi.financial.listFinancialAccounts).mockResolvedValue([account] as any);
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([account] as any);
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
     const onSelect = vi.fn();
     const { findByText } = render(
@@ -157,7 +153,6 @@ describe("AccountCards", () => {
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
         <AccountCards
-          workspaceId="ws-1"
           asOfDate="2026-08-18"
           selectedAccountId=""
           onSelectAccount={onSelect}

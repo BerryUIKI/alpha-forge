@@ -14,6 +14,7 @@ import {
   useSnapshots,
   useCreateSnapshot,
   useListFinancialAccounts,
+  useListAllFinancialAccounts,
   useCreateFinancialAccount,
   useListActiveAssets,
   useCreateAsset,
@@ -34,6 +35,7 @@ vi.mock("@/lib/desktop-api", () => ({
       listSnapshots: vi.fn(),
       createSnapshot: vi.fn(),
       listFinancialAccounts: vi.fn(),
+      listAllFinancialAccounts: vi.fn(),
       createFinancialAccount: vi.fn(),
       listActiveAssets: vi.fn(),
       createAsset: vi.fn(),
@@ -172,6 +174,23 @@ describe("Financial account hooks", () => {
     expect(result.current.fetchStatus).toBe("idle");
   });
 
+  it("useListAllFinancialAccounts fetches every account (global portfolio)", async () => {
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue(
+      [
+        { id: "acct-1", name: "Brokerage" },
+        { id: "acct-2", name: "Cash" },
+      ] as any,
+    );
+    const { result } = renderHook(() => useListAllFinancialAccounts(), { wrapper });
+    expect(desktopApi.financial.listAllFinancialAccounts).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(result.current.data).toEqual([
+        { id: "acct-1", name: "Brokerage" },
+        { id: "acct-2", name: "Cash" },
+      ]),
+    );
+  });
+
   it("useCreateFinancialAccount calls createFinancialAccount", async () => {
     vi.mocked(desktopApi.financial.createFinancialAccount).mockResolvedValue({ id: "acct-new" } as any);
     const input = {
@@ -292,6 +311,7 @@ describe("financialKeys", () => {
     expect(financialKeys.all).toEqual(["financial"]);
     expect(financialKeys.holdings("a", "2026-08-18")).toEqual(["financial", "holdings", "a", "2026-08-18"]);
     expect(financialKeys.accounts("ws")).toEqual(["financial", "accounts", "ws"]);
+    expect(financialKeys.allAccounts()).toEqual(["financial", "accounts", "all"]);
     expect(financialKeys.assets()).toEqual(["financial", "assets"]);
     expect(financialKeys.activities("acct")).toEqual(["financial", "activities", "acct"]);
     expect(financialKeys.performance("a", "2026-08-01", "2026-08-18")).toEqual([

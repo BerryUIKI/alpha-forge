@@ -7,6 +7,7 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PropsWithChildren } from "react";
 import { useGlobalSearch } from "./useGlobalSearch";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
 import type { Artifact } from "@/lib/desktop-api/artifacts";
 import type { ResearchProject } from "@/lib/desktop-api/research";
 import type { InvestmentThesis } from "@/lib/desktop-api/thesis";
@@ -96,7 +97,9 @@ function wrapper({ children }: PropsWithChildren) {
   });
   return (
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={["/research"]}>{children}</MemoryRouter>
+      <MemoryRouter initialEntries={["/research"]}>
+        <ActiveWorkspaceProvider>{children}</ActiveWorkspaceProvider>
+      </MemoryRouter>
     </QueryClientProvider>
   );
 }

@@ -21,7 +21,6 @@ import { DashboardCard } from "@/components/ui";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/useLocale";
-import { useActiveWorkspaceId } from "@/pages/today/hooks/useDashboardData";
 import {
   usePortfolioPerformance,
   type PortfolioPerformancePeriod,
@@ -44,9 +43,7 @@ export function PerformanceTab() {
   const { t } = useLocale();
   const [selectedPeriod, setSelectedPeriod] =
     useState<PortfolioPerformancePeriod>("1M");
-  const workspaceId = useActiveWorkspaceId();
   const { data, isLoading, isError, refetch } = usePortfolioPerformance(
-    workspaceId,
     selectedPeriod,
   );
 

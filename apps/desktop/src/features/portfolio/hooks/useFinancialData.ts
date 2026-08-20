@@ -36,6 +36,8 @@ export const financialKeys = {
     [...financialKeys.all, "snapshots", accountId] as const,
   accounts: (workspaceId: string) =>
     [...financialKeys.all, "accounts", workspaceId] as const,
+  // All accounts across every workspace (global portfolio dimension, ADR-0008).
+  allAccounts: () => [...financialKeys.all, "accounts", "all"] as const,
   assets: () => [...financialKeys.all, "assets"] as const,
   activities: (accountId: string) =>
     [...financialKeys.all, "activities", accountId] as const,
@@ -137,6 +139,7 @@ export function useCreateFinancialAccount() {
       queryClient.invalidateQueries({
         queryKey: financialKeys.accounts(input.workspace_id ?? ""),
       });
+      queryClient.invalidateQueries({ queryKey: financialKeys.allAccounts() });
       queryClient.invalidateQueries({ queryKey: financialKeys.all });
     },
   });
@@ -147,6 +150,18 @@ export function useListFinancialAccounts(workspaceId: string | undefined) {
     queryKey: financialKeys.accounts(workspaceId ?? ""),
     queryFn: () => desktopApi.financial.listFinancialAccounts(workspaceId!),
     enabled: Boolean(workspaceId),
+  });
+}
+
+/**
+ * List all financial accounts, ignoring the research-workspace ownership
+ * marker. Portfolio is a global dimension (ADR-0008): the Portfolio page
+ * shows every account regardless of the active workspace.
+ */
+export function useListAllFinancialAccounts() {
+  return useQuery({
+    queryKey: financialKeys.allAccounts(),
+    queryFn: () => desktopApi.financial.listAllFinancialAccounts(),
   });
 }
 

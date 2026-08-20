@@ -23,6 +23,10 @@ vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
   }),
 }));
 
+vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+  useActiveWorkspaceId: () => "ws-1",
+}));
+
 vi.mock("@/lib/i18n/useLocale", () => ({
   useLocale: () => ({
     t: (key: string) => {

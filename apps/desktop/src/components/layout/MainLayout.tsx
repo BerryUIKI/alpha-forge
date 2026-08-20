@@ -16,6 +16,7 @@ import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
 import { GlobalSearchDialog } from "@/features/search";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 
@@ -50,27 +51,29 @@ export function MainLayout() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Left: Navigation Sidebar */}
-      <LeftSidebar />
+    <ActiveWorkspaceProvider>
+      <div className="flex h-screen overflow-hidden bg-background">
+        {/* Left: Navigation Sidebar */}
+        <LeftSidebar />
 
-      {/* Center: Main Content Area */}
-      <MainContent
-        isRightSidebarExpanded={rightState === "expanded"}
-        onToggleRightSidebar={toggleRightSidebar}
-        onOpenSearch={openSearch}
-      >
-        <Outlet />
-      </MainContent>
+        {/* Center: Main Content Area */}
+        <MainContent
+          isRightSidebarExpanded={rightState === "expanded"}
+          onToggleRightSidebar={toggleRightSidebar}
+          onOpenSearch={openSearch}
+        >
+          <Outlet />
+        </MainContent>
 
-      {/* Right: Agent Panel */}
-      <RightSidebar
-        state={rightState}
-        onStateChange={handleRightStateChange}
-      />
+        {/* Right: Agent Panel */}
+        <RightSidebar
+          state={rightState}
+          onStateChange={handleRightStateChange}
+        />
 
-      {/* Global Search Palette */}
-      <GlobalSearchDialog isOpen={searchOpen} onClose={closeSearch} />
-    </div>
+        {/* Global Search Palette */}
+        <GlobalSearchDialog isOpen={searchOpen} onClose={closeSearch} />
+      </div>
+    </ActiveWorkspaceProvider>
   );
 }

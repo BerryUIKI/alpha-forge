@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, useLocation, useNavigationType } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { ResearchPage } from "./ResearchPage";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/locale";
 
@@ -92,8 +93,7 @@ function renderResearchPage(locale: Locale = "zh-CN", initialEntry = "/research"
       "zh-CN": {
         researchTitle: "研究",
         researchDescription: "捕获项目、来源出处和文档注释。",
-        workspace: "工作区",
-        selectWorkspace: "选择工作区",
+        createWorkspaceFirst: "创建第一个工作区",
         projects: "项目",
         projectTitle: "项目标题",
         create: "创建",
@@ -109,8 +109,7 @@ function renderResearchPage(locale: Locale = "zh-CN", initialEntry = "/research"
       en: {
         researchTitle: "Research",
         researchDescription: "Capture projects, source provenance, and document annotations.",
-        workspace: "Workspace",
-        selectWorkspace: "Select a workspace",
+        createWorkspaceFirst: "Create a workspace to begin",
         projects: "Projects",
         projectTitle: "Project title",
         create: "Create",
@@ -131,8 +130,10 @@ function renderResearchPage(locale: Locale = "zh-CN", initialEntry = "/research"
     <LocaleContext.Provider value={{ locale, setLocale, t }}>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[initialEntry]}>
-          <NavigationProbe state={routerState} />
-          <ResearchPage />
+          <ActiveWorkspaceProvider>
+            <NavigationProbe state={routerState} />
+            <ResearchPage />
+          </ActiveWorkspaceProvider>
         </MemoryRouter>
       </QueryClientProvider>
     </LocaleContext.Provider>,
@@ -144,6 +145,7 @@ function renderResearchPage(locale: Locale = "zh-CN", initialEntry = "/research"
 describe("ResearchPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     workspaceMock.listWorkspaces.mockResolvedValue([]);
     researchMock.listResearchProjects.mockResolvedValue([]);
     researchMock.listResearchDocuments.mockResolvedValue([]);
@@ -169,30 +171,10 @@ describe("ResearchPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders workspace selector", async () => {
-    const mockWorkspaces = [
-      {
-        id: "1",
-        name: "Test Workspace",
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z",
-      },
-    ];
-    workspaceMock.listWorkspaces.mockResolvedValue(mockWorkspaces);
+  it("shows a workspace empty state when no workspaces exist", async () => {
+    renderResearchPage("en");
 
-    renderResearchPage("zh-CN");
-
-    await waitFor(() => {
-      expect(screen.getByText("工作区")).toBeInTheDocument();
-    });
-  });
-
-  it("shows workspace select dropdown", async () => {
-    renderResearchPage("zh-CN");
-
-    await waitFor(() => {
-      expect(screen.getByText("选择工作区")).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Create a workspace to begin")).toBeInTheDocument();
   });
 
   it("restores a valid workspace and project from a deep link", async () => {
@@ -210,9 +192,9 @@ describe("ResearchPage", () => {
       expect(researchMock.listResearchDocuments).toHaveBeenCalledWith("p1");
       expect(researchMock.listResearchReports).toHaveBeenCalledWith("p1");
     });
-    expect(screen.getByLabelText("Workspace")).toHaveValue("w1");
-    expect(routerState.search).toBe("?workspace=w1&project=p1&tab=notes");
-    expect(routerState.navigationCount).toBe(0);
+    // The provider consumes the deep link and strips it from the URL.
+    expect(routerState.search).toBe("?project=p1&tab=notes");
+    expect(routerState.navigationCount).toBe(1);
   });
 
   it("restores the URL context after a remount", async () => {
@@ -222,26 +204,29 @@ describe("ResearchPage", () => {
     ]);
 
     const first = renderResearchPage("en", "/research?workspace=w1&project=p1");
-    await waitFor(() => expect(screen.getByLabelText("Workspace")).toHaveValue("w1"));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Project 1" })).toBeInTheDocument(),
+    );
     first.unmount();
 
     renderResearchPage("en", "/research?workspace=w1&project=p1");
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Project 1" })).toBeInTheDocument();
     });
-    expect(screen.getByLabelText("Workspace")).toHaveValue("w1");
   });
 
-  it("clears an invalid workspace and project once with replace", async () => {
+  it("clears an invalid workspace deep link once with replace", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     const { routerState } = renderResearchPage(
       "en",
       "/research?workspace=missing&project=p1&tab=notes",
     );
 
+    // The provider ignores the invalid deep link, falls back to the first
+    // workspace, and strips the parameter; the stale project is then cleaned.
     await waitFor(() => expect(routerState.search).toBe("?tab=notes"));
     expect(routerState.historyAction).toBe("REPLACE");
-    expect(routerState.navigationCount).toBe(1);
+    expect(routerState.navigationCount).toBe(2);
   });
 
   it("clears an invalid project once with replace after project loading succeeds", async () => {
@@ -254,9 +239,9 @@ describe("ResearchPage", () => {
       "/research?workspace=w1&project=missing&tab=notes",
     );
 
-    await waitFor(() => expect(routerState.search).toBe("?workspace=w1&tab=notes"));
+    await waitFor(() => expect(routerState.search).toBe("?tab=notes"));
     expect(routerState.historyAction).toBe("REPLACE");
-    expect(routerState.navigationCount).toBe(1);
+    expect(routerState.navigationCount).toBe(2);
   });
 
   it("does not clean a deep link while the workspace query is loading or errors", async () => {
@@ -278,7 +263,9 @@ describe("ResearchPage", () => {
     researchMock.listResearchProjects.mockReturnValue(new Promise(() => undefined));
     const loading = renderResearchPage("en", "/research?workspace=w1&project=missing");
     await waitFor(() => expect(researchMock.listResearchProjects).toHaveBeenCalledWith("w1"));
-    expect(loading.routerState.search).toBe("?workspace=w1&project=missing");
+    // The provider consumed the workspace deep link, but the stale project is
+    // left untouched while the projects query is still loading.
+    expect(loading.routerState.search).toBe("?project=missing");
     expect(researchMock.listResearchDocuments).not.toHaveBeenCalled();
     expect(researchMock.listResearchReports).not.toHaveBeenCalled();
     loading.unmount();
@@ -286,37 +273,27 @@ describe("ResearchPage", () => {
     researchMock.listResearchProjects.mockRejectedValue(new Error("offline"));
     const failed = renderResearchPage("en", "/research?workspace=w1&project=missing");
     await waitFor(() => expect(researchMock.listResearchProjects).toHaveBeenCalledTimes(2));
-    expect(failed.routerState.search).toBe("?workspace=w1&project=missing");
-    expect(failed.routerState.navigationCount).toBe(0);
+    expect(failed.routerState.search).toBe("?project=missing");
+    expect(failed.routerState.navigationCount).toBe(1);
     expect(researchMock.listResearchDocuments).not.toHaveBeenCalled();
     expect(researchMock.listResearchReports).not.toHaveBeenCalled();
   });
 
-  it("writes workspace and project selections as pushes while preserving other params", async () => {
-    workspaceMock.listWorkspaces.mockResolvedValue([
-      { id: "w1", name: "Workspace 1" },
-      { id: "w2", name: "Workspace 2" },
+  it("writes project selections as pushes while preserving other params", async () => {
+    workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
+    researchMock.listResearchProjects.mockResolvedValue([
+      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
+      { id: "p2", workspace_id: "w1", title: "Project 2", status: "active" },
     ]);
-    researchMock.listResearchProjects.mockImplementation(async (id: string) =>
-      id === "w1"
-        ? [{ id: "p1", workspace_id: "w1", title: "Project 1", status: "active" }]
-        : [{ id: "p2", workspace_id: "w2", title: "Project 2", status: "active" }],
-    );
-    const { routerState } = renderResearchPage("en", "/research?workspace=w1&project=p1&tab=notes");
+    const { routerState } = renderResearchPage("en", "/research?project=p1&tab=notes");
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Project 1" })).toBeInTheDocument(),
     );
-    fireEvent.change(screen.getByLabelText("Workspace"), { target: { value: "w2" } });
-    await waitFor(() => expect(routerState.search).toBe("?workspace=w2&tab=notes"));
-    expect(routerState.historyAction).toBe("PUSH");
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Project 2" })).toBeInTheDocument(),
-    );
 
     fireEvent.click(screen.getByRole("button", { name: "Project 2" }));
-    await waitFor(() => expect(routerState.search).toBe("?workspace=w2&tab=notes&project=p2"));
+    await waitFor(() => expect(routerState.search).toBe("?project=p2&tab=notes"));
     expect(routerState.historyAction).toBe("PUSH");
-    expect(routerState.navigationCount).toBe(2);
+    expect(routerState.navigationCount).toBe(1);
   });
 
   it("removes a deleted selected project from the URL with replace", async () => {
@@ -328,10 +305,13 @@ describe("ResearchPage", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Project 1" })).toBeInTheDocument(),
     );
+    // Wait for the provider to consume the workspace deep link before acting so
+    // the delete's URL rewrite is computed against the settled URL.
+    await waitFor(() => expect(routerState.search).toBe("?project=p1&tab=notes"));
     fireEvent.click(screen.getByTitle("deleteProject"));
-    await waitFor(() => expect(routerState.search).toBe("?workspace=w1&tab=notes"));
+    await waitFor(() => expect(routerState.search).toBe("?tab=notes"));
     expect(routerState.historyAction).toBe("REPLACE");
-    expect(routerState.navigationCount).toBe(1);
+    expect(routerState.navigationCount).toBe(2);
   });
 
   it("resets local document selection when the project context changes", async () => {

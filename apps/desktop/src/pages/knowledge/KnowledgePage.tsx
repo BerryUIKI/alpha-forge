@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { BookOpen, Plus, X } from "lucide-react";
-import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 
 const ENTITY_TYPES: KnowledgeEntityType[] = ["company", "industry", "technology", "macro_theme"];
@@ -35,8 +35,7 @@ const ENTITY_TYPE_COLORS: Record<KnowledgeEntityType, string> = {
 export function KnowledgePage() {
   const { t } = useLocale();
   const queryClient = useQueryClient();
-  const { data: workspaces } = useWorkspaces();
-  const workspaceId = workspaces?.[0]?.id ?? "";
+  const workspaceId = useActiveWorkspaceId();
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState<KnowledgeEntityType>("company");
@@ -64,7 +63,11 @@ export function KnowledgePage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold">{t("knowledgeGraph")}</h1>
-        <EmptyState icon={<BookOpen />} title={t("knowledgeGraph")} description="Create a workspace first." />
+        <EmptyState
+          icon={<BookOpen />}
+          title={t("createWorkspaceFirst")}
+          description={t("createWorkspaceFirstDescription")}
+        />
       </div>
     );
   }

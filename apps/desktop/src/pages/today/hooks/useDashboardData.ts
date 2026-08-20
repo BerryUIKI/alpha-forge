@@ -9,7 +9,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
-import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
+import { useActiveWorkspaceId as useActiveWorkspaceIdFromContext } from "@/features/workspace/hooks/useActiveWorkspace";
 import type { Holding } from "@/components/portfolio/HoldingsList";
 import type { ActivityItem } from "@/components/activity/ActivityFeed";
 
@@ -19,25 +19,28 @@ const DASHBOARD_KEYS = {
 };
 
 /**
- * Returns the first workspace ID from the user's workspaces.
+ * Returns the active research workspace from the global context (ADR-0008).
+ * Re-exported here so dashboard tabs keep importing from this module.
  */
 export function useActiveWorkspaceId(): string {
-  const { data: workspaces } = useWorkspaces();
-  return workspaces?.[0]?.id ?? "";
+  return useActiveWorkspaceIdFromContext();
 }
 
 /**
  * Hook to fetch dashboard summary data.
  * Returns portfolio value, active theses count, and top holdings.
+ *
+ * The portfolio overview is the global dimension (ADR-0008): holdings are
+ * aggregated from the canonical `accounts` model across every workspace,
+ * while the thesis count follows the active workspace.
  */
 export function useDashboardSummary(workspaceId: string) {
   return useQuery({
     queryKey: DASHBOARD_KEYS.summary(workspaceId),
     queryFn: async () => {
-      // Fetch theses and portfolio allocation in parallel
-      const [theses, allocation] = await Promise.all([
+      const [theses, summaries] = await Promise.all([
         desktopApi.thesis.listTheses(workspaceId),
-        desktopApi.portfolio.getPortfolioAllocation(workspaceId),
+        desktopApi.financial.getAllHoldings(new Date().toISOString().slice(0, 10)),
       ]);
 
       // Count active theses (draft + active status)
@@ -45,20 +48,27 @@ export function useDashboardSummary(workspaceId: string) {
         (t) => t.status === "active" || t.status === "draft",
       ).length;
 
-      // Build top holdings from allocation data
-      const holdings: Holding[] = allocation.slice(0, 5).map((item, idx) => ({
+      // Build top holdings from global holdings (largest market value first)
+      const allHoldings = summaries.flatMap((summary) => summary.holdings);
+      allHoldings.sort(
+        (a, b) => parseFloat(b.market_value_base) - parseFloat(a.market_value_base),
+      );
+      const holdings: Holding[] = allHoldings.slice(0, 5).map((holding, idx) => ({
         id: `holding-${idx}`,
-        ticker: item.symbol,
-        name: item.symbol,
+        ticker: holding.asset_symbol ?? "—",
+        name: holding.asset_name ?? holding.asset_symbol ?? "—",
         sector: "—",
-        allocation: `${item.weight_percent.toFixed(1)}%`,
-        value: `$${(item.allocated_cost).toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
+        allocation: `${parseFloat(holding.weight_pct).toFixed(1)}%`,
+        value: `$${Number(holding.market_value_base).toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
         change: "—",
         changePositive: true,
       }));
 
-      // Compute total portfolio value (sum of allocated costs)
-      const totalValue = allocation.reduce((sum, a) => sum + a.allocated_cost, 0);
+      // Total portfolio value across all accounts (base currency)
+      const totalValue = summaries.reduce(
+        (sum, summary) => sum + parseFloat(summary.total_market_value_base),
+        0,
+      );
 
       return {
         portfolioValue: totalValue,

@@ -19,10 +19,8 @@ vi.mock("@/pages/today/hooks/useDashboardData", () => ({
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
-    portfolio: {
-      listPortfolioAccounts: vi.fn(),
-    },
     financial: {
+      listAllFinancialAccounts: vi.fn(),
       getPerformanceTimeSeries: vi.fn(),
       computePerformanceSummary: vi.fn(),
     },
@@ -56,7 +54,7 @@ beforeEach(() => {
 
 describe("PerformanceTab", () => {
   it("shows loading state initially", () => {
-    vi.mocked(desktopApi.portfolio.listPortfolioAccounts).mockReturnValue(
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockReturnValue(
       new Promise(() => {}),
     );
     renderTab();
@@ -64,14 +62,14 @@ describe("PerformanceTab", () => {
   });
 
   it("shows empty state when no accounts exist", async () => {
-    vi.mocked(desktopApi.portfolio.listPortfolioAccounts).mockResolvedValue([]);
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([]);
     renderTab();
     const empty = await screen.findByText("No valuation data for this period");
     expect(empty).toBeTruthy();
   });
 
   it("shows empty state when no valuations in period", async () => {
-    vi.mocked(desktopApi.portfolio.listPortfolioAccounts).mockResolvedValue([
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([
       {
         id: "a1",
         name: "Brokerage",
@@ -81,7 +79,7 @@ describe("PerformanceTab", () => {
         created_at: "2026-01-01T00:00:00Z",
         updated_at: "2026-01-01T00:00:00Z",
       },
-    ]);
+    ] as any);
     vi.mocked(desktopApi.financial.getPerformanceTimeSeries).mockResolvedValue(
       [],
     );
@@ -108,7 +106,7 @@ describe("PerformanceTab", () => {
   });
 
   it("shows error state with retry when API fails", async () => {
-    vi.mocked(desktopApi.portfolio.listPortfolioAccounts).mockRejectedValue(
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockRejectedValue(
       new Error("API error"),
     );
     renderTab();
@@ -119,7 +117,7 @@ describe("PerformanceTab", () => {
   });
 
   it("renders chart and performance chips when data exists", async () => {
-    vi.mocked(desktopApi.portfolio.listPortfolioAccounts).mockResolvedValue([
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([
       {
         id: "a1",
         name: "Brokerage",
@@ -129,7 +127,7 @@ describe("PerformanceTab", () => {
         created_at: "2026-01-01T00:00:00Z",
         updated_at: "2026-01-01T00:00:00Z",
       },
-    ]);
+    ] as any);
     vi.mocked(desktopApi.financial.getPerformanceTimeSeries).mockResolvedValue(
       [
         {

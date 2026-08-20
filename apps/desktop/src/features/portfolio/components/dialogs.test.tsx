@@ -120,7 +120,6 @@ describe("CreateAccountDialog", () => {
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
-    workspaceId: "ws-1",
     defaultCurrency: "USD",
     onSuccess: vi.fn(),
   };
@@ -162,7 +161,7 @@ describe("CreateAccountDialog", () => {
 
     await waitFor(() => {
       expect(financialMock.createFinancialAccount).toHaveBeenCalledWith({
-        workspace_id: "ws-1",
+        workspace_id: null,
         name: "My Brokerage",
         account_type: "securities",
         group_name: null,
