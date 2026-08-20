@@ -17,36 +17,16 @@
  * @version GUI-M6
  */
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useWorkspaces } from "./useWorkspaces";
-import type { Workspace } from "@/lib/desktop-api/workspace";
+import {
+  ActiveWorkspaceContext,
+  type ActiveWorkspaceContextValue,
+} from "./useActiveWorkspace.context";
 
 /** localStorage key that persists the active workspace across sessions. */
 const STORAGE_KEY = "active-workspace-id";
-
-export interface ActiveWorkspaceContextValue {
-  /** Id of the active workspace ("" while loading or when none exist). */
-  workspaceId: string;
-  /** The active workspace object, or null while loading / when none exist. */
-  workspace: Workspace | null;
-  /** All workspaces, for the global switcher. */
-  workspaces: Workspace[];
-  /** True while the workspace list is still loading. */
-  isLoading: boolean;
-  /** Switch the active workspace (persists to localStorage). */
-  setActiveWorkspace: (id: string) => void;
-}
-
-export const ActiveWorkspaceContext = createContext<ActiveWorkspaceContextValue | null>(null);
 
 function readStoredWorkspaceId(): string | null {
   try {
@@ -119,22 +99,4 @@ export function ActiveWorkspaceProvider({ children }: { children: ReactNode }) {
   return (
     <ActiveWorkspaceContext.Provider value={value}>{children}</ActiveWorkspaceContext.Provider>
   );
-}
-
-/**
- * Reads the active workspace context. Must be used inside ActiveWorkspaceProvider.
- */
-export function useActiveWorkspace() {
-  const ctx = useContext(ActiveWorkspaceContext);
-  if (!ctx) {
-    throw new Error("useActiveWorkspace must be used within an ActiveWorkspaceProvider");
-  }
-  return ctx;
-}
-
-/**
- * Convenience selector for the active workspace id.
- */
-export function useActiveWorkspaceId(): string {
-  return useActiveWorkspace().workspaceId;
 }

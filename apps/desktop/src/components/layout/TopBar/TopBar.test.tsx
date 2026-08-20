@@ -15,7 +15,7 @@ vi.mock("@/lib/i18n/useLocale", () => ({
 }));
 
 // Mock the active-workspace context: no workspaces, so the switcher is hidden.
-vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
   useActiveWorkspace: () => ({
     workspaceId: "",
     workspace: null,

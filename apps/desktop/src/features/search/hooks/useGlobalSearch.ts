@@ -14,7 +14,7 @@
 import { useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 
 export type SearchSectionId =
   | "projects"

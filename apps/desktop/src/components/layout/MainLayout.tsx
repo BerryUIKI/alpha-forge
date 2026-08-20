@@ -16,7 +16,7 @@ import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
 import { GlobalSearchDialog } from "@/features/search";
-import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 

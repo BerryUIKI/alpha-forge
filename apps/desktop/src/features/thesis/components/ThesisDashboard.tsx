@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useLocale } from "@/lib/i18n/useLocale";
 import type { InvestmentThesis } from "@/lib/desktop-api/thesis";
 import { useTheses } from "../hooks/useTheses";

@@ -13,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { BookOpen, Plus, X } from "lucide-react";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 
 const ENTITY_TYPES: KnowledgeEntityType[] = ["company", "industry", "technology", "macro_theme"];
