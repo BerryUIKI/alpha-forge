@@ -9,7 +9,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
-import { useActiveWorkspaceId as useActiveWorkspaceIdFromContext } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId as useActiveWorkspaceIdFromContext } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import type { Holding } from "@/components/portfolio/HoldingsList";
 import type { ActivityItem } from "@/components/activity/ActivityFeed";
 

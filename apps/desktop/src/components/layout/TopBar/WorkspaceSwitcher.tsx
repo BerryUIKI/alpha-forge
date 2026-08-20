@@ -12,7 +12,7 @@
  */
 
 import { Layers } from "lucide-react";
-import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 export function WorkspaceSwitcher() {

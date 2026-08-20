@@ -16,7 +16,7 @@ import { Bot, X, Play, Square, Send } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
 import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
 import {

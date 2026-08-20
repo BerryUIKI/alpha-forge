@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FileText, Trash2 } from "lucide-react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
 import { ArtifactViewer } from "@/features/artifacts/components/ArtifactViewer";
 import { CompanyComparisonArtifactForm } from "@/features/plugins";

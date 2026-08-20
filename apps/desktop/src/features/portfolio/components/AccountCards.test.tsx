@@ -30,11 +30,13 @@ vi.mock("@/lib/i18n/useLocale", () => ({
   }),
 }));
 
-function wrapper({ children }: { children: ReactNode }) {
+function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
 }
 
 const account = {
@@ -65,16 +67,14 @@ describe("AccountCards", () => {
   it("shows empty state when no accounts", async () => {
     vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([]);
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
+    const wrapper = createWrapper();
     const { container } = render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <AccountCards
-          asOfDate="2026-08-18"
-          selectedAccountId=""
-          onSelectAccount={() => {}}
-        />
-      </QueryClientProvider>,
+      <AccountCards
+        asOfDate="2026-08-18"
+        selectedAccountId=""
+        onSelectAccount={() => {}}
+      />,
+      { wrapper },
     );
     expect(container).toBeTruthy();
   });
@@ -86,16 +86,14 @@ describe("AccountCards", () => {
     vi.mocked(desktopApi.financial.computeNetWorth).mockReturnValue(
       new Promise(() => {}),
     );
+    const wrapper = createWrapper();
     const { container } = render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <AccountCards
-          asOfDate="2026-08-18"
-          selectedAccountId=""
-          onSelectAccount={() => {}}
-        />
-      </QueryClientProvider>,
+      <AccountCards
+        asOfDate="2026-08-18"
+        selectedAccountId=""
+        onSelectAccount={() => {}}
+      />,
+      { wrapper },
     );
     expect(container.querySelector(".animate-spin")).toBeTruthy();
   });
@@ -105,16 +103,14 @@ describe("AccountCards", () => {
       new Error("API error"),
     );
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
+    const wrapper = createWrapper();
     render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <AccountCards
-          asOfDate="2026-08-18"
-          selectedAccountId=""
-          onSelectAccount={() => {}}
-        />
-      </QueryClientProvider>,
+      <AccountCards
+        asOfDate="2026-08-18"
+        selectedAccountId=""
+        onSelectAccount={() => {}}
+      />,
+      { wrapper },
     );
     expect(await screen.findByText("Failed to load accounts")).toBeInTheDocument();
   });
@@ -129,16 +125,14 @@ describe("AccountCards", () => {
       total_liabilities: "0",
       accounts: [],
     } as any);
+    const wrapper = createWrapper();
     const { container } = render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <AccountCards
-          asOfDate="2026-08-18"
-          selectedAccountId=""
-          onSelectAccount={() => {}}
-        />
-      </QueryClientProvider>,
+      <AccountCards
+        asOfDate="2026-08-18"
+        selectedAccountId=""
+        onSelectAccount={() => {}}
+      />,
+      { wrapper },
     );
     expect(await screen.findByText("Brokerage")).toBeInTheDocument();
     expect(container).toBeTruthy();
@@ -148,16 +142,14 @@ describe("AccountCards", () => {
     vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([account] as any);
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
     const onSelect = vi.fn();
+    const wrapper = createWrapper();
     const { findByText } = render(
-      <QueryClientProvider
-        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-      >
-        <AccountCards
-          asOfDate="2026-08-18"
-          selectedAccountId=""
-          onSelectAccount={onSelect}
-        />
-      </QueryClientProvider>,
+      <AccountCards
+        asOfDate="2026-08-18"
+        selectedAccountId=""
+        onSelectAccount={onSelect}
+      />,
+      { wrapper },
     );
     const card = await findByText("Brokerage");
     card.click();

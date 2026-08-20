@@ -13,10 +13,10 @@ import { render, screen, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, useSearchParams } from "react-router-dom";
 import { desktopApi } from "@/lib/desktop-api";
+import { ActiveWorkspaceProvider as Provider } from "./useActiveWorkspace";
 import {
-  ActiveWorkspaceProvider,
   useActiveWorkspace,
-} from "./useActiveWorkspace";
+} from "./useActiveWorkspace.context";
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
@@ -62,9 +62,9 @@ function renderProvider(initialEntries: string[] = ["/"]) {
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={initialEntries}>
-        <ActiveWorkspaceProvider>
+        <Provider>
           <Probe />
-        </ActiveWorkspaceProvider>
+        </Provider>
       </MemoryRouter>
     </QueryClientProvider>,
   );

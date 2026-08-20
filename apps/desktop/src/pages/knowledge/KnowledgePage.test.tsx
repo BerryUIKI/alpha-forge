@@ -2,7 +2,6 @@ import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { type ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { KnowledgePage } from "./KnowledgePage";
 import { desktopApi } from "@/lib/desktop-api";
@@ -23,7 +22,7 @@ vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
   }),
 }));
 
-vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
   useActiveWorkspaceId: () => "ws-1",
 }));
 

@@ -59,7 +59,7 @@ vi.mock("@/features/workspace/hooks/useWorkspaces", () => ({
   }),
 }));
 
-vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
   useActiveWorkspaceId: () => "workspace-1",
 }));
 

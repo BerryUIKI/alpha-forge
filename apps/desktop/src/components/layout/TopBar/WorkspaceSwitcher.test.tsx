@@ -9,10 +9,11 @@ import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace.context";
 
-const { setActiveWorkspace } = vi.hoisted(() => ({
+const { setActiveWorkspace, useActiveWorkspaceMock } = vi.hoisted(() => ({
   setActiveWorkspace: vi.fn(),
+  useActiveWorkspaceMock: vi.fn(),
 }));
 
 const mockWorkspaces = [
@@ -28,20 +29,20 @@ const defaultContext = {
   setActiveWorkspace,
 };
 
-vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
-  useActiveWorkspace: vi.fn(() => defaultContext),
+useActiveWorkspaceMock.mockReturnValue(defaultContext);
+
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
+  useActiveWorkspace: useActiveWorkspaceMock,
 }));
 
 vi.mock("@/lib/i18n/useLocale", () => ({
   useLocale: () => ({ t: (key: string) => key }),
 }));
 
-const useActiveWorkspaceMock = vi.mocked(useActiveWorkspace);
-
 beforeEach(() => {
   vi.clearAllMocks();
   // Restore the default context for tests that don't override it.
-  useActiveWorkspaceMock.mockImplementation(() => defaultContext);
+  useActiveWorkspaceMock.mockReturnValue(defaultContext);
 });
 
 describe("WorkspaceSwitcher", () => {
@@ -65,13 +66,13 @@ describe("WorkspaceSwitcher", () => {
   });
 
   it("renders nothing when there are no workspaces", () => {
-    useActiveWorkspaceMock.mockImplementation(() => ({
+    useActiveWorkspaceMock.mockReturnValue({
       workspaceId: "",
       workspace: null,
       workspaces: [],
       isLoading: false,
       setActiveWorkspace,
-    }));
+    });
     const { container } = render(<WorkspaceSwitcher />);
     expect(container.firstChild).toBeNull();
   });

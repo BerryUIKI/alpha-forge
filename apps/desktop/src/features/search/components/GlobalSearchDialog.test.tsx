@@ -7,7 +7,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { useMemo, useState, type PropsWithChildren } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GlobalSearchDialog } from "./GlobalSearchDialog";
-import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import { translate, type MessageKey } from "@/lib/i18n/locale";
 

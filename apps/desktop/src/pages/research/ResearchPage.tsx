@@ -14,7 +14,7 @@ import { useSearchParams } from "react-router-dom";
 import { desktopApi } from "@/lib/desktop-api";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { processAppError } from "@/lib/errors";
-import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { ResearchProjectsSection } from "./components/ResearchProjectsSection";
 import { ResearchDocumentsSection } from "./components/ResearchDocumentsSection";
 import { ResearchNotesSection } from "./components/ResearchNotesSection";

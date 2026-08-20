@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, useLocation, useNavigationType } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { ResearchPage } from "./ResearchPage";
-import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/locale";
 
@@ -193,7 +193,7 @@ describe("ResearchPage", () => {
       expect(researchMock.listResearchReports).toHaveBeenCalledWith("p1");
     });
     // The provider consumes the deep link and strips it from the URL.
-    expect(routerState.search).toBe("?project=p1&tab=notes");
+    await waitFor(() => expect(routerState.search).toBe("?project=p1&tab=notes"));
     expect(routerState.navigationCount).toBe(1);
   });
 
@@ -265,7 +265,7 @@ describe("ResearchPage", () => {
     await waitFor(() => expect(researchMock.listResearchProjects).toHaveBeenCalledWith("w1"));
     // The provider consumed the workspace deep link, but the stale project is
     // left untouched while the projects query is still loading.
-    expect(loading.routerState.search).toBe("?project=missing");
+    await waitFor(() => expect(loading.routerState.search).toBe("?project=missing"));
     expect(researchMock.listResearchDocuments).not.toHaveBeenCalled();
     expect(researchMock.listResearchReports).not.toHaveBeenCalled();
     loading.unmount();
@@ -273,7 +273,7 @@ describe("ResearchPage", () => {
     researchMock.listResearchProjects.mockRejectedValue(new Error("offline"));
     const failed = renderResearchPage("en", "/research?workspace=w1&project=missing");
     await waitFor(() => expect(researchMock.listResearchProjects).toHaveBeenCalledTimes(2));
-    expect(failed.routerState.search).toBe("?project=missing");
+    await waitFor(() => expect(failed.routerState.search).toBe("?project=missing"));
     expect(failed.routerState.navigationCount).toBe(1);
     expect(researchMock.listResearchDocuments).not.toHaveBeenCalled();
     expect(researchMock.listResearchReports).not.toHaveBeenCalled();

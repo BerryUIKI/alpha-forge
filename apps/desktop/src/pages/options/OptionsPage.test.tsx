@@ -33,7 +33,7 @@ vi.mock("@/lib/desktop-api", () => ({
   desktopApi: { workspace: workspaceMock, options: optionsMock },
 }));
 
-vi.mock("@/features/workspace/hooks/useActiveWorkspace", () => ({
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
   useActiveWorkspaceId: () => workspaceId,
 }));
 

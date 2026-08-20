@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
-import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useLocale } from "@/lib/i18n/useLocale";
 import {
   GreeksCalculator,
