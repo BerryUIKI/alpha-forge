@@ -1,8 +1,10 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { AgentPanel } from "./AgentPanel";
+import React from "react";
 
 const tasks = vi.hoisted(() => ({
   created: {
@@ -32,6 +34,24 @@ const tasks = vi.hoisted(() => ({
     created_at: "2026-08-13T00:00:00Z",
     updated_at: "2026-08-13T00:00:00Z",
   } as AgentTask,
+  completed: {
+    id: "completed-task",
+    workspace_id: "workspace-1",
+    title: "Completed task",
+    description: null,
+    status: "completed",
+    created_at: "2026-08-13T00:00:00Z",
+    updated_at: "2026-08-13T00:00:00Z",
+  } as AgentTask,
+  failed: {
+    id: "failed-task",
+    workspace_id: "workspace-1",
+    title: "Failed task",
+    description: null,
+    status: "failed",
+    created_at: "2026-08-13T00:00:00Z",
+    updated_at: "2026-08-13T00:00:00Z",
+  } as AgentTask,
 }));
 
 const hookMocks = vi.hoisted(() => ({
@@ -44,6 +64,7 @@ const hookMocks = vi.hoisted(() => ({
   },
   cancel: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
   create: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
+  taskEvents: [] as Array<{ id: string; task_id: string; event_type: string; payload: string | null; created_at: string }>,
 }));
 
 const agentStatusMock = vi.hoisted(() => ({
@@ -67,6 +88,20 @@ vi.mock("@/hooks/useAgentStatus", () => ({
   useAgentStatus: () => agentStatusMock,
 }));
 
+// Mock useAppReady to always return ready in tests
+vi.mock("@/hooks/useAppReady", () => ({
+  useAppReady: () => ({ isReady: true, initError: null }),
+}));
+
+// Mock useTaskEventStream to avoid needing real Tauri event listeners
+vi.mock("@/features/agent/hooks/useTaskEventStream", () => ({
+  useTaskEventStream: () => ({
+    progressMessages: [],
+    latestEvent: null,
+    clearProgress: vi.fn(),
+  }),
+}));
+
 vi.mock("@/features/agent/hooks/useAgentTasks", () => ({
   useAgentTask: (taskId: string) => ({
     data:
@@ -74,13 +109,26 @@ vi.mock("@/features/agent/hooks/useAgentTasks", () => ({
         ? tasks.running
         : taskId === tasks.queued.id
           ? tasks.queued
-          : taskId
-            ? tasks.created
-            : undefined,
+          : taskId === tasks.completed.id
+            ? tasks.completed
+            : taskId === tasks.failed.id
+              ? tasks.failed
+              : taskId
+                ? tasks.created
+                : undefined,
+  }),
+  useTaskEvents: () => ({
+    data: hookMocks.taskEvents,
   }),
   useRunAgentTask: () => hookMocks.run,
   useCancelAgentTask: () => hookMocks.cancel,
   useCreateAgentTask: () => hookMocks.create,
+  AGENT_KEYS: {
+    all: ["agent"] as const,
+    tasks: (workspaceId: string) => ["agent", "tasks", workspaceId] as const,
+    task: (id: string) => ["agent", "task", id] as const,
+    events: (taskId: string) => ["agent", "events", taskId] as const,
+  },
 }));
 
 vi.mock("@/features/agent/components/AgentTaskList", () => ({
@@ -94,6 +142,12 @@ vi.mock("@/features/agent/components/AgentTaskList", () => ({
       </button>
       <button type="button" onClick={() => onSelectTask?.(tasks.queued)}>
         Select queued task
+      </button>
+      <button type="button" onClick={() => onSelectTask?.(tasks.completed)}>
+        Select completed task
+      </button>
+      <button type="button" onClick={() => onSelectTask?.(tasks.failed)}>
+        Select failed task
       </button>
     </div>
   ),
@@ -109,6 +163,11 @@ vi.mock("@/features/agent/components/AgentConfigGuide", () => ({
 
 vi.mock("@/features/agent/components/TaskStatusBadge", () => ({
   TaskStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
+}));
+
+vi.mock("@/features/agent/components/ResearchResultCard", () => ({
+  ResearchResultCard: ({ payload }: { payload: string | null }) =>
+    payload ? <div data-testid="research-result-card">Research Result</div> : <div>No structured results available</div>,
 }));
 
 vi.mock("@/lib/i18n/useLocale", () => ({
@@ -127,6 +186,13 @@ vi.mock("@/lib/i18n/useLocale", () => ({
         cancellingTask: "Cancelling...",
         taskStartFailed: "Unable to start this task. It remains queued; retry when ready.",
         taskQueueFailed: "Unable to queue this task. Please try again.",
+        taskFailureReason: "Failure reason",
+        taskCompleted: "Research completed",
+        taskProgressPrefix: "Agent",
+        taskCancelledMessage: "Task was cancelled",
+        noResultsAvailable: "No structured results available",
+        appInitializing: "Initializing...",
+        appInitFailed: "Application failed to initialize",
         agentChatWelcome: "Ask a research question below; it will be queued as a research task.",
         agentChatSendFailed: "Failed to create the research task",
         agentChatNeedsConfig: "Configure the Agent before asking",
@@ -136,7 +202,14 @@ vi.mock("@/lib/i18n/useLocale", () => ({
 }));
 
 function renderPanel() {
-  return render(<AgentPanel />);
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <AgentPanel />
+    </QueryClientProvider>
+  );
 }
 
 describe("AgentPanel task actions", () => {
@@ -149,6 +222,7 @@ describe("AgentPanel task actions", () => {
     hookMocks.cancel.isPending = false;
     hookMocks.create.isPending = false;
     hookMocks.create.isError = false;
+    hookMocks.taskEvents = [];
   });
 
   it("shows a recoverable start error and a queued retry action", () => {
@@ -249,5 +323,42 @@ describe("AgentPanel task actions", () => {
     expect(hookMocks.run.mutate).not.toHaveBeenCalled();
     expect(screen.getByText("Configure the Agent before asking")).toBeInTheDocument();
     expect(screen.getByText("agent config guide")).toBeInTheDocument();
+  });
+
+  // S1: Failure context rendering
+  it("shows failure reason when a failed task is selected", () => {
+    hookMocks.taskEvents = [
+      {
+        id: "evt-1",
+        task_id: "failed-task",
+        event_type: "task_failed",
+        payload: "OpenAI credentials are unavailable.",
+        created_at: "2026-08-13T00:00:00Z",
+      },
+    ];
+    renderPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "Select failed task" }));
+
+    expect(screen.getByText("Failure reason")).toBeInTheDocument();
+    expect(screen.getByText("OpenAI credentials are unavailable.")).toBeInTheDocument();
+  });
+
+  // S1: Completed task shows research result card
+  it("renders research result card when a completed task is selected", () => {
+    hookMocks.taskEvents = [
+      {
+        id: "evt-2",
+        task_id: "completed-task",
+        event_type: "task_completed",
+        payload: '{"summary":"Test","claims":[],"evidence":[],"risks":[],"confidence":75}',
+        created_at: "2026-08-13T00:00:00Z",
+      },
+    ];
+    renderPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "Select completed task" }));
+
+    expect(screen.getByTestId("research-result-card")).toBeInTheDocument();
   });
 });

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type { TaskStatus } from "@/lib/desktop-api/agent";
 
-const AGENT_KEYS = {
+export const AGENT_KEYS = {
   all: ["agent"] as const,
   tasks: (workspaceId: string) => [...AGENT_KEYS.all, "tasks", workspaceId] as const,
   task: (id: string) => [...AGENT_KEYS.all, "task", id] as const,

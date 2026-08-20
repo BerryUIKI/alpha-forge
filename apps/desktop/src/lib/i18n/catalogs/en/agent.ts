@@ -38,6 +38,25 @@ export const agent = {
   cancellingTask: "Cancelling...",
   taskStartFailed: "Unable to start this task. It remains queued; retry when ready.",
   taskQueueFailed: "Unable to queue this task. Please try again.",
+
+  // Task failure & progress
+  taskFailureReason: "Failure reason",
+  taskCompleted: "Research completed",
+  taskProgressPrefix: "Agent",
+  taskCancelledMessage: "Task was cancelled",
+
+  // Structured research results
+  researchSummary: "Summary",
+  researchClaims: "Key Claims",
+  researchEvidence: "Evidence",
+  researchRisks: "Risks",
+  researchConfidence: "Confidence",
+  noResultsAvailable: "No structured results available",
+  viewResearchResults: "View Results",
+
+  // App readiness
+  appInitializing: "Initializing...",
+  appInitFailed: "Application failed to initialize",
 } as const;
 
 export type AgentKey = keyof typeof agent;

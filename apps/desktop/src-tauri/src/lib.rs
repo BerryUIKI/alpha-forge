@@ -16,7 +16,7 @@ pub mod telemetry;
 pub mod windows;
 
 use app::state::AppState;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -48,8 +48,15 @@ pub fn run() {
                             }
                             handle.manage(state);
                             info!("app state initialized");
+
+                            if let Err(e) = handle.emit("app:ready", ()) {
+                                tracing::error!("failed to emit app:ready event: {}", e);
+                            }
                         }
                         Err(error) => {
+                            if let Err(e) = handle.emit("app:init-failed", error.code()) {
+                                tracing::error!("failed to emit app:init-failed event: {}", e);
+                            }
                             tracing::error!(
                                 error_code = error.code(),
                                 "app state initialization failed"
@@ -57,6 +64,9 @@ pub fn run() {
                         }
                     },
                     Err(error) => {
+                        if let Err(e) = handle.emit("app:init-failed", error.code()) {
+                            tracing::error!("failed to emit app:init-failed event: {}", e);
+                        }
                         tracing::error!(
                             error_code = error.code(),
                             "database initialization failed"

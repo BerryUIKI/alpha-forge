@@ -6,12 +6,18 @@
  * message in the chat input creates and auto-starts a research task; the
  * created task is shown in the task-detail card below.
  *
+ * S1 additions:
+ * - App readiness gating (prevents commands from racing AppState init)
+ * - Real-time task event streaming via Tauri events
+ * - Failure context display (shows why a task failed)
+ * - Structured research result rendering (ResearchResultCard)
+ *
  * Design: docs/GLOBAL_SEARCH_AGENT_CHAT.md
  *
- * @version GUI-M5
+ * @version GUI-M5 / S1
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Bot, X, Play, Square, Send } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -21,13 +27,17 @@ import { AgentTaskList } from "@/features/agent/components/AgentTaskList";
 import { CreateAgentTask } from "@/features/agent/components/CreateAgentTask";
 import {
   useAgentTask,
+  useTaskEvents,
   useRunAgentTask,
   useCancelAgentTask,
   useCreateAgentTask,
 } from "@/features/agent/hooks/useAgentTasks";
+import { useTaskEventStream } from "@/features/agent/hooks/useTaskEventStream";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
+import { useAppReady } from "@/hooks/useAppReady";
 import { AgentConfigGuide } from "@/features/agent/components/AgentConfigGuide";
 import { TaskStatusBadge } from "@/features/agent/components/TaskStatusBadge";
+import { ResearchResultCard } from "@/features/agent/components/ResearchResultCard";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useLocale } from "@/lib/i18n/useLocale";
 
@@ -104,6 +114,7 @@ function AgentInput({ onSend }: { onSend: (text: string) => void }) {
 
 export function AgentPanel() {
   const { t } = useLocale();
+  const { isReady, initError } = useAppReady();
   const { isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -118,6 +129,31 @@ export function AgentPanel() {
   const cancelTask = useCancelAgentTask();
   const createTask = useCreateAgentTask();
   const { data: selectedTask } = useAgentTask(selectedTaskId || "");
+
+  // S1: Real-time event streaming from Rust backend
+  const { progressMessages } = useTaskEventStream();
+
+  // S1: Fetch persisted task events for selected task (failure reason, completion output)
+  const { data: taskEvents } = useTaskEvents(selectedTaskId || "");
+
+  // S1: Derive failure reason and completion output from persisted events
+  const failureReason = useMemo(() => {
+    if (!selectedTask || selectedTask.status !== "failed" || !taskEvents) return null;
+    const failedEvent = taskEvents.find((e) => e.event_type === "task_failed");
+    return failedEvent?.payload || null;
+  }, [selectedTask, taskEvents]);
+
+  const completionPayload = useMemo(() => {
+    if (!selectedTask || selectedTask.status !== "completed" || !taskEvents) return null;
+    const completedEvent = taskEvents.find((e) => e.event_type === "task_completed");
+    return completedEvent?.payload || null;
+  }, [selectedTask, taskEvents]);
+
+  // S1: Filter real-time progress messages for the selected running task
+  const selectedTaskProgress = useMemo(() => {
+    if (!selectedTaskId) return [];
+    return progressMessages.filter((m) => m.taskId === selectedTaskId);
+  }, [selectedTaskId, progressMessages]);
 
   const appendMessage = (message: ConversationMessage) => {
     setConversation((prev) => [...prev, message]);
@@ -169,6 +205,25 @@ export function AgentPanel() {
     );
   };
 
+  // S1: App not ready yet (AppState still initializing)
+  if (!isReady) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+        <LoadingSpinner className="mb-4" />
+        <p className="text-sm text-muted-foreground">{t("appInitializing")}</p>
+      </div>
+    );
+  }
+
+  // S1: App initialization failed
+  if (initError) {
+    return (
+      <div className="p-4">
+        <ErrorState message={t("appInitFailed")} onRetry={() => window.location.reload()} />
+      </div>
+    );
+  }
+
   // Loading state
   if (workspacesLoading) {
     return <LoadingSpinner className="p-8" />;
@@ -207,6 +262,18 @@ export function AgentPanel() {
         {conversation.map((message) => (
           <ConversationItem key={message.id} message={message} />
         ))}
+
+        {/* S1: Real-time progress messages for selected running task */}
+        {selectedTask?.status === "running" && selectedTaskProgress.length > 0 && (
+          <div className="space-y-1">
+            {selectedTaskProgress.map((pm) => (
+              <ConversationItem
+                key={pm.id}
+                message={{ id: pm.id, role: "info", text: `${t("taskProgressPrefix")}: ${pm.message}` }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Create Task Section */}
         <div className="pt-2">
@@ -273,6 +340,22 @@ export function AgentPanel() {
                 </p>
               </div>
             )}
+
+            {/* S1: Failure context — show why the task failed */}
+            {selectedTask.status === "failed" && failureReason && (
+              <div className="mb-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive" role="alert">
+                <p className="mb-0.5 font-semibold">{t("taskFailureReason")}</p>
+                <p>{failureReason}</p>
+              </div>
+            )}
+
+            {/* S1: Structured research results — show parsed completion output */}
+            {selectedTask.status === "completed" && (
+              <div className="mb-2">
+                <ResearchResultCard payload={completionPayload} />
+              </div>
+            )}
+
             <div className="flex gap-2">
               {(selectedTask.status === "created" || selectedTask.status === "queued") && (
                 <button
