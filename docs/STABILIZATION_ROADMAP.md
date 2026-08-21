@@ -118,14 +118,18 @@ Configure credential
   - `desktop-api/thesis.ts` with strict `InvestmentThesisSchema`, `ThesisEvidenceSchema`, `ThesisConfidenceSnapshotSchema` + runtime `.parse()`.
   - `desktop-api/knowledge-graph.ts` with strict `KnowledgeEntitySchema`, `KnowledgeRelationshipSchema`, `ThesisEntityLinkSchema` + runtime `.parse()`.
   - All UI consumers (`ResearchDocumentsSection`, `ThesisDetail`, `KnowledgeGraphPanel`, `KnowledgePage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
-- **Portfolio & Financial (Phase 2.4)**: In progress.
+- **Portfolio & Financial (Phase 2.4 Complete)**:
+  - `commands/portfolio.rs` with `PortfolioAccountDto`, `PositionDto`, `PortfolioTransactionDto`, `PortfolioAllocationDto`, `ConcentrationRiskDto`, `ThemeExposureDto`, `ThesisAlignmentDto`, `PortfolioReviewDto` (`camelCase`) + Rust roundtrip tests.
+  - `desktop-api/portfolio.ts` with strict `PortfolioAccountSchema`, `PositionSchema`, `TransactionTypeSchema`, `PortfolioTransactionSchema`, `PortfolioAllocationSchema`, `ConcentrationSeveritySchema`, `ConcentrationRiskSchema`, `ThemeExposureSchema`, `ThesisAlignmentSchema`, `PortfolioReviewSchema` + runtime `.parse()`.
+  - `desktop-api/financial.ts` with strict Zod validation across all 53 Wealthfolio service and CRUD commands + rejection tests.
+  - All UI consumers and tests aligned with validated schemas.
 
 ### Acceptance criteria
 
 - [x] Automated static command registration parity checker (`scripts/check-ipc-registration.mjs`).
-- [ ] TypeScript and Rust share checked fixtures for every repaired command family.
-- [ ] No UI relies on TypeScript-only assertions for runtime response shape.
-- [ ] Error responses preserve stable codes without leaking raw internal details.
+- [x] TypeScript and Rust share checked fixtures for every repaired command family.
+- [x] No UI relies on TypeScript-only assertions for runtime response shape.
+- [x] Error responses preserve stable codes without leaking raw internal details.
 
 ### Scope
 
