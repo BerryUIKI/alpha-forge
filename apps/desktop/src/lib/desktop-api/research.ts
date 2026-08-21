@@ -1,41 +1,255 @@
 import { invoke } from "@tauri-apps/api/core";
+import { z } from "zod";
 
-export interface ResearchProject { id: string; workspace_id: string; title: string; description: string | null; status: "active" | "archived" | "completed"; created_at: string; updated_at: string; }
-export interface ResearchDocument { id: string; project_id: string; document_type: "pdf" | "web_page" | "note" | "report"; title: string; content: string | null; source_url: string | null; file_path: string | null; created_at: string; updated_at: string; }
-export interface ResearchSource { id: string; document_id: string; url: string | null; title: string | null; retrieved_at: string | null; created_at: string; }
-export interface ResearchNote { id: string; document_id: string; content: string; created_at: string; updated_at: string; }
-export interface ResearchReport { id: string; project_id: string; title: string; content: string; report_type: "analysis" | "summary" | "thesis" | "recommendation"; created_at: string; updated_at: string; }
-export interface ResearchSearchMatch { ordinal: number; content: string; score: number; }
+export const ProjectStatusSchema = z.enum(["active", "archived", "completed"]);
+export type ProjectStatus = z.infer<typeof ProjectStatusSchema>;
+
+export const ResearchProjectSchema = z
+  .object({
+    id: z.string().min(1),
+    workspaceId: z.string().min(1),
+    title: z.string().min(1),
+    description: z.string().nullable(),
+    status: ProjectStatusSchema,
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+  })
+  .strict();
+export type ResearchProject = z.infer<typeof ResearchProjectSchema>;
+
+export const DocumentTypeSchema = z.enum(["pdf", "web_page", "note", "report"]);
+export type DocumentType = z.infer<typeof DocumentTypeSchema>;
+
+export const ResearchDocumentSchema = z
+  .object({
+    id: z.string().min(1),
+    projectId: z.string().min(1),
+    documentType: DocumentTypeSchema,
+    title: z.string().min(1),
+    content: z.string().nullable(),
+    sourceUrl: z.string().nullable(),
+    filePath: z.string().nullable(),
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+  })
+  .strict();
+export type ResearchDocument = z.infer<typeof ResearchDocumentSchema>;
+
+export const ResearchSourceSchema = z
+  .object({
+    id: z.string().min(1),
+    documentId: z.string().min(1),
+    url: z.string().nullable(),
+    title: z.string().nullable(),
+    retrievedAt: z.string().nullable(),
+    createdAt: z.string().min(1),
+  })
+  .strict();
+export type ResearchSource = z.infer<typeof ResearchSourceSchema>;
+
+export const ResearchNoteSchema = z
+  .object({
+    id: z.string().min(1),
+    documentId: z.string().min(1),
+    content: z.string(),
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+  })
+  .strict();
+export type ResearchNote = z.infer<typeof ResearchNoteSchema>;
+
+export const ReportTypeSchema = z.enum(["analysis", "summary", "thesis", "recommendation"]);
+export type ReportType = z.infer<typeof ReportTypeSchema>;
+
+export const ResearchReportSchema = z
+  .object({
+    id: z.string().min(1),
+    projectId: z.string().min(1),
+    title: z.string().min(1),
+    content: z.string(),
+    reportType: ReportTypeSchema,
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+  })
+  .strict();
+export type ResearchReport = z.infer<typeof ResearchReportSchema>;
+
+export const ResearchSearchMatchSchema = z
+  .object({
+    ordinal: z.number().int().nonnegative(),
+    content: z.string(),
+    score: z.number().int().nonnegative(),
+  })
+  .strict();
+export type ResearchSearchMatch = z.infer<typeof ResearchSearchMatchSchema>;
+
+const VoidResponseSchema = z.union([z.null(), z.undefined()]);
 
 // Project commands
-export function createResearchProject(workspaceId: string, title: string, description?: string): Promise<ResearchProject> { return invoke("create_research_project", { workspaceId, title, description: description || null }); }
-export function getResearchProject(id: string): Promise<ResearchProject> { return invoke("get_research_project", { id }); }
-export function listResearchProjects(workspaceId: string): Promise<ResearchProject[]> { return invoke("list_research_projects", { workspaceId }); }
-export function archiveResearchProject(id: string): Promise<ResearchProject> { return invoke("archive_research_project", { id }); }
-export function completeResearchProject(id: string): Promise<ResearchProject> { return invoke("complete_research_project", { id }); }
-export function deleteResearchProject(id: string): Promise<void> { return invoke("delete_research_project", { id }); }
+export async function createResearchProject(
+  workspaceId: string,
+  title: string,
+  description?: string
+): Promise<ResearchProject> {
+  const response: unknown = await invoke("create_research_project", {
+    workspaceId,
+    title,
+    description: description || null,
+  });
+  return ResearchProjectSchema.parse(response);
+}
+
+export async function getResearchProject(id: string): Promise<ResearchProject | null> {
+  const response: unknown = await invoke("get_research_project", { id });
+  return z.nullable(ResearchProjectSchema).parse(response);
+}
+
+export async function listResearchProjects(workspaceId: string): Promise<ResearchProject[]> {
+  const response: unknown = await invoke("list_research_projects", { workspaceId });
+  return z.array(ResearchProjectSchema).parse(response);
+}
+
+export async function archiveResearchProject(id: string): Promise<ResearchProject> {
+  const response: unknown = await invoke("archive_research_project", { id });
+  return ResearchProjectSchema.parse(response);
+}
+
+export async function completeResearchProject(id: string): Promise<ResearchProject> {
+  const response: unknown = await invoke("complete_research_project", { id });
+  return ResearchProjectSchema.parse(response);
+}
+
+export async function deleteResearchProject(id: string): Promise<void> {
+  const response: unknown = await invoke("delete_research_project", { id });
+  VoidResponseSchema.parse(response);
+}
 
 // Document commands
-export function createResearchDocument(projectId: string, title: string, content?: string): Promise<ResearchDocument> { return invoke("create_research_document", { projectId, documentType: "note", title, content: content || null, sourceUrl: null, filePath: null }); }
-export function getResearchDocument(id: string): Promise<ResearchDocument> { return invoke("get_research_document", { id }); }
-export function listResearchDocuments(projectId: string): Promise<ResearchDocument[]> { return invoke("list_research_documents", { projectId }); }
-export function deleteResearchDocument(id: string): Promise<void> { return invoke("delete_research_document", { id }); }
-export function importResearchPdf(projectId: string): Promise<ResearchDocument | null> { return invoke("import_research_pdf", { projectId }); }
-export function importResearchWebPage(projectId: string, url: string): Promise<ResearchDocument> { return invoke("import_research_web_page", { projectId, url }); }
-export function searchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("search_research_document", { id, query }); }
-export function semanticSearchResearchDocument(id: string, query: string): Promise<ResearchSearchMatch[]> { return invoke("semantic_search_research_document", { id, query }); }
+export async function createResearchDocument(
+  projectId: string,
+  title: string,
+  content?: string
+): Promise<ResearchDocument> {
+  const response: unknown = await invoke("create_research_document", {
+    projectId,
+    documentType: "note",
+    title,
+    content: content || null,
+    sourceUrl: null,
+    filePath: null,
+  });
+  return ResearchDocumentSchema.parse(response);
+}
+
+export async function getResearchDocument(id: string): Promise<ResearchDocument | null> {
+  const response: unknown = await invoke("get_research_document", { id });
+  return z.nullable(ResearchDocumentSchema).parse(response);
+}
+
+export async function listResearchDocuments(projectId: string): Promise<ResearchDocument[]> {
+  const response: unknown = await invoke("list_research_documents", { projectId });
+  return z.array(ResearchDocumentSchema).parse(response);
+}
+
+export async function deleteResearchDocument(id: string): Promise<void> {
+  const response: unknown = await invoke("delete_research_document", { id });
+  VoidResponseSchema.parse(response);
+}
+
+export async function importResearchPdf(projectId: string): Promise<ResearchDocument | null> {
+  const response: unknown = await invoke("import_research_pdf", { projectId });
+  return z.nullable(ResearchDocumentSchema).parse(response);
+}
+
+export async function importResearchWebPage(
+  projectId: string,
+  url: string
+): Promise<ResearchDocument> {
+  const response: unknown = await invoke("import_research_web_page", { projectId, url });
+  return ResearchDocumentSchema.parse(response);
+}
+
+export async function searchResearchDocument(
+  id: string,
+  query: string
+): Promise<ResearchSearchMatch[]> {
+  const response: unknown = await invoke("search_research_document", { id, query });
+  return z.array(ResearchSearchMatchSchema).parse(response);
+}
+
+export async function semanticSearchResearchDocument(
+  id: string,
+  query: string
+): Promise<ResearchSearchMatch[]> {
+  const response: unknown = await invoke("semantic_search_research_document", { id, query });
+  return z.array(ResearchSearchMatchSchema).parse(response);
+}
 
 // Source commands
-export function createResearchSource(documentId: string, url?: string, title?: string): Promise<ResearchSource> { return invoke("create_research_source", { documentId, url: url || null, title: title || null }); }
-export function listResearchSources(documentId: string): Promise<ResearchSource[]> { return invoke("list_research_sources", { documentId }); }
+export async function createResearchSource(
+  documentId: string,
+  url?: string,
+  title?: string
+): Promise<ResearchSource> {
+  const response: unknown = await invoke("create_research_source", {
+    documentId,
+    url: url || null,
+    title: title || null,
+  });
+  return ResearchSourceSchema.parse(response);
+}
+
+export async function listResearchSources(documentId: string): Promise<ResearchSource[]> {
+  const response: unknown = await invoke("list_research_sources", { documentId });
+  return z.array(ResearchSourceSchema).parse(response);
+}
 
 // Note commands
-export function createResearchNote(documentId: string, content: string): Promise<ResearchNote> { return invoke("create_research_note", { documentId, content }); }
-export function listResearchNotes(documentId: string): Promise<ResearchNote[]> { return invoke("list_research_notes", { documentId }); }
-export function deleteResearchNote(id: string): Promise<void> { return invoke("delete_research_note", { id }); }
+export async function createResearchNote(
+  documentId: string,
+  content: string
+): Promise<ResearchNote> {
+  const response: unknown = await invoke("create_research_note", { documentId, content });
+  return ResearchNoteSchema.parse(response);
+}
+
+export async function listResearchNotes(documentId: string): Promise<ResearchNote[]> {
+  const response: unknown = await invoke("list_research_notes", { documentId });
+  return z.array(ResearchNoteSchema).parse(response);
+}
+
+export async function deleteResearchNote(id: string): Promise<void> {
+  const response: unknown = await invoke("delete_research_note", { id });
+  VoidResponseSchema.parse(response);
+}
 
 // Report commands
-export function createResearchReport(projectId: string, title: string, content: string, reportType: ResearchReport["report_type"] = "analysis"): Promise<ResearchReport> { return invoke("create_research_report", { projectId, title, content, reportType }); }
-export function getResearchReport(id: string): Promise<ResearchReport> { return invoke("get_research_report", { id }); }
-export function listResearchReports(projectId: string): Promise<ResearchReport[]> { return invoke("list_research_reports", { projectId }); }
-export function deleteResearchReport(id: string): Promise<void> { return invoke("delete_research_report", { id }); }
+export async function createResearchReport(
+  projectId: string,
+  title: string,
+  content: string,
+  reportType: ReportType = "analysis"
+): Promise<ResearchReport> {
+  const response: unknown = await invoke("create_research_report", {
+    projectId,
+    title,
+    content,
+    reportType,
+  });
+  return ResearchReportSchema.parse(response);
+}
+
+export async function getResearchReport(id: string): Promise<ResearchReport | null> {
+  const response: unknown = await invoke("get_research_report", { id });
+  return z.nullable(ResearchReportSchema).parse(response);
+}
+
+export async function listResearchReports(projectId: string): Promise<ResearchReport[]> {
+  const response: unknown = await invoke("list_research_reports", { projectId });
+  return z.array(ResearchReportSchema).parse(response);
+}
+
+export async function deleteResearchReport(id: string): Promise<void> {
+  const response: unknown = await invoke("delete_research_report", { id });
+  VoidResponseSchema.parse(response);
+}

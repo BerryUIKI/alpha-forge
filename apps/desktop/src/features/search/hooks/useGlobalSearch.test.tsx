@@ -43,36 +43,36 @@ const mocks = desktopApi as unknown as {
 const projects: ResearchProject[] = [
   {
     id: "project-1",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "AI Infrastructure",
     description: "Demand for compute",
     status: "active",
-    created_at: "2026-08-01T00:00:00Z",
-    updated_at: "2026-08-01T00:00:00Z",
+    createdAt: "2026-08-01T00:00:00Z",
+    updatedAt: "2026-08-01T00:00:00Z",
   },
   {
     id: "project-2",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Semiconductors",
     description: null,
     status: "active",
-    created_at: "2026-08-01T00:00:00Z",
-    updated_at: "2026-08-01T00:00:00Z",
+    createdAt: "2026-08-01T00:00:00Z",
+    updatedAt: "2026-08-01T00:00:00Z",
   },
 ];
 
 const theses: InvestmentThesis[] = [
   {
     id: "thesis-1",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "GPU demand stays strong",
     thesis: "Hyperscaler capex continues to grow",
     confidence: 70,
     status: "active",
-    validation_date: null,
+    validationDate: null,
     outcome: null,
-    created_at: "2026-08-01T00:00:00Z",
-    updated_at: "2026-08-01T00:00:00Z",
+    createdAt: "2026-08-01T00:00:00Z",
+    updatedAt: "2026-08-01T00:00:00Z",
   },
 ];
 

@@ -23,7 +23,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const [error, setError] = useState("");
   const evidenceQuery = useThesisEvidence(thesis.id);
   const confidenceHistory = useThesisConfidenceHistory(thesis.id);
-  const knowledgeEntities = useKnowledgeEntities(thesis.workspace_id);
+  const knowledgeEntities = useKnowledgeEntities(thesis.workspaceId);
   const knowledgeLinks = useThesisKnowledgeLinks(thesis.id);
   const linkKnowledgeEntity = useLinkThesisKnowledgeEntity();
   const [knowledgeEntityId, setKnowledgeEntityId] = useState("");
@@ -79,7 +79,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
             {confidenceHistory.data?.map((snapshot) => (
               <li key={snapshot.id} className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
                 <span className="font-medium">{snapshot.confidence}%</span>
-                <time className="text-muted-foreground">{new Date(snapshot.recorded_at).toLocaleString()}</time>
+                <time className="text-muted-foreground">{new Date(snapshot.recordedAt).toLocaleString()}</time>
               </li>
             ))}
           </ol>
@@ -90,14 +90,14 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
         <div className="mt-2 flex gap-2">
           <select value={knowledgeEntityId} onChange={(event) => setKnowledgeEntityId(event.target.value)} className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm">
             <option value="">{t("linkEntity")}</option>
-            {knowledgeEntities.data?.filter((entity) => !knowledgeLinks.data?.some((link) => link.entity_id === entity.id)).map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
+            {knowledgeEntities.data?.filter((entity) => !knowledgeLinks.data?.some((link) => link.entityId === entity.id)).map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
           </select>
           <button onClick={() => run(async () => { if (!knowledgeEntityId) throw new Error(t("selectEntityToLink")); await linkKnowledgeEntity.mutateAsync({ thesisId: thesis.id, entityId: knowledgeEntityId }); setKnowledgeEntityId(""); })} className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent">
             {t("link")}
           </button>
         </div>
         <ul className="mt-3 space-y-1 text-sm">
-          {knowledgeLinks.data?.map((link) => <li key={link.entity_id} className="rounded bg-muted px-2 py-1">{knowledgeEntities.data?.find((entity) => entity.id === link.entity_id)?.name ?? link.entity_id}</li>)}
+          {knowledgeLinks.data?.map((link) => <li key={link.entityId} className="rounded bg-muted px-2 py-1">{knowledgeEntities.data?.find((entity) => entity.id === link.entityId)?.name ?? link.entityId}</li>)}
         </ul>
       </div>
       {thesis.status === "validating" && (
@@ -131,7 +131,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
                 <span className={item.direction === "supporting" ? "text-green-600" : "text-destructive"}>{item.direction}</span>
                 <p className="flex-1">
                   {item.evidence}
-                  {item.source_id && <span className="block text-xs text-muted-foreground">{t("sourceLabel")}{item.source_id}</span>}
+                  {item.sourceId && <span className="block text-xs text-muted-foreground">{t("sourceLabel")}{item.sourceId}</span>}
                 </p>
                 <button onClick={() => run(() => deleteEvidence.mutateAsync({ id: item.id, thesisId: thesis.id }))} aria-label={t("deleteEvidence")} className="text-muted-foreground hover:text-destructive">
                   <Trash2 className="h-4 w-4" />

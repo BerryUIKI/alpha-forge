@@ -5,6 +5,7 @@ import {
   addThesisEvidence,
   completeThesisValidation,
   createThesis,
+  getThesis,
   listTheses,
   listThesisConfidenceHistory,
   updateThesisConfidence,
@@ -18,13 +19,42 @@ describe("thesis API", () => {
   beforeEach(() => mockInvoke.mockReset());
 
   it("creates a thesis with the complete input", async () => {
-    const thesis = { id: "thesis-1", title: "Demand remains durable" };
+    const thesis = {
+      id: "thesis-1",
+      workspaceId: "workspace-1",
+      title: "Demand remains durable",
+      thesis: "Demand exceeds supply.",
+      confidence: 70,
+      status: "draft",
+      validationDate: null,
+      outcome: null,
+      createdAt: "2026-08-21T10:00:00Z",
+      updatedAt: "2026-08-21T10:00:00Z",
+    };
     mockInvoke.mockResolvedValueOnce(thesis);
 
-    await expect(createThesis({ workspaceId: "workspace-1", title: thesis.title, thesis: "Demand exceeds supply.", confidence: 70 })).resolves.toEqual(thesis);
+    await expect(
+      createThesis({
+        workspaceId: "workspace-1",
+        title: thesis.title,
+        thesis: "Demand exceeds supply.",
+        confidence: 70,
+      })
+    ).resolves.toEqual(thesis);
     expect(mockInvoke).toHaveBeenCalledWith("create_thesis", {
-      workspaceId: "workspace-1", title: thesis.title, thesis: "Demand exceeds supply.", confidence: 70,
+      workspaceId: "workspace-1",
+      title: thesis.title,
+      thesis: "Demand exceeds supply.",
+      confidence: 70,
     });
+  });
+
+  it("rejects malformed thesis response", async () => {
+    mockInvoke.mockResolvedValueOnce({
+      id: "thesis-1",
+      workspace_id: "workspace-1", // snake_case is invalid
+    });
+    await expect(getThesis("thesis-1")).rejects.toThrow();
   });
 
   it("lists theses for the requested workspace", async () => {
@@ -34,7 +64,19 @@ describe("thesis API", () => {
   });
 
   it("updates confidence and starts lifecycle actions", async () => {
-    mockInvoke.mockResolvedValue({ id: "thesis-1" });
+    const validThesis = {
+      id: "thesis-1",
+      workspaceId: "workspace-1",
+      title: "Growth thesis",
+      thesis: "Rapid acceleration",
+      confidence: 80,
+      status: "active",
+      validationDate: null,
+      outcome: null,
+      createdAt: "2026-08-21T10:00:00Z",
+      updatedAt: "2026-08-21T10:00:00Z",
+    };
+    mockInvoke.mockResolvedValue(validThesis);
     await updateThesisConfidence("thesis-1", 80);
     await activateThesis("thesis-1");
     await completeThesisValidation("thesis-1", "Revenue growth confirmed", true);
@@ -44,18 +86,37 @@ describe("thesis API", () => {
   });
 
   it("adds evidence with an optional source", async () => {
-    mockInvoke.mockResolvedValueOnce({ id: "evidence-1" });
-    await addThesisEvidence("thesis-1", "contradicting", "Margins are contracting", "source-1");
+    const validEvidence = {
+      id: "evidence-1",
+      thesisId: "thesis-1",
+      direction: "contradicting",
+      evidence: "Margins are contracting",
+      sourceId: "source-1",
+      createdAt: "2026-08-21T10:00:00Z",
+    };
+    mockInvoke.mockResolvedValueOnce(validEvidence);
+    const result = await addThesisEvidence("thesis-1", "contradicting", "Margins are contracting", "source-1");
+    expect(result).toEqual(validEvidence);
     expect(mockInvoke).toHaveBeenCalledWith("add_thesis_evidence", {
-      thesisId: "thesis-1", direction: "contradicting", evidence: "Margins are contracting", sourceId: "source-1",
+      thesisId: "thesis-1",
+      direction: "contradicting",
+      evidence: "Margins are contracting",
+      sourceId: "source-1",
     });
   });
 
   it("lists confidence history for a thesis", async () => {
-    mockInvoke.mockResolvedValueOnce([]);
-    await expect(listThesisConfidenceHistory("thesis-1")).resolves.toEqual([]);
+    const snapshot = {
+      id: "snap-1",
+      thesisId: "thesis-1",
+      confidence: 85,
+      recordedAt: "2026-08-21T10:00:00Z",
+    };
+    mockInvoke.mockResolvedValueOnce([snapshot]);
+    await expect(listThesisConfidenceHistory("thesis-1")).resolves.toEqual([snapshot]);
     expect(mockInvoke).toHaveBeenCalledWith("list_thesis_confidence_history", {
       thesisId: "thesis-1",
     });
   });
 });
+

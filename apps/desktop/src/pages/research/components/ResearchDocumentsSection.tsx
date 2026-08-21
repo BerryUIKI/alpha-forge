@@ -203,7 +203,7 @@ export function ResearchDocumentsSection({
                   <p className="font-medium">
                     {item.title}{" "}
                     <span className="font-normal text-muted-foreground">
-                      ({item.report_type})
+                      ({item.reportType})
                     </span>
                   </p>
                   <p>{item.content}</p>

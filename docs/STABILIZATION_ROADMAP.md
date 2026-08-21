@@ -110,7 +110,14 @@ Configure credential
   - `desktop-api/artifacts.ts` with strict `ArtifactSchema`, `ArtifactStatusSchema` + runtime `.parse()`.
   - `commands/plugins.rs` updated to return `ArtifactDto`; `desktop-api/plugins.ts` aligned with `ArtifactSchema`.
   - All UI consumers (`AgentTaskList`, `AgentPanel`, `ArtifactViewer`, `ArtifactWindowPage`, `ArtifactsPage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
-- **Research, Thesis & KnowledgeGraph (Phase 2.3)**: In progress.
+- **Research, Thesis & KnowledgeGraph (Phase 2.3 Complete)**:
+  - `commands/research.rs` with `ResearchProjectDto`, `ResearchDocumentDto`, `ResearchSourceDto`, `ResearchNoteDto`, `ResearchReportDto`, `ResearchSearchMatchDto` (`camelCase`) + Rust roundtrip tests.
+  - `commands/thesis.rs` with `InvestmentThesisDto`, `ThesisEvidenceDto`, `ThesisConfidenceSnapshotDto` (`camelCase`) + Rust roundtrip tests.
+  - `commands/knowledge_graph.rs` with `KnowledgeEntityDto`, `KnowledgeRelationshipDto`, `ThesisEntityLinkDto` (`camelCase`) + Rust roundtrip tests.
+  - `desktop-api/research.ts` with strict `ResearchProjectSchema`, `ResearchDocumentSchema`, `ResearchSourceSchema`, `ResearchNoteSchema`, `ResearchReportSchema`, `ResearchSearchMatchSchema` + runtime `.parse()`.
+  - `desktop-api/thesis.ts` with strict `InvestmentThesisSchema`, `ThesisEvidenceSchema`, `ThesisConfidenceSnapshotSchema` + runtime `.parse()`.
+  - `desktop-api/knowledge-graph.ts` with strict `KnowledgeEntitySchema`, `KnowledgeRelationshipSchema`, `ThesisEntityLinkSchema` + runtime `.parse()`.
+  - All UI consumers (`ResearchDocumentsSection`, `ThesisDetail`, `KnowledgeGraphPanel`, `KnowledgePage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
 - **Portfolio & Financial (Phase 2.4)**: In progress.
 
 ### Acceptance criteria
