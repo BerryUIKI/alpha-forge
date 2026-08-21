@@ -131,7 +131,7 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
         <ul className="space-y-1 text-sm">
           {entities.data?.map((entity) => (
             <li key={entity.id} className="rounded bg-muted px-2 py-1">
-              <span className="text-muted-foreground">{entity.entity_type}: </span>
+              <span className="text-muted-foreground">{entity.entityType}: </span>
               {entity.name}
             </li>
           ))}
@@ -139,7 +139,7 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
         <ul className="space-y-1 text-sm">
           {relationships.data?.map((relationship) => (
             <li key={relationship.id} className="rounded bg-muted px-2 py-1">
-              {entityName(relationship.source_entity_id)} <span className="text-muted-foreground">{relationship.relationship_type}</span> {entityName(relationship.target_entity_id)}
+              {entityName(relationship.sourceEntityId)} <span className="text-muted-foreground">{relationship.relationshipType}</span> {entityName(relationship.targetEntityId)}
             </li>
           ))}
         </ul>

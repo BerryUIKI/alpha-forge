@@ -110,7 +110,7 @@ export function useDashboardActivity(workspaceId: string) {
           type: "research" as const,
           title: "Research",
           description: project.title,
-          timestamp: formatRelativeTime(project.created_at),
+          timestamp: formatRelativeTime(project.createdAt),
         })),
         // Theses
         ...theses.map((thesis) => ({
@@ -118,7 +118,7 @@ export function useDashboardActivity(workspaceId: string) {
           type: "thesis" as const,
           title: "Thesis",
           description: thesis.title,
-          timestamp: formatRelativeTime(thesis.created_at),
+          timestamp: formatRelativeTime(thesis.createdAt),
         })),
       ];
 

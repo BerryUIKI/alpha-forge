@@ -121,8 +121,8 @@ export function useGlobalSearch(query: string) {
         section: "documents",
         id: document.id,
         title: document.title,
-        subtitle: document.project_id,
-        to: `/research?workspace=${workspaceId}&project=${document.project_id}`,
+        subtitle: document.projectId,
+        to: `/research?workspace=${workspaceId}&project=${document.projectId}`,
       }));
 
     const reportEntries: SearchEntry[] = reports
@@ -132,8 +132,8 @@ export function useGlobalSearch(query: string) {
         section: "reports",
         id: report.id,
         title: report.title,
-        subtitle: report.project_id,
-        to: `/research?workspace=${workspaceId}&project=${report.project_id}`,
+        subtitle: report.projectId,
+        to: `/research?workspace=${workspaceId}&project=${report.projectId}`,
       }));
 
     const thesisEntries: SearchEntry[] = (theses.data ?? [])
@@ -152,7 +152,7 @@ export function useGlobalSearch(query: string) {
         section: "knowledge",
         id: entity.id,
         title: entity.name,
-        subtitle: entity.entity_type,
+        subtitle: entity.entityType,
         to: "/knowledge",
       }));
 

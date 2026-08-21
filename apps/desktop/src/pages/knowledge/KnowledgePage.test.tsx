@@ -86,21 +86,21 @@ describe("KnowledgePage", () => {
     vi.mocked(desktopApi.knowledgeGraph.listKnowledgeEntities).mockResolvedValue([
       {
         id: "e1",
-        workspace_id: "ws-1",
-        entity_type: "company",
+        workspaceId: "ws-1",
+        entityType: "company",
         name: "NVIDIA",
         description: "AI chip company",
-        created_at: "2026-01-01T00:00:00Z",
-        updated_at: "2026-01-01T00:00:00Z",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
       },
       {
         id: "e2",
-        workspace_id: "ws-1",
-        entity_type: "technology",
+        workspaceId: "ws-1",
+        entityType: "technology",
         name: "CUDA",
         description: "Parallel computing platform",
-        created_at: "2026-01-02T00:00:00Z",
-        updated_at: "2026-01-02T00:00:00Z",
+        createdAt: "2026-01-02T00:00:00Z",
+        updatedAt: "2026-01-02T00:00:00Z",
       },
     ]);
     renderPage();

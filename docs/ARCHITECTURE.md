@@ -169,7 +169,7 @@ The application registers command families for system/settings, credentials, wor
 Current integration status:
 
 - **Agent Runtime (S1 Complete)**: End-to-end task creation, background execution, real-time event streaming, cancellation, failure surfacing, and structured research output rendering are fully accepted.
-- **IPC Normalization (S2 Active)**: `Workspace`, `Settings`, `Credentials`, `System`, `Options`, `Agent`, `Artifacts`, and `Plugins` commands are normalized to `camelCase` DTOs with strict Zod schema validation; remaining families (`Research`, `Thesis`, `KnowledgeGraph`, `Portfolio`, `Financial`) are in progress.
+- **IPC Normalization (S2 Active)**: `Workspace`, `Settings`, `Credentials`, `System`, `Options`, `Agent`, `Artifacts`, `Plugins`, `Research`, `Thesis`, and `KnowledgeGraph` commands are normalized to `camelCase` DTOs with strict Zod schema validation; remaining families (`Portfolio`, `Financial`) are in progress.
 - **Research, Thesis, Knowledge Graph, Portfolio**: Functional UI surfaces connected to SQLx persistence.
 - **Artifacts & Plugins**: Isolated Artifact-window route (#88) and internal plugin settings management (#99) are operational.
 - **Goose Scaffolding**: Registered but disabled until M10 entry gate.

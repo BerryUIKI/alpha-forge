@@ -167,8 +167,8 @@ export function KnowledgePage() {
               className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
             >
               <div className="mb-2 flex items-center gap-2">
-                <span className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase ${ENTITY_TYPE_COLORS[entity.entity_type]}`}>
-                  {ENTITY_TYPE_LABELS[entity.entity_type]}
+                <span className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase ${ENTITY_TYPE_COLORS[entity.entityType]}`}>
+                  {ENTITY_TYPE_LABELS[entity.entityType]}
                 </span>
               </div>
               <h3 className="font-semibold">{entity.name}</h3>
@@ -176,7 +176,7 @@ export function KnowledgePage() {
                 <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{entity.description}</p>
               )}
               <p className="mt-2 text-[10px] text-muted-foreground/60">
-                Added {entity.created_at.slice(0, 10)}
+                Added {entity.createdAt.slice(0, 10)}
               </p>
             </div>
           ))}

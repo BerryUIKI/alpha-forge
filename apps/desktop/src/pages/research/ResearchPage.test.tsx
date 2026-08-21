@@ -180,7 +180,7 @@ describe("ResearchPage", () => {
   it("restores a valid workspace and project from a deep link", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
     ]);
 
     const { routerState } = renderResearchPage("en", "/research?workspace=w1&project=p1&tab=notes");
@@ -200,7 +200,7 @@ describe("ResearchPage", () => {
   it("restores the URL context after a remount", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
     ]);
 
     const first = renderResearchPage("en", "/research?workspace=w1&project=p1");
@@ -232,7 +232,7 @@ describe("ResearchPage", () => {
   it("clears an invalid project once with replace after project loading succeeds", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
     ]);
     const { routerState } = renderResearchPage(
       "en",
@@ -282,8 +282,8 @@ describe("ResearchPage", () => {
   it("writes project selections as pushes while preserving other params", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
-      { id: "p2", workspace_id: "w1", title: "Project 2", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
+      { id: "p2", workspaceId: "w1", title: "Project 2", status: "active" },
     ]);
     const { routerState } = renderResearchPage("en", "/research?project=p1&tab=notes");
     await waitFor(() =>
@@ -299,7 +299,7 @@ describe("ResearchPage", () => {
   it("removes a deleted selected project from the URL with replace", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
     ]);
     const { routerState } = renderResearchPage("en", "/research?workspace=w1&project=p1&tab=notes");
     await waitFor(() =>
@@ -317,11 +317,11 @@ describe("ResearchPage", () => {
   it("resets local document selection when the project context changes", async () => {
     workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
     researchMock.listResearchProjects.mockResolvedValue([
-      { id: "p1", workspace_id: "w1", title: "Project 1", status: "active" },
-      { id: "p2", workspace_id: "w1", title: "Project 2", status: "active" },
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
+      { id: "p2", workspaceId: "w1", title: "Project 2", status: "active" },
     ]);
     researchMock.listResearchDocuments.mockImplementation(async (id: string) =>
-      id === "p1" ? [{ id: "d1", project_id: "p1", title: "Document 1" }] : [],
+      id === "p1" ? [{ id: "d1", projectId: "p1", title: "Document 1" }] : [],
     );
     renderResearchPage("en", "/research?workspace=w1&project=p1");
     await waitFor(() =>
