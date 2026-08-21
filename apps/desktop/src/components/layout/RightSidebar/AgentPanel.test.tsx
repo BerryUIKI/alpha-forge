@@ -2,55 +2,55 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { AgentTask } from "@/lib/desktop-api/agent";
+import type { AgentTask, AgentTaskEvent } from "@/lib/desktop-api/agent";
 import { AgentPanel } from "./AgentPanel";
 import React from "react";
 
 const tasks = vi.hoisted(() => ({
   created: {
     id: "created-task",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Created task",
     description: null,
     status: "created",
-    created_at: "2026-08-13T00:00:00Z",
-    updated_at: "2026-08-13T00:00:00Z",
+    createdAt: "2026-08-13T00:00:00Z",
+    updatedAt: "2026-08-13T00:00:00Z",
   } as AgentTask,
   running: {
     id: "running-task",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Running task",
     description: null,
     status: "running",
-    created_at: "2026-08-13T00:00:00Z",
-    updated_at: "2026-08-13T00:00:00Z",
+    createdAt: "2026-08-13T00:00:00Z",
+    updatedAt: "2026-08-13T00:00:00Z",
   } as AgentTask,
   queued: {
     id: "queued-task",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Queued task",
     description: null,
     status: "queued",
-    created_at: "2026-08-13T00:00:00Z",
-    updated_at: "2026-08-13T00:00:00Z",
+    createdAt: "2026-08-13T00:00:00Z",
+    updatedAt: "2026-08-13T00:00:00Z",
   } as AgentTask,
   completed: {
     id: "completed-task",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Completed task",
     description: null,
     status: "completed",
-    created_at: "2026-08-13T00:00:00Z",
-    updated_at: "2026-08-13T00:00:00Z",
+    createdAt: "2026-08-13T00:00:00Z",
+    updatedAt: "2026-08-13T00:00:00Z",
   } as AgentTask,
   failed: {
     id: "failed-task",
-    workspace_id: "workspace-1",
+    workspaceId: "workspace-1",
     title: "Failed task",
     description: null,
     status: "failed",
-    created_at: "2026-08-13T00:00:00Z",
-    updated_at: "2026-08-13T00:00:00Z",
+    createdAt: "2026-08-13T00:00:00Z",
+    updatedAt: "2026-08-13T00:00:00Z",
   } as AgentTask,
 }));
 
@@ -64,7 +64,7 @@ const hookMocks = vi.hoisted(() => ({
   },
   cancel: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
   create: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
-  taskEvents: [] as Array<{ id: string; task_id: string; event_type: string; payload: string | null; created_at: string }>,
+  taskEvents: [] as AgentTaskEvent[],
 }));
 
 const agentStatusMock = vi.hoisted(() => ({
@@ -330,10 +330,10 @@ describe("AgentPanel task actions", () => {
     hookMocks.taskEvents = [
       {
         id: "evt-1",
-        task_id: "failed-task",
-        event_type: "task_failed",
+        taskId: "failed-task",
+        eventType: "task_failed",
         payload: "OpenAI credentials are unavailable.",
-        created_at: "2026-08-13T00:00:00Z",
+        createdAt: "2026-08-13T00:00:00Z",
       },
     ];
     renderPanel();
@@ -349,10 +349,10 @@ describe("AgentPanel task actions", () => {
     hookMocks.taskEvents = [
       {
         id: "evt-2",
-        task_id: "completed-task",
-        event_type: "task_completed",
+        taskId: "completed-task",
+        eventType: "task_completed",
         payload: '{"summary":"Test","claims":[],"evidence":[],"risks":[],"confidence":75}',
-        created_at: "2026-08-13T00:00:00Z",
+        createdAt: "2026-08-13T00:00:00Z",
       },
     ];
     renderPanel();

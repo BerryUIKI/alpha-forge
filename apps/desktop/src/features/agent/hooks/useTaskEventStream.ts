@@ -41,9 +41,9 @@ export function useTaskEventStream() {
 
         const newMsg: ProgressMessage = {
           id: data.id,
-          taskId: data.task_id,
+          taskId: data.taskId || (data as unknown as { task_id?: string }).task_id || "",
           message,
-          timestamp: data.created_at || new Date().toISOString(),
+          timestamp: data.createdAt || (data as unknown as { created_at?: string }).created_at || new Date().toISOString(),
         };
 
         const updated = [...prev, newMsg];

@@ -33,15 +33,15 @@ describe("artifacts API", () => {
     it("should create an artifact with all fields", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: "task-1",
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: "task-1",
+        artifactType: "comparison_table",
         status: "pending",
         input: { test: "data" },
         output: null,
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -65,15 +65,15 @@ describe("artifacts API", () => {
     it("should create an artifact without task_id", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "timeline",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "timeline",
         status: "pending",
         input: {},
         output: null,
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -98,15 +98,15 @@ describe("artifacts API", () => {
     it("should get an artifact by ID", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "completed",
         input: {},
         output: { result: "success" },
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -131,27 +131,27 @@ describe("artifacts API", () => {
       const mockArtifacts = [
         {
           id: "artifact-1",
-          workspace_id: "workspace-1",
-          task_id: null,
-          artifact_type: "comparison_table",
+          workspaceId: "workspace-1",
+          taskId: null,
+          artifactType: "comparison_table",
           status: "completed",
           input: {},
           output: null,
           error: null,
-          created_at: "2024-01-01T00:00:00Z",
-          updated_at: "2024-01-01T00:00:00Z",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
         },
         {
           id: "artifact-2",
-          workspace_id: "workspace-1",
-          task_id: null,
-          artifact_type: "timeline",
+          workspaceId: "workspace-1",
+          taskId: null,
+          artifactType: "timeline",
           status: "pending",
           input: {},
           output: null,
           error: null,
-          created_at: "2024-01-02T00:00:00Z",
-          updated_at: "2024-01-02T00:00:00Z",
+          createdAt: "2024-01-02T00:00:00Z",
+          updatedAt: "2024-01-02T00:00:00Z",
         },
       ];
 
@@ -171,15 +171,15 @@ describe("artifacts API", () => {
       const mockArtifacts = [
         {
           id: "artifact-1",
-          workspace_id: "workspace-1",
-          task_id: "task-1",
-          artifact_type: "comparison_table",
+          workspaceId: "workspace-1",
+          taskId: "task-1",
+          artifactType: "comparison_table",
           status: "completed",
           input: {},
           output: null,
           error: null,
-          created_at: "2024-01-01T00:00:00Z",
-          updated_at: "2024-01-01T00:00:00Z",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
         },
       ];
 
@@ -198,15 +198,15 @@ describe("artifacts API", () => {
     it("should start artifact generation", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "generating",
         input: {},
         output: null,
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -224,15 +224,15 @@ describe("artifacts API", () => {
     it("should complete artifact generation with output", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "completed",
         input: {},
         output: { data: "result" },
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -253,15 +253,15 @@ describe("artifacts API", () => {
     it("should fail artifact generation with error", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "failed",
         input: {},
         output: null,
         error: "Test error",
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -281,15 +281,15 @@ describe("artifacts API", () => {
     it("should open artifact for viewing", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "viewing",
         input: {},
         output: {},
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -307,15 +307,15 @@ describe("artifacts API", () => {
     it("should close artifact", async () => {
       const mockArtifact = {
         id: "test-id",
-        workspace_id: "workspace-1",
-        task_id: null,
-        artifact_type: "comparison_table",
+        workspaceId: "workspace-1",
+        taskId: null,
+        artifactType: "comparison_table",
         status: "closed",
         input: {},
         output: {},
         error: null,
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       };
 
       mockInvoke.mockResolvedValueOnce(mockArtifact);
@@ -347,6 +347,18 @@ describe("artifacts API", () => {
 
       expect(mockInvoke).toHaveBeenCalledWith("list_open_artifacts");
       expect(result).toEqual(mockIds);
+    });
+  });
+
+  describe("Zod validation", () => {
+    it("rejects malformed artifact responses at runtime", async () => {
+      mockInvoke.mockResolvedValueOnce({
+        id: "test-id",
+        workspace_id: "legacy_snake_case", // Missing camelCase workspaceId
+        status: "invalid_status",
+      });
+
+      await expect(getArtifact("test-id")).rejects.toThrow();
     });
   });
 });

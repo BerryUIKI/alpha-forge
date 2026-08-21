@@ -159,7 +159,7 @@ export function useGlobalSearch(query: string) {
     const artifactEntries: SearchEntry[] = (artifacts.data ?? [])
       .filter((artifact) =>
         match(
-          artifact.artifact_type,
+          artifact.artifactType,
           artifact.error,
           textOf(artifact.input),
           textOf(artifact.output),
@@ -168,9 +168,9 @@ export function useGlobalSearch(query: string) {
       .map((artifact) => ({
         section: "artifacts",
         id: artifact.id,
-        title: artifact.artifact_type,
+        title: artifact.artifactType,
         subtitle: artifact.status,
-        to: `/artifact/${artifact.id}/${encodeURIComponent(artifact.artifact_type)}`,
+        to: `/artifact/${artifact.id}/${encodeURIComponent(artifact.artifactType)}`,
       }));
 
     const allSections: SearchSection[] = [

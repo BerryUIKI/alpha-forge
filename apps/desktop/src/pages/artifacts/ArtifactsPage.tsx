@@ -214,7 +214,7 @@ function ArtifactListItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm truncate">
-              {artifact.artifact_type}
+              {artifact.artifactType}
             </span>
             <div
               className={`w-2 h-2 rounded-full ${getStatusColor(artifact.status)}`}
@@ -222,7 +222,7 @@ function ArtifactListItem({
             />
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {new Date(artifact.created_at).toLocaleDateString()}
+            {new Date(artifact.createdAt).toLocaleDateString()}
           </div>
           {artifact.error && (
             <div className="mt-1 text-xs text-destructive truncate">

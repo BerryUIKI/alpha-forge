@@ -102,7 +102,7 @@ export function useDashboardActivity(workspaceId: string) {
           type: "research" as const,
           title: "Research",
           description: task.title,
-          timestamp: formatRelativeTime(task.created_at),
+          timestamp: formatRelativeTime(task.createdAt),
         })),
         // Research projects
         ...projects.map((project) => ({

@@ -2,10 +2,11 @@ use serde::Serialize;
 use tauri::State;
 
 use crate::app::state::AppState;
+use crate::commands::artifacts::ArtifactDto;
 use crate::database::repositories::plugin_repository::InstalledPlugin;
 use crate::error::AppError;
 use crate::plugins::registry::PluginManifest;
-use domain::artifact::{Artifact, CreateArtifactInput};
+use domain::artifact::CreateArtifactInput;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,7 +48,7 @@ pub async fn create_plugin_artifact(
     plugin_id: String,
     input: serde_json::Value,
     state: State<'_, AppState>,
-) -> Result<Artifact, AppError> {
+) -> Result<ArtifactDto, AppError> {
     let request = state
         .plugin_service
         .prepare_artifact(&plugin_id, input)
@@ -69,4 +70,5 @@ pub async fn create_plugin_artifact(
         .artifact_service
         .complete_generation(&artifact.id, request.payload)
         .await
+        .map(ArtifactDto::from)
 }

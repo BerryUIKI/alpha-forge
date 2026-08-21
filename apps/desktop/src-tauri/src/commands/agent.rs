@@ -2,11 +2,62 @@
 
 use std::future::Future;
 
+use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
-use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput};
+use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventType, TaskStatus};
+
+/// DTO for AgentTask with camelCase serialization for the IPC boundary.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentTaskDto {
+    pub id: String,
+    pub workspace_id: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub status: TaskStatus,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+impl From<AgentTask> for AgentTaskDto {
+    fn from(task: AgentTask) -> Self {
+        Self {
+            id: task.id,
+            workspace_id: task.workspace_id,
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            created_at: task.created_at.to_rfc3339(),
+            updated_at: task.updated_at.to_rfc3339(),
+        }
+    }
+}
+
+/// DTO for AgentTaskEvent with camelCase serialization for the IPC boundary.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentTaskEventDto {
+    pub id: String,
+    pub task_id: String,
+    pub event_type: TaskEventType,
+    pub payload: Option<String>,
+    pub created_at: String,
+}
+
+impl From<AgentTaskEvent> for AgentTaskEventDto {
+    fn from(event: AgentTaskEvent) -> Self {
+        Self {
+            id: event.id,
+            task_id: event.task_id,
+            event_type: event.event_type,
+            payload: event.payload,
+            created_at: event.created_at.to_rfc3339(),
+        }
+    }
+}
 
 /// Starts a task in the service and admits it to the background executor.
 ///
@@ -56,53 +107,73 @@ pub async fn create_agent_task(
     title: String,
     description: Option<String>,
     state: State<'_, AppState>,
-) -> Result<AgentTask, AppError> {
+) -> Result<AgentTaskDto, AppError> {
     let input = CreateAgentTaskInput {
         workspace_id,
         title,
         description,
     };
 
-    state.agent_service.create_task(input).await
+    state
+        .agent_service
+        .create_task(input)
+        .await
+        .map(AgentTaskDto::from)
 }
 
 #[tauri::command]
 pub async fn get_agent_task(
     id: String,
     state: State<'_, AppState>,
-) -> Result<Option<AgentTask>, AppError> {
-    state.agent_service.get_task(&id).await
+) -> Result<Option<AgentTaskDto>, AppError> {
+    state
+        .agent_service
+        .get_task(&id)
+        .await
+        .map(|opt| opt.map(AgentTaskDto::from))
 }
 
 #[tauri::command]
 pub async fn list_agent_tasks(
     workspace_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<AgentTask>, AppError> {
-    state.agent_service.list_tasks(&workspace_id).await
+) -> Result<Vec<AgentTaskDto>, AppError> {
+    state
+        .agent_service
+        .list_tasks(&workspace_id)
+        .await
+        .map(|tasks| tasks.into_iter().map(AgentTaskDto::from).collect())
 }
 
 #[tauri::command]
 pub async fn get_task_events(
     task_id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<AgentTaskEvent>, AppError> {
-    state.agent_service.get_task_events(&task_id).await
+) -> Result<Vec<AgentTaskEventDto>, AppError> {
+    state
+        .agent_service
+        .get_task_events(&task_id)
+        .await
+        .map(|events| events.into_iter().map(AgentTaskEventDto::from).collect())
 }
 
 #[tauri::command]
 pub async fn queue_agent_task(
     task_id: String,
     state: State<'_, AppState>,
-) -> Result<AgentTask, AppError> {
-    state.agent_service.queue_task(&task_id).await
+) -> Result<AgentTaskDto, AppError> {
+    state
+        .agent_service
+        .queue_task(&task_id)
+        .await
+        .map(AgentTaskDto::from)
 }
 
 #[tauri::command]
 pub async fn start_agent_task(
     task_id: String,
     state: State<'_, AppState>,
-) -> Result<AgentTask, AppError> {
+) -> Result<AgentTaskDto, AppError> {
     start_task_with_executor_admission(
         &task_id,
         || state.agent_service.start_task(&task_id),
@@ -110,19 +181,20 @@ pub async fn start_agent_task(
         || state.agent_service.requeue_running_task(&task_id),
     )
     .await
+    .map(AgentTaskDto::from)
 }
 
 #[tauri::command]
 pub async fn cancel_agent_task(
     task_id: String,
     state: State<'_, AppState>,
-) -> Result<AgentTask, AppError> {
+) -> Result<AgentTaskDto, AppError> {
     // Cancel in executor first
     state.task_executor.cancel_task(&task_id).await?;
 
     // Then persist and stream the terminal task event.
     let task = state.agent_service.cancel_task(&task_id).await?;
-    Ok(task)
+    Ok(AgentTaskDto::from(task))
 }
 
 #[cfg(test)]
@@ -227,5 +299,47 @@ mod tests {
         }
         assert!(!admit_called.load(Ordering::SeqCst));
         assert!(!requeue_called.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_agent_task_dto_camel_case_serialization() {
+        let task = sample_running_task();
+        let dto = AgentTaskDto::from(task);
+
+        let json = serde_json::to_string(&dto).expect("serialization failed");
+        assert!(json.contains("\"workspaceId\":"));
+        assert!(json.contains("\"createdAt\":"));
+        assert!(json.contains("\"updatedAt\":"));
+        assert!(!json.contains("\"workspace_id\":"));
+        assert!(!json.contains("\"created_at\":"));
+        assert!(!json.contains("\"updated_at\":"));
+
+        let deserialized: AgentTaskDto =
+            serde_json::from_str(&json).expect("deserialization failed");
+        assert_eq!(deserialized, dto);
+    }
+
+    #[test]
+    fn test_agent_task_event_dto_camel_case_serialization() {
+        let event = AgentTaskEvent {
+            id: "event-1".to_string(),
+            task_id: "task-1".to_string(),
+            event_type: TaskEventType::TaskProgress,
+            payload: Some("Analyzing documents...".to_string()),
+            created_at: Utc::now(),
+        };
+        let dto = AgentTaskEventDto::from(event);
+
+        let json = serde_json::to_string(&dto).expect("serialization failed");
+        assert!(json.contains("\"taskId\":"));
+        assert!(json.contains("\"eventType\":"));
+        assert!(json.contains("\"createdAt\":"));
+        assert!(!json.contains("\"task_id\":"));
+        assert!(!json.contains("\"event_type\":"));
+        assert!(!json.contains("\"created_at\":"));
+
+        let deserialized: AgentTaskEventDto =
+            serde_json::from_str(&json).expect("deserialization failed");
+        assert_eq!(deserialized, dto);
     }
 }

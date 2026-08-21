@@ -139,13 +139,13 @@ export function AgentPanel() {
   // S1: Derive failure reason and completion output from persisted events
   const failureReason = useMemo(() => {
     if (!selectedTask || selectedTask.status !== "failed" || !taskEvents) return null;
-    const failedEvent = taskEvents.find((e) => e.event_type === "task_failed");
+    const failedEvent = taskEvents.find((e) => e.eventType === "task_failed");
     return failedEvent?.payload || null;
   }, [selectedTask, taskEvents]);
 
   const completionPayload = useMemo(() => {
     if (!selectedTask || selectedTask.status !== "completed" || !taskEvents) return null;
-    const completedEvent = taskEvents.find((e) => e.event_type === "task_completed");
+    const completedEvent = taskEvents.find((e) => e.eventType === "task_completed");
     return completedEvent?.payload || null;
   }, [selectedTask, taskEvents]);
 

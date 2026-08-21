@@ -42,15 +42,15 @@ const comparisonOutput = (companyName: string) => ({
 function createArtifact(overrides: Partial<Artifact> = {}): Artifact {
   return {
     id: artifactId,
-    workspace_id: "workspace-1",
-    task_id: null,
-    artifact_type: "comparison_table",
+    workspaceId: "workspace-1",
+    taskId: null,
+    artifactType: "comparison_table",
     status: "completed",
     input: comparisonOutput("Input Company"),
     output: comparisonOutput("Initial Company"),
     error: null,
-    created_at: "2026-08-14T00:00:00.000Z",
-    updated_at: "2026-08-14T00:00:00.000Z",
+    createdAt: "2026-08-14T00:00:00.000Z",
+    updatedAt: "2026-08-14T00:00:00.000Z",
     ...overrides,
   };
 }
@@ -211,7 +211,7 @@ describe("ArtifactWindowPage", () => {
   it("shows unsupported renderer and supports retry on load failure", () => {
     const refetch = vi.fn();
     mocks.useArtifact.mockReturnValue({
-      data: createArtifact({ artifact_type: "unsupported_type" }),
+      data: createArtifact({ artifactType: "unsupported_type" }),
       isLoading: false,
       error: null,
       refetch,
