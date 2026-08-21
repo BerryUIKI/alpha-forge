@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { AgentTask } from "@/lib/desktop-api/agent";
+import type { AgentTask, AgentTaskEvent } from "@/lib/desktop-api/agent";
 import { AgentPanel } from "./AgentPanel";
 import React from "react";
 
@@ -64,7 +64,7 @@ const hookMocks = vi.hoisted(() => ({
   },
   cancel: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
   create: { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false },
-  taskEvents: [] as Array<{ id: string; task_id: string; event_type: string; payload: string | null; created_at: string }>,
+  taskEvents: [] as AgentTaskEvent[],
 }));
 
 const agentStatusMock = vi.hoisted(() => ({
