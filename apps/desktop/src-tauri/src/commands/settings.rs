@@ -101,7 +101,8 @@ mod tests {
         let json = serde_json::to_string(&item).expect("serialization failed");
         assert_eq!(json, r#"{"key":"app.theme","value":"dark"}"#);
 
-        let deserialized: SettingItemDto = serde_json::from_str(&json).expect("deserialization failed");
+        let deserialized: SettingItemDto =
+            serde_json::from_str(&json).expect("deserialization failed");
         assert_eq!(deserialized, item);
     }
 }

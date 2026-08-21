@@ -93,7 +93,8 @@ mod tests {
         assert!(!json.contains("\"updated_at\":"));
 
         // Roundtrip test
-        let deserialized: WorkspaceDto = serde_json::from_str(&json).expect("deserialization failed");
+        let deserialized: WorkspaceDto =
+            serde_json::from_str(&json).expect("deserialization failed");
         assert_eq!(deserialized, dto);
     }
 }
