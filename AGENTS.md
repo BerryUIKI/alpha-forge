@@ -602,6 +602,8 @@ Complete a working end-to-end path.
 
 Do not leave unnecessary pseudocode, empty functions, or unconnected modules.
 
+Synchronously update all relevant documentation, roadmaps, and architecture documents in the same changeset.
+
 ### Step 5: Verify
 
 Run the relevant commands:
@@ -618,6 +620,7 @@ cargo test
 Depending on the change, also run:
 
 ```bash
+node scripts/check-ipc-registration.mjs
 pnpm test:e2e
 pnpm tauri build
 ```
@@ -627,7 +630,7 @@ pnpm tauri build
 The final response must include:
 
 1. What was completed
-2. Which key files changed
+2. Which key files changed (including documentation files)
 3. How the result was verified
 4. Remaining risks or incomplete items
 
@@ -649,6 +652,7 @@ Mandatory rules:
 - Do not overwrite existing uncommitted user changes.
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
 - Keep changes narrowly scoped. Do not mix unrelated refactors with feature work.
+- **Mandatory Synchronous Documentation Updates**: Every collaborator, developer, and Agent MUST synchronously update documentation (architecture, roadmaps, API specs, README, and status docs) in the same Pull Request alongside code changes. Never leave documentation updates as deferred work or separate PRs.
 
 If the working tree already contains changes, preserve them and work around them.
 

@@ -1,10 +1,9 @@
-// Credentials Desktop API.
-//
-// Secure credential management using OS keychain.
-// API keys and other secrets are stored securely in the operating system's
-// keychain and never cross the IPC boundary as plaintext.
+// Credentials Desktop API — S2 Normalized with strict Zod validation.
 
 import { invoke } from "@tauri-apps/api/core";
+import { z } from "zod";
+
+const VoidResponseSchema = z.union([z.null(), z.undefined()]);
 
 /**
  * Save a credential to the OS keychain.
@@ -18,7 +17,8 @@ import { invoke } from "@tauri-apps/api/core";
  * @throws Error if the credential cannot be saved
  */
 export async function saveOpenAiApiKey(value: string): Promise<void> {
-  await invoke("save_openai_api_key", { value });
+  const response: unknown = await invoke("save_openai_api_key", { value });
+  VoidResponseSchema.parse(response);
 }
 
 /**
@@ -30,7 +30,8 @@ export async function saveOpenAiApiKey(value: string): Promise<void> {
  * @returns true if the credential exists, false otherwise
  */
 export async function hasOpenAiApiKey(): Promise<boolean> {
-  return await invoke<boolean>("has_openai_api_key");
+  const response: unknown = await invoke("has_openai_api_key");
+  return z.boolean().parse(response);
 }
 
 /**
@@ -39,5 +40,6 @@ export async function hasOpenAiApiKey(): Promise<boolean> {
  * @throws Error if the credential cannot be deleted
  */
 export async function deleteOpenAiApiKey(): Promise<void> {
-  await invoke("delete_openai_api_key");
+  const response: unknown = await invoke("delete_openai_api_key");
+  VoidResponseSchema.parse(response);
 }

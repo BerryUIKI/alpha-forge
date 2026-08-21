@@ -63,14 +63,14 @@ AlphaForge helps you:
 
 **Current program state (2026-08-15): stabilization required before local MVP acceptance.**
 
-The 2026-08-12 audit found broken core integration paths. Merged repairs now include the isolated Artifact window (#88), Research URL context (#94), the controlled Option workflow (#95, #97, #98), and internal-plugin Settings (#99), with focused evidence; packaged smoke acceptance remains pending. The company-comparison create-to-Artifact slice is pending review. M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
+The 2026-08-12 audit identified broken core integration paths. S0 (baseline build recovery) and S1 (core Agent loop recovery with real-time streaming and structured output) are now complete and accepted (#151, #152). S2 (IPC contract normalization) is active with 100% registration parity across all 176 commands. Merged repairs also include the isolated Artifact window (#88), Research URL context (#94), controlled Option workflows (#95, #97, #98), and internal-plugin Settings (#99). M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
 | M0 | ✅ Complete | Project Foundation |
 | M1 | ✅ Complete | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Application Foundation |
-| M2 | ⚠️ Stabilization required | Agent Runtime |
+| M2 | ✅ Stabilized (S1) | Agent Runtime & Research Task Execution |
 | M3 | ⚠️ Stabilization required | Artifact Intelligence System |
 | M4 | ✅ Complete | Research Workspace |
 | M5 | ✅ Complete | Investment Knowledge System |
@@ -91,9 +91,9 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - Tauri 2 desktop application shell
 - React 19 + TypeScript + Vite foundation
 - Rust backend with SQLite persistence
-- IPC communication layer
+- IPC communication layer with strict Zod validation and static registration parity checks
 - Comprehensive documentation (17+ documents)
-- Agent task lifecycle and background execution are implemented; full end-to-end verification remains pending
+- Agent task lifecycle: creation, background Tokio execution, real-time event streaming (`task:progress`, `task:completed`, etc.), cancellation, failure context, and structured `ResearchCompletion` result rendering
 - Real-time event streaming
 - Cancellation support
 - Artifact persistence layer

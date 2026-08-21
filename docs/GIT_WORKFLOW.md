@@ -398,12 +398,12 @@ See [PR_BEST_PRACTICES.md](PR_BEST_PRACTICES.md) for detailed guidelines.
 
 ### PR Creation Process
 
-When a feature is complete:
+When a feature or fix is complete:
 
 1. Verify the branch works locally
-2. Run all relevant checks
+2. Run all relevant checks (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `cargo fmt --check`, `cargo clippy`, `cargo test`, `node scripts/check-ipc-registration.mjs`)
 3. Review changed files
-4. Update documentation if architecture changed
+4. **Synchronously update documentation** (architecture, roadmaps, specs, README) in the same branch/commit
 5. Create a Pull Request
 
 **PR Description Template**:
@@ -428,8 +428,8 @@ Commands executed and results.
 ## Checklist
 
 - [ ] All checks pass
-- [ ] Tests written
-- [ ] Docs updated
+- [ ] Tests written & passing
+- [ ] Documentation synchronously updated in this PR (Architecture, Roadmaps, README)
 ```
 
 ### PR Review Guidelines

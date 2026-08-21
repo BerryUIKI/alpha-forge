@@ -1,18 +1,24 @@
-// Workspace desktop API.
+// Workspace desktop API — S2 Normalized with strict Zod validation.
 
 import { invoke } from "@tauri-apps/api/core";
+import { z } from "zod";
 
 /**
- * A workspace represents an independent research environment.
- * Types must match Rust domain model exactly (snake_case).
- * Backend: crates/domain/src/workspace.rs
+ * Zod schema for Workspace DTO received over IPC.
+ * Strictly enforces camelCase property names from the Rust backend.
  */
-export interface Workspace {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+export const WorkspaceSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .strict();
+
+export type Workspace = z.infer<typeof WorkspaceSchema>;
+
+const VoidResponseSchema = z.union([z.null(), z.undefined()]);
 
 /**
  * Creates a new workspace.
@@ -20,7 +26,8 @@ export interface Workspace {
  * @returns The created workspace
  */
 export async function createWorkspace(name: string): Promise<Workspace> {
-  return invoke("create_workspace", { name });
+  const response: unknown = await invoke("create_workspace", { name });
+  return WorkspaceSchema.parse(response);
 }
 
 /**
@@ -28,7 +35,8 @@ export async function createWorkspace(name: string): Promise<Workspace> {
  * @returns Array of workspaces
  */
 export async function listWorkspaces(): Promise<Workspace[]> {
-  return invoke("list_workspaces");
+  const response: unknown = await invoke("list_workspaces");
+  return z.array(WorkspaceSchema).parse(response);
 }
 
 /**
@@ -37,7 +45,8 @@ export async function listWorkspaces(): Promise<Workspace[]> {
  * @returns The workspace or null if not found
  */
 export async function getWorkspace(id: string): Promise<Workspace | null> {
-  return invoke("get_workspace", { id });
+  const response: unknown = await invoke("get_workspace", { id });
+  return z.nullable(WorkspaceSchema).parse(response);
 }
 
 /**
@@ -47,7 +56,8 @@ export async function getWorkspace(id: string): Promise<Workspace | null> {
  * @returns The updated workspace
  */
 export async function updateWorkspace(id: string, name: string): Promise<Workspace> {
-  return invoke("update_workspace", { id, name });
+  const response: unknown = await invoke("update_workspace", { id, name });
+  return WorkspaceSchema.parse(response);
 }
 
 /**
@@ -55,5 +65,6 @@ export async function updateWorkspace(id: string, name: string): Promise<Workspa
  * @param id The workspace ID
  */
 export async function deleteWorkspace(id: string): Promise<void> {
-  return invoke("delete_workspace", { id });
+  const response: unknown = await invoke("delete_workspace", { id });
+  VoidResponseSchema.parse(response);
 }
