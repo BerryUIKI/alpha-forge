@@ -87,7 +87,7 @@ Configure credential
 ## S2 — IPC contract normalization
 
 **Acceptance references:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9) and [M9 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-10)
-**Status:** Active (Phase 2.1 Complete)
+**Status:** Active (Phase 2.1 & Phase 2.2 Complete)
 
 ### Scope
 
@@ -103,7 +103,13 @@ Configure credential
   - `WorkspaceDto` with `camelCase` (`createdAt`, `updatedAt`) + strict `WorkspaceSchema` Zod validation in `desktop-api/workspace.ts`.
   - `SettingItemDto` (`key`, `value`) + strict `AppInfoSchema` and `SettingItemSchema` in `desktop-api/settings.ts`.
   - `desktop-api/credentials.ts` strict Zod validation + malformed response rejection tests.
-- **Agent & Artifacts (Phase 2.2)**: In progress.
+- **Agent, Artifacts & Plugins (Phase 2.2)**:
+  - `AgentTaskDto` and `AgentTaskEventDto` with `camelCase` serialization (`workspaceId`, `createdAt`, `updatedAt`, `taskId`, `eventType`) + roundtrip tests in `commands/agent.rs`.
+  - `desktop-api/agent.ts` with strict `AgentTaskSchema`, `AgentTaskEventSchema`, `TaskStatusSchema`, `TaskEventTypeSchema` + runtime `.parse()`.
+  - `ArtifactDto` with `camelCase` serialization (`workspaceId`, `taskId`, `artifactType`, `createdAt`, `updatedAt`) + roundtrip tests in `commands/artifacts.rs`.
+  - `desktop-api/artifacts.ts` with strict `ArtifactSchema`, `ArtifactStatusSchema` + runtime `.parse()`.
+  - `commands/plugins.rs` updated to return `ArtifactDto`; `desktop-api/plugins.ts` aligned with `ArtifactSchema`.
+  - All UI consumers (`AgentTaskList`, `AgentPanel`, `ArtifactViewer`, `ArtifactWindowPage`, `ArtifactsPage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
 - **Research, Thesis & KnowledgeGraph (Phase 2.3)**: In progress.
 - **Portfolio & Financial (Phase 2.4)**: In progress.
 

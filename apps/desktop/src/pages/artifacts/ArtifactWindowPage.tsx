@@ -217,7 +217,7 @@ export function ArtifactWindowPage() {
     );
   }
 
-  if (artifact.id !== artifactId || artifact.artifact_type !== artifactType) {
+  if (artifact.id !== artifactId || artifact.artifactType !== artifactType) {
     return (
       <ArtifactWindowShell {...shellProps}>
         <ErrorState
@@ -230,14 +230,14 @@ export function ArtifactWindowPage() {
     );
   }
 
-  const Renderer = artifactRegistry.getRenderer(artifact.artifact_type);
+  const Renderer = artifactRegistry.getRenderer(artifact.artifactType);
   if (!Renderer) {
     return (
       <ArtifactWindowShell {...shellProps}>
         <EmptyState
           title={t("noRendererAvailable")}
           description={formatMessage(t("noRendererAvailableDescription"), {
-            type: artifact.artifact_type,
+            type: artifact.artifactType,
           })}
         />
       </ArtifactWindowShell>
@@ -261,7 +261,7 @@ export function ArtifactWindowPage() {
       <div className="flex min-h-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
-            <h1 className="text-lg font-semibold">{artifact.artifact_type}</h1>
+            <h1 className="text-lg font-semibold">{artifact.artifactType}</h1>
             <p className="text-sm text-muted-foreground">
               {t("artifactStatus")}: {artifact.status}
             </p>

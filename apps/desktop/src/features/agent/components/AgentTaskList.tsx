@@ -59,7 +59,7 @@ export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps)
                 </p>
               )}
               <p className="mt-2 text-xs text-muted-foreground">
-                {formatMessage(t("created"), { date: new Date(task.created_at).toLocaleDateString() })}
+                {formatMessage(t("created"), { date: new Date(task.createdAt).toLocaleDateString() })}
               </p>
             </div>
             <TaskStatusBadge status={task.status} />

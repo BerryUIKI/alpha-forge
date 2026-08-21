@@ -42,13 +42,13 @@ export function ArtifactViewer({ artifactId }: ArtifactViewerProps) {
   }
 
   // Get renderer for this artifact type
-  const Renderer = artifactRegistry.getRenderer(artifact.artifact_type);
+  const Renderer = artifactRegistry.getRenderer(artifact.artifactType);
 
   if (!Renderer) {
     return (
       <EmptyState
         title={t("noRendererAvailable")}
-        description={formatMessage(t("noRendererAvailableDescription"), { type: artifact.artifact_type })}
+        description={formatMessage(t("noRendererAvailableDescription"), { type: artifact.artifactType })}
       />
     );
   }
@@ -61,13 +61,13 @@ export function ArtifactViewer({ artifactId }: ArtifactViewerProps) {
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">{artifact.artifact_type}</h2>
+            <h2 className="text-lg font-semibold">{artifact.artifactType}</h2>
             <p className="text-sm text-muted-foreground">
               {t("artifactStatus")}: {artifact.status}
             </p>
           </div>
           <div className="text-sm text-muted-foreground">
-            {t("artifactCreated")}: {new Date(artifact.created_at).toLocaleString()}
+            {t("artifactCreated")}: {new Date(artifact.createdAt).toLocaleString()}
           </div>
         </div>
       </div>

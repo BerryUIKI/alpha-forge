@@ -44,15 +44,15 @@ describe("useTaskEventStream", () => {
   );
 
   const createEvent = (
-    eventType: AgentTaskEvent["event_type"],
+    eventType: AgentTaskEvent["eventType"],
     payload: string | null = null,
     id = "event-1"
   ): AgentTaskEvent => ({
     id,
-    task_id: "task-1",
-    event_type: eventType,
+    taskId: "task-1",
+    eventType,
     payload,
-    created_at: "2026-08-20T00:00:00Z",
+    createdAt: "2026-08-20T00:00:00Z",
   });
 
   it("collects progress messages from task:progress events", async () => {
@@ -140,10 +140,10 @@ describe("useTaskEventStream", () => {
 
     act(() => {
       mocks.listeners.get("task:progress")?.({
-        payload: { ...createEvent("task_progress", "msg 1"), task_id: "task-1" },
+        payload: { ...createEvent("task_progress", "msg 1"), taskId: "task-1" },
       });
       mocks.listeners.get("task:progress")?.({
-        payload: { ...createEvent("task_progress", "msg 2"), task_id: "task-2" },
+        payload: { ...createEvent("task_progress", "msg 2"), taskId: "task-2" },
       });
     });
 

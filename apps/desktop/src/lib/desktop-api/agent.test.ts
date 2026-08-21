@@ -13,15 +13,15 @@ describe("Agent API", () => {
     vi.clearAllMocks();
   });
 
-  it("createAgentTask calls invoke with correct parameters", async () => {
+  it("createAgentTask calls invoke with correct parameters and parses response", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Analyze Stocks",
       description: "Research top tech stocks",
       status: "created",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -44,12 +44,12 @@ describe("Agent API", () => {
   it("createAgentTask handles null description", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Simple Task",
       description: null,
       status: "created",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -68,12 +68,12 @@ describe("Agent API", () => {
   it("getAgentTask calls invoke with correct parameters", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Test Task",
       description: null,
       status: "queued",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -99,21 +99,21 @@ describe("Agent API", () => {
     const mockTasks = [
       {
         id: "task-1",
-        workspace_id: "workspace-uuid",
+        workspaceId: "workspace-uuid",
         title: "Task 1",
         description: null,
         status: "completed",
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       },
       {
         id: "task-2",
-        workspace_id: "workspace-uuid",
+        workspaceId: "workspace-uuid",
         title: "Task 2",
         description: null,
         status: "running",
-        created_at: "2024-01-01T00:00:00Z",
-        updated_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
       },
     ];
 
@@ -145,17 +145,17 @@ describe("Agent API", () => {
     const mockEvents = [
       {
         id: "event-1",
-        task_id: "task-uuid",
-        event_type: "task_created",
+        taskId: "task-uuid",
+        eventType: "task_created",
         payload: null,
-        created_at: "2024-01-01T00:00:00Z",
+        createdAt: "2024-01-01T00:00:00Z",
       },
       {
         id: "event-2",
-        task_id: "task-uuid",
-        event_type: "task_queued",
+        taskId: "task-uuid",
+        eventType: "task_queued",
         payload: null,
-        created_at: "2024-01-01T00:00:01Z",
+        createdAt: "2024-01-01T00:00:01Z",
       },
     ];
 
@@ -172,12 +172,12 @@ describe("Agent API", () => {
   it("queueAgentTask calls invoke with correct parameters", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Test Task",
       description: null,
       status: "queued",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -192,12 +192,12 @@ describe("Agent API", () => {
   it("startAgentTask calls invoke with correct parameters", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Test Task",
       description: null,
       status: "running",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -212,12 +212,12 @@ describe("Agent API", () => {
   it("cancelAgentTask calls invoke with correct parameters", async () => {
     const mockTask = {
       id: "task-uuid",
-      workspace_id: "workspace-uuid",
+      workspaceId: "workspace-uuid",
       title: "Test Task",
       description: null,
       status: "cancelled",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockTask);
@@ -227,6 +227,30 @@ describe("Agent API", () => {
 
     expect(invoke).toHaveBeenCalledWith("cancel_agent_task", { taskId: "task-uuid" });
     expect(result.status).toBe("cancelled");
+  });
+
+  it("rejects malformed agent task responses at runtime", async () => {
+    vi.mocked(invoke).mockResolvedValueOnce({
+      id: "task-uuid",
+      workspace_id: "legacy_snake_case", // Missing required camelCase workspaceId
+      status: "invalid_status",
+    });
+
+    const { getAgentTask } = await import("@/lib/desktop-api/agent");
+    await expect(getAgentTask("task-uuid")).rejects.toThrow();
+  });
+
+  it("rejects malformed task event responses at runtime", async () => {
+    vi.mocked(invoke).mockResolvedValueOnce([
+      {
+        id: "event-1",
+        task_id: "legacy_snake_case",
+        eventType: "unknown_event_type",
+      },
+    ]);
+
+    const { getTaskEvents } = await import("@/lib/desktop-api/agent");
+    await expect(getTaskEvents("task-uuid")).rejects.toThrow();
   });
 
   it("handles API errors correctly", async () => {

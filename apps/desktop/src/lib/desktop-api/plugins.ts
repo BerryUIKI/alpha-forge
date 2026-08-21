@@ -2,7 +2,7 @@
 
 import { invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
-import type { Artifact } from "./artifacts";
+import { type Artifact, ArtifactSchema } from "./artifacts";
 
 export const COMPANY_COMPARISON_PLUGIN_ID = "company-comparison" as const;
 export const COMPANY_COMPARISON_DIMENSIONS = ["revenue", "market_cap", "pe_ratio"] as const;
@@ -55,20 +55,6 @@ const PluginStatusSchema = z
   .object({ manifest: PluginManifestSchema, enabled: z.boolean() })
   .strict();
 const VoidResponseSchema = z.union([z.null(), z.undefined()]);
-const ArtifactResponseSchema = z
-  .object({
-    id: z.string().uuid(),
-    workspace_id: nonEmptyText,
-    task_id: z.string().nullable(),
-    artifact_type: nonEmptyText,
-    status: z.enum(["pending", "generating", "completed", "viewing", "closed", "failed"]),
-    input: z.unknown(),
-    output: z.unknown().nullable(),
-    error: z.string().nullable(),
-    created_at: z.string().datetime({ offset: true }),
-    updated_at: z.string().datetime({ offset: true }),
-  })
-  .strict();
 const companyComparisonDimensionSchema = z.enum(COMPANY_COMPARISON_DIMENSIONS);
 export const CompanyComparisonPayloadSchema = z
   .object({
@@ -157,5 +143,5 @@ export async function createPluginArtifact(
     pluginId,
     input: validatedInput,
   });
-  return ArtifactResponseSchema.parse(response) as Artifact;
+  return ArtifactSchema.parse(response);
 }
