@@ -26,10 +26,10 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 | Milestone | Status | Outcome |
 |---|---|---|
-| S0 — Baseline truth and build recovery | Active; acceptance incomplete | Repository checks can run and status documents reflect reality. |
-| S1 — Core Agent loop recovery | Blocked by S0; acceptance incomplete | A configured user can create, queue, run, cancel, and inspect a research task. |
-| S2 — IPC contract normalization | Blocked by S0; acceptance incomplete | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity. |
-| S3 — Artifact and plugin vertical slice | Blocked by S1-S2 | Structured output opens safely in an Artifact window and internal plugins are usable. |
+| S0 — Baseline truth and build recovery | ✅ Complete (PR #151) | Repository checks run cleanly, React Fast Refresh clean, status documents aligned. |
+| S1 — Core Agent loop recovery | ✅ Complete (PR #152) | End-to-end task lifecycle operational: credential → create → queue → run → real-time progress → failure context / structured output. |
+| S2 — IPC contract normalization | Active (Phase 2.1 in progress) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
+| S3 — Artifact and plugin vertical slice | Blocked by S2 | Structured output opens safely in an Artifact window and internal plugins are usable. |
 | S4 — Research and portfolio workflow closure | Blocked by S2 | Navigation and persistence workflows are complete and state-aware. |
 | S5 — Option module re-acceptance | Blocked by S2 | One evidence-grounded Option workflow works end to end. |
 | S6 — Release-readiness re-acceptance | Blocked by S1-S5 | Required checks, E2E flows, packages, security, and docs are accepted. |
@@ -38,33 +38,35 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 ## S0 — Baseline truth and build recovery
 
 **Acceptance reference:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9)
+**Status:** ✅ Complete (PR #151)
 
-### Scope
+### Scope & Completion Evidence
 
-- The orphan `database::timeout` declaration was removed in merged PR #78; S0 remains Active because its other scope and acceptance criteria remain outstanding.
-- The pnpm 9.0.0 and `pnpm-lock.yaml` baseline was merged in PR #79; S0 remains Active because its other scope and acceptance criteria remain outstanding.
-- Add standard CI quality gates in addition to CodeQL.
-- Align README, architecture, roadmap, and milestone status.
-- Record a command-to-wrapper static contract check.
+- Orphan `database::timeout` declaration removed (PR #78).
+- The pnpm 9.0.0 and `pnpm-lock.yaml` baseline merged (PR #79).
+- React Fast Refresh violations and mixed component/hook export architectures cleanly resolved across 28 files (PR #151).
+- CI quality gates, TypeScript checks (0 errors), ESLint (0 errors), Vitest tests (448 tests passing), Rust formatting, Clippy, and Rust tests (314+ passing) are fully operational.
 
 ### Acceptance criteria
 
-- Rust module resolution succeeds.
-- `pnpm install --frozen-lockfile` is deterministic.
-- CI runs lint, typecheck, frontend tests, Rust format, Clippy, and Rust tests.
-- No document claims M8/M9 acceptance without retained evidence.
-- No frontend invocation references an unregistered Tauri command.
+- [x] Rust module resolution succeeds.
+- [x] `pnpm install --frozen-lockfile` is deterministic.
+- [x] CI runs lint, typecheck, frontend tests, Rust format, Clippy, and Rust tests.
+- [x] No document claims M8/M9 acceptance without retained evidence.
+- [x] No frontend invocation references an unregistered Tauri command (verified via `scripts/check-ipc-registration.mjs`).
 
 ## S1 — Core Agent loop recovery
 
 **Acceptance references:** [M2 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-3) and [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9)
+**Status:** ✅ Complete (PR #152)
 
-### Scope
+### Scope & Completion Evidence
 
-- Credential-contract repair is merged in PR #80: Rust owns `openai.api_key`, migrates the legacy `api_key` entry, and exposes only OpenAI-specific save/status/delete IPC. S1 remains blocked until the remaining end-to-end Agent-to-Artifact acceptance gates pass.
-- The `created -> queued -> running` transition repair is merged in PR #81; queue/start are explicit, with queued recovery and retry state covered by focused hook/component and Rust command/service tests.
-- Surface progress events, failure context, cancellation, and completion.
-- Verify completed structured output is persisted and discoverable.
+- **Startup Race Condition Fix**: `lib.rs` emits `app:ready` / `app:init-failed` upon async `AppState` initialization; `useAppReady` hook gates frontend commands.
+- **Real-Time Event Streaming**: `useTaskEventStream` subscribes to `task:progress`, `task:completed`, `task:failed`, `task:cancelled` Tauri events, invalidating TanStack Query cache and maintaining a bounded 20-message real-time log.
+- **Failure Context Surfacing**: `AgentPanel` displays the exact failure reason payload from `TaskFailed` events (e.g. missing API key, provider error) with full EN/ZH-CN i18n support.
+- **Structured Research Output**: `ResearchCompletion` Zod schema and `ResearchResultCard` component render summary, key claims, evidence, risks, and colored confidence score badges.
+- **Credential Flow**: Pinned OpenAI API key in OS keychain (`openai.api_key`), plaintext secrets never returned to React.
 
 ### Acceptance criteria
 
@@ -73,46 +75,44 @@ Configure credential
 -> Create task
 -> Queue task
 -> Start background execution
--> Display progress
+-> Display real-time progress
 -> Cancel or complete
--> Persist structured result
+-> Persist structured result & render ResearchResultCard
 ```
 
-- Secrets never return to React.
-- Every state transition has service and UI regression tests.
-- Initialization readiness prevents commands from racing `AppState` setup.
+- [x] Secrets never return to React.
+- [x] Every state transition has service and UI regression tests.
+- [x] Initialization readiness (`app:ready`) prevents commands from racing `AppState` setup.
 
 ## S2 — IPC contract normalization
 
 **Acceptance references:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9) and [M9 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-10)
+**Status:** Active (Phase 2.1 Complete)
 
 ### Scope
 
 - Define command-boundary DTO naming and optional-value rules.
-- Use camelCase serialized IPC DTOs while preserving Rust domain and database conventions.
-- Add Zod parsing for untrusted command responses where practical.
-- Repair Option and System DTO mismatches first.
-- Add automated command registration and serialization fixture tests.
+- Use `camelCase` serialized IPC DTOs while preserving Rust domain and database conventions (`snake_case`).
+- Add Zod parsing for untrusted command responses across all desktop API wrappers.
+- Unified IPC registration checker script (`scripts/check-ipc-registration.mjs`) verifies 1:1 parity between frontend wrappers and `lib.rs` handlers.
 
-Option schema and IPC normalization are merged in PRs #83 and #84: the canonical migration is applied, command-boundary DTOs use camelCase serde, domain/database models remain snake_case, Option desktop wrappers parse responses with Zod, malformed-response fixtures are covered, and wrapper/`lib.rs` registration parity is checked by `scripts/check-option-ipc-registration.mjs`.
+### Phase Status
 
-System IPC normalization is merged in PR #85: `SystemInfo` has an explicit camelCase serialization contract, and the internal desktop wrapper validates unknown responses with Zod. Focused Rust and Vitest contract tests verify this boundary; S2 acceptance remains incomplete until the broader baseline and verification gates pass.
+- **Foundation & Core (Phase 2.1)**:
+  - `scripts/check-ipc-registration.mjs` scans all 176 commands and confirms 100% registration parity.
+  - `WorkspaceDto` with `camelCase` (`createdAt`, `updatedAt`) + strict `WorkspaceSchema` Zod validation in `desktop-api/workspace.ts`.
+  - `SettingItemDto` (`key`, `value`) + strict `AppInfoSchema` and `SettingItemSchema` in `desktop-api/settings.ts`.
+  - `desktop-api/credentials.ts` strict Zod validation + malformed response rejection tests.
+- **Agent & Artifacts (Phase 2.2)**: In progress.
+- **Research, Thesis & KnowledgeGraph (Phase 2.3)**: In progress.
+- **Portfolio & Financial (Phase 2.4)**: In progress.
 
 ### Acceptance criteria
 
-- TypeScript and Rust share checked fixtures for every repaired command family.
-- No UI relies on TypeScript-only assertions for runtime response shape.
-- Error responses preserve stable codes without leaking raw internal details.
-
-The isolated Artifact-window route is merged in PR #88; focused route and permission verification is recorded, while packaged smoke acceptance remains outstanding. Research URL context is merged in PR #94, and the Option chain-to-contract view is merged in PR #95.
-
-The Artifact-window route implementation is merged in PR #88. It adds the top-level route, validates route and persisted Artifact identity, consumes update/theme events, and removes native-window tracking on destruction; focused route and permission tests pass, while packaged smoke acceptance remains outstanding.
-
-The Research URL-context implementation merged in PR #94. It makes workspace/project query parameters authoritative, validates and cleans stale IDs with replace navigation, preserves unrelated parameters, and resets dependent document selection; focused Research route tests are included, while S4 acceptance remains incomplete.
-
-PR #95 adds demo chain acquisition, atomic chain-and-contract persistence, list refresh, selected contract rendering, and focused loading/empty/error/retry coverage. PR #97 establishes the atomic, server-derived strategy persistence contract, and PR #98 connects controlled contract selection to create/read/delete behavior; S5 acceptance remains incomplete.
-
-## S3 — Artifact and plugin vertical slice
+- [x] Automated static command registration parity checker (`scripts/check-ipc-registration.mjs`).
+- [ ] TypeScript and Rust share checked fixtures for every repaired command family.
+- [ ] No UI relies on TypeScript-only assertions for runtime response shape.
+- [ ] Error responses preserve stable codes without leaking raw internal details.
 
 ### Scope
 

@@ -37,4 +37,12 @@ describe("OpenAI credentials API", () => {
 
     expect(invoke).toHaveBeenCalledWith("delete_openai_api_key");
   });
+
+  it("rejects non-boolean response for hasOpenAiApiKey via Zod", async () => {
+    vi.mocked(invoke).mockResolvedValueOnce("invalid");
+    const { hasOpenAiApiKey } = await import("./credentials");
+
+    await expect(hasOpenAiApiKey()).rejects.toThrow();
+  });
 });
+

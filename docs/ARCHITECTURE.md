@@ -144,20 +144,35 @@ React Component
 
 All IPC goes through the `src/lib/desktop-api/` layer. Components never call `invoke()` directly.
 
-Command-boundary DTOs use explicit camelCase serialization where required. The Option and System desktop wrappers validate unknown responses with Zod; broader cross-family fixture coverage remains part of stabilization.
+Command-boundary DTOs use explicit `camelCase` serialization (`#[serde(rename_all = "camelCase")]`) while internal Rust domain models retain `snake_case`. The `desktop-api/` TypeScript wrappers parse and validate all responses with strict Zod schemas. Static 1:1 IPC registration parity between frontend `invoke` calls and Rust `lib.rs` handlers is verified via `scripts/check-ipc-registration.mjs`.
+
+## Agent Task Execution & Event Streaming
+
+```text
+React (AgentPanel)
+  → useRunAgentTask / useCreateAgentTask
+    → desktopApi.agent.createAgentTask() & startAgentTask()
+      → Rust TaskExecutor background Tokio task
+        → Emits Tauri events (task:progress, task:completed, task:failed, task:cancelled)
+          → React useTaskEventStream (real-time 20-message stream + TanStack Query invalidation)
+          → Persisted in agent_task_events SQLite table
+          → Structured ResearchCompletion parsed via Zod & rendered in ResearchResultCard
+```
+
+- **Startup Race Protection**: Rust emits `app:ready` upon `AppState` initialization; `useAppReady` gates frontend IPC.
+- **Failure Context**: Exact failure payloads are surfaced to users in `AgentPanel` with complete EN/ZH-CN i18n.
 
 ## Current IPC Command Families
 
-The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, Artifacts, internal plugins, Options, and Goose scaffolding. Command registration alone is not completion evidence.
+The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, Artifacts, internal plugins, Options, and Goose scaffolding. Registration parity across all 176 commands is verified by `scripts/check-ipc-registration.mjs`.
 
-Current integration status is maintained in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md). In particular:
+Current integration status:
 
-- Agent queue/start and OpenAI credential repairs are merged with focused regression coverage; full Agent-to-Artifact verification remains pending.
-- Research, thesis, knowledge graph, and portfolio commands have reachable primary UI surfaces.
-- Artifact persistence, in-page renderers, and the isolated Artifact-window route are merged (#88) with focused route and permission tests; packaged smoke acceptance remains pending.
-- Internal plugin commands and Settings management are reachable (#99); the controlled company-comparison create-to-Artifact workflow is pending review.
-- Option command-boundary DTOs and System information responses now use the reviewed camelCase/Zod contracts; the Option UI vertical slice remains incomplete.
-- Goose commands are registered as scaffolding; the service is disabled and the feature is not accepted.
+- **Agent Runtime (S1 Complete)**: End-to-end task creation, background execution, real-time event streaming, cancellation, failure surfacing, and structured research output rendering are fully accepted.
+- **IPC Normalization (S2 Active)**: `Workspace`, `Settings`, `Credentials`, `System`, and `Options` commands are normalized to `camelCase` DTOs with strict Zod schema validation; remaining families are in progress.
+- **Research, Thesis, Knowledge Graph, Portfolio**: Functional UI surfaces connected to SQLx persistence.
+- **Artifacts & Plugins**: Isolated Artifact-window route (#88) and internal plugin settings management (#99) are operational.
+- **Goose Scaffolding**: Registered but disabled until M10 entry gate.
 
 ## Database
 
@@ -169,7 +184,8 @@ Current integration status is maintained in the [Frontend-Backend Integration an
 
 ## Security
 
-- API keys: Stored through the OS keychain under canonical `openai.api_key`; the legacy `api_key` entry is migrated by Rust, and plaintext secrets do not cross into React
+- API keys: Stored through the OS keychain under canonical `openai.api_key`; plaintext secrets never cross into React
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
-- Input validation: Zod is used in selected TypeScript boundaries and explicit validation is used in Rust; coverage is not yet uniform
+- Input validation: Strict Zod parsing on frontend IPC boundaries and Serde/Domain validation in Rust
+

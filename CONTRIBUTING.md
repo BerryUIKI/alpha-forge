@@ -238,7 +238,8 @@ chore(deps): update Tauri to 2.0.0
    cargo test
    ```
 
-3. **Update documentation** if architecture changes
+3. **Update documentation synchronously**:
+   Every PR that alters behavior, adds features, changes IPC contracts, or updates milestone status MUST include the corresponding documentation updates in the same PR.
 
 ### PR Template Checklist
 
@@ -250,7 +251,7 @@ Your PR should satisfy all items in our [PR template](.github/pull_request_templ
 - [ ] `cargo clippy` passes
 - [ ] ESLint passes
 - [ ] Tests pass
-- [ ] Documentation updated
+- [ ] Documentation synchronously updated in this PR (Architecture, Roadmaps, Specs, README)
 - [ ] No secrets committed
 
 ### Review Process

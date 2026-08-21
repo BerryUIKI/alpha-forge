@@ -108,4 +108,16 @@ describe("Workspace API", () => {
 
     await expect(createWorkspace("")).rejects.toEqual(mockError);
   });
+
+  it("rejects malformed workspace response shape via Zod", async () => {
+    const malformed = {
+      id: "test-uuid",
+      // missing name, createdAt, updatedAt
+    };
+
+    vi.mocked(invoke).mockResolvedValueOnce(malformed);
+
+    const { getWorkspace } = await import("@/lib/desktop-api/workspace");
+    await expect(getWorkspace("test-uuid")).rejects.toThrow();
+  });
 });
