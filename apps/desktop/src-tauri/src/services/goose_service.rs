@@ -283,4 +283,13 @@ mod tests {
         assert!(config.shadow_mode_enabled);
         assert!(config.default_budget.max_turns > 0);
     }
+
+    #[test]
+    fn disabled_shadow_mode_config() {
+        let config = GooseServiceConfig {
+            shadow_mode_enabled: false,
+            ..Default::default()
+        };
+        assert!(!config.shadow_mode_enabled);
+    }
 }

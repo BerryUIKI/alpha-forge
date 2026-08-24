@@ -17,7 +17,9 @@ This roadmap implements M10 after the M8 MVP completion gate and, by default, af
 | Tests              | Adapter contract, policy, process lifecycle, recipe schema, redaction, E2E, packaging              |
 | Documentation      | ADRs, version matrix, threat model, operator troubleshooting, release notes                        |
 
-## M10-G0: Revalidation and architecture decision
+## M10-G0: Revalidation and architecture decision ✅
+
+**Status:** Complete (ADR-0004 Accepted)
 
 **Goal:** select an upstream version and integration surface using current evidence.
 
@@ -35,6 +37,8 @@ This roadmap implements M10 after the M8 MVP completion gate and, by default, af
 **Exit gate:** ADR and threat model approved; exact version, checksum/source, platforms, and removal plan recorded.
 
 ## M10-G1: Isolated technical spike
+
+**Status:** Active
 
 **Goal:** prove lifecycle and structured-output behavior without accessing real user data.
 

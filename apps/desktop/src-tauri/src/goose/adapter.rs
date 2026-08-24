@@ -396,6 +396,17 @@ mod tests {
         let id1 = RunId::new();
         let id2 = RunId::new();
         assert_ne!(id1, id2);
+        assert!(id1.to_string().starts_with("goose-run-"));
+    }
+
+    #[test]
+    fn test_redact_sensitive() {
+        assert_eq!(redact_sensitive("my api_key is secret"), "[REDACTED]");
+        assert_eq!(redact_sensitive("bearer token 123"), "[REDACTED]");
+        assert_eq!(
+            redact_sensitive("normal output message"),
+            "normal output message"
+        );
     }
 
     #[tokio::test]
@@ -408,5 +419,20 @@ mod tests {
         let adapter = GooseAdapter::new(config);
         let result = adapter.verify_binary().await;
         assert!(matches!(result, Err(GooseError::BinaryNotFound { .. })));
+    }
+
+    #[tokio::test]
+    async fn cancel_nonexistent_run_returns_error() {
+        let adapter = GooseAdapter::new(GooseConfig::default());
+        let result = adapter.cancel(RunId(99999)).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn shutdown_clears_active_processes() {
+        let adapter = GooseAdapter::new(GooseConfig::default());
+        adapter.shutdown().await;
+        let processes = adapter.active_processes.read().await;
+        assert!(processes.is_empty());
     }
 }
