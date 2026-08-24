@@ -6,6 +6,7 @@ import { type ReactNode } from "react";
 import { desktopApi } from "@/lib/desktop-api";
 import {
   useGooseHealth,
+  useGooseDiagnostics,
   useGooseProposals,
   useGooseProviderPolicy,
   useStartShadowAnalysis,
@@ -19,6 +20,7 @@ vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
     goose: {
       checkGooseHealth: vi.fn(),
+      getDiagnostics: vi.fn(),
       getProviderPolicy: vi.fn(),
       startShadowAnalysis: vi.fn(),
       cancelAnalysis: vi.fn(),
@@ -56,6 +58,31 @@ describe("useGooseAnalysis hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.binary_available).toBe(true);
       expect(result.current.data?.shadow_mode_enabled).toBe(true);
+    });
+  });
+
+  describe("useGooseDiagnostics", () => {
+    it("fetches runtime diagnostics metadata", async () => {
+      vi.mocked(desktopApi.goose.getDiagnostics).mockResolvedValue({
+        version: "1.0.0",
+        engine: "aaif-goose",
+        binary_status: "verified",
+        shadow_mode_enabled: true,
+        platform: "windows",
+        active_policy_profile: "read_only_shadow_mode",
+        max_concurrent: 1,
+        active_processes: 0,
+      });
+
+      const { result } = renderHook(() => useGooseDiagnostics(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.version).toBe("1.0.0");
+      expect(result.current.data?.engine).toBe("aaif-goose");
+      expect(result.current.data?.binary_status).toBe("verified");
+      expect(desktopApi.goose.getDiagnostics).toHaveBeenCalled();
     });
   });
 

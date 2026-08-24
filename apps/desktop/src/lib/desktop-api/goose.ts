@@ -1,5 +1,5 @@
 // Goose Agent desktop API.
-// Provides Zod-validated types and commands for Goose shadow-mode analysis, human-approved proposals, and provider policy (M10).
+// Provides Zod-validated types and commands for Goose shadow-mode analysis, proposals, provider policy, and diagnostics (M10).
 
 import { invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
@@ -87,6 +87,20 @@ export const GooseHealthStatusSchema = z.object({
   max_concurrent: z.number().int().nonnegative(),
 });
 export type GooseHealthStatus = z.infer<typeof GooseHealthStatusSchema>;
+
+// Diagnostics Schemas (M10-G6)
+
+export const GooseDiagnosticsSchema = z.object({
+  version: z.string(),
+  engine: z.string(),
+  binary_status: z.string(),
+  shadow_mode_enabled: z.boolean(),
+  platform: z.string(),
+  active_policy_profile: z.string(),
+  max_concurrent: z.number().int().nonnegative(),
+  active_processes: z.number().int().nonnegative(),
+});
+export type GooseDiagnostics = z.infer<typeof GooseDiagnosticsSchema>;
 
 // Provider Policy Schemas (M10-G5)
 
@@ -192,6 +206,13 @@ export async function cancelAnalysis(runId: string): Promise<void> {
  */
 export async function checkGooseHealth(): Promise<GooseHealthStatus> {
   return invokeGoose("check_goose_health", undefined, GooseHealthStatusSchema);
+}
+
+/**
+ * Get Goose runtime diagnostics (M10-G6).
+ */
+export async function getDiagnostics(): Promise<GooseDiagnostics> {
+  return invokeGoose("get_goose_diagnostics", undefined, GooseDiagnosticsSchema);
 }
 
 /**

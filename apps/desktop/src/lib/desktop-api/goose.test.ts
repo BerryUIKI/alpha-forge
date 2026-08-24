@@ -130,6 +130,26 @@ describe("desktop-api/goose", () => {
     expect(policy.disallow_plaintext_fallback).toBe(true);
   });
 
+  it("getDiagnostics validates and returns runtime diagnostics (M10-G6)", async () => {
+    const mockDiagnostics: api.GooseDiagnostics = {
+      version: "1.0.0",
+      engine: "aaif-goose",
+      binary_status: "verified",
+      shadow_mode_enabled: true,
+      platform: "windows",
+      active_policy_profile: "read_only_shadow_mode",
+      max_concurrent: 1,
+      active_processes: 0,
+    };
+    mockInvoke.mockResolvedValueOnce(mockDiagnostics);
+
+    const diag = await api.getDiagnostics();
+    expect(mockInvoke).toHaveBeenCalledWith("get_goose_diagnostics", undefined);
+    expect(diag.version).toBe("1.0.0");
+    expect(diag.binary_status).toBe("verified");
+    expect(diag.platform).toBe("windows");
+  });
+
   it("creates, lists, accepts and rejects proposals (M10-G4)", async () => {
     mockInvoke.mockResolvedValueOnce(mockProposal);
     const created = await api.createProposal({

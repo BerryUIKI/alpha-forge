@@ -133,6 +133,11 @@ impl GooseAdapter {
         Ok(path.clone())
     }
 
+    /// Get the count of active Goose processes
+    pub async fn active_process_count(&self) -> usize {
+        self.active_processes.read().await.len()
+    }
+
     /// Execute Goose with the given recipe and budget
     pub async fn execute(
         &self,

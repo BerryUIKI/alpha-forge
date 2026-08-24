@@ -49,6 +49,19 @@ pub async fn check_goose_health(state: State<'_, AppState>) -> Result<GooseHealt
     goose_service.health_check().await
 }
 
+/// Get Goose runtime diagnostics (M10-G6)
+#[tauri::command]
+pub async fn get_goose_diagnostics(
+    state: State<'_, AppState>,
+) -> Result<crate::services::goose_service::GooseDiagnostics, AppError> {
+    let goose_service = state
+        .goose_service
+        .as_ref()
+        .ok_or_else(|| AppError::Internal("Goose service not initialized".to_string()))?;
+
+    goose_service.get_diagnostics().await
+}
+
 /// Get Goose provider policy (M10-G5)
 #[tauri::command]
 pub async fn get_goose_provider_policy(
