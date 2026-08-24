@@ -36,9 +36,9 @@ This roadmap implements M10 after the M8 MVP completion gate and, by default, af
 
 **Exit gate:** ADR and threat model approved; exact version, checksum/source, platforms, and removal plan recorded.
 
-## M10-G1: Isolated technical spike
+## M10-G1: Isolated technical spike ✅
 
-**Status:** Active
+**Status:** Complete
 
 **Goal:** prove lifecycle and structured-output behavior without accessing real user data.
 
@@ -57,7 +57,9 @@ The spike must be discarded or isolated if it cannot meet the policy. Do not nor
 
 **Exit gate:** deterministic fixture passes on supported development platforms; cancellation and failure leave no orphan process; output validates before use.
 
-## M10-G2: Read-only AlphaForge MCP bridge
+## M10-G2: Read-only AlphaForge MCP bridge ✅
+
+**Status:** Complete
 
 **Goal:** give Goose narrowly scoped research context without exposing storage or privileged capabilities.
 
@@ -78,6 +80,8 @@ MCP responses have schema validation, size limits, pagination, provenance, and r
 **Exit gate:** policy tests prove cross-workspace IDs, traversal strings, oversized queries, unknown tools, and write attempts are rejected.
 
 ## M10-G3: Shadow-mode research slice
+
+**Status:** Active
 
 ```text
 User selects “Goose shadow analysis”
