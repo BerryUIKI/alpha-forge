@@ -117,9 +117,9 @@ The frontend implements initial, loading, progress, waiting, completed, empty, p
 
 **Exit gate:** a user can run, cancel, inspect, and later reopen an evidence-grounded result; no Goose output becomes thesis evidence or a decision without confirmation.
 
-## M10-G4: Human-approved proposals
+## M10-G4: Human-approved proposals ✅
 
-**Status:** Active
+**Status:** Complete
 
 **Goal:** let Goose propose structured changes while AlphaForge remains the only writer.
 
@@ -134,6 +134,8 @@ Do not expose generic create/update/delete MCP tools. Do not allow proposals for
 **Exit gate:** all writes use existing services, are attributable to a user confirmation, and are reversible where the domain allows.
 
 ## M10-G5: Credentials and provider policy
+
+**Status:** Active
 
 Choose and document exactly one credential model:
 

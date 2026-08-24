@@ -57,6 +57,26 @@ describe("desktop-api/goose", () => {
     model: "gpt-4o",
   };
 
+  const mockProposal: api.Proposal = {
+    id: "prop-1",
+    workspace_id: "ws-1",
+    run_id: "goose-run-123",
+    proposal_type: "evidence_candidate",
+    title: "Link Q3 evidence",
+    summary: "High confidence supporting evidence",
+    payload: {
+      thesis_id: "thesis-1",
+      source_id: "src-1",
+      excerpt: "15% revenue growth",
+      relation: "supports",
+      confidence: 90,
+    },
+    status: "pending",
+    created_at: "2026-08-24T16:00:00Z",
+    reviewed_at: null,
+    resulting_entity_id: null,
+  };
+
   it("startShadowAnalysis validates and returns structured analysis result", async () => {
     mockInvoke.mockResolvedValueOnce(mockResult);
 
@@ -92,6 +112,42 @@ describe("desktop-api/goose", () => {
     expect(health.binary_available).toBe(true);
     expect(health.shadow_mode_enabled).toBe(true);
     expect(health.max_concurrent).toBe(2);
+  });
+
+  it("creates, lists, accepts and rejects proposals (M10-G4)", async () => {
+    mockInvoke.mockResolvedValueOnce(mockProposal);
+    const created = await api.createProposal({
+      workspace_id: "ws-1",
+      run_id: "goose-run-123",
+      proposal_type: "evidence_candidate",
+      title: "Link Q3 evidence",
+      summary: "High confidence supporting evidence",
+      payload: mockProposal.payload,
+    });
+    expect(created.id).toBe("prop-1");
+
+    mockInvoke.mockResolvedValueOnce([mockProposal]);
+    const list = await api.listProposals("ws-1", "pending");
+    expect(list).toHaveLength(1);
+    expect(list[0]!.title).toBe("Link Q3 evidence");
+
+    mockInvoke.mockResolvedValueOnce({
+      ...mockProposal,
+      status: "accepted",
+      reviewed_at: "2026-08-24T16:05:00Z",
+      resulting_entity_id: "evidence-777",
+    });
+    const accepted = await api.acceptProposal("prop-1");
+    expect(accepted.status).toBe("accepted");
+    expect(accepted.resulting_entity_id).toBe("evidence-777");
+
+    mockInvoke.mockResolvedValueOnce({
+      ...mockProposal,
+      status: "rejected",
+      reviewed_at: "2026-08-24T16:06:00Z",
+    });
+    const rejected = await api.rejectProposal("prop-1");
+    expect(rejected.status).toBe("rejected");
   });
 
   it("rejects invalid analysis result", async () => {

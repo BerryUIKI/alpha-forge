@@ -54,6 +54,7 @@ use crate::services::performance_service::PerformanceService;
 use crate::services::plugin_service::PluginService;
 use crate::services::portfolio_option_service::PortfolioOptionService;
 use crate::services::portfolio_service::PortfolioService;
+use crate::services::proposal_service::ProposalService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_note_service::ResearchNoteService;
 use crate::services::research_project_service::ResearchProjectService;
@@ -112,6 +113,8 @@ pub struct AppState {
     pub artifact_manager: Arc<ArtifactManager>,
     /// Goose service for shadow-mode analysis (optional, initialized when M10 is enabled)
     pub goose_service: Option<Arc<GooseService>>,
+    /// Proposal service for human-approved agent proposals (M10-G4)
+    pub proposal_service: ProposalService,
 }
 
 impl AppState {
@@ -283,6 +286,7 @@ impl AppState {
             artifact_manager,
             // Goose service initialized as None (enabled when M10 is activated)
             goose_service: None,
+            proposal_service: ProposalService::new(),
         })
     }
 }
