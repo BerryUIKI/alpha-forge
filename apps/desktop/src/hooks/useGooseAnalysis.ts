@@ -1,11 +1,11 @@
 /**
  * Goose Analysis Hooks
  *
- * Provides TanStack Query hooks for Goose shadow-mode analysis (M10).
+ * Provides TanStack Query hooks for Goose shadow-mode analysis and human-approved proposals (M10).
  * Follows integration standards from docs/FRONTEND_BACKEND_INTEGRATION.md
  *
  * Backend Commands: src-tauri/src/commands/goose.rs
- * Service: src-tauri/src/services/goose_service.rs
+ * Service: src-tauri/src/services/goose_service.rs, proposal_service.rs
  * API Layer: src/lib/desktop-api/goose.ts
  *
  * @module hooks/goose
@@ -18,6 +18,8 @@ import { processAppError } from "@/lib/errors";
 import type {
   StartShadowAnalysisInput,
   ShadowAnalysisResult,
+  Proposal,
+  ProposalStatus,
 } from "@/lib/desktop-api/goose";
 
 // Re-export types for convenience
@@ -29,6 +31,10 @@ export type {
   Claim,
   Evidence,
   Risk,
+  Proposal,
+  ProposalType,
+  ProposalStatus,
+  CreateProposalInput,
 } from "@/lib/desktop-api/goose";
 
 // ============================================================================
@@ -37,12 +43,6 @@ export type {
 
 /**
  * Hook to check Goose service health
- *
- * @example
- * const { data: health, isLoading } = useGooseHealth();
- * if (health?.binary_available && health?.shadow_mode_enabled) {
- *   // Goose is ready
- * }
  */
 export function useGooseHealth() {
   return useQuery({
@@ -53,29 +53,24 @@ export function useGooseHealth() {
   });
 }
 
+/**
+ * Hook to list proposals for a workspace (M10-G4)
+ */
+export function useGooseProposals(workspaceId: string, status?: ProposalStatus) {
+  return useQuery({
+    queryKey: ["goose", "proposals", workspaceId, status ?? "all"],
+    queryFn: () => desktopApi.goose.listProposals(workspaceId, status),
+    enabled: Boolean(workspaceId),
+    staleTime: 10000,
+  });
+}
+
 // ============================================================================
 // Mutation Hooks
 // ============================================================================
 
 /**
  * Hook to start a Goose shadow analysis
- *
- * @example
- * const mutation = useStartShadowAnalysis();
- *
- * const handleStart = () => {
- *   mutation.mutate({
- *     workspace_id: workspaceId,
- *     thesis_id: thesisId,
- *   }, {
- *     onSuccess: (result) => {
- *       console.log("Analysis completed:", result.run_id);
- *     },
- *     onError: (error) => {
- *       console.error("Analysis failed:", error);
- *     },
- *   });
- * };
  */
 export function useStartShadowAnalysis() {
   const queryClient = useQueryClient();
@@ -84,10 +79,7 @@ export function useStartShadowAnalysis() {
     mutationFn: (input: StartShadowAnalysisInput) =>
       desktopApi.goose.startShadowAnalysis(input),
     onSuccess: (result: ShadowAnalysisResult) => {
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["goose", "analyses"] });
-
-      // Cache the result
       queryClient.setQueryData(
         ["goose", "analysis", result.run_id],
         result
@@ -98,13 +90,6 @@ export function useStartShadowAnalysis() {
 
 /**
  * Hook to cancel a running Goose analysis
- *
- * @example
- * const cancelMutation = useCancelAnalysis();
- *
- * const handleCancel = () => {
- *   cancelMutation.mutate(runId);
- * };
  */
 export function useCancelAnalysis() {
   const queryClient = useQueryClient();
@@ -112,8 +97,37 @@ export function useCancelAnalysis() {
   return useMutation({
     mutationFn: (runId: string) => desktopApi.goose.cancelAnalysis(runId),
     onSuccess: (_data, runId) => {
-      // Update the analysis status
       queryClient.invalidateQueries({ queryKey: ["goose", "analysis", runId] });
+    },
+  });
+}
+
+/**
+ * Hook to accept an agent proposal and commit domain changes (M10-G4)
+ */
+export function useAcceptProposal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (proposalId: string) => desktopApi.goose.acceptProposal(proposalId),
+    onSuccess: (proposal: Proposal) => {
+      queryClient.invalidateQueries({ queryKey: ["goose", "proposals"] });
+      queryClient.invalidateQueries({ queryKey: ["theses"] });
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+}
+
+/**
+ * Hook to reject an agent proposal (M10-G4)
+ */
+export function useRejectProposal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (proposalId: string) => desktopApi.goose.rejectProposal(proposalId),
+    onSuccess: (_proposal: Proposal) => {
+      queryClient.invalidateQueries({ queryKey: ["goose", "proposals"] });
     },
   });
 }
@@ -124,30 +138,6 @@ export function useCancelAnalysis() {
 
 /**
  * Combined hook for Goose shadow analysis operations
- *
- * Provides all Goose-related functionality in a single hook.
- *
- * @param workspaceId - Current workspace ID
- *
- * @example
- * const {
- *   health,
- *   startAnalysis,
- *   cancelAnalysis,
- *   isStarting,
- *   result,
- *   error,
- * } = useGooseShadowAnalysis(workspaceId);
- *
- * // Start analysis
- * const handleStart = () => {
- *   startAnalysis({ thesis_id: thesisId });
- * };
- *
- * // Cancel running analysis
- * const handleCancel = () => {
- *   if (currentRunId) cancelAnalysis(currentRunId);
- * };
  */
 export function useGooseShadowAnalysis(workspaceId: string) {
   const healthQuery = useGooseHealth();
@@ -155,7 +145,6 @@ export function useGooseShadowAnalysis(workspaceId: string) {
   const cancelMutation = useCancelAnalysis();
   const [validationError, setValidationError] = useState(false);
 
-  // Auto-clear the validation error once a workspace becomes available.
   useEffect(() => {
     if (workspaceId) {
       setValidationError(false);
@@ -188,12 +177,10 @@ export function useGooseShadowAnalysis(workspaceId: string) {
   };
 
   return {
-    // Health status
     health: healthQuery.data,
     isHealthLoading: healthQuery.isLoading,
     isReady,
 
-    // Start analysis
     startAnalysis,
     isStarting: startMutation.isPending,
     result: startMutation.data,
@@ -202,11 +189,9 @@ export function useGooseShadowAnalysis(workspaceId: string) {
       ? processAppError("en", startMutation.error)
       : null,
 
-    // Cancel analysis
     cancelAnalysis,
     isCancelling: cancelMutation.isPending,
 
-    // Current state
     isRunning: startMutation.isPending,
     isSuccess: startMutation.isSuccess,
     isError: startMutation.isError,

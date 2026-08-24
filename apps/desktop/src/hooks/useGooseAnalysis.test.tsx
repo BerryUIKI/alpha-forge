@@ -6,8 +6,11 @@ import { type ReactNode } from "react";
 import { desktopApi } from "@/lib/desktop-api";
 import {
   useGooseHealth,
+  useGooseProposals,
   useStartShadowAnalysis,
   useCancelAnalysis,
+  useAcceptProposal,
+  useRejectProposal,
   useGooseShadowAnalysis,
 } from "./useGooseAnalysis";
 
@@ -17,6 +20,9 @@ vi.mock("@/lib/desktop-api", () => ({
       checkGooseHealth: vi.fn(),
       startShadowAnalysis: vi.fn(),
       cancelAnalysis: vi.fn(),
+      listProposals: vi.fn(),
+      acceptProposal: vi.fn(),
+      rejectProposal: vi.fn(),
     },
   },
 }));
@@ -48,6 +54,84 @@ describe("useGooseAnalysis hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.binary_available).toBe(true);
       expect(result.current.data?.shadow_mode_enabled).toBe(true);
+    });
+  });
+
+  describe("useGooseProposals", () => {
+    it("fetches proposals list for workspace", async () => {
+      const mockProposal = {
+        id: "prop-1",
+        workspace_id: "ws-1",
+        run_id: "run-1",
+        proposal_type: "evidence_candidate" as const,
+        title: "Test proposal",
+        summary: "Summary",
+        payload: {},
+        status: "pending" as const,
+        created_at: "2026-08-24T16:00:00Z",
+      };
+
+      vi.mocked(desktopApi.goose.listProposals).mockResolvedValue([mockProposal]);
+
+      const { result } = renderHook(() => useGooseProposals("ws-1", "pending"), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data).toHaveLength(1);
+      expect(result.current.data?.[0]?.title).toBe("Test proposal");
+      expect(desktopApi.goose.listProposals).toHaveBeenCalledWith("ws-1", "pending");
+    });
+  });
+
+  describe("useAcceptProposal and useRejectProposal", () => {
+    it("accepts a proposal", async () => {
+      vi.mocked(desktopApi.goose.acceptProposal).mockResolvedValue({
+        id: "prop-1",
+        workspace_id: "ws-1",
+        run_id: "run-1",
+        proposal_type: "evidence_candidate" as const,
+        title: "Test proposal",
+        summary: "Summary",
+        payload: {},
+        status: "accepted" as const,
+        created_at: "2026-08-24T16:00:00Z",
+        reviewed_at: "2026-08-24T16:05:00Z",
+        resulting_entity_id: "ev-1",
+      });
+
+      const { result } = renderHook(() => useAcceptProposal(), { wrapper: createWrapper() });
+
+      act(() => {
+        result.current.mutate("prop-1");
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(desktopApi.goose.acceptProposal).toHaveBeenCalledWith("prop-1");
+    });
+
+    it("rejects a proposal", async () => {
+      vi.mocked(desktopApi.goose.rejectProposal).mockResolvedValue({
+        id: "prop-1",
+        workspace_id: "ws-1",
+        run_id: "run-1",
+        proposal_type: "evidence_candidate" as const,
+        title: "Test proposal",
+        summary: "Summary",
+        payload: {},
+        status: "rejected" as const,
+        created_at: "2026-08-24T16:00:00Z",
+        reviewed_at: "2026-08-24T16:06:00Z",
+      });
+
+      const { result } = renderHook(() => useRejectProposal(), { wrapper: createWrapper() });
+
+      act(() => {
+        result.current.mutate("prop-1");
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(desktopApi.goose.rejectProposal).toHaveBeenCalledWith("prop-1");
     });
   });
 

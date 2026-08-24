@@ -1,4 +1,4 @@
-//! Tauri commands for Goose integration
+//! Tauri commands for Goose integration and human-approved proposals (M10)
 
 use tauri::State;
 
@@ -7,6 +7,7 @@ use crate::error::AppError;
 use crate::services::goose_service::{
     GooseHealthStatus, ShadowAnalysisResult, StartShadowAnalysisInput,
 };
+use domain::proposal::{CreateProposalInput, Proposal, ProposalStatus};
 
 /// Start a Goose shadow analysis
 #[tauri::command]
@@ -45,4 +46,56 @@ pub async fn check_goose_health(state: State<'_, AppState>) -> Result<GooseHealt
         .ok_or_else(|| AppError::Internal("Goose service not initialized".to_string()))?;
 
     goose_service.health_check().await
+}
+
+/// Create a proposal (M10-G4)
+#[tauri::command]
+pub async fn create_goose_proposal(
+    input: CreateProposalInput,
+    state: State<'_, AppState>,
+) -> Result<Proposal, AppError> {
+    state.proposal_service.create_proposal(input).await
+}
+
+/// List proposals for a workspace (M10-G4)
+#[tauri::command]
+pub async fn list_goose_proposals(
+    workspace_id: String,
+    status: Option<ProposalStatus>,
+    state: State<'_, AppState>,
+) -> Result<Vec<Proposal>, AppError> {
+    state
+        .proposal_service
+        .list_proposals(&workspace_id, status)
+        .await
+}
+
+/// Get a proposal by ID (M10-G4)
+#[tauri::command]
+pub async fn get_goose_proposal(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<Proposal>, AppError> {
+    state.proposal_service.get_proposal(&id).await
+}
+
+/// Accept a proposal and persist to domain service (M10-G4)
+#[tauri::command]
+pub async fn accept_goose_proposal(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Proposal, AppError> {
+    state
+        .proposal_service
+        .accept_proposal(&id, &state.thesis_service, &state.research_note_service)
+        .await
+}
+
+/// Reject a proposal (M10-G4)
+#[tauri::command]
+pub async fn reject_goose_proposal(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Proposal, AppError> {
+    state.proposal_service.reject_proposal(&id).await
 }

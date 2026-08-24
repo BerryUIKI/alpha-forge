@@ -269,6 +269,11 @@ pub fn run() {
             commands::goose::start_goose_shadow_analysis,
             commands::goose::cancel_goose_analysis,
             commands::goose::check_goose_health,
+            commands::goose::create_goose_proposal,
+            commands::goose::list_goose_proposals,
+            commands::goose::get_goose_proposal,
+            commands::goose::accept_goose_proposal,
+            commands::goose::reject_goose_proposal,
         ])
         .run(tauri::generate_context!())
         .expect("failed to launch Investment OS");

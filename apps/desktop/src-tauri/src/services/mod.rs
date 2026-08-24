@@ -19,6 +19,7 @@ pub mod option_service;
 pub mod plugin_service;
 pub mod portfolio_option_service;
 pub mod portfolio_service;
+pub mod proposal_service;
 pub mod research_document_service;
 pub mod research_note_service;
 pub mod research_project_service;
