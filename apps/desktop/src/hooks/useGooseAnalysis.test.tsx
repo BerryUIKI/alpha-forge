@@ -7,6 +7,7 @@ import { desktopApi } from "@/lib/desktop-api";
 import {
   useGooseHealth,
   useGooseProposals,
+  useGooseProviderPolicy,
   useStartShadowAnalysis,
   useCancelAnalysis,
   useAcceptProposal,
@@ -18,6 +19,7 @@ vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
     goose: {
       checkGooseHealth: vi.fn(),
+      getProviderPolicy: vi.fn(),
       startShadowAnalysis: vi.fn(),
       cancelAnalysis: vi.fn(),
       listProposals: vi.fn(),
@@ -54,6 +56,26 @@ describe("useGooseAnalysis hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.binary_available).toBe(true);
       expect(result.current.data?.shadow_mode_enabled).toBe(true);
+    });
+  });
+
+  describe("useGooseProviderPolicy", () => {
+    it("fetches goose provider policy", async () => {
+      vi.mocked(desktopApi.goose.getProviderPolicy).mockResolvedValue({
+        allowed_providers: ["openai", "anthropic", "ollama", "demo"],
+        allowed_models: ["gpt-4o", "claude-3-5-sonnet-20241022"],
+        keyring_service: "alphaforge-goose",
+        disallow_plaintext_fallback: true,
+      });
+
+      const { result } = renderHook(() => useGooseProviderPolicy(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.allowed_providers).toContain("openai");
+      expect(result.current.data?.keyring_service).toBe("alphaforge-goose");
+      expect(desktopApi.goose.getProviderPolicy).toHaveBeenCalled();
     });
   });
 

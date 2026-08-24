@@ -269,6 +269,7 @@ pub fn run() {
             commands::goose::start_goose_shadow_analysis,
             commands::goose::cancel_goose_analysis,
             commands::goose::check_goose_health,
+            commands::goose::get_goose_provider_policy,
             commands::goose::create_goose_proposal,
             commands::goose::list_goose_proposals,
             commands::goose::get_goose_proposal,

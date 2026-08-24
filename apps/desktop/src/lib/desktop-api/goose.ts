@@ -1,5 +1,5 @@
 // Goose Agent desktop API.
-// Provides Zod-validated types and commands for Goose shadow-mode analysis and human-approved proposals (M10).
+// Provides Zod-validated types and commands for Goose shadow-mode analysis, human-approved proposals, and provider policy (M10).
 
 import { invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
@@ -87,6 +87,16 @@ export const GooseHealthStatusSchema = z.object({
   max_concurrent: z.number().int().nonnegative(),
 });
 export type GooseHealthStatus = z.infer<typeof GooseHealthStatusSchema>;
+
+// Provider Policy Schemas (M10-G5)
+
+export const ProviderPolicySchema = z.object({
+  allowed_providers: z.array(z.string()),
+  allowed_models: z.array(z.string()),
+  keyring_service: z.string(),
+  disallow_plaintext_fallback: z.boolean(),
+});
+export type ProviderPolicy = z.infer<typeof ProviderPolicySchema>;
 
 // Proposal Schemas (M10-G4)
 
@@ -182,6 +192,13 @@ export async function cancelAnalysis(runId: string): Promise<void> {
  */
 export async function checkGooseHealth(): Promise<GooseHealthStatus> {
   return invokeGoose("check_goose_health", undefined, GooseHealthStatusSchema);
+}
+
+/**
+ * Get Goose provider policy (M10-G5).
+ */
+export async function getProviderPolicy(): Promise<ProviderPolicy> {
+  return invokeGoose("get_goose_provider_policy", undefined, ProviderPolicySchema);
 }
 
 /**
