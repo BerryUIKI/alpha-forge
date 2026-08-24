@@ -4,6 +4,7 @@ use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
+use crate::goose::config::ProviderPolicy;
 use crate::services::goose_service::{
     GooseHealthStatus, ShadowAnalysisResult, StartShadowAnalysisInput,
 };
@@ -46,6 +47,14 @@ pub async fn check_goose_health(state: State<'_, AppState>) -> Result<GooseHealt
         .ok_or_else(|| AppError::Internal("Goose service not initialized".to_string()))?;
 
     goose_service.health_check().await
+}
+
+/// Get Goose provider policy (M10-G5)
+#[tauri::command]
+pub async fn get_goose_provider_policy(
+    _state: State<'_, AppState>,
+) -> Result<ProviderPolicy, AppError> {
+    Ok(ProviderPolicy::default())
 }
 
 /// Create a proposal (M10-G4)

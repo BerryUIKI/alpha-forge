@@ -114,6 +114,22 @@ describe("desktop-api/goose", () => {
     expect(health.max_concurrent).toBe(2);
   });
 
+  it("getProviderPolicy validates and returns provider policy (M10-G5)", async () => {
+    const mockPolicy: api.ProviderPolicy = {
+      allowed_providers: ["openai", "anthropic", "ollama", "demo"],
+      allowed_models: ["gpt-4o", "claude-3-5-sonnet-20241022", "llama3.2"],
+      keyring_service: "alphaforge-goose",
+      disallow_plaintext_fallback: true,
+    };
+    mockInvoke.mockResolvedValueOnce(mockPolicy);
+
+    const policy = await api.getProviderPolicy();
+    expect(mockInvoke).toHaveBeenCalledWith("get_goose_provider_policy", undefined);
+    expect(policy.allowed_providers).toContain("openai");
+    expect(policy.keyring_service).toBe("alphaforge-goose");
+    expect(policy.disallow_plaintext_fallback).toBe(true);
+  });
+
   it("creates, lists, accepts and rejects proposals (M10-G4)", async () => {
     mockInvoke.mockResolvedValueOnce(mockProposal);
     const created = await api.createProposal({

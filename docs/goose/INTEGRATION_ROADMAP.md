@@ -133,25 +133,23 @@ Do not expose generic create/update/delete MCP tools. Do not allow proposals for
 
 **Exit gate:** all writes use existing services, are attributable to a user confirmation, and are reversible where the domain allows.
 
-## M10-G5: Credentials and provider policy
+## M10-G5: Credentials and provider policy ✅
 
-**Status:** Active
+**Status:** Complete
 
-Choose and document exactly one credential model:
+Credential model documented in [`docs/DECISIONS/0009-goose-credential-and-provider-policy.md`](../DECISIONS/0009-goose-credential-and-provider-policy.md) and [`docs/goose/CREDENTIAL_POLICY.md`](./CREDENTIAL_POLICY.md):
 
-- **Goose-owned keyring for the pilot:** Goose reads an OS-keyring secret configured outside React. AlphaForge does not pass a key in arguments, logs, recipes, or plaintext files.
-- **AlphaForge-owned provider gateway:** Rust retains credentials and exposes a constrained authenticated local provider interface to the sidecar.
-
-The second model offers centralized policy but is more complex. In either case:
-
+- **Goose-owned OS keyring vault:** Goose and Rust communicate with native OS Credential Stores (`alphaforge-goose` namespace). AlphaForge never passes keys in CLI arguments, logs, recipes, environment dumps, or plaintext files.
 - React never reads provider secrets.
 - No secret appears in environment dumps, CLI arguments, recipes, logs, crash reports, or SQLite.
-- File-based Goose secret fallback is disabled for a production integration unless a separate security review approves it.
-- Provider/model allowlists, cost ceilings, and data-retention disclosures are visible to the user.
+- File-based Goose secret fallback is disabled for production releases.
+- Provider/model allowlists (`openai`, `anthropic`, `ollama`, `demo`), cost ceilings ($1.00/run), and data-retention disclosures are strictly enforced.
 
 **Exit gate:** credential flow and provider data handling pass security review on every supported platform.
 
 ## M10-G6: Packaging, update, and support
+
+**Status:** Active
 
 - Bundle or acquire Goose only through the approved release process with an exact version and integrity record.
 - Do not download or execute a newer runtime automatically.

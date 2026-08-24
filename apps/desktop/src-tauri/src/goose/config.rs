@@ -1,5 +1,6 @@
-//! Goose integration configuration
+//! Goose integration configuration and security policies (M10-G5)
 
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -69,6 +70,65 @@ impl Default for ExecutionBudget {
     }
 }
 
+/// Provider Policy governing allowed LLM endpoints and credential boundaries (M10-G5)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProviderPolicy {
+    /// List of allowlisted LLM providers
+    pub allowed_providers: Vec<String>,
+
+    /// List of allowlisted model names
+    pub allowed_models: Vec<String>,
+
+    /// OS Keyring service namespace identifier
+    pub keyring_service: String,
+
+    /// Enforce zero plaintext credential fallback
+    pub disallow_plaintext_fallback: bool,
+}
+
+impl Default for ProviderPolicy {
+    fn default() -> Self {
+        Self {
+            allowed_providers: vec![
+                "openai".to_string(),
+                "anthropic".to_string(),
+                "ollama".to_string(),
+                "demo".to_string(),
+            ],
+            allowed_models: vec![
+                "gpt-4o".to_string(),
+                "gpt-4o-mini".to_string(),
+                "o1".to_string(),
+                "o3-mini".to_string(),
+                "claude-3-5-sonnet-20241022".to_string(),
+                "claude-3-5-haiku-20241022".to_string(),
+                "llama3.2".to_string(),
+                "deepseek-r1".to_string(),
+                "qwen2.5".to_string(),
+                "synthetic-v1".to_string(),
+            ],
+            keyring_service: "alphaforge-goose".to_string(),
+            disallow_plaintext_fallback: true,
+        }
+    }
+}
+
+impl ProviderPolicy {
+    /// Check if a provider is allowlisted
+    pub fn is_provider_allowed(&self, provider: &str) -> bool {
+        self.allowed_providers
+            .iter()
+            .any(|p| p.eq_ignore_ascii_case(provider))
+    }
+
+    /// Check if a model is allowlisted
+    pub fn is_model_allowed(&self, model: &str) -> bool {
+        self.allowed_models
+            .iter()
+            .any(|m| m.eq_ignore_ascii_case(model))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,5 +140,28 @@ mod tests {
         assert!(config.max_output_bytes > 0);
         assert!(config.max_turns > 0);
         assert!(config.max_concurrent > 0);
+    }
+
+    #[test]
+    fn provider_policy_allowlist_validation() {
+        let policy = ProviderPolicy::default();
+
+        // Allowed providers
+        assert!(policy.is_provider_allowed("openai"));
+        assert!(policy.is_provider_allowed("ANTHROPIC"));
+        assert!(policy.is_provider_allowed("ollama"));
+        assert!(policy.is_provider_allowed("demo"));
+
+        // Disallowed providers
+        assert!(!policy.is_provider_allowed("untrusted_provider"));
+        assert!(!policy.is_provider_allowed("unknown_proxy"));
+
+        // Allowed models
+        assert!(policy.is_model_allowed("gpt-4o"));
+        assert!(policy.is_model_allowed("claude-3-5-sonnet-20241022"));
+        assert!(policy.is_model_allowed("llama3.2"));
+
+        // Disallowed models
+        assert!(!policy.is_model_allowed("arbitrary_model_xyz"));
     }
 }

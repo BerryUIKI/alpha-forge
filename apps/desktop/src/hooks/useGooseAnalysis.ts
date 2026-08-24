@@ -65,6 +65,17 @@ export function useGooseProposals(workspaceId: string, status?: ProposalStatus) 
   });
 }
 
+/**
+ * Hook to inspect Goose provider policy (M10-G5)
+ */
+export function useGooseProviderPolicy() {
+  return useQuery({
+    queryKey: ["goose", "provider-policy"],
+    queryFn: () => desktopApi.goose.getProviderPolicy(),
+    staleTime: 60000,
+  });
+}
+
 // ============================================================================
 // Mutation Hooks
 // ============================================================================
