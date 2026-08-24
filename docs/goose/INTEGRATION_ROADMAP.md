@@ -79,9 +79,9 @@ MCP responses have schema validation, size limits, pagination, provenance, and r
 
 **Exit gate:** policy tests prove cross-workspace IDs, traversal strings, oversized queries, unknown tools, and write attempts are rejected.
 
-## M10-G3: Shadow-mode research slice
+## M10-G3: Shadow-mode research slice ✅
 
-**Status:** Active
+**Status:** Complete
 
 ```text
 User selects “Goose shadow analysis”
@@ -118,6 +118,8 @@ The frontend implements initial, loading, progress, waiting, completed, empty, p
 **Exit gate:** a user can run, cancel, inspect, and later reopen an evidence-grounded result; no Goose output becomes thesis evidence or a decision without confirmation.
 
 ## M10-G4: Human-approved proposals
+
+**Status:** Active
 
 **Goal:** let Goose propose structured changes while AlphaForge remains the only writer.
 

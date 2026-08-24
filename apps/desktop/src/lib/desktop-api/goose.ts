@@ -1,110 +1,111 @@
 // Goose Agent desktop API.
-// Provides types and commands for Goose shadow-mode analysis (M10).
+// Provides Zod-validated types and commands for Goose shadow-mode analysis (M10).
 
 import { invoke } from "@tauri-apps/api/core";
+import { z } from "zod";
 
 // ============================================================================
-// Types
+// Schemas
 // ============================================================================
 
-/**
- * Input for starting a Goose shadow analysis.
- */
-export interface StartShadowAnalysisInput {
-  /** Workspace to analyze */
-  workspace_id: string;
-  /** Optional thesis to focus on */
-  thesis_id?: string;
-  /** Optional research project to focus on */
-  research_project_id?: string;
-  /** Custom instructions for Goose */
-  instructions?: string;
+export const RiskSeveritySchema = z.enum(["low", "medium", "high", "critical"]);
+export type RiskSeverity = z.infer<typeof RiskSeveritySchema>;
+
+export const ClaimSchema = z.object({
+  id: z.string(),
+  claim: z.string(),
+  confidence: z.number().int().min(0).max(100),
+  source_ids: z.array(z.string()).default([]),
+  contradicting_source_ids: z.array(z.string()).default([]),
+});
+export type Claim = z.infer<typeof ClaimSchema>;
+
+export const EvidenceRelationSchema = z.enum(["supports", "contradicts", "neutral"]);
+export type EvidenceRelation = z.infer<typeof EvidenceRelationSchema>;
+
+export const EvidenceSchema = z.object({
+  claim_id: z.string(),
+  source_id: z.string(),
+  excerpt: z.string(),
+  relation: EvidenceRelationSchema.default("supports"),
+  confidence: z.number().int().min(0).max(100).optional().nullable(),
+});
+export type Evidence = z.infer<typeof EvidenceSchema>;
+
+export const ContradictionSchema = z.object({
+  description: z.string(),
+  claim_ids: z.array(z.string()).default([]),
+  source_ids: z.array(z.string()).default([]),
+});
+export type Contradiction = z.infer<typeof ContradictionSchema>;
+
+export const RiskSchema = z.object({
+  id: z.string(),
+  risk: z.string(),
+  severity: RiskSeveritySchema.default("medium"),
+  related_claim_ids: z.array(z.string()).default([]),
+  mitigation: z.string().optional().nullable(),
+});
+export type Risk = z.infer<typeof RiskSchema>;
+
+export const StructuredResponseSchema = z.object({
+  summary: z.string(),
+  claims: z.array(ClaimSchema).default([]),
+  evidence: z.array(EvidenceSchema).default([]),
+  contradictions: z.array(ContradictionSchema).default([]),
+  risks: z.array(RiskSchema).default([]),
+  unknowns: z.array(z.string()).default([]),
+  source_ids: z.array(z.string()).default([]),
+  confidence: z.number().int().min(0).max(100),
+  provider: z.string().optional().nullable(),
+  model: z.string().optional().nullable(),
+  recipe_version: z.string().optional().nullable(),
+});
+export type StructuredResponse = z.infer<typeof StructuredResponseSchema>;
+
+export const StartShadowAnalysisInputSchema = z.object({
+  workspace_id: z.string(),
+  thesis_id: z.string().optional(),
+  research_project_id: z.string().optional(),
+  instructions: z.string().optional(),
+});
+export type StartShadowAnalysisInput = z.infer<typeof StartShadowAnalysisInputSchema>;
+
+export const ShadowAnalysisResultSchema = z.object({
+  run_id: z.string(),
+  workspace_id: z.string(),
+  response: StructuredResponseSchema,
+  duration_ms: z.number().nonnegative(),
+  provider: z.string().optional().nullable(),
+  model: z.string().optional().nullable(),
+});
+export type ShadowAnalysisResult = z.infer<typeof ShadowAnalysisResultSchema>;
+
+export const GooseHealthStatusSchema = z.object({
+  binary_available: z.boolean(),
+  shadow_mode_enabled: z.boolean(),
+  max_concurrent: z.number().int().nonnegative(),
+});
+export type GooseHealthStatus = z.infer<typeof GooseHealthStatusSchema>;
+
+const VoidResponseSchema = z.union([z.null(), z.undefined()]);
+
+// ============================================================================
+// IPC Helpers
+// ============================================================================
+
+async function invokeGoose<T>(
+  command: string,
+  args: Record<string, unknown> | undefined,
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+): Promise<T> {
+  const response: unknown = await invoke(command, args);
+  return schema.parse(response);
 }
 
-/**
- * A claim with confidence and source references.
- */
-export interface Claim {
-  id: string;
-  claim: string;
-  confidence: number;
-  source_ids: string[];
-  contradicting_source_ids: string[];
-}
-
-/**
- * Evidence linking claims to sources.
- */
-export interface Evidence {
-  claim_id: string;
-  source_id: string;
-  excerpt: string;
-  relation: "supports" | "contradicts" | "neutral";
-  confidence?: number;
-}
-
-/**
- * Risk severity levels.
- */
-export type RiskSeverity = "low" | "medium" | "high" | "critical";
-
-/**
- * A risk identified in the analysis.
- */
-export interface Risk {
-  id: string;
-  risk: string;
-  severity: RiskSeverity;
-  related_claim_ids: string[];
-  mitigation?: string;
-}
-
-/**
- * Structured response from Goose analysis.
- */
-export interface StructuredResponse {
-  summary: string;
-  claims: Claim[];
-  evidence: Evidence[];
-  contradictions: Array<{
-    description: string;
-    claim_ids: string[];
-    source_ids: string[];
-  }>;
-  risks: Risk[];
-  unknowns: string[];
-  source_ids: string[];
-  confidence: number;
-  provider?: string;
-  model?: string;
-  recipe_version?: string;
-}
-
-/**
- * Result of a shadow analysis run.
- */
-export interface ShadowAnalysisResult {
-  /** Run ID */
-  run_id: string;
-  /** Workspace analyzed */
-  workspace_id: string;
-  /** Structured response from Goose */
-  response: StructuredResponse;
-  /** Execution duration in milliseconds */
-  duration_ms: number;
-  /** Provider used */
-  provider?: string;
-  /** Model used */
-  model?: string;
-}
-
-/**
- * Health status of the Goose service.
- */
-export interface GooseHealthStatus {
-  binary_available: boolean;
-  shadow_mode_enabled: boolean;
-  max_concurrent: number;
+async function invokeGooseVoid(command: string, args: Record<string, unknown>): Promise<void> {
+  const response: unknown = await invoke(command, args);
+  VoidResponseSchema.parse(response);
 }
 
 // ============================================================================
@@ -115,21 +116,22 @@ export interface GooseHealthStatus {
  * Start a Goose shadow analysis.
  */
 export async function startShadowAnalysis(
-  input: StartShadowAnalysisInput
+  input: StartShadowAnalysisInput,
 ): Promise<ShadowAnalysisResult> {
-  return invoke<ShadowAnalysisResult>("start_goose_shadow_analysis", { input });
+  const validatedInput = StartShadowAnalysisInputSchema.parse(input);
+  return invokeGoose("start_goose_shadow_analysis", { input: validatedInput }, ShadowAnalysisResultSchema);
 }
 
 /**
  * Cancel a running Goose analysis.
  */
 export async function cancelAnalysis(runId: string): Promise<void> {
-  return invoke("cancel_goose_analysis", { runId });
+  return invokeGooseVoid("cancel_goose_analysis", { runId });
 }
 
 /**
  * Check Goose service health.
  */
 export async function checkGooseHealth(): Promise<GooseHealthStatus> {
-  return invoke<GooseHealthStatus>("check_goose_health");
+  return invokeGoose("check_goose_health", undefined, GooseHealthStatusSchema);
 }
