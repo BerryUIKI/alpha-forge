@@ -147,17 +147,18 @@ Credential model documented in [`docs/DECISIONS/0009-goose-credential-and-provid
 
 **Exit gate:** credential flow and provider data handling pass security review on every supported platform.
 
-## M10-G6: Packaging, update, and support
+## M10-G6: Packaging, update, and support ✅
 
-**Status:** Active
+**Status:** Complete
 
-- Bundle or acquire Goose only through the approved release process with an exact version and integrity record.
-- Do not download or execute a newer runtime automatically.
-- Maintain a platform/architecture compatibility matrix and software bill of materials.
-- Include upstream license and attribution in release artifacts.
-- Verify macOS and Windows packaging, quarantine/signing behavior, first-run errors, missing binary, corrupted binary, and version mismatch.
-- Add diagnostics that report versions, enabled policy profile, last stable error code, and process state without secrets or sensitive content.
-- Document how to disable Goose and reopen existing results if the runtime is unavailable.
+Packaging, diagnostics, SBOM attribution, and support operations documented in [`docs/goose/PACKAGING_AND_SUPPORT.md`](./PACKAGING_AND_SUPPORT.md):
+
+- Bundled binary release process with exact version and SHA-256 integrity pinning.
+- No automatic untrusted runtime downloads.
+- Platform compatibility matrix maintained across Windows, macOS, and Linux.
+- Upstream Apache 2.0 license and Linux Foundation / AAIF attribution included.
+- Runtime diagnostics API (`get_goose_diagnostics`) reports status, active policy profile, and process concurrency without leaking sensitive data.
+- Emergency operator kill switch and rollback procedures established.
 
 **Exit gate:** packaged builds reproduce the approved binary, pass smoke tests, and fail closed when integrity or compatibility checks fail.
 

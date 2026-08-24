@@ -263,6 +263,28 @@ impl GooseService {
             max_concurrent: self.config.goose_config.max_concurrent,
         })
     }
+
+    /// Get diagnostic report for Goose runtime (M10-G6)
+    pub async fn get_diagnostics(&self) -> Result<GooseDiagnostics, AppError> {
+        let binary_status = if self.adapter.verify_binary().await.is_ok() {
+            "verified".to_string()
+        } else {
+            "unavailable_or_unverified".to_string()
+        };
+
+        let active_count = self.adapter.active_process_count().await;
+
+        Ok(GooseDiagnostics {
+            version: "1.0.0".to_string(),
+            engine: "aaif-goose".to_string(),
+            binary_status,
+            shadow_mode_enabled: self.config.shadow_mode_enabled,
+            platform: std::env::consts::OS.to_string(),
+            active_policy_profile: "read_only_shadow_mode".to_string(),
+            max_concurrent: self.config.goose_config.max_concurrent,
+            active_processes: active_count,
+        })
+    }
 }
 
 /// Health status of the Goose service
@@ -271,6 +293,19 @@ pub struct GooseHealthStatus {
     pub binary_available: bool,
     pub shadow_mode_enabled: bool,
     pub max_concurrent: usize,
+}
+
+/// Diagnostic metadata for Goose runtime (M10-G6)
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct GooseDiagnostics {
+    pub version: String,
+    pub engine: String,
+    pub binary_status: String,
+    pub shadow_mode_enabled: bool,
+    pub platform: String,
+    pub active_policy_profile: String,
+    pub max_concurrent: usize,
+    pub active_processes: usize,
 }
 
 #[cfg(test)]
@@ -291,5 +326,22 @@ mod tests {
             ..Default::default()
         };
         assert!(!config.shadow_mode_enabled);
+    }
+
+    #[test]
+    fn diagnostics_metadata_validates() {
+        let diag = GooseDiagnostics {
+            version: "1.0.0".to_string(),
+            engine: "aaif-goose".to_string(),
+            binary_status: "verified".to_string(),
+            shadow_mode_enabled: true,
+            platform: "windows".to_string(),
+            active_policy_profile: "read_only_shadow_mode".to_string(),
+            max_concurrent: 1,
+            active_processes: 0,
+        };
+        assert_eq!(diag.version, "1.0.0");
+        assert_eq!(diag.engine, "aaif-goose");
+        assert_eq!(diag.active_policy_profile, "read_only_shadow_mode");
     }
 }

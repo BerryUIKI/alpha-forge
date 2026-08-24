@@ -76,6 +76,17 @@ export function useGooseProviderPolicy() {
   });
 }
 
+/**
+ * Hook to retrieve Goose runtime diagnostics (M10-G6)
+ */
+export function useGooseDiagnostics() {
+  return useQuery({
+    queryKey: ["goose", "diagnostics"],
+    queryFn: () => desktopApi.goose.getDiagnostics(),
+    staleTime: 30000,
+  });
+}
+
 // ============================================================================
 // Mutation Hooks
 // ============================================================================
