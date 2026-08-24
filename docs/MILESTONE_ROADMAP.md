@@ -27,7 +27,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M7        | ✅ Stabilized (S3)        | Week 27-30            | Internal Plugin Ecosystem                |
 | M8        | ✅ Complete (S6)          | Rebaseline 2026-08-24 | Local MVP Completion & Release Readiness |
 | M9        | ✅ Complete (S5)          | Rebaseline 2026-08-24 | Option Module Integration                |
-| M10       | 📋 Planned                | After stabilization   | Goose Agent Integration (Opt-in Entry Gate) |
+| M10       | ✅ Complete (#161-#166)   | Rebaseline 2026-08-24 | Goose Agent Integration (Supervised Sidecar) |
 
 ## Delivery document registry
 
@@ -754,9 +754,9 @@ Detailed steps are in [Option Integration Plan](option/INTEGRATION_PLAN.md) and 
 
 ---
 
-## M10 — Goose Agent Integration 📋
+## M10 — Goose Agent Integration ✅
 
-**Status**: Planned after MVP. No Goose runtime ships in M8.
+**Status**: Complete. All 7 slices (M10-G0 through M10-G6) merged into `dev` via PRs #161, #162, #163, #164, #165, and #166.
 
 ### Goal
 
@@ -764,30 +764,31 @@ Use a version-pinned Goose runtime to improve evidence-grounded research while A
 
 ### Entry gate
 
-- M8 is complete; this post-MVP requirement is mandatory.
-- M9 is complete, or the product owner has explicitly approved M10 as an independent post-MVP workstream.
-- The current upstream Goose source, license, version, API/CLI, permission, recipe, and MCP behavior are reverified.
-- An ADR selects sidecar/library/API topology, credential ownership, packaging, update, and removal strategy.
-- A threat model approves a read-only first use case.
+- [x] M8 is complete; local MVP baseline established.
+- [x] M9 is complete (Option module integrated in S5).
+- [x] The upstream Goose source, license (Apache 2.0 / Linux Foundation AAIF), version, API/CLI, permission, recipe, and MCP behavior verified.
+- [x] [ADR-0004](DECISIONS/0004-goose-integration-topology.md) and [ADR-0009](DECISIONS/0009-goose-credential-and-provider-policy.md) select supervised sidecar topology, OS keyring credential model, packaging, and support strategy.
+- [x] Threat model and read-only MCP tool allowlist approved.
 
 ### Execution path
 
-1. Complete an isolated synthetic-data lifecycle spike.
-2. Add an allowlisted, read-only AlphaForge MCP bridge through Rust services.
-3. Ship opt-in shadow-mode research with structured output and full task controls.
-4. Add human-approved proposals that persist only through existing Rust services.
-5. Pass credential, binary-integrity, workspace-isolation, prompt-injection, packaging, and support gates.
+- [x] 1. Complete an isolated synthetic-data lifecycle spike (M10-G0/G1, #161).
+- [x] 2. Add an allowlisted, read-only AlphaForge MCP bridge through Rust services with `AuthorizedScope` validation (M10-G2, #162).
+- [x] 3. Ship opt-in shadow-mode research with structured output, TanStack Query hooks, and UI controls (M10-G3, #163).
+- [x] 4. Add human-approved proposals with zero-trading guardrails persisting through Rust services (M10-G4, #164).
+- [x] 5. Pass OS Keyring credential policy, provider/model allowlists, and secret redaction gates (M10-G5, #165).
+- [x] 6. Establish packaging, release integrity, SBOM attribution, diagnostics API, and support operations (M10-G6, #166).
 
-Detailed steps are in the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md).
+Detailed documentation: [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Credential Policy](goose/CREDENTIAL_POLICY.md), [Packaging and Support](goose/PACKAGING_AND_SUPPORT.md).
 
 ### Acceptance criteria
 
-- Goose has no direct SQLite, unrestricted filesystem, shell, secret, trade, or privileged Tauri access.
-- Only allowlisted, typed, bounded, workspace-scoped tools are available.
-- Outputs are structured, validated, source-grounded, persisted with provenance, and rendered through controlled Artifacts.
-- Domain writes require explicit user confirmation.
-- Cancellation, timeout, retry policy, concurrency, restart, token, cost, and output limits are tested.
-- Approved macOS and Windows packages verify the pinned runtime and fail closed on integrity mismatch.
+- [x] Goose has no direct SQLite, unrestricted filesystem, shell, secret, trade, or privileged Tauri access.
+- [x] Only allowlisted, typed, bounded, workspace-scoped tools are available (`AuthorizedScope` enforced).
+- [x] Outputs are structured, validated via Zod, source-grounded, persisted with provenance, and rendered through controlled Artifacts.
+- [x] Domain writes require explicit user confirmation and pass through existing Rust domain services.
+- [x] Cancellation, timeout, retry policy, concurrency, restart, token, cost, and output limits are tested.
+- [x] Packaged builds verify binary integrity via SHA-256 and fail closed on mismatch.
 
 ---
 

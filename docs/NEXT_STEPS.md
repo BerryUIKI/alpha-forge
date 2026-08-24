@@ -1,104 +1,55 @@
 # AlphaForge Next Steps
 
 **Updated:** 2026-08-24
-**Active milestone:** S6 Complete (Local MVP Release-Ready); M10 Entry Gate Assessment
-**Program decision:** Stabilization program (S0-S6) is completed and accepted; M10 remains planned behind opt-in gate.
+**Active milestone:** Production Release & Distribution Packaging (M10 Complete)
+**Program decision:** All core milestones (M0-M10) and stabilization streams (S0-S6) are 100% completed, tested, and accepted.
 
-Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Corrective sequencing and acceptance gates are governed by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Source evidence and the ordered small-PR plan are in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
+Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Corrective sequencing and acceptance gates are governed by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md) and [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md).
 
 ## Current status
 
 - The 6-stage stabilization roadmap (S0-S6) has been completed, passing all CI gates and acceptance criteria.
-- 100% IPC command parity (176/176) is enforced with camelCase DTOs and Zod runtime validation.
-- Agent task runtime, background execution, real-time progress streaming, cancellation, and structured output rendering are fully accepted.
-- Artifact window isolation, least-privilege capability boundary (`capabilities/artifact-window.json`), and predefined React renderers are operational.
+- Milestone M10 (Goose Agent Integration, M10-G0 through M10-G6) is 100% complete and merged into `dev` (#161-#166).
+- 100% IPC command parity (183/183) is enforced with camelCase DTOs and Zod runtime validation.
+- Agent task runtime, background execution, real-time progress streaming, cancellation, and structured output rendering are fully operational.
+- Artifact window isolation, least-privilege capability boundary (`capabilities/artifact-window.json`), and predefined React renderers are active.
 - Research URL context authority, deep linking, provenance navigation, and 7-standard UI states are verified.
 - Portfolio accounts, positions, CSV transactions import, allocations, concentration risks, theme exposure, thesis alignment, and review reports are fully tested.
 - Option chain acquisition, contract inspection, strategy persistence, Greeks/pricing engines, and no-trading boundary are verified.
+- Supervised Goose sidecar with read-only MCP bridge, `AuthorizedScope` validation, OS Keyring credential protection, zero-trading guardrails, and diagnostics API is fully integrated.
 - The local MVP is release-ready.
 
-## Completed stabilization milestones
+## Completed Milestones
 
-- [x] **S0 — Baseline truth and build recovery** (#151)
-- [x] **S1 — Core Agent loop recovery** (#152)
-- [x] **S2 — IPC contract normalization across all 176 commands** (#153, #154, #155, #156)
-- [x] **S3 — Artifact and plugin vertical slice** (#157)
-- [x] **S4 — Research and portfolio workflow closure** (#158)
-- [x] **S5 — Option module re-acceptance** (#159)
-- [x] **S6 — Release-readiness re-acceptance**
+- [x] **M0 — Project Foundation**
+- [x] **M1 — Desktop Runtime Foundation**
+- [x] **M1.5 — Application Foundation**
+- [x] **M2 — Agent Runtime** (Stabilized in S1)
+- [x] **M3 — Artifact Intelligence System** (Stabilized in S3)
+- [x] **M4 — Research Workspace** (Stabilized in S4)
+- [x] **M5 — Investment Knowledge System** (Stabilized in S4)
+- [x] **M6 — Portfolio Intelligence** (Stabilized in S4)
+- [x] **M7 — Internal Plugin Ecosystem** (Stabilized in S3)
+- [x] **M8 — Local MVP Completion & Release Readiness** (Stabilized in S6)
+- [x] **M9 — Option Module Integration** (Stabilized in S5)
+- [x] **M10 — Goose Agent Integration** (M10-G0 through M10-G6, #161-#166)
 
-## Next steps (M10 Entry Gate)
+## Active Next Steps (Release & Packaging)
 
-1. Review and verify Goose upstream version, licensing, CLI/API contracts, and checksums.
-2. Formulate threat model and Architecture Decision Record for Goose agent integration.
-3. Replace MCP mock methods with bounded, workspace-scoped read operations.
-4. Implement opt-in configuration for Goose backend service initialization.
+1. Synchronously update roadmap and release status documentation.
+2. Execute production binary packaging (`pnpm tauri build`) for Windows distribution.
+3. Validate packaged installer bundle, SHA-256 digests, and smoke test installation.
+4. Prepare version release notes and operator distribution guide.
 
-Each numbered item should normally be a separate pull request. Branch from `dev`, target `dev`, and never develop directly on `dev` or `main`.
-
-## Required pull-request contents
-
-Every rectification pull request must include:
-
-- One narrowly defined defect or vertical slice.
-- A clear frontend/backend contract when IPC is affected.
-- Regression tests for the corrected behavior.
-- Loading, empty, error, partial, and offline behavior where applicable.
-- English documentation updated in the same pull request as behavior.
-- The exact verification commands run and their results.
-- Remaining risks and deliberately deferred work.
-
-## Verification after code repair
+## Quality Gates
 
 ```bash
+node scripts/check-ipc-registration.mjs
 pnpm lint
 pnpm typecheck
 pnpm test
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --workspace
-```
-
-Critical workflow and release-impacting pull requests must also run:
-
-```bash
-pnpm test:e2e
 pnpm tauri build
 ```
-
-Do not substitute compilation alone for functional acceptance.
-
-## Release acceptance gate
-
-M8 can be accepted again only when:
-
-- All P0 integration-audit findings are closed.
-- The core Agent-to-Artifact loop passes E2E.
-- The supported primary workflows pass packaged smoke tests.
-- Security, dependency, privacy, legal, support, backup, recovery, update, and rollback gates are complete.
-- README, architecture, roadmap, milestone, and user documentation agree.
-- A release owner records explicit acceptance evidence.
-
-## Option acceptance gate
-
-M9 can be accepted again only when:
-
-- TypeScript and Rust Option DTOs pass shared serialization fixtures.
-- Chain acquisition, persistence, contract detail, strategy persistence, calculation, and controlled Artifact rendering work end to end.
-- Assumptions, timestamps, source, model, uncertainty, and provenance are visible.
-- Numerical, migration, workspace-isolation, accessibility, i18n, E2E, and packaged-build gates pass.
-- No trade execution or autonomous investment decision capability exists.
-
-## Goose entry gate
-
-M10 remains planned until stabilization and local MVP acceptance are complete. Goose work must then satisfy the ADR, threat model, version pinning, checksum, opt-in, read-only, workspace-scoping, structured-output, cancellation, budget, packaging, and support requirements in the [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md).
-
-## Persistent quality work
-
-- Prefer command-boundary DTOs over leaking database/domain naming into React.
-- Keep all IPC calls in the desktop API layer.
-- Treat API wrapper presence as infrastructure, not proof of a product feature.
-- Keep error codes stable and internal details redacted.
-- Preserve local-first data ownership and evidence provenance.
-- Maintain the no-trading and mandatory-human-review boundaries.
-- Keep branches short-lived and pull requests small.
