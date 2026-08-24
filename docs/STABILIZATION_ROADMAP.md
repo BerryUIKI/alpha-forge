@@ -30,8 +30,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 | S1 — Core Agent loop recovery | ✅ Complete (PR #152) | End-to-end task lifecycle operational: credential → create → queue → run → real-time progress → failure context / structured output. |
 | S2 — IPC contract normalization | ✅ Complete (PR #153-#156) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
 | S3 — Artifact and plugin vertical slice | ✅ Complete | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege. |
-| S4 — Research and portfolio workflow closure | Active | Navigation and persistence workflows are complete and state-aware. |
-| S5 — Option module re-acceptance | Blocked by S4 | One evidence-grounded Option workflow works end to end. |
+| S4 — Research and portfolio workflow closure | ✅ Complete | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware. |
+| S5 — Option module re-acceptance | Active | One evidence-grounded Option workflow works end to end. |
 | S6 — Release-readiness re-acceptance | Blocked by S1-S5 | Required checks, E2E flows, packages, security, and docs are accepted. |
 | M10 — Goose integration | Planned after S6 | Opt-in, read-only, pinned, scoped Goose analysis passes its own entry gate. |
 
@@ -163,18 +163,21 @@ Validated JSON
 
 ## S4 — Research and portfolio workflow closure
 
+**Status:** ✅ Complete
+
 ### Scope
 
-- Make Research URL context authoritative for selected workspace and project.
-- Complete async initial/loading/success/empty/error/partial/offline states.
-- Expose or intentionally retire unused workspace, settings, and portfolio APIs.
-- Confirm provenance links remain visible from research to thesis and review.
+- Make Research URL context authoritative for selected workspace and project with deep-link restoration and stale ID cleanup.
+- Complete async initial/loading/success/empty/error/partial/offline states across Research and Portfolio dashboards.
+- Expose and test portfolio accounts, positions, CSV transactions import, allocation, concentration risks, theme exposure, thesis alignment, and portfolio review generation.
+- Confirm provenance links remain visible from research documents to thesis evidence and portfolio review.
 
 ### Acceptance criteria
 
-- Shared Research links restore valid workspace/project context.
-- Invalid or deleted IDs recover without a blank page.
-- Main portfolio import, allocation, concentration, theme, and thesis-alignment flows are tested.
+- [x] Shared Research links restore valid workspace/project context (`ResearchPage.test.tsx`).
+- [x] Invalid or deleted IDs recover without a blank page (replace navigation and graceful fallback).
+- [x] Main portfolio import, allocation, concentration, theme, and thesis-alignment flows are tested (`usePortfolio.test.tsx`, `useFinancialData.test.tsx`, `dialogs.test.tsx`).
+- [x] Provenance links connect research evidence, knowledge entities, and thesis validation outcomes (`ThesisDetail.tsx`).
 
 ## S5 — Option module re-acceptance
 
