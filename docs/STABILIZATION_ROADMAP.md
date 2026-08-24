@@ -28,10 +28,10 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 |---|---|---|
 | S0 — Baseline truth and build recovery | ✅ Complete (PR #151) | Repository checks run cleanly, React Fast Refresh clean, status documents aligned. |
 | S1 — Core Agent loop recovery | ✅ Complete (PR #152) | End-to-end task lifecycle operational: credential → create → queue → run → real-time progress → failure context / structured output. |
-| S2 — IPC contract normalization | Active (Phase 2.1 in progress) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
-| S3 — Artifact and plugin vertical slice | Blocked by S2 | Structured output opens safely in an Artifact window and internal plugins are usable. |
-| S4 — Research and portfolio workflow closure | Blocked by S2 | Navigation and persistence workflows are complete and state-aware. |
-| S5 — Option module re-acceptance | Blocked by S2 | One evidence-grounded Option workflow works end to end. |
+| S2 — IPC contract normalization | ✅ Complete (PR #153-#156) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
+| S3 — Artifact and plugin vertical slice | ✅ Complete | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege. |
+| S4 — Research and portfolio workflow closure | Active | Navigation and persistence workflows are complete and state-aware. |
+| S5 — Option module re-acceptance | Blocked by S4 | One evidence-grounded Option workflow works end to end. |
 | S6 — Release-readiness re-acceptance | Blocked by S1-S5 | Required checks, E2E flows, packages, security, and docs are accepted. |
 | M10 — Goose integration | Planned after S6 | Opt-in, read-only, pinned, scoped Goose analysis passes its own entry gate. |
 
@@ -87,7 +87,7 @@ Configure credential
 ## S2 — IPC contract normalization
 
 **Acceptance references:** [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9) and [M9 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-10)
-**Status:** Active (Phase 2.1 & Phase 2.2 Complete)
+**Status:** ✅ Complete (PR #153, #154, #155, #156)
 
 ### Scope
 
@@ -98,19 +98,19 @@ Configure credential
 
 ### Phase Status
 
-- **Foundation & Core (Phase 2.1)**:
+- **Foundation & Core (Phase 2.1 Complete - PR #153)**:
   - `scripts/check-ipc-registration.mjs` scans all 176 commands and confirms 100% registration parity.
   - `WorkspaceDto` with `camelCase` (`createdAt`, `updatedAt`) + strict `WorkspaceSchema` Zod validation in `desktop-api/workspace.ts`.
   - `SettingItemDto` (`key`, `value`) + strict `AppInfoSchema` and `SettingItemSchema` in `desktop-api/settings.ts`.
   - `desktop-api/credentials.ts` strict Zod validation + malformed response rejection tests.
-- **Agent, Artifacts & Plugins (Phase 2.2)**:
+- **Agent, Artifacts & Plugins (Phase 2.2 Complete - PR #154)**:
   - `AgentTaskDto` and `AgentTaskEventDto` with `camelCase` serialization (`workspaceId`, `createdAt`, `updatedAt`, `taskId`, `eventType`) + roundtrip tests in `commands/agent.rs`.
   - `desktop-api/agent.ts` with strict `AgentTaskSchema`, `AgentTaskEventSchema`, `TaskStatusSchema`, `TaskEventTypeSchema` + runtime `.parse()`.
   - `ArtifactDto` with `camelCase` serialization (`workspaceId`, `taskId`, `artifactType`, `createdAt`, `updatedAt`) + roundtrip tests in `commands/artifacts.rs`.
   - `desktop-api/artifacts.ts` with strict `ArtifactSchema`, `ArtifactStatusSchema` + runtime `.parse()`.
   - `commands/plugins.rs` updated to return `ArtifactDto`; `desktop-api/plugins.ts` aligned with `ArtifactSchema`.
   - All UI consumers (`AgentTaskList`, `AgentPanel`, `ArtifactViewer`, `ArtifactWindowPage`, `ArtifactsPage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
-- **Research, Thesis & KnowledgeGraph (Phase 2.3 Complete)**:
+- **Research, Thesis & KnowledgeGraph (Phase 2.3 Complete - PR #155)**:
   - `commands/research.rs` with `ResearchProjectDto`, `ResearchDocumentDto`, `ResearchSourceDto`, `ResearchNoteDto`, `ResearchReportDto`, `ResearchSearchMatchDto` (`camelCase`) + Rust roundtrip tests.
   - `commands/thesis.rs` with `InvestmentThesisDto`, `ThesisEvidenceDto`, `ThesisConfidenceSnapshotDto` (`camelCase`) + Rust roundtrip tests.
   - `commands/knowledge_graph.rs` with `KnowledgeEntityDto`, `KnowledgeRelationshipDto`, `ThesisEntityLinkDto` (`camelCase`) + Rust roundtrip tests.
@@ -118,7 +118,7 @@ Configure credential
   - `desktop-api/thesis.ts` with strict `InvestmentThesisSchema`, `ThesisEvidenceSchema`, `ThesisConfidenceSnapshotSchema` + runtime `.parse()`.
   - `desktop-api/knowledge-graph.ts` with strict `KnowledgeEntitySchema`, `KnowledgeRelationshipSchema`, `ThesisEntityLinkSchema` + runtime `.parse()`.
   - All UI consumers (`ResearchDocumentsSection`, `ThesisDetail`, `KnowledgeGraphPanel`, `KnowledgePage`, `useGlobalSearch`, `useDashboardData`) updated to camelCase properties.
-- **Portfolio & Financial (Phase 2.4 Complete)**:
+- **Portfolio & Financial (Phase 2.4 Complete - PR #156)**:
   - `commands/portfolio.rs` with `PortfolioAccountDto`, `PositionDto`, `PortfolioTransactionDto`, `PortfolioAllocationDto`, `ConcentrationRiskDto`, `ThemeExposureDto`, `ThesisAlignmentDto`, `PortfolioReviewDto` (`camelCase`) + Rust roundtrip tests.
   - `desktop-api/portfolio.ts` with strict `PortfolioAccountSchema`, `PositionSchema`, `TransactionTypeSchema`, `PortfolioTransactionSchema`, `PortfolioAllocationSchema`, `ConcentrationSeveritySchema`, `ConcentrationRiskSchema`, `ThemeExposureSchema`, `ThesisAlignmentSchema`, `PortfolioReviewSchema` + runtime `.parse()`.
   - `desktop-api/financial.ts` with strict Zod validation across all 53 Wealthfolio service and CRUD commands + rejection tests.
@@ -131,13 +131,18 @@ Configure credential
 - [x] No UI relies on TypeScript-only assertions for runtime response shape.
 - [x] Error responses preserve stable codes without leaking raw internal details.
 
-### Scope
+## S3 — Artifact and plugin vertical slice
 
-- Retain the dedicated Artifact-window route and complete packaged smoke verification.
-- Enforce a narrow Artifact-window IPC protocol.
-- Render one completed Agent Artifact in a separate window.
-- Internal-plugin Settings list and persisted enable/disable behavior merged in PR #99.
-- Review the validated company-comparison payload, completed Artifact, isolated window open/retry, and predefined renderer on `codex/feat-company-comparison-artifact`.
+**Acceptance references:** [M3 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-4) and [M8 acceptance criteria](MILESTONE_ROADMAP.md#acceptance-criteria-9)
+**Status:** ✅ Complete
+
+### Scope & Architecture
+
+- **Dedicated Isolated Artifact Window Route**: `/artifact/:artifactId/:artifactType` strictly validates UUID and safe alphanumeric route segments before initiating IPC.
+- **Narrow IPC Capability Protocol**: `capabilities/artifact-window.json` restricts `artifact-*` windows to `artifact-read` (`get_artifact` only) along with window closure and event listening (`artifact:update`, `artifact:theme`). Privileged main commands (credentials, settings, backups, database, filesystem, execution) are forbidden.
+- **Plugin Registry & Lifecycle Controls**: Internal plugins (`company-comparison`, `valuation-model`, `industry-map`, `portfolio-risk`, `research-timeline`, `earnings-analyzer`, `macro-dashboard`) are validated; disabled plugins are blocked (`PermissionDenied`) from producing Artifacts.
+- **Predefined Safe React Renderers**: Artifacts render through validated components in `artifactRegistry` (`ComparisonTableRenderer`, etc.) without evaluating untrusted HTML or dynamic script payloads.
+- **Synchronized Window Lifecycle**: Native window destruction and command-based closure stay in sync with in-memory tracking in `ArtifactManager`.
 
 ### Acceptance criteria
 
@@ -150,9 +155,11 @@ Validated JSON
 -> Close window
 ```
 
-- Artifact windows cannot invoke main-window credential, settings, backup, or destructive commands.
-- Disabled plugins cannot create Artifacts.
-- No plugin source or Agent-generated HTML is evaluated.
+- [x] Artifact windows cannot invoke main-window credential, settings, backup, or destructive commands (`capabilities/artifact-window.json` least privilege).
+- [x] Disabled plugins cannot create Artifacts (enforced by `PluginService::prepare_artifact`).
+- [x] No plugin source or Agent-generated HTML is evaluated (predefined React component registry).
+- [x] Artifact route parsing validates UUID and type strings before IPC.
+- [x] Isolated window update events (`artifact:update`, `artifact:theme`) and close events are fully tested.
 
 ## S4 — Research and portfolio workflow closure
 
