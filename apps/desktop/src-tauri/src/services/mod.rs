@@ -50,6 +50,9 @@ mod workspace_service_test;
 mod plugin_service_test;
 
 #[cfg(test)]
+mod artifact_service_test;
+
+#[cfg(test)]
 mod holdings_service_test;
 
 #[cfg(test)]

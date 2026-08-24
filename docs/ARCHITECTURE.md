@@ -171,7 +171,7 @@ Current integration status:
 - **Agent Runtime (S1 Complete)**: End-to-end task creation, background execution, real-time event streaming, cancellation, failure surfacing, and structured research output rendering are fully accepted.
 - **IPC Normalization (S2 Complete)**: 100% of command families (`Workspace`, `Settings`, `Credentials`, `System`, `Options`, `Agent`, `Artifacts`, `Plugins`, `Research`, `Thesis`, `KnowledgeGraph`, `Portfolio`, `Financial`) are normalized to `camelCase` DTOs with strict runtime Zod schema validation and checked serialization fixtures.
 - **Research, Thesis, Knowledge Graph, Portfolio**: Functional UI surfaces connected to SQLx persistence.
-- **Artifacts & Plugins**: Isolated Artifact-window route (#88) and internal plugin settings management (#99) are operational.
+- **Artifacts & Plugins (S3 Complete)**: Isolated Artifact-window route, least-privilege capability boundary (`capabilities/artifact-window.json`), disabled plugin enforcement, and predefined safe React renderers are fully verified.
 - **Goose Scaffolding**: Registered but disabled until M10 entry gate.
 
 ## Database
