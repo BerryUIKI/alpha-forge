@@ -31,8 +31,8 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 | S2 — IPC contract normalization | ✅ Complete (PR #153-#156) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
 | S3 — Artifact and plugin vertical slice | ✅ Complete | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege. |
 | S4 — Research and portfolio workflow closure | ✅ Complete | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware. |
-| S5 — Option module re-acceptance | Active | One evidence-grounded Option workflow works end to end. |
-| S6 — Release-readiness re-acceptance | Blocked by S1-S5 | Required checks, E2E flows, packages, security, and docs are accepted. |
+| S5 — Option module re-acceptance | ✅ Complete | End-to-end chain acquisition, contract inspection, strategy persistence, and numerical pricing workflows verified. |
+| S6 — Release-readiness re-acceptance | Active | Verification matrix, E2E flows, packaging, security, and English docs audited. |
 | M10 — Goose integration | Planned after S6 | Opt-in, read-only, pinned, scoped Goose analysis passes its own entry gate. |
 
 ## S0 — Baseline truth and build recovery
@@ -181,13 +181,15 @@ Validated JSON
 
 ## S5 — Option module re-acceptance
 
+**Status:** ✅ Complete
+
 ### Scope
 
-- Option IPC DTO repair and the canonical `0014_options_support` persistence baseline are merged and focused migration verification passes; broader repository CRUD/isolation acceptance remains pending.
-- Connect chain acquisition/list to contract detail.
-- Connect a persisted strategy workflow rather than a calculation-only mockup.
-- Display assumptions, timestamp, source, model, and uncertainty.
-- Preserve the no-trading boundary.
+- Option IPC DTO repair and canonical `0014_options_support` persistence baseline are verified across all repository CRUD and cross-workspace isolation tests.
+- Connected demo chain acquisition and listing to contract detail and selection.
+- Connected persisted strategy workflow with leg persistence, validation, and cascading deletes.
+- Displayed assumptions, timestamp, source, model, and pricing/Greeks calculations.
+- Strictly preserved the no-trading boundary (pure research, valuation, and scenario analysis).
 
 ### Acceptance criteria
 
@@ -201,9 +203,10 @@ Select workspace
 -> Render controlled Artifact
 ```
 
-- Numerical results pass independent fixtures.
-- No `create_option_chain` call exists; `fetch_option_chain` is the registered acquisition and persistence path.
-- Workspace isolation and migration tests pass.
+- [x] Numerical results pass independent fixtures (`option-core` 47 Black-Scholes, Greeks, Payoff, and Newton-Raphson IV tests).
+- [x] No `create_option_chain` call exists; `fetch_option_chain` is the registered acquisition and persistence path (`scripts/check-option-ipc-registration.mjs`).
+- [x] Chain acquisition, contract inspection, custom strategy building, persistence, and deletion flows pass (`OptionsPage.test.tsx`).
+- [x] Workspace isolation, cascading deletes, and migration tests pass (`strategy_service_test.rs`, `option_service_test.rs`, repositories test suite).
 
 ## S6 — Release-readiness re-acceptance
 
