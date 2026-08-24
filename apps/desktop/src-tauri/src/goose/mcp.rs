@@ -412,18 +412,206 @@ impl McpBridge {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sqlx::sqlite::SqlitePoolOptions;
+    use sqlx::SqlitePool;
+
+    use crate::database::repositories::thesis_repository::ThesisRepository;
+    use crate::database::repositories::workspace_repository::WorkspaceRepository;
+    use domain::workspace::CreateWorkspaceInput;
+
+    async fn setup_test_db() -> SqlitePool {
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect(":memory:")
+            .await
+            .expect("Failed to create test database");
+
+        sqlx::query(include_str!("../../migrations/0001_initial.sql"))
+            .execute(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        pool
+    }
 
     #[test]
     fn allowlist_is_enforced() {
         assert!(McpBridge::is_tool_allowed("get_workspace_summary"));
         assert!(McpBridge::is_tool_allowed("search_research_sources"));
+        assert!(McpBridge::is_tool_allowed("get_research_source"));
+        assert!(McpBridge::is_tool_allowed("get_thesis_context"));
+        assert!(McpBridge::is_tool_allowed("list_related_artifacts"));
         assert!(!McpBridge::is_tool_allowed("write_file"));
         assert!(!McpBridge::is_tool_allowed("execute_sql"));
+        assert!(!McpBridge::is_tool_allowed("execute_command"));
+        assert!(!McpBridge::is_tool_allowed("delete_database"));
     }
 
     #[test]
     fn max_page_size_is_reasonable() {
         const { assert!(MAX_PAGE_SIZE <= 100) }
         const { assert!(DEFAULT_PAGE_SIZE <= MAX_PAGE_SIZE) }
+    }
+
+    #[test]
+    fn test_tool_input_output_serde() {
+        let input = ToolInput {
+            name: "get_workspace_summary".into(),
+            arguments: serde_json::json!({"workspace_id": "ws-1"}),
+        };
+        let json = serde_json::to_string(&input).unwrap();
+        let deserialized: ToolInput = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.name, "get_workspace_summary");
+
+        let output = ToolOutput {
+            success: true,
+            result: Some(serde_json::json!({"name": "Test"})),
+            error: None,
+        };
+        let output_json = serde_json::to_string(&output).unwrap();
+        assert!(output_json.contains("\"success\":true"));
+    }
+
+    #[tokio::test]
+    async fn test_mcp_bridge_scope_lifecycle() {
+        let pool = setup_test_db().await;
+        let ws_service = Arc::new(WorkspaceService::new(WorkspaceRepository::new(
+            pool.clone(),
+        )));
+        let thesis_service = Arc::new(ThesisService::new(ThesisRepository::new(pool)));
+        let bridge = McpBridge::new(ws_service, thesis_service);
+
+        assert!(bridge.get_scope().await.is_none());
+
+        bridge
+            .set_scope(AuthorizedScope {
+                workspace_id: "ws-100".into(),
+                task_id: "task-1".into(),
+                user_id: None,
+            })
+            .await;
+
+        let scope = bridge.get_scope().await.unwrap();
+        assert_eq!(scope.workspace_id, "ws-100");
+        assert_eq!(scope.task_id, "task-1");
+
+        bridge.clear_scope().await;
+        assert!(bridge.get_scope().await.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_mcp_bridge_rejects_unallowlisted_tool() {
+        let pool = setup_test_db().await;
+        let ws_service = Arc::new(WorkspaceService::new(WorkspaceRepository::new(
+            pool.clone(),
+        )));
+        let thesis_service = Arc::new(ThesisService::new(ThesisRepository::new(pool)));
+        let bridge = McpBridge::new(ws_service, thesis_service);
+
+        bridge
+            .set_scope(AuthorizedScope {
+                workspace_id: "ws-100".into(),
+                task_id: "task-1".into(),
+                user_id: None,
+            })
+            .await;
+
+        let output = bridge
+            .execute(ToolInput {
+                name: "execute_shell".into(),
+                arguments: serde_json::json!({}),
+            })
+            .await;
+
+        assert!(!output.success);
+        assert!(output.error.unwrap().contains("not allowlisted"));
+    }
+
+    #[tokio::test]
+    async fn test_mcp_bridge_rejects_without_scope() {
+        let pool = setup_test_db().await;
+        let ws_service = Arc::new(WorkspaceService::new(WorkspaceRepository::new(
+            pool.clone(),
+        )));
+        let thesis_service = Arc::new(ThesisService::new(ThesisRepository::new(pool)));
+        let bridge = McpBridge::new(ws_service, thesis_service);
+
+        let output = bridge
+            .execute(ToolInput {
+                name: "get_workspace_summary".into(),
+                arguments: serde_json::json!({}),
+            })
+            .await;
+
+        assert!(!output.success);
+        assert!(output.error.unwrap().contains("No scope set"));
+    }
+
+    #[tokio::test]
+    async fn test_mcp_bridge_rejects_workspace_mismatch() {
+        let pool = setup_test_db().await;
+        let ws_service = Arc::new(WorkspaceService::new(WorkspaceRepository::new(
+            pool.clone(),
+        )));
+        let thesis_service = Arc::new(ThesisService::new(ThesisRepository::new(pool)));
+        let bridge = McpBridge::new(ws_service, thesis_service);
+
+        bridge
+            .set_scope(AuthorizedScope {
+                workspace_id: "ws-authorized".into(),
+                task_id: "task-1".into(),
+                user_id: None,
+            })
+            .await;
+
+        let output = bridge
+            .execute(ToolInput {
+                name: "get_workspace_summary".into(),
+                arguments: serde_json::json!({"workspace_id": "ws-attacker"}),
+            })
+            .await;
+
+        assert!(!output.success);
+        assert!(output
+            .error
+            .unwrap()
+            .contains("does not match authorized scope"));
+    }
+
+    #[tokio::test]
+    async fn test_mcp_bridge_get_workspace_summary_success() {
+        let pool = setup_test_db().await;
+        let ws_service = Arc::new(WorkspaceService::new(WorkspaceRepository::new(
+            pool.clone(),
+        )));
+        let thesis_service = Arc::new(ThesisService::new(ThesisRepository::new(pool)));
+        let bridge = McpBridge::new(ws_service.clone(), thesis_service);
+
+        let created = ws_service
+            .create(CreateWorkspaceInput {
+                name: "AI Semiconductor Research".into(),
+            })
+            .await
+            .unwrap();
+
+        bridge
+            .set_scope(AuthorizedScope {
+                workspace_id: created.id.clone(),
+                task_id: "task-1".into(),
+                user_id: None,
+            })
+            .await;
+
+        let output = bridge
+            .execute(ToolInput {
+                name: "get_workspace_summary".into(),
+                arguments: serde_json::json!({}),
+            })
+            .await;
+
+        assert!(output.success);
+        let res = output.result.unwrap();
+        assert_eq!(res["id"], created.id);
+        assert_eq!(res["name"], "AI Semiconductor Research");
     }
 }
