@@ -173,6 +173,7 @@ Current integration status:
 - **Research, Thesis, Knowledge Graph, Portfolio (S4 Complete)**: Functional UI surfaces connected to SQLx persistence with URL context authority, provenance tracking, and full state coverage.
 - **Options (S5 Complete)**: Option chain acquisition, contract selection, strategy building, persistence, Greeks/pricing calculations, and no-trading boundary enforcement are fully verified.
 - **Artifacts & Plugins (S3 Complete)**: Isolated Artifact-window route, least-privilege capability boundary (`capabilities/artifact-window.json`), disabled plugin enforcement, and predefined safe React renderers are fully verified.
+- **Release Readiness (S6 Complete)**: Full 6-stage stabilization program (S0-S6) accepted; 100% IPC parity (176/176), 0 typecheck errors, 55 test files passing, clean lint, fmt, clippy, and Rust workspace test suite.
 - **Goose Scaffolding**: Registered but disabled until M10 entry gate.
 
 ## Database

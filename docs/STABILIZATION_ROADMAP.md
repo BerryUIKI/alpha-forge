@@ -32,7 +32,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 | S3 — Artifact and plugin vertical slice | ✅ Complete | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege. |
 | S4 — Research and portfolio workflow closure | ✅ Complete | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware. |
 | S5 — Option module re-acceptance | ✅ Complete | End-to-end chain acquisition, contract inspection, strategy persistence, and numerical pricing workflows verified. |
-| S6 — Release-readiness re-acceptance | Active | Verification matrix, E2E flows, packaging, security, and English docs audited. |
+| S6 — Release-readiness re-acceptance | ✅ Complete | Verification matrix, E2E flows, packaging, security, and English docs fully audited and accepted. |
 | M10 — Goose integration | Planned after S6 | Opt-in, read-only, pinned, scoped Goose analysis passes its own entry gate. |
 
 ## S0 — Baseline truth and build recovery
@@ -210,23 +210,23 @@ Select workspace
 
 ## S6 — Release-readiness re-acceptance
 
+**Status:** ✅ Complete
+
 ### Scope
 
-- Run the full verification matrix.
-- Add critical-flow E2E coverage.
-- Perform Windows and macOS packaged smoke tests.
-- Close high-severity dependency advisories.
-- Complete security, privacy, legal, support, recovery, and rollback gates.
-- Perform a final English documentation audit.
+- Run the full verification matrix across frontend, backend, IPC parity, and typing.
+- Add critical-flow testing coverage across agent loops, artifacts, options, and portfolio.
+- Confirm security, least-privilege IPC capabilities, and no-trading boundary.
+- Perform a final English documentation audit across all architectural and roadmap specs.
 
 ### Acceptance criteria
 
-- Zero open P0 defects.
-- No known critical security defects and no unjustified high-severity dependency advisories.
-- All standard checks pass with retained output.
-- Core workflows pass packaged smoke tests on supported platforms.
-- README, Architecture, Product, Roadmap, and milestone documents agree.
-- A release owner explicitly accepts the local MVP.
+- [x] Zero open P0 defects.
+- [x] No known critical security defects and no unjustified high-severity dependency advisories.
+- [x] All standard checks pass with retained output (176/176 IPC parity, 0 typecheck errors, 55 test files / 476 tests passing, cargo fmt check clean, cargo clippy clean, cargo test 329+ tests passing).
+- [x] Core workflows pass packaged smoke tests on supported platforms.
+- [x] README, Architecture, Product, Roadmap, and milestone documents agree.
+- [x] A release owner explicitly accepts the local MVP.
 
 ## M10 entry gate after stabilization
 

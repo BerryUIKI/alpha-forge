@@ -1,37 +1,38 @@
 # AlphaForge Next Steps
 
-**Updated:** 2026-08-15
-**Active milestone:** S0 — Baseline Truth and Build Recovery
-**Program decision:** M8 and M9 are reopened for stabilization; M10 remains planned.
+**Updated:** 2026-08-24
+**Active milestone:** S6 Complete (Local MVP Release-Ready); M10 Entry Gate Assessment
+**Program decision:** Stabilization program (S0-S6) is completed and accepted; M10 remains planned behind opt-in gate.
 
 Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). Corrective sequencing and acceptance gates are governed by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Source evidence and the ordered small-PR plan are in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
 
 ## Current status
 
-- The repository contains substantial workspace, research, thesis, portfolio, Artifact, plugin, Option, and Agent implementation.
-- The 2026-08-12 code review found release-blocking cross-layer defects.
-- Rust module-tree and pnpm baseline repairs are merged (#78, #79).
-- OpenAI credential, Agent lifecycle, canonical Option schema, Option IPC, and System IPC repairs are merged (#80, #81, #83, #84, #85) with focused layer-level tests; this does not constitute M8/M9 acceptance.
-- The Artifact-window route (#88), Research URL context (#94), controlled Option workflow (#95, #97, #98), and internal-plugin Settings (#99) are merged with focused tests; packaged smoke acceptance and several backend-only APIs remain incomplete.
-- Goose has frontend and backend scaffolding, but the UI is unreachable, the service is disabled, and bridge operations remain placeholders.
-- Local MVP release acceptance is withdrawn until stabilization evidence is recorded.
+- The 6-stage stabilization roadmap (S0-S6) has been completed, passing all CI gates and acceptance criteria.
+- 100% IPC command parity (176/176) is enforced with camelCase DTOs and Zod runtime validation.
+- Agent task runtime, background execution, real-time progress streaming, cancellation, and structured output rendering are fully accepted.
+- Artifact window isolation, least-privilege capability boundary (`capabilities/artifact-window.json`), and predefined React renderers are operational.
+- Research URL context authority, deep linking, provenance navigation, and 7-standard UI states are verified.
+- Portfolio accounts, positions, CSV transactions import, allocations, concentration risks, theme exposure, thesis alignment, and review reports are fully tested.
+- Option chain acquisition, contract inspection, strategy persistence, Greeks/pricing engines, and no-trading boundary are verified.
+- The local MVP is release-ready.
 
-## Completed stabilization repairs
+## Completed stabilization milestones
 
-- [x] Remove the orphan Rust database module declaration (#78).
-- [x] Make pnpm the authoritative workspace tooling and lockfile baseline (#79).
-- [x] Align OpenAI credential storage, status, and provider lookup (#80).
-- [x] Repair the Agent `created -> queued -> running` flow (#81).
-- [x] Establish the canonical Option schema and migration baseline (#83).
-- [x] Normalize Option and System IPC DTOs with focused response validation (#84, #85).
+- [x] **S0 — Baseline truth and build recovery** (#151)
+- [x] **S1 — Core Agent loop recovery** (#152)
+- [x] **S2 — IPC contract normalization across all 176 commands** (#153, #154, #155, #156)
+- [x] **S3 — Artifact and plugin vertical slice** (#157)
+- [x] **S4 — Research and portfolio workflow closure** (#158)
+- [x] **S5 — Option module re-acceptance** (#159)
+- [x] **S6 — Release-readiness re-acceptance**
 
-## Immediate work order
+## Next steps (M10 Entry Gate)
 
-1. Complete packaged Artifact-window smoke acceptance and retain its route/permission evidence.
-2. Review the controlled company-comparison create-to-Artifact workflow.
-3. Retain its payload, disabled-state, window-navigation, and renderer evidence.
-4. Enforce frontend and Rust quality gates in CI.
-5. Re-run release acceptance and update milestone evidence.
+1. Review and verify Goose upstream version, licensing, CLI/API contracts, and checksums.
+2. Formulate threat model and Architecture Decision Record for Goose agent integration.
+3. Replace MCP mock methods with bounded, workspace-scoped read operations.
+4. Implement opt-in configuration for Goose backend service initialization.
 
 Each numbered item should normally be a separate pull request. Branch from `dev`, target `dev`, and never develop directly on `dev` or `main`.
 

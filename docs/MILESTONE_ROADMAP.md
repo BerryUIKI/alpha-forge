@@ -19,15 +19,15 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M0        | ✅ Complete               | Week 1-2              | Project Foundation                       |
 | M1        | ✅ Complete               | Week 3-4              | Desktop Runtime Foundation               |
 | M1.5      | ✅ Complete               | Week 5-6              | Application Foundation                   |
-| M2        | ⚠️ Stabilization required | Week 7-10             | Agent Runtime                            |
-| M3        | ⚠️ Stabilization required | Week 11-14            | Artifact Intelligence System             |
+| M2        | ✅ Stabilized (S1)        | Week 7-10             | Agent Runtime                            |
+| M3        | ✅ Stabilized (S3)        | Week 11-14            | Artifact Intelligence System             |
 | M4        | ✅ Complete               | Week 15-18            | Research Workspace                       |
 | M5        | ✅ Complete               | Week 19-22            | Investment Knowledge System              |
 | M6        | ✅ Complete               | Week 23-26            | Portfolio Intelligence                   |
-| M7        | ⚠️ Partial                | Week 27-30            | Internal Plugin Ecosystem                |
-| M8        | 🚧 Reopened               | Rebaseline 2026-08-12 | Local MVP Completion & Release Readiness |
-| M9        | 🚧 Reopened               | Rebaseline 2026-08-12 | Option Module Integration                |
-| M10       | 📋 Planned                | After stabilization   | Goose Agent Integration                  |
+| M7        | ✅ Stabilized (S3)        | Week 27-30            | Internal Plugin Ecosystem                |
+| M8        | ✅ Complete (S6)          | Rebaseline 2026-08-24 | Local MVP Completion & Release Readiness |
+| M9        | ✅ Complete (S5)          | Rebaseline 2026-08-24 | Option Module Integration                |
+| M10       | 📋 Planned                | After stabilization   | Goose Agent Integration (Opt-in Entry Gate) |
 
 ## Delivery document registry
 
