@@ -61,9 +61,9 @@ AlphaForge helps you:
 
 ## Status
 
-**Current program state (2026-08-15): stabilization required before local MVP acceptance.**
+**Current program state (2026-08-24): Stabilization complete (S0-S6 accepted). Local MVP is release-ready.**
 
-The 2026-08-12 audit identified broken core integration paths. S0 (baseline build recovery) and S1 (core Agent loop recovery with real-time streaming and structured output) are now complete and accepted (#151, #152). S2 (IPC contract normalization) is active with 100% registration parity across all 176 commands. Merged repairs also include the isolated Artifact window (#88), Research URL context (#94), controlled Option workflows (#95, #97, #98), and internal-plugin Settings (#99). M8 and M9 remain reopened; M10 remains planned. See the [integration audit](docs/reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) and [stabilization roadmap](docs/STABILIZATION_ROADMAP.md).
+The stabilization roadmap (S0-S6) has been fully completed and accepted. S0 (baseline build recovery), S1 (core Agent loop recovery with real-time streaming and structured output), S2 (IPC contract normalization across 100% of the 176 Tauri commands with Zod runtime validation), S3 (Artifact window least-privilege capability isolation and plugin safety), S4 (Research and Portfolio workflow closure with URL context authority and provenance tracking), S5 (Option module re-acceptance and pricing engines), and S6 (Release-readiness re-acceptance) are all accepted. M10 (Goose Agent Integration) remains planned behind its strict opt-in entry gate. See the [stabilization roadmap](docs/STABILIZATION_ROADMAP.md) and [architecture document](docs/ARCHITECTURE.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -71,14 +71,14 @@ The 2026-08-12 audit identified broken core integration paths. S0 (baseline buil
 | M1 | ✅ Complete | Desktop Runtime Foundation |
 | M1.5 | ✅ Complete | Application Foundation |
 | M2 | ✅ Stabilized (S1) | Agent Runtime & Research Task Execution |
-| M3 | ⚠️ Stabilization required | Artifact Intelligence System |
-| M4 | ✅ Complete | Research Workspace |
+| M3 | ✅ Stabilized (S3) | Artifact Intelligence System & Window Isolation |
+| M4 | ✅ Complete | Research Workspace & URL Context Authority |
 | M5 | ✅ Complete | Investment Knowledge System |
-| M6 | ✅ Complete | Portfolio Intelligence |
-| M7 | ⚠️ Partial | Internal plugin infrastructure; user workflow incomplete |
-| M8 | 🚧 Reopened | Local MVP Completion & Release Readiness |
-| M9 | 🚧 Reopened | Option Module Integration |
-| M10 | 📋 Planned | Goose Agent Integration |
+| M6 | ✅ Complete | Portfolio Intelligence & Wealthfolio Capabilities |
+| M7 | ✅ Stabilized (S3) | Internal Plugin Ecosystem & Safe Renderers |
+| M8 | ✅ Complete (S6) | Local MVP Completion & Release Readiness |
+| M9 | ✅ Complete (S5) | Option Module Integration & Pricing Models |
+| M10 | 📋 Planned | Goose Agent Integration (Opt-in Entry Gate) |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
