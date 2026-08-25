@@ -1,12 +1,12 @@
 {
-  "name": "@investment-os/plugin-timeline",
+  "name": "@alpha-forge/plugin-timeline",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@investment-os/artifact-sdk": "workspace:*"
+    "@alpha-forge/artifact-sdk": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7"

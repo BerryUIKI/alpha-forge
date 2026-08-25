@@ -15,6 +15,7 @@ import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { BookOpen, Plus, X } from "lucide-react";
 import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
+import { useProfessionalTerms } from "@/lib/i18n/professional-terms";
 
 const ENTITY_TYPES: KnowledgeEntityType[] = ["company", "industry", "technology", "macro_theme"];
 
@@ -34,6 +35,7 @@ const ENTITY_TYPE_COLORS: Record<KnowledgeEntityType, string> = {
 
 export function KnowledgePage() {
   const { t } = useLocale();
+  const professionalTerms = useProfessionalTerms();
   const queryClient = useQueryClient();
   const workspaceId = useActiveWorkspaceId();
   const [showCreate, setShowCreate] = useState(false);
@@ -85,7 +87,7 @@ export function KnowledgePage() {
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
-          Add Entity
+          {t("knowledgeAddEntity")}
         </button>
       </div>
 
@@ -93,39 +95,39 @@ export function KnowledgePage() {
       {showCreate && (
         <div className="mb-6 rounded-lg border bg-card p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">New Knowledge Entity</h3>
+            <h3 className="text-sm font-semibold">{t("newKnowledgeEntity")}</h3>
             <button onClick={() => setShowCreate(false)} className="rounded p-1 hover:bg-accent">
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Name</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityName")}</label>
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. NVIDIA"
+                placeholder={t("entityNamePlaceholder")}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Type</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityType")}</label>
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as KnowledgeEntityType)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               >
                 {ENTITY_TYPES.map((t) => (
-                  <option key={t} value={t}>{ENTITY_TYPE_LABELS[t]}</option>
+                  <option key={t} value={t}>{professionalTerms.label(t, ENTITY_TYPE_LABELS[t])}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityDescription")}</label>
               <textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="Optional description"
+                placeholder={t("optionalDescription")}
                 rows={2}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
               />
@@ -135,7 +137,7 @@ export function KnowledgePage() {
               disabled={!newName.trim() || createEntity.isPending}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {createEntity.isPending ? "Creating..." : "Create"}
+              {createEntity.isPending ? t("creating") : t("create")}
             </button>
           </div>
         </div>
@@ -146,7 +148,7 @@ export function KnowledgePage() {
 
       {/* Error */}
       {entities.error && !entities.isLoading && (
-        <ErrorState message="Failed to load knowledge entities" onRetry={() => entities.refetch()} />
+        <ErrorState message={t("knowledgeEntitiesLoadFailed")} onRetry={() => entities.refetch()} />
       )}
 
       {/* Empty */}
@@ -154,7 +156,7 @@ export function KnowledgePage() {
         <EmptyState
           icon={<BookOpen className="h-8 w-8 text-muted-foreground" />}
           title={t("knowledgeGraph")}
-          description="Start building your knowledge network by adding companies, industries, technologies, and macro themes."
+          description={t("knowledgeEmptyDescription")}
         />
       )}
 
@@ -168,7 +170,7 @@ export function KnowledgePage() {
             >
               <div className="mb-2 flex items-center gap-2">
                 <span className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase ${ENTITY_TYPE_COLORS[entity.entityType]}`}>
-                  {ENTITY_TYPE_LABELS[entity.entityType]}
+                  {professionalTerms.label(entity.entityType, ENTITY_TYPE_LABELS[entity.entityType])}
                 </span>
               </div>
               <h3 className="font-semibold">{entity.name}</h3>
@@ -176,7 +178,7 @@ export function KnowledgePage() {
                 <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{entity.description}</p>
               )}
               <p className="mt-2 text-[10px] text-muted-foreground/60">
-                Added {entity.createdAt.slice(0, 10)}
+                {t("entityAdded")} {entity.createdAt.slice(0, 10)}
               </p>
             </div>
           ))}

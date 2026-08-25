@@ -1,10 +1,11 @@
 /**
  * MainLayout Component
  *
- * Primary layout orchestrator for the Investment OS desktop application.
- * Combines three zones:
+ * Primary layout orchestrator for the AlphaForge desktop application.
+ * Combines a global top bar with three body zones:
+ * - Top: Global sidebar control, search, and primary actions
  * - Left: Collapsible navigation sidebar
- * - Center: Main content area with TopBar, routed pages, StatusBar
+ * - Center: Routed pages and StatusBar
  * - Right: Collapsible Agent panel
  *
  * @version GUI-M0
@@ -15,12 +16,18 @@ import { Outlet } from "react-router-dom";
 import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
+import { TopBar } from "./TopBar";
+import { WindowTitleBar } from "./WindowTitleBar";
 import { GlobalSearchDialog } from "@/features/search";
 import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 
 export function MainLayout() {
+  const [leftState, setLeftState] = useState<SidebarState>(() => {
+    const stored = localStorage.getItem("left-sidebar:state");
+    return stored === "collapsed" ? "collapsed" : "expanded";
+  });
   // Right sidebar state (Agent panel)
   const [rightState, setRightState] = useState<SidebarState>("collapsed");
   // Global search palette state
@@ -28,6 +35,10 @@ export function MainLayout() {
 
   const handleRightStateChange = useCallback((state: SidebarState) => {
     setRightState(state);
+  }, []);
+
+  const toggleLeftSidebar = useCallback(() => {
+    setLeftState((previous) => previous === "expanded" ? "collapsed" : "expanded");
   }, []);
 
   const toggleRightSidebar = useCallback(() => {
@@ -39,6 +50,7 @@ export function MainLayout() {
 
   // Setup keyboard shortcuts
   useSidebarShortcuts({
+    onToggleLeft: toggleLeftSidebar,
     onToggleRight: toggleRightSidebar,
     enabled: true,
   });
@@ -52,24 +64,34 @@ export function MainLayout() {
 
   return (
     <ActiveWorkspaceProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Left: Navigation Sidebar */}
-        <LeftSidebar />
-
-        {/* Center: Main Content Area */}
-        <MainContent
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
+        <WindowTitleBar
+          isLeftSidebarExpanded={leftState === "expanded"}
+          onToggleLeftSidebar={toggleLeftSidebar}
+          onToggleRightSidebar={toggleRightSidebar}
+          onOpenSearch={openSearch}
+        />
+        <TopBar
           isRightSidebarExpanded={rightState === "expanded"}
           onToggleRightSidebar={toggleRightSidebar}
           onOpenSearch={openSearch}
-        >
-          <Outlet />
-        </MainContent>
-
-        {/* Right: Agent Panel */}
-        <RightSidebar
-          state={rightState}
-          onStateChange={handleRightStateChange}
         />
+
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          {/* Left: Navigation Sidebar */}
+          <LeftSidebar state={leftState} onStateChange={setLeftState} />
+
+          {/* Center: Main Content Area */}
+          <MainContent>
+            <Outlet />
+          </MainContent>
+
+          {/* Right: Agent Panel */}
+          <RightSidebar
+            state={rightState}
+            onStateChange={handleRightStateChange}
+          />
+        </div>
 
         {/* Global Search Palette */}
         <GlobalSearchDialog isOpen={searchOpen} onClose={closeSearch} />

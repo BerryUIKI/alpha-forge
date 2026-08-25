@@ -53,7 +53,7 @@ impl SystemService {
         let config = self.app_handle.config();
 
         Ok(SystemInfo {
-            app_name: "Investment OS".to_string(),
+            app_name: "AlphaForge".to_string(),
             app_version: config
                 .version
                 .clone()
@@ -93,9 +93,9 @@ impl SystemService {
     pub async fn export_local_backup(&self) -> Result<Option<String>, AppError> {
         let destination = tauri::async_runtime::spawn_blocking(|| {
             rfd::FileDialog::new()
-                .set_title("Export Investment OS local backup")
+                .set_title("Export AlphaForge local backup")
                 .add_filter("SQLite database", &["db"])
-                .set_file_name("investment-os-backup.db")
+                .set_file_name("alpha-forge-backup.db")
                 .save_file()
         })
         .await
@@ -124,7 +124,7 @@ impl SystemService {
             .unwrap_or_else(|| "0.0.0".to_string());
         let release = Client::builder()
             .timeout(Duration::from_secs(10))
-            .user_agent("InvestmentOS/0.1 release-check")
+            .user_agent("AlphaForge/0.1 release-check")
             .build()
             .map_err(|_| AppError::Internal("could not configure update check".to_string()))?
             .get("https://api.github.com/repos/BerryUIKI/alpha-forge/releases/latest")
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn serializes_system_info_with_camel_case_contract() {
         let info = SystemInfo {
-            app_name: "Investment OS".to_string(),
+            app_name: "AlphaForge".to_string(),
             app_version: "0.1.0".to_string(),
             platform: "windows".to_string(),
             architecture: "x86_64".to_string(),
@@ -225,7 +225,7 @@ mod tests {
         assert_eq!(
             serde_json::to_value(info).expect("system info should serialize"),
             serde_json::json!({
-                "appName": "Investment OS",
+                "appName": "AlphaForge",
                 "appVersion": "0.1.0",
                 "platform": "windows",
                 "architecture": "x86_64",
@@ -266,9 +266,9 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system clock should be after epoch")
             .as_nanos();
-        let source = std::env::temp_dir().join(format!("investment-os-source-{unique_suffix}.db"));
+        let source = std::env::temp_dir().join(format!("alpha-forge-source-{unique_suffix}.db"));
         let destination =
-            std::env::temp_dir().join(format!("investment-os-backup-{unique_suffix}.db"));
+            std::env::temp_dir().join(format!("alpha-forge-backup-{unique_suffix}.db"));
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
             .connect_with(

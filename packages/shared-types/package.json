@@ -1,5 +1,5 @@
 {
-  "name": "@investment-os/shared-types",
+  "name": "@alpha-forge/shared-types",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

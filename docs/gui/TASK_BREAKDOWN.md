@@ -92,7 +92,7 @@ pnpm test -- --run
 
 ---
 
-### GUI-M1-2: Module B - Native Menu Bar Implementation (Day 3-5)
+### GUI-M1-2: Module B - Custom Window Title and Menu Bar (Day 3-5)
 
 **Status**: 📋 Planned
 
@@ -102,31 +102,33 @@ pnpm test -- --run
 
 #### Tasks
 
-1. **Tauri Menu Integration**
-   - [ ] Research Tauri native menu API
-   - [ ] Define menu structure
-   - [ ] Implement top-level menu items
-   - [ ] Create submenu hierarchy
+1. **Tauri Window Integration**
+   - [x] Disable main-window native decorations
+   - [x] Preserve the native window shadow
+   - [x] Grant only the required main-window control permissions
+   - [x] Remove native application-menu installation
 
 2. **Menu Items Implementation**
-   - [ ] File menu (5 items)
-   - [ ] Edit menu (5 items)
-   - [ ] View menu (5 items)
-   - [ ] Help menu (4 items)
+   - [x] Unified `File`, `Edit`, `View`, and `Help` menu triggers
+   - [x] Styled in-application menu panels
+   - [x] Minimize, maximize/restore, and close controls
+   - [x] Far-left main-sidebar toggle
 
 3. **Menu Interactions**
-   - [ ] Click event placeholders
-   - [ ] Keyboard shortcuts display
-   - [ ] Menu enable/disable states (UI only)
+   - [x] Draggable title and flexible spacer regions
+   - [x] Interactive controls excluded from dragging
+   - [x] Escape and outside-click menu dismissal
+   - [x] Window actions routed through `desktopApi.window`
 
 **Verification**:
 ```bash
 pnpm tauri build
 # Smoke test on macOS and Windows
-# Verify native menu renders correctly
+# Verify the frameless shadow, dragging, and window controls on Windows
 ```
 
-**Exit Gate**: Menu bar appears in native window chrome, all items accessible
+**Exit Gate**: The custom bar replaces native chrome, retains the shadow, and all
+interactive regions remain clickable and keyboard accessible.
 
 ---
 
@@ -245,7 +247,7 @@ pnpm tauri build
 5. **Cross-Platform Testing**
    - [ ] macOS smoke test
    - [ ] Windows smoke test
-   - [ ] Native menu verification
+   - [ ] Frameless title-bar and window-control verification
 
 **Verification**:
 ```bash
@@ -321,7 +323,7 @@ Stream 2 (GUI):      GUI-M1-0 → GUI-M1-1 → GUI-M1-2 → ...
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| Tauri native menu API limitations | Medium | Research early in GUI-M1-2, fallback to custom menu if needed |
+| Frameless-window interaction regressions | Medium | Limit drag attributes to inert regions and run packaged Windows smoke tests |
 | Sidebar drag-to-resize complexity | Low | Use existing resize libraries, test early |
 | State synchronization between modules | Medium | Clear state management plan in GUI-M1-0 |
 | Cross-platform menu differences | Medium | Test on both platforms early, document differences |
@@ -416,8 +418,9 @@ apps/desktop/src/
 │   │   │       ├── OptionsView.tsx
 │   │   │       ├── FuturesView.tsx
 │   │   │       └── OtherDerivativesView.tsx
-│   │   └── MenuBar/
-│   │       └── (Tauri native menu config)
+│   │   └── WindowTitleBar/
+│   │       ├── WindowTitleBar.tsx
+│   │       └── WindowTitleBar.test.tsx
 │   └── ui/                           # Existing shadcn/ui components
 ├── hooks/
 │   └── layout/

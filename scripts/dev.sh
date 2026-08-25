@@ -1,5 +1,5 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "==> Starting Investment OS development server..."
+echo "==> Starting AlphaForge development server..."
 pnpm dev

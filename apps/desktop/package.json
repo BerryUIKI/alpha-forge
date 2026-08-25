@@ -1,8 +1,8 @@
 {
-  "name": "@investment-os/desktop",
+  "name": "@alpha-forge/desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Investment OS desktop application",
+  "description": "AlphaForge desktop application",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,9 +14,9 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@investment-os/schemas": "workspace:*",
-    "@investment-os/shared-types": "workspace:*",
-    "@investment-os/ui": "workspace:*",
+    "@alpha-forge/schemas": "workspace:*",
+    "@alpha-forge/shared-types": "workspace:*",
+    "@alpha-forge/ui": "workspace:*",
     "@radix-ui/react-dialog": "^1.1",
     "@radix-ui/react-dropdown-menu": "^2.1",
     "@radix-ui/react-popover": "^1.1",

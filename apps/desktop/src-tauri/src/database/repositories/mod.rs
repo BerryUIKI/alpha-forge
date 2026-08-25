@@ -1,4 +1,4 @@
-// Repository layer for Investment OS.
+// Repository layer for AlphaForge.
 //
 // Repositories own all database queries and handle:
 // - Converting between database rows and domain models

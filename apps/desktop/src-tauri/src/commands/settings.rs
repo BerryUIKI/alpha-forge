@@ -33,7 +33,7 @@ pub fn get_app_info(app_handle: tauri::AppHandle) -> Result<AppInfo, AppError> {
     let config = app_handle.config();
 
     Ok(AppInfo {
-        name: "Investment OS".to_string(),
+        name: "AlphaForge".to_string(),
         version: config.version.clone().unwrap_or_default(),
         identifier: config.identifier.clone(),
     })
@@ -77,7 +77,7 @@ mod tests {
     #[test]
     fn app_info_serializes_to_camel_case_json() {
         let info = AppInfo {
-            name: "Investment OS".to_string(),
+            name: "AlphaForge".to_string(),
             version: "0.1.0".to_string(),
             identifier: "com.alphaforge.app".to_string(),
         };

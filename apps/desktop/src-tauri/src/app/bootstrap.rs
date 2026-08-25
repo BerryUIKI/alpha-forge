@@ -19,7 +19,7 @@ pub async fn init_database(app_handle: &tauri::AppHandle) -> Result<SqlitePool, 
     std::fs::create_dir_all(&app_dir)
         .map_err(|e| AppError::Internal(format!("cannot create app data dir: {e}")))?;
 
-    let db_path = app_dir.join("investment_os.db");
+    let db_path = app_dir.join("alpha_forge.db");
     let db_url = format!("sqlite:{}?mode=rwc", db_path.display());
 
     info!("opening application database");

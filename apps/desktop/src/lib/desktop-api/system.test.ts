@@ -11,9 +11,9 @@ describe("system API", () => {
   beforeEach(() => mockInvoke.mockReset());
 
   it("requests a local backup export", async () => {
-    mockInvoke.mockResolvedValueOnce("/tmp/investment-os-backup.db");
+    mockInvoke.mockResolvedValueOnce("/tmp/alpha-forge-backup.db");
 
-    await expect(exportLocalBackup()).resolves.toBe("/tmp/investment-os-backup.db");
+    await expect(exportLocalBackup()).resolves.toBe("/tmp/alpha-forge-backup.db");
     expect(mockInvoke).toHaveBeenCalledWith("export_local_backup");
   });
 
@@ -32,7 +32,7 @@ describe("system API", () => {
 
   it("parses the camelCase system information contract", async () => {
     const systemInfo = {
-      appName: "Investment OS",
+      appName: "AlphaForge",
       appVersion: "0.1.0",
       platform: "windows",
       architecture: "x86_64",
@@ -45,7 +45,7 @@ describe("system API", () => {
 
   it("rejects malformed or legacy system information responses", async () => {
     mockInvoke.mockResolvedValueOnce({
-      appName: "Investment OS",
+      appName: "AlphaForge",
       appVersion: "0.1.0",
       platform: "windows",
     });

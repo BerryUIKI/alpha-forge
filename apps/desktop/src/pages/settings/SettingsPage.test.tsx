@@ -18,11 +18,16 @@ const pluginsMock = vi.hoisted(() => ({
   listPlugins: vi.fn(),
   setPluginEnabled: vi.fn(),
 }));
+const settingsMock = vi.hoisted(() => ({
+  getSetting: vi.fn(),
+  setSetting: vi.fn(),
+}));
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
     credentials: credentialsMock,
     plugins: pluginsMock,
+    settings: settingsMock,
     system: systemMock,
   },
 }));
@@ -60,6 +65,8 @@ describe("Settings OpenAI credentials", () => {
     credentialsMock.saveOpenAiApiKey.mockResolvedValue(undefined);
     pluginsMock.listPlugins.mockResolvedValue([]);
     pluginsMock.setPluginEnabled.mockResolvedValue(undefined);
+    settingsMock.getSetting.mockResolvedValue(null);
+    settingsMock.setSetting.mockResolvedValue(undefined);
   });
 
   it("shows stored status without placing a secret mask in the editable value", async () => {

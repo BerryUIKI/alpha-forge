@@ -1,4 +1,4 @@
-// Service layer for Investment OS.
+// Service layer for AlphaForge.
 //
 // Services own business logic and coordination between repositories.
 // They handle:

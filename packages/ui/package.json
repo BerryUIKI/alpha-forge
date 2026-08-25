@@ -1,5 +1,5 @@
 {
-  "name": "@investment-os/ui",
+  "name": "@alpha-forge/ui",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

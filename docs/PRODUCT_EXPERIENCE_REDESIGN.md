@@ -24,8 +24,13 @@ AlphaForge must not become a trading terminal, and an Agent must never autonomou
 
 ### 2.1 Application Shell
 
-- Use the native Tauri `File / Edit / View / Help` menu instead of reproducing a pseudo-native menu in React.
-- Place a global toolbar across the main window, with the sidebar toggle at the far left. The logo is only a brand identifier.
+- Disable native main-window decorations and render a unified AlphaForge title bar
+  with `File / Edit / View / Help`, draggable non-interactive regions, and custom
+  minimize, maximize/restore, and close controls.
+- Keep `shadow: true` for the frameless main window. Window buttons and menus must
+  never be drag regions, and the sidebar toggle remains at the far left.
+- Place a global toolbar below the title bar for workspace context, search, and
+  primary actions. The logo is only a brand identifier.
 - Keep Dashboard, Research, Theses, Investment Journal, Options, and Artifacts in the primary sidebar.
 - Pin Knowledge and Portfolio at the bottom, followed by an account icon menu beside Portfolio.
 - Provide Settings, API Usage, workspace or portfolio switching, and light/dark theme controls in the account menu.
@@ -183,8 +188,8 @@ Recommended event fields are provider, model, task_id, request_id, input_tokens,
 
 ### P0: Application Shell and Settings Center
 
-- Install the native menu
-- Move the sidebar control into the global toolbar
+- Install the frameless, shadowed custom title/menu bar and window controls
+- Move the sidebar control to the far-left title-bar position
 - Add the bottom Knowledge, Portfolio, and account area
 - Introduce a dedicated Settings shell
 - Support light, dark, accent, and market-color preferences

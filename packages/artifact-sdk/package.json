@@ -1,5 +1,5 @@
 {
-  "name": "@investment-os/artifact-sdk",
+  "name": "@alpha-forge/artifact-sdk",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

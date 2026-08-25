@@ -46,7 +46,20 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
+  --market-positive: 142 71% 45%;
+  --market-negative: 0 72% 51%;
 }
+
+:root[data-market-colors="china"] {
+  --market-positive: 0 72% 51%;
+  --market-negative: 142 71% 45%;
+}
+
+.accent-swatch-indigo { background: hsl(239 84% 67%); }
+.accent-swatch-blue { background: hsl(217 91% 60%); }
+.accent-swatch-emerald { background: hsl(160 84% 39%); }
+.accent-swatch-amber { background: hsl(38 92% 50%); }
+.accent-swatch-rose { background: hsl(347 77% 50%); }
 
 .dark {
   --background: 222.2 84% 4.9%;
@@ -103,3 +116,10 @@ body {
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
 }
+
+/* User accent preferences must win after light, dark, and system theme rules. */
+:root[data-accent="blue"] { --primary: 217 91% 60%; --ring: 217 91% 60%; }
+:root[data-accent="emerald"] { --primary: 160 84% 39%; --ring: 160 84% 39%; }
+:root[data-accent="amber"] { --primary: 38 92% 50%; --ring: 38 92% 50%; }
+:root[data-accent="rose"] { --primary: 347 77% 50%; --ring: 347 77% 50%; }
+:root[data-accent="indigo"] { --primary: 239 84% 67%; --ring: 239 84% 67%; }

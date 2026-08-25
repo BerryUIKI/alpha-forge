@@ -44,13 +44,13 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@investment-os/schemas':
+      '@alpha-forge/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
-      '@investment-os/shared-types':
+      '@alpha-forge/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@investment-os/ui':
+      '@alpha-forge/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@radix-ui/react-dialog':
@@ -215,7 +215,7 @@ importers:
 
   plugins/company-comparison:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -225,7 +225,7 @@ importers:
 
   plugins/earnings-analyzer:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -235,7 +235,7 @@ importers:
 
   plugins/industry-map:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -245,7 +245,7 @@ importers:
 
   plugins/macro-dashboard:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -255,7 +255,7 @@ importers:
 
   plugins/portfolio-risk:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -265,7 +265,7 @@ importers:
 
   plugins/timeline:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:
@@ -275,7 +275,7 @@ importers:
 
   plugins/valuation-model:
     dependencies:
-      '@investment-os/artifact-sdk':
+      '@alpha-forge/artifact-sdk':
         specifier: workspace:*
         version: link:../../packages/artifact-sdk
     devDependencies:

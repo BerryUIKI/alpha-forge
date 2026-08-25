@@ -1,7 +1,7 @@
 //! Option Core Library
 //!
 //! Provides option pricing models, Greeks calculations, and strategy analysis
-//! for the Investment OS Option Analysis Platform.
+//! for the AlphaForge Option Analysis Platform.
 
 #![allow(clippy::too_many_arguments)]
 

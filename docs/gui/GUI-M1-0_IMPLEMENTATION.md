@@ -440,7 +440,7 @@ pnpm build       # ✅ Passed
 
 After this PR merges:
 1. GUI-M1-1: Implement left sidebar interactions
-2. GUI-M1-2: Implement native menu bar
+2. GUI-M1-2: Implement the frameless custom title/menu bar and window controls
 3. GUI-M1-3: Implement right sidebar
 
 ## Related

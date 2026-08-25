@@ -2,5 +2,15 @@
   "identifier": "main-window",
   "description": "Main application window capabilities",
   "windows": ["main"],
-  "permissions": ["core:default", "opener:default", "store:default", "main-commands"]
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-is-maximized",
+    "core:window:allow-minimize",
+    "core:window:allow-start-dragging",
+    "core:window:allow-toggle-maximize",
+    "opener:default",
+    "store:default",
+    "main-commands"
+  ]
 }

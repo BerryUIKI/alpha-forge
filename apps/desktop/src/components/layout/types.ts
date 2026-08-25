@@ -100,12 +100,6 @@ export interface TopBarProps {
 export interface MainContentProps {
   /** Children to render (Outlet) */
   children?: React.ReactNode;
-  /** Whether right sidebar is visible */
-  isRightSidebarExpanded?: boolean;
-  /** Callback to toggle right sidebar */
-  onToggleRightSidebar?: () => void;
-  /** Callback to open the global search palette */
-  onOpenSearch?: () => void;
 }
 
 /**

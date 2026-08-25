@@ -84,6 +84,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "alpha-forge"
+version = "0.1.0"
+dependencies = [
+ "agent-core",
+ "anyhow",
+ "artifact-core",
+ "async-trait",
+ "chrono",
+ "csv",
+ "domain",
+ "keyring",
+ "option-core",
+ "pdf-extract",
+ "provider-core",
+ "reqwest 0.12.28",
+ "rfd",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "shared",
+ "sqlx",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "tauri-plugin-store",
+ "thiserror 2.0.19",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2414,42 +2450,6 @@ checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
 dependencies = [
  "block-padding",
  "generic-array",
-]
-
-[[package]]
-name = "investment-os"
-version = "0.1.0"
-dependencies = [
- "agent-core",
- "anyhow",
- "artifact-core",
- "async-trait",
- "chrono",
- "csv",
- "domain",
- "keyring",
- "option-core",
- "pdf-extract",
- "provider-core",
- "reqwest 0.12.28",
- "rfd",
- "rust_decimal",
- "serde",
- "serde_json",
- "serde_yaml",
- "sha2",
- "shared",
- "sqlx",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "tauri-plugin-store",
- "thiserror 2.0.19",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]

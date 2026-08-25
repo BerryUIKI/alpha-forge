@@ -1,10 +1,10 @@
 /**
  * LeftSidebar Component
  *
- * Simplified navigation sidebar with collapsible groups:
- * - Workspace: Dashboard, Research, Theses, Portfolio, Knowledge, Journal
+ * Simplified navigation sidebar with collapsible groups and fixed utilities:
+ * - Workspace: Dashboard, Research, Theses, Journal
  * - Tools: Options, Artifacts
- * - Account: Settings
+ * - Bottom: Knowledge, Portfolio, and the account/settings menu
  *
  * Features:
  * - Collapsible with smooth width animation (220px ↔ 64px)
@@ -16,8 +16,8 @@
  * @version GUI-M0
  */
 
-import { useCallback } from "react";
-import { ChevronLeft, GripVertical, LayoutDashboard, Search, FileText, Briefcase, BookOpen, BookMarked, LineChart, Puzzle, Settings } from "lucide-react";
+import { useEffect } from "react";
+import { GripVertical, LayoutDashboard, Search, FileText, Briefcase, BookOpen, BookMarked, LineChart, Puzzle } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { NavGroup } from "./NavGroup";
 import { useSidebarState, useResize } from "@/hooks/layout";
@@ -25,10 +25,10 @@ import { useLocale } from "@/lib/i18n/useLocale";
 import { cn } from "@/lib/utils";
 import type { LeftSidebarProps, NavGroup as NavGroupType } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
+import { AccountMenu } from "./AccountMenu";
 
 export function LeftSidebar({
   state: externalState,
-  onStateChange,
   defaultWidth = DEFAULT_SIDEBAR_WIDTHS.left.default,
   minWidth = DEFAULT_SIDEBAR_WIDTHS.left.min,
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
@@ -44,8 +44,6 @@ export function LeftSidebar({
         { id: "dashboard", label: t("navDashboard"), icon: LayoutDashboard, route: "/" },
         { id: "research", label: t("navResearch"), icon: Search, route: "/research" },
         { id: "theses", label: t("navTheses"), icon: FileText, route: "/theses" },
-        { id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" },
-        { id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" },
         { id: "journal", label: t("navJournal"), icon: BookMarked, route: "/journal" },
       ],
     },
@@ -57,21 +55,14 @@ export function LeftSidebar({
         { id: "artifacts", label: t("navArtifacts"), icon: Puzzle, route: "/artifacts" },
       ],
     },
-    {
-      id: "account",
-      label: t("navAccount"),
-      items: [
-        { id: "settings", label: t("navSettings"), icon: Settings, route: "/settings" },
-      ],
-    },
   ];
 
   // Use sidebar state hook for persistence
   const {
     width,
-    toggleState,
     setWidth,
     isExpanded,
+    setState,
   } = useSidebarState({
     storageKey: "left-sidebar",
     defaultState: externalState || "expanded",
@@ -79,6 +70,10 @@ export function LeftSidebar({
     minWidth,
     maxWidth,
   });
+
+  useEffect(() => {
+    if (externalState) setState(externalState);
+  }, [externalState, setState]);
 
   // Use resize hook for drag-to-resize
   const { isResizing, startResize } = useResize({
@@ -89,11 +84,6 @@ export function LeftSidebar({
     onWidthChange: setWidth,
   });
 
-  const handleToggle = useCallback(() => {
-    toggleState();
-    onStateChange?.(isExpanded ? "collapsed" : "expanded");
-  }, [toggleState, isExpanded, onStateChange]);
-
   if (!isExpanded) {
     // Collapsed state - minimal UI with smooth animation
     return (
@@ -102,15 +92,9 @@ export function LeftSidebar({
         style={{ width: "64px" }}
         aria-label="Left sidebar (collapsed)"
       >
-        {/* Expand Button */}
-        <button
-          onClick={handleToggle}
-          className="flex h-14 items-center justify-center border-b border-border transition-colors hover:bg-accent"
-          aria-label="Expand sidebar"
-          title="Expand sidebar (Ctrl+1)"
-        >
-          <ChevronLeft className="h-5 w-5 rotate-180" />
-        </button>
+        <div className="flex h-12 items-center justify-center border-b border-border">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-xs font-bold text-white">α</div>
+        </div>
 
         {/* Navigation items (icons only) */}
         <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
@@ -122,6 +106,13 @@ export function LeftSidebar({
             </div>
           ))}
         </nav>
+        <div className="space-y-1 border-t border-border p-2">
+          <NavItem item={{ id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" }} collapsed={true} />
+          <div className="flex items-center justify-center gap-1">
+            <NavItem item={{ id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" }} collapsed={true} />
+            <AccountMenu collapsed={true} />
+          </div>
+        </div>
       </aside>
     );
   }
@@ -136,22 +127,14 @@ export function LeftSidebar({
       style={{ width: `${width}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
       aria-label="Left sidebar"
     >
-      {/* Header with logo and collapse button */}
-      <div className="flex items-center justify-between border-b border-border px-4 h-14">
+      {/* Header with product identity. Sidebar control lives in the top bar. */}
+      <div className="flex h-12 items-center border-b border-border px-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-sm font-bold text-white">
             α
           </div>
           <span className="text-base font-bold tracking-tight">AlphaForge</span>
         </div>
-        <button
-          onClick={handleToggle}
-          className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-accent"
-          aria-label="Collapse sidebar"
-          title="Collapse sidebar (Ctrl+1)"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
       </div>
 
       {/* Navigation */}
@@ -164,6 +147,16 @@ export function LeftSidebar({
           </NavGroup>
         ))}
       </nav>
+
+      <div className="space-y-1 border-t border-border p-2">
+        <NavItem item={{ id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" }} collapsed={false} />
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <NavItem item={{ id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" }} collapsed={false} />
+          </div>
+          <AccountMenu collapsed={false} />
+        </div>
+      </div>
 
       {/* Drag-to-resize handle */}
       <div
