@@ -1,10 +1,10 @@
-# Investment OS Project Bootstrap
+# AlphaForge Project Bootstrap
 
 ## 1. Purpose
 
-This document defines the initial repository structure, implementation boundaries, development order, and minimum engineering standards for Investment OS.
+This document defines the initial repository structure, implementation boundaries, development order, and minimum engineering standards for AlphaForge.
 
-Investment OS is a desktop-first AI workspace for investment research. Its core loop is:
+AlphaForge is a desktop-first AI workspace for investment research. Its core loop is:
 
 ```text
 Information
@@ -77,7 +77,7 @@ The product is not a brokerage terminal, automated trading system, stock-picking
 ## 3. Recommended Repository Structure
 
 ```text
-investment-os/
+alpha-forge/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml
@@ -339,7 +339,7 @@ rust-toolchain.toml
 Suggested bundle identifier:
 
 ```text
-com.berry.investmentos
+com.berry.alphaforge
 ```
 
 ### Phase 3: Frontend Foundation

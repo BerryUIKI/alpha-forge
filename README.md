@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/header-banner-dark.svg">
-  <img src="assets/header-banner-light.svg" alt="AlphaForge — Investment OS" width="480">
+  <img src="assets/header-banner-light.svg" alt="AlphaForge" width="480">
 </picture>
 
 <br>
@@ -203,6 +203,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
 | [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | Product milestones |
 | [i18n](docs/i18n/README.md) | Localization architecture and delivery plan |
+| [Product experience redesign](docs/PRODUCT_EXPERIENCE_REDESIGN.md) | GUI feedback response, target information architecture, and phased delivery plan |
+| [Agent runtime](docs/agent/README.md) | Managed subprocess architecture, roadmap, and implementation checklist |
 | [Option module](docs/option/README.md) | Consolidated Option specifications and integration plan |
 | [Goose integration](docs/goose/README.md) | Post-MVP Goose boundaries and roadmap |
 | [Delivery playbook](docs/milestones/DELIVERY_PLAYBOOK.md) | Milestone execution and evidence rules |
@@ -213,6 +215,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | Document | Purpose |
 |----------|---------|
 | [AGENT_PROTOCOL.md](docs/AGENT_PROTOCOL.md) | Agent task lifecycle |
+| [ADR-0010](docs/DECISIONS/0010-managed-agent-worker-subprocess.md) | Managed Agent worker subprocess decision |
 | [ARTIFACT_SYSTEM.md](docs/ARTIFACT_SYSTEM.md) | Artifact rendering |
 | [PLUGIN_SPEC.md](docs/PLUGIN_SPEC.md) | Plugin development |
 | [DATA_MODEL.md](docs/DATA_MODEL.md) | Entity relationships |

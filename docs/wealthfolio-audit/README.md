@@ -3,7 +3,7 @@
 These documents were produced by an independent audit of the
 [Wealthfolio](https://github.com/wealthfolio/wealthfolio) codebase (v3.7.0)
 and are copied here for reference while integrating Wealthfolio's portfolio
-functionality into this repository (Investment OS / AlphaForge).
+functionality into this repository (AlphaForge / AlphaForge).
 
 **Authoritative plan:** [`../PORTFOLIO_INTEGRATION_PLAN.md`](../PORTFOLIO_INTEGRATION_PLAN.md)
 

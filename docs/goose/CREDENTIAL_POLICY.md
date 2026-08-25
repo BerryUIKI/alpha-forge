@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document specifies the security controls, credential management mechanisms, and provider allowlisting policies governing the Goose integration in Investment OS (AlphaForge).
+This document specifies the security controls, credential management mechanisms, and provider allowlisting policies governing the Goose integration in AlphaForge (AlphaForge).
 
 ---
 

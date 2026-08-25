@@ -8,7 +8,7 @@
 
 ## Summary
 
-Branch protection rules have been configured for Investment OS to ensure code quality and production stability.
+Branch protection rules have been configured for AlphaForge to ensure code quality and production stability.
 
 ---
 

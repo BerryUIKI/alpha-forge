@@ -1,5 +1,9 @@
 # GUI Documentation Index
 
+> The 2026-08-24 product feedback redesign is tracked in
+> [`../PRODUCT_EXPERIENCE_REDESIGN.md`](../PRODUCT_EXPERIENCE_REDESIGN.md). It supersedes the
+> navigation placement and settings-shell assumptions in earlier GUI milestone documents.
+
 This directory contains documentation for GUI-related features and iterations.
 
 ## Documents

@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document summarizes the completion of **GUI-M1: Layout Restructuring** milestone, which implements a Codex-style desktop interface for Investment OS.
+This document summarizes the completion of **GUI-M1: Layout Restructuring** milestone, which implements a Codex-style desktop interface for AlphaForge.
 
 ## Milestone Goals
 

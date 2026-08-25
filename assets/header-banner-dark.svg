@@ -19,6 +19,6 @@
 
   <!-- App Name -->
   <text x="148" y="72" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="38" font-weight="800" fill="#58a6ff">AlphaForge</text>
-  <text x="150" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#8b949e">Investment OS — Desktop-first AI workspace</text>
+  <text x="150" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#8b949e">Desktop-first AI workspace</text>
   <text x="150" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">for investment research</text>
 </svg>

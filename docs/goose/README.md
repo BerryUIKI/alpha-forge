@@ -51,6 +51,12 @@ This sidecar adapter is the preferred first spike because it isolates an evolvin
 
 Do not enable Tauri shell access for React. Rust starts the approved executable directly with a fixed path and bounded arguments; user input never becomes a command line or shell fragment.
 
+ADR-0010 generalizes this supervision model for all long-running Agent backends.
+Goose should adopt the common worker lifecycle, diagnostics, cancellation, and
+process-tree controls where practical, while retaining its stricter recipe, MCP,
+credential, provider, and packaging policies. See the
+[Agent Runtime documentation](../agent/README.md).
+
 ## Document map
 
 | Document                                                | Purpose                                                                            |
@@ -59,6 +65,7 @@ Do not enable Tauri shell access for React. Rust starts the approved executable 
 | [Milestone Roadmap](../MILESTONE_ROADMAP.md)            | Program sequence and M10 entry criteria                                            |
 | [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md) | Execution and evidence rules for implementation agents                             |
 | [Agent Protocol](../AGENT_PROTOCOL.md)                  | AlphaForge task/event contract that remains authoritative                          |
+| [Managed Agent Workers](../agent/README.md)             | Shared subprocess architecture, implementation roadmap, and checklist              |
 | [Security](../SECURITY.md)                              | Application-wide trust and permission model                                        |
 
 ## Upstream facts to reverify at M10 kickoff

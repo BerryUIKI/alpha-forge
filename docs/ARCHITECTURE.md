@@ -76,7 +76,7 @@
 ## Directory Structure (Actual)
 
 ```
-investment-os/
+alpha-forge/
 ├── apps/desktop/                 Tauri 2 desktop application
 │   ├── src/                      React frontend
 │   │   ├── app/                  App entry, router, providers
@@ -148,6 +148,12 @@ Command-boundary DTOs use explicit `camelCase` serialization (`#[serde(rename_al
 
 ## Agent Task Execution & Event Streaming
 
+The current production path executes provider requests in background Tokio tasks
+inside the Tauri Rust process. ADR-0010 accepts a staged migration to managed
+worker subprocesses for long-running, tool-using, and third-party Agent workloads.
+Until that roadmap is implemented and accepted, process isolation must not be
+reported as complete for the generic Agent runtime.
+
 ```text
 React (AgentPanel)
   → useRunAgentTask / useCreateAgentTask
@@ -161,6 +167,10 @@ React (AgentPanel)
 
 - **Startup Race Protection**: Rust emits `app:ready` upon `AppState` initialization; `useAppReady` gates frontend IPC.
 - **Failure Context**: Exact failure payloads are surfaced to users in `AgentPanel` with complete EN/ZH-CN i18n.
+- **Target Worker Boundary**: Rust will supervise ephemeral Agent workers while
+  retaining provider credentials, network calls, tools, SQLite, domain writes,
+  budgets, and audit state in the trusted host. See
+  [`docs/agent/README.md`](agent/README.md).
 
 ## Current IPC Command Families
 
@@ -174,7 +184,10 @@ Current integration status:
 - **Options (S5 Complete)**: Option chain acquisition, contract selection, strategy building, persistence, Greeks/pricing calculations, and no-trading boundary enforcement are fully verified.
 - **Artifacts & Plugins (S3 Complete)**: Isolated Artifact-window route, least-privilege capability boundary (`capabilities/artifact-window.json`), disabled plugin enforcement, and predefined safe React renderers are fully verified.
 - **Release Readiness (S6 Complete)**: Full 6-stage stabilization program (S0-S6) accepted; 100% IPC parity (176/176), 0 typecheck errors, 55 test files passing, clean lint, fmt, clippy, and Rust workspace test suite.
-- **Goose Scaffolding**: Registered but disabled until M10 entry gate.
+- **Managed Agent Workers (Planned)**: ADR-0010 is accepted; the generic worker
+  protocol, supervisor, brokers, and platform isolation remain an implementation
+  workstream. Goose keeps its specialized sidecar policy and will converge on the
+  common lifecycle where doing so does not weaken its controls.
 
 ## Database
 
@@ -190,4 +203,3 @@ Current integration status:
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
 - Input validation: Strict Zod parsing on frontend IPC boundaries and Serde/Domain validation in Rust
-

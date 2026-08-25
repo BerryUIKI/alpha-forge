@@ -1,10 +1,10 @@
 # Vision
 
-## Why Investment OS
+## Why AlphaForge
 
 Investment research today is fragmented. Analysts juggle dozens of tools — market data terminals, news feeds, spreadsheets, note apps, and AI chat windows — none of which talk to each other. The result: context is lost, evidence goes untracked, and decisions lack an audit trail.
 
-Investment OS is an **AI-native research workspace** that closes this gap. It gives every researcher a persistent, local environment where AI agents help collect information, structure knowledge, test theses, and preserve reasoning — all in one place.
+AlphaForge is an **AI-native research workspace** that closes this gap. It gives every researcher a persistent, local environment where AI agents help collect information, structure knowledge, test theses, and preserve reasoning — all in one place.
 
 ## Why AI Changes Research
 
@@ -40,7 +40,7 @@ Chat-based AI tools reset context with every session. An investment thesis may d
 - Track which evidence supported or contradicted a thesis.
 - Build on previous analysis without repeating work.
 
-Investment OS gives agents a persistent workspace: every research task, every artifact, every thesis lives in a local database. Agents can recall past work and build on it.
+AlphaForge gives agents a persistent workspace: every research task, every artifact, every thesis lives in a local database. Agents can recall past work and build on it.
 
 ## Why Artifacts
 
@@ -60,7 +60,7 @@ Phase 1 delivers the foundation. Future phases unlock:
 
 ## Non-Goals
 
-Investment OS will never:
+AlphaForge will never:
 
 - Execute securities trades.
 - Make autonomous investment decisions.

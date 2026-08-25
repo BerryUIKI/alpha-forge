@@ -2,7 +2,7 @@
 
 ## Positioning
 
-Investment OS is an **AI-native investment research workspace** — a desktop application that helps investors and analysts transform raw information into structured knowledge, testable theses, and documented decisions.
+AlphaForge is an **AI-native investment research workspace** — a desktop application that helps investors and analysts transform raw information into structured knowledge, testable theses, and documented decisions.
 
 It is a **research tool**, not a trading tool.
 
@@ -15,13 +15,13 @@ It is a **research tool**, not a trading tool.
 
 ## Core Problems Solved
 
-1. **Fragmented workflow.** Research happens across market data terminals, news apps, spreadsheets, note-taking tools, and AI chats. Nothing connects. Investment OS unifies these into one workspace.
+1. **Fragmented workflow.** Research happens across market data terminals, news apps, spreadsheets, note-taking tools, and AI chats. Nothing connects. AlphaForge unifies these into one workspace.
 
 2. **Lost context.** AI chat sessions reset. Investment theses take weeks to form. Without persistent context, every session starts from zero.
 
-3. **Weak evidence tracking.** Most investors cannot trace why they made a decision six months ago. Investment OS links every thesis to its supporting and contradicting evidence.
+3. **Weak evidence tracking.** Most investors cannot trace why they made a decision six months ago. AlphaForge links every thesis to its supporting and contradicting evidence.
 
-4. **Unstructured AI output.** Raw text from AI is hard to act on. Investment OS renders agent output as interactive artifacts — comparison tables, risk dashboards, valuation models — not walls of text.
+4. **Unstructured AI output.** Raw text from AI is hard to act on. AlphaForge renders agent output as interactive artifacts — comparison tables, risk dashboards, valuation models — not walls of text.
 
 ## Main Workflows
 

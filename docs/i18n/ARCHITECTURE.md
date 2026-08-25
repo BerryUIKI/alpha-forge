@@ -2,6 +2,11 @@
 
 ## Goals
 
+Professional financial terminology is a separate preference layer. Ordinary interface copy is
+always localized, while domain labels can remain in their source form unless the user enables
+`app.i18n.professionalTermsEnabled`. User overrides are validated and stored under
+`app.i18n.professionalTermOverrides`; they must never alter stable protocol or database enum values.
+
 The i18n layer must make the React UI translatable without moving presentation logic into Rust, weakening type safety, or changing persisted domain values. It should be small enough for the two-locale MVP and structured enough to add reviewed locales later.
 
 ## Runtime flow

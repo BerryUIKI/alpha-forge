@@ -2,7 +2,7 @@
 
 ## Positioning
 
-The Option Analysis Platform is a **professional-grade options analysis and strategy development tool** integrated into AlphaForge's Investment OS. It transforms raw market data into actionable insights, helping investors understand option pricing, evaluate strategies, and manage option portfolio risk.
+The Option Analysis Platform is a **professional-grade options analysis and strategy development tool** integrated into AlphaForge's AlphaForge. It transforms raw market data into actionable insights, helping investors understand option pricing, evaluate strategies, and manage option portfolio risk.
 
 It is a **research and analysis tool**, not a trading execution platform.
 

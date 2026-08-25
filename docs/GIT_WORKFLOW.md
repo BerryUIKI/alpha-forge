@@ -2,7 +2,7 @@
 
 ## Branch Strategy
 
-Investment OS follows a **triadic branching model** with three main branch types:
+AlphaForge follows a **triadic branching model** with three main branch types:
 
 ```
 main (production)
