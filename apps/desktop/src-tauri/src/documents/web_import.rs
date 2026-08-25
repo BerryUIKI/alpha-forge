@@ -22,7 +22,7 @@ pub async fn fetch_web_page(input: &str) -> Result<ImportedWebPage, AppError> {
     let client = Client::builder()
         .redirect(redirect::Policy::none())
         .timeout(Duration::from_secs(15))
-        .user_agent("Investment-OS/0.1 research importer")
+        .user_agent("AlphaForge/0.1 research importer")
         .build()
         .map_err(|_| AppError::Internal("Web importer could not be configured".into()))?;
     for _ in 0..=MAX_REDIRECTS {

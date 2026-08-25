@@ -1,11 +1,11 @@
 [package]
-name = "investment-os"
+name = "alpha-forge"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [lib]
-name = "investment_os_lib"
+name = "alpha_forge_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

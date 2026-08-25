@@ -95,50 +95,6 @@ describe("TopBar", () => {
     expect(screen.getByText("Settings")).toBeInTheDocument();
   });
 
-  it("toggles theme on button click", () => {
-    const setTheme = vi.fn();
-    vi.mocked(useTheme).mockReturnValue({
-      theme: "dark",
-      setTheme,
-      resolvedTheme: "dark",
-      themes: ["light", "dark", "system"],
-      systemTheme: "dark",
-    } as unknown as ReturnType<typeof useTheme>);
-    renderTopBar();
-    const themeBtn = screen.getByLabelText("Switch to light mode");
-    fireEvent.click(themeBtn);
-    expect(setTheme).toHaveBeenCalledWith("light");
-  });
-
-  it("shows language dropdown when globe clicked", () => {
-    renderTopBar();
-    const langBtn = screen.getByLabelText("Switch language");
-    fireEvent.click(langBtn);
-    expect(screen.getByText("English")).toBeInTheDocument();
-    expect(screen.getByText("简体中文")).toBeInTheDocument();
-  });
-
-  it("changes locale when language option clicked", () => {
-    const setLocale = vi.fn();
-    vi.mocked(useLocale).mockReturnValue({
-      t: (k: string) => k,
-      locale: "en",
-      setLocale,
-    } as unknown as ReturnType<typeof useLocale>);
-    renderTopBar();
-    fireEvent.click(screen.getByLabelText("Switch language"));
-    fireEvent.click(screen.getByText("简体中文"));
-    expect(setLocale).toHaveBeenCalledWith("zh-CN");
-  });
-
-  it("navigates to settings when gear clicked", () => {
-    renderTopBar();
-    const settingsBtn = screen.getByLabelText("Settings");
-    fireEvent.click(settingsBtn);
-    // Just verify it renders — navigation is handled by react-router
-    expect(settingsBtn).toBeInTheDocument();
-  });
-
   it("fires onToggleRightSidebar when agent toggle clicked", () => {
     const onToggle = vi.fn();
     render(

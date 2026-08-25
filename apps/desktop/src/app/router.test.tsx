@@ -9,6 +9,7 @@ import { LocaleProvider } from "@/lib/i18n";
 
 // Import components
 import { MainLayout } from "@/components/layout/MainLayout";
+import { SettingsLayout } from "@/components/layout/SettingsLayout";
 import { TodayPage } from "@/pages/today/TodayPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
 import { ThesesPage } from "@/pages/theses/ThesesPage";
@@ -31,6 +32,11 @@ function renderWithRouter(initialEntry: string = "/") {
   const router = createMemoryRouter(
     [
       {
+        path: "/settings",
+        element: <SettingsLayout />,
+        children: [{ index: true, element: <SettingsPage /> }],
+      },
+      {
         path: "/",
         element: <MainLayout />,
         children: [
@@ -42,7 +48,6 @@ function renderWithRouter(initialEntry: string = "/") {
           { path: "portfolio", element: <PortfolioPage /> },
           { path: "knowledge", element: <KnowledgePage /> },
           { path: "artifacts", element: <ArtifactsPage /> },
-          { path: "settings", element: <SettingsPage /> },
           { path: "options", element: <OptionsPage /> },
         ],
       },
@@ -105,6 +110,8 @@ describe("Router - Basic Rendering", () => {
   it("renders Settings page without crashing", () => {
     const { container } = renderWithRouter("/settings");
     expect(container.firstChild).toBeTruthy();
+    expect(screen.getByLabelText(/settings navigation/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^left sidebar/i)).not.toBeInTheDocument();
   });
 
   it("renders Options page without crashing", () => {

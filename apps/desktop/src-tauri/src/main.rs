@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    investment_os_lib::run()
+    alpha_forge_lib::run()
 }

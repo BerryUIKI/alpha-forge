@@ -1,5 +1,5 @@
 {
-  "name": "@investment-os/schemas",
+  "name": "@alpha-forge/schemas",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

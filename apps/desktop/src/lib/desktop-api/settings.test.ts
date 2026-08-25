@@ -14,7 +14,7 @@ describe("Settings API", () => {
 
   it("getAppInfo parses valid response via Zod", async () => {
     const mockInfo = {
-      name: "Investment OS",
+      name: "AlphaForge",
       version: "0.1.0",
       identifier: "com.alphaforge.app",
     };
@@ -30,7 +30,7 @@ describe("Settings API", () => {
 
   it("getAppInfo rejects malformed response", async () => {
     const malformed = {
-      name: "Investment OS",
+      name: "AlphaForge",
       // missing version and identifier
     };
 

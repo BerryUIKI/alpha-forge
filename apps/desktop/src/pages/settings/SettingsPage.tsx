@@ -5,6 +5,7 @@ import { desktopApi } from "@/lib/desktop-api";
 import { formatMessage, LOCALES, type Locale } from "@/lib/i18n/locale";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { InternalPluginsPanel } from "@/features/plugins";
+import { ApiUsageSettings, AppearanceSettings, ProfessionalTerminologySettings } from "./SettingsPreferences";
 
 export function SettingsPage() {
   const { locale, setLocale, t } = useLocale();
@@ -94,7 +95,7 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div>
+      <div id="general" className="scroll-mt-4">
         <h1 className="text-2xl font-bold">{t("settings")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("settingsDescription")}</p>
       </div>
@@ -117,6 +118,10 @@ export function SettingsPage() {
           ))}
         </select>
       </section>
+
+      <AppearanceSettings />
+      <ProfessionalTerminologySettings />
+      <ApiUsageSettings />
 
       {/* Agent Configuration Section */}
       <section id="agent" className="rounded-lg border border-border bg-card p-5">
@@ -158,9 +163,9 @@ export function SettingsPage() {
         </div>
       </section>
 
-      <InternalPluginsPanel />
+      <div id="internal-plugins" className="scroll-mt-4"><InternalPluginsPanel /></div>
 
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section id="data" className="scroll-mt-4 rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">
           <Database className="mt-0.5 h-5 w-5" />
           <div>
@@ -216,7 +221,7 @@ export function SettingsPage() {
           {isChecking ? t("checking") : t("checkForUpdates")}
         </button>
       </section>
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section id="about" className="scroll-mt-4 rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5" />
           <div>

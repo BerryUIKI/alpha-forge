@@ -2,7 +2,7 @@
 name = "option-core"
 version = "0.1.0"
 edition = "2021"
-description = "Option pricing engine and Greeks calculator for Investment OS"
+description = "Option pricing engine and Greeks calculator for AlphaForge"
 license = "AGPL-3.0"
 authors = ["AlphaForge Team"]
 

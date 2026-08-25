@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "==> Building Investment OS..."
+echo "==> Building AlphaForge..."
 pnpm build
 echo "==> Build complete."

@@ -12,6 +12,10 @@ vi.mock("@/lib/desktop-api", () => ({
       listKnowledgeEntities: vi.fn(),
       createKnowledgeEntity: vi.fn(),
     },
+    settings: {
+      getSetting: vi.fn().mockResolvedValue(null),
+      setSetting: vi.fn().mockResolvedValue(undefined),
+    },
   },
 }));
 
@@ -32,6 +36,11 @@ vi.mock("@/lib/i18n/useLocale", () => ({
       const map: Record<string, string> = {
         knowledgeGraph: "Knowledge Graph",
         knowledgeGraphDescription: "Connect companies, industries, technologies, and macro themes.",
+        knowledgeAddEntity: "Add Entity",
+        newKnowledgeEntity: "New Knowledge Entity",
+        knowledgeEmptyDescription: "Start building your knowledge network by adding companies, industries, technologies, and macro themes.",
+        knowledgeEntitiesLoadFailed: "Failed to load knowledge entities",
+        entityNamePlaceholder: "e.g. NVIDIA",
       };
       return map[key] || key;
     },

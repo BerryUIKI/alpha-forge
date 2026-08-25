@@ -1,4 +1,4 @@
-// Domain models for Investment OS.
+// Domain models for AlphaForge.
 //
 // Contains shared domain types: Research, Thesis, Portfolio, Artifact, Task, Workspace, Option.
 // These are pure data structures with no I/O dependencies.

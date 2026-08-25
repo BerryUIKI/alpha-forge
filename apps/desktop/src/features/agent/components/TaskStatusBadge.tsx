@@ -1,6 +1,6 @@
 // Task status badge component.
 
-import { Badge } from "@investment-os/ui";
+import { Badge } from "@alpha-forge/ui";
 import { useLocale } from "@/lib/i18n/useLocale";
 import type { TaskStatus } from "@/lib/desktop-api/agent";
 

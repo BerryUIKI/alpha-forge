@@ -184,13 +184,12 @@ This document summarizes the completion of **GUI-M1: Layout Restructuring** mile
 - `WelcomePage.tsx` - Welcome screen
 - 6 Workspace Views
 
-### Rust Modules
+### Window Shell
 
-**Menu Module** (241 lines):
-- Native menu bar configuration
-- Platform-aware shortcuts
-- Type-safe menu IDs
-- All menu items defined
+The earlier Rust-native menu module has been retired. The current shell uses a
+React `WindowTitleBar` with Tauri-scoped window controls, explicit drag regions,
+and application-themed `File / Edit / View / Help` menus. The main Tauri window
+is frameless with its native shadow retained.
 
 ---
 

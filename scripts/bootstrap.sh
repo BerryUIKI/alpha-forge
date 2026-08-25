@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "==> Bootstrapping Investment OS development environment..."
+echo "==> Bootstrapping AlphaForge development environment..."
 
 echo "==> Installing pnpm dependencies..."
 pnpm install

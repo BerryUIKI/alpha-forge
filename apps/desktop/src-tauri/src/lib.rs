@@ -7,7 +7,6 @@ pub mod database;
 pub mod documents;
 pub mod error;
 pub mod goose;
-pub mod menu;
 pub mod plugins;
 pub mod providers;
 pub mod security;
@@ -23,18 +22,13 @@ use tracing::info;
 pub fn run() {
     telemetry::init();
 
-    info!("Investment OS starting");
+    info!("AlphaForge starting");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();
-
-            // Setup native menu bar
-            if let Err(error) = menu::setup_menu(&handle) {
-                tracing::error!("Failed to setup menu: {}", error);
-            }
 
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
@@ -278,5 +272,5 @@ pub fn run() {
             commands::goose::reject_goose_proposal,
         ])
         .run(tauri::generate_context!())
-        .expect("failed to launch Investment OS");
+        .expect("failed to launch AlphaForge");
 }

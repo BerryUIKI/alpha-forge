@@ -2,7 +2,7 @@
 
 use crate::error::AppError;
 
-const SERVICE_NAME: &str = "com.berry.investmentos";
+const SERVICE_NAME: &str = "com.berry.alphaforge";
 const OPENAI_CREDENTIAL_NAME: &str = "openai.api_key";
 const LEGACY_OPENAI_CREDENTIAL_NAME: &str = "api_key";
 const MAX_CREDENTIAL_NAME_LENGTH: usize = 64;

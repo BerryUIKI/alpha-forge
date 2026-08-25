@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { SettingsLayout } from "@/components/layout/SettingsLayout";
 import { FeatureErrorBoundary } from "@/components/common/FeatureErrorBoundary";
 import { TodayPage } from "@/pages/today/TodayPage";
 import { ResearchPage } from "@/pages/research/ResearchPage";
@@ -26,6 +27,13 @@ export const router = createBrowserRouter([
   // Artifact windows are intentionally isolated from the main application layout.
   artifactWindowRoute,
   {
+    path: "/settings",
+    element: <SettingsLayout />,
+    children: [
+      { index: true, element: withFeatureBoundary("settings", <SettingsPage />) },
+    ],
+  },
+  {
     path: "/",
     element: <MainLayout />,
     children: [
@@ -37,7 +45,6 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: withFeatureBoundary("portfolio", <PortfolioPage />) },
       { path: "knowledge", element: withFeatureBoundary("knowledge", <KnowledgePage />) },
       { path: "artifacts", element: withFeatureBoundary("artifacts", <ArtifactsPage />) },
-      { path: "settings", element: withFeatureBoundary("settings", <SettingsPage />) },
       { path: "options", element: withFeatureBoundary("options", <OptionsPage />) },
     ],
   },

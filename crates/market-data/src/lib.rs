@@ -1,7 +1,7 @@
-//! Investment OS Market Data Crate
+//! AlphaForge Market Data Crate
 //!
 //! This crate provides provider-agnostic market data fetching capabilities
-//! for the Investment OS application.
+//! for the AlphaForge application.
 //!
 //! # Overview
 //!

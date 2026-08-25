@@ -1,5 +1,5 @@
 {
-  "name": "investment-os",
+  "name": "alpha-forge",
   "version": "0.1.0",
   "private": true,
   "description": "Desktop-first AI workspace for investment research",
@@ -9,7 +9,7 @@
     "dev:web": "corepack pnpm --dir apps/desktop dev",
     "build": "corepack pnpm --dir apps/desktop build",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "corepack pnpm --filter @investment-os/desktop typecheck",
+    "typecheck": "corepack pnpm --filter @alpha-forge/desktop typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
