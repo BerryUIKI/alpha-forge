@@ -1,4 +1,4 @@
-# Contributing to AlphaForge (Investment OS)
+# Contributing to AlphaForge (AlphaForge)
 
 First off, thank you for considering contributing to AlphaForge! It's people like you that make AlphaForge a great tool for investment research.
 

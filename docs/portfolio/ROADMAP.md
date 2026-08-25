@@ -13,7 +13,7 @@
 
 ## Overview
 
-The Portfolio module turns Investment OS from a research workspace into a
+The Portfolio module turns AlphaForge from a research workspace into a
 research + decision tracking platform. It ports the full financial domain from
 Wealthfolio (AGPL-3.0) — accounts, holdings, lots, valuation, performance,
 allocation, snapshots, net worth, income, and market data — while resolving

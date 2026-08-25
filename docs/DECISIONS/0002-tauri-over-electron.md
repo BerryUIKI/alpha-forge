@@ -6,7 +6,7 @@
 
 ## Context
 
-Investment OS needs a desktop application shell that hosts a React frontend and a Rust backend. The two dominant options for cross-platform desktop apps with web UIs are Electron and Tauri.
+AlphaForge needs a desktop application shell that hosts a React frontend and a Rust backend. The two dominant options for cross-platform desktop apps with web UIs are Electron and Tauri.
 
 ## Decision
 
@@ -26,7 +26,7 @@ Investment OS needs a desktop application shell that hosts a React frontend and 
 
 ### Why Rust Matters
 
-The backend of Investment OS is not a thin proxy to cloud services. It runs:
+The backend of AlphaForge is not a thin proxy to cloud services. It runs:
 
 - An agent runtime with async task execution.
 - A local SQLite database with migrations.
@@ -38,7 +38,7 @@ Rust's type system, ownership model, and async runtime (Tokio) are well-suited f
 
 ### Why Binary Size Matters
 
-Investment OS is a focused research tool. A 150 MB download for what is essentially a single-purpose application is difficult to justify. Tauri's 5-10 MB binary respects the user's disk and bandwidth.
+AlphaForge is a focused research tool. A 150 MB download for what is essentially a single-purpose application is difficult to justify. Tauri's 5-10 MB binary respects the user's disk and bandwidth.
 
 ### Why Security Matters
 

@@ -14,7 +14,7 @@
 ```bash
 # Clone and enter the repository
 git clone <repo-url>
-cd investment-os
+cd alpha-forge
 
 # Install Rust (if not installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -33,7 +33,7 @@ This repository uses Corepack-managed pnpm 9.0.0, as declared in the root `packa
 ## Repository Structure
 
 ```
-investment-os/
+alpha-forge/
 ├── apps/desktop/          Tauri desktop application
 │   ├── src/               React frontend
 │   ├── src-tauri/         Rust backend

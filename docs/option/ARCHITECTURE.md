@@ -2,7 +2,7 @@
 
 ## System Overview
 
-The Option Analysis Platform extends AlphaForge's Investment OS with professional-grade options analysis capabilities. It follows the existing architectural patterns while adding specialized components for option pricing, Greeks calculation, and strategy analysis.
+The Option Analysis Platform extends AlphaForge's AlphaForge with professional-grade options analysis capabilities. It follows the existing architectural patterns while adding specialized components for option pricing, Greeks calculation, and strategy analysis.
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐

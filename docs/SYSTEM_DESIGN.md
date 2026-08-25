@@ -1,6 +1,6 @@
 # System Design
 
-Investment OS is composed of nine major subsystems. Each has a clear purpose, bounded responsibilities, and defined interfaces.
+AlphaForge is composed of nine major subsystems. Each has a clear purpose, bounded responsibilities, and defined interfaces.
 
 ---
 

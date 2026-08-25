@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-This document defines the release packaging protocols, software bill of materials (SBOM), upstream attribution, platform compatibility matrix, runtime diagnostics, and emergency operator kill switch / rollback procedures for the Goose agent integration in Investment OS (AlphaForge).
+This document defines the release packaging protocols, software bill of materials (SBOM), upstream attribution, platform compatibility matrix, runtime diagnostics, and emergency operator kill switch / rollback procedures for the Goose agent integration in AlphaForge (AlphaForge).
 
 ---
 

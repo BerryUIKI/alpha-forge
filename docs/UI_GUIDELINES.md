@@ -2,7 +2,7 @@
 
 ## Design Philosophy
 
-Investment OS is a **desktop-first professional tool**, not a consumer web app. The UI should feel dense, efficient, and calm — optimized for focused research work, not casual browsing.
+AlphaForge is a **desktop-first professional tool**, not a consumer web app. The UI should feel dense, efficient, and calm — optimized for focused research work, not casual browsing.
 
 ### Principles
 

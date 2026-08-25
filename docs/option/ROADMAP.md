@@ -109,10 +109,10 @@ pub struct OptionContract {
 ```bash
 # Rust tests
 cargo test --package domain
-cargo test -p investment-os database
+cargo test -p alpha-forge database
 
 # Migration tests
-cargo test -p investment-os database::migrations_test
+cargo test -p alpha-forge database::migrations_test
 
 # Type checks
 pnpm typecheck
@@ -244,7 +244,7 @@ pub fn black_scholes_price(
 cargo test --package option-core
 
 # Integration tests
-cargo test -p investment-os services
+cargo test -p alpha-forge services
 
 # Performance benchmarks
 cargo bench --package option-core
@@ -504,7 +504,7 @@ pnpm test -- apps/desktop/src/features/options/StrategyBuilder
 
 # Backend tests
 cargo test --package option-core --lib strategy
-cargo test -p investment-os strategy_service
+cargo test -p alpha-forge strategy_service
 
 # Plugin tests
 pnpm test -- plugins/strategy-payoff
@@ -651,7 +651,7 @@ pnpm test -- apps/desktop/src/features/options/ScenarioAnalysis
 
 # Backend tests
 cargo test --package option-core --lib volatility_surface
-cargo test -p investment-os scenario_service
+cargo test -p alpha-forge scenario_service
 
 # Plugin tests
 pnpm test -- plugins/volatility-surface
@@ -784,8 +784,8 @@ pub struct RiskContribution {
 pnpm test -- apps/desktop/src/features/options/PortfolioRisk
 
 # Backend tests
-cargo test -p investment-os portfolio_option_service
-cargo test -p investment-os option_position_repository
+cargo test -p alpha-forge portfolio_option_service
+cargo test -p alpha-forge option_position_repository
 
 # Integration tests
 pnpm test:e2e -- portfolio-risk

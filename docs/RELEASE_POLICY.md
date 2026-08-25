@@ -96,11 +96,11 @@ codesign --sign "Developer ID Application: Your Name (TEAM_ID)" \
   --force \
   --verify \
   --verbose \
-  "target/release/bundle/macos/Investment OS.app"
+  "target/release/bundle/macos/AlphaForge.app"
 
 # Verify signature
-codesign --verify --deep --strict --verbose "Investment OS.app"
-spctl --assess --verbose "Investment OS.app"
+codesign --verify --deep --strict --verbose "AlphaForge.app"
+spctl --assess --verbose "AlphaForge.app"
 ```
 
 **Flags Explained**:
@@ -124,10 +124,10 @@ signtool sign /f "path/to/certificate.pfx" \
   /tr http://timestamp.digicert.com \
   /td SHA256 \
   /fd SHA256 \
-  "target/release/investment-os.exe"
+  "target/release/alpha-forge.exe"
 
 # Verify signature
-signtool verify /pa "target/release/investment-os.exe"
+signtool verify /pa "target/release/alpha-forge.exe"
 ```
 
 **Flags Explained**:
@@ -185,10 +185,10 @@ xcrun notarytool store-credentials \
 
 ```bash
 # Create ZIP archive
-ditto -c -k --keepParent "Investment OS.app" "Investment OS.zip"
+ditto -c -k --keepParent "AlphaForge.app" "AlphaForge.zip"
 
 # Submit to Apple
-xcrun notarytool submit "Investment OS.zip" \
+xcrun notarytool submit "AlphaForge.zip" \
   --keychain-profile "alpha-forge-notary" \
   --wait
 
@@ -203,10 +203,10 @@ xcrun notarytool submit "Investment OS.zip" \
 
 ```bash
 # Staple notarization ticket to app bundle
-xcrun stapler staple "Investment OS.app"
+xcrun stapler staple "AlphaForge.app"
 
 # Verify stapling
-spctl --assess --verbose --type execute "Investment OS.app"
+spctl --assess --verbose --type execute "AlphaForge.app"
 ```
 
 ### 3.4 Notarization Timeline
@@ -345,7 +345,7 @@ Users should be able to revert to previous versions if:
 **Method**: Keep previous `.app` bundles
 
 **Process**:
-1. Rename current version: `Investment OS.app` → `Investment OS-0.2.0.app`
+1. Rename current version: `AlphaForge.app` → `AlphaForge-0.2.0.app`
 2. Download previous version from GitHub Releases
 3. Install previous version
 4. User opens previous version
@@ -519,7 +519,7 @@ jobs:
           codesign --sign "$DEVELOPER_ID" \
             --options runtime \
             --deep --force --verify \
-            "target/release/bundle/macos/Investment OS.app"
+            "target/release/bundle/macos/AlphaForge.app"
         env:
           DEVELOPER_ID: ${{ secrets.DEVELOPER_ID }}
       
@@ -542,7 +542,7 @@ jobs:
           signtool sign /f certificate.pfx /p "$CERT_PASSWORD" \
             /tr http://timestamp.digicert.com \
             /td SHA256 /fd SHA256 \
-            investment-os.exe
+            alpha-forge.exe
         env:
           CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
       

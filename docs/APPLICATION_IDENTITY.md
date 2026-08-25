@@ -12,11 +12,17 @@ This document defines AlphaForge's application identity, brand guidelines, and i
 
 **Official Name**: AlphaForge
 
-**Display Name**: Investment OS (secondary, descriptor)
+**Display Name**: AlphaForge
 
 **Internal Name**: alpha-forge (code, URLs)
 
-**Package Name**: Investment OS (installers)
+**Package Name**: AlphaForge (installers)
+
+**Reverse-DNS Identifier**: `com.berry.alphaforge`
+
+AlphaForge is the only product name. Do not introduce a secondary product name,
+former descriptor, installer alias, or alternate spelling. Descriptive phrases
+such as "AI-native investment research workspace" are taglines, not names.
 
 ### 1.2 Product Tagline
 

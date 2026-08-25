@@ -37,7 +37,9 @@ Created → Queued → Running → Waiting For Input → Completed
 - `Running → Failed`: Unrecoverable error occurs.
 - `Any non-terminal → Cancelled`: User cancels the task.
 
-## Execution Model (M2)
+## Execution Model
+
+### Current Model (M2)
 
 ### Background Task Execution
 
@@ -60,6 +62,26 @@ User submits task
         → React updates UI
           → Task completes → final artifact
 ```
+
+### Target Managed-Worker Model
+
+ADR-0010 accepts a managed subprocess boundary for long-running, tool-using, and
+third-party Agent workloads. The product task states and Tauri event names remain
+stable; process lifecycle details are internal run events.
+
+```text
+User submits task
+  -> Tauri command returns task_id
+  -> Rust AgentOrchestrator persists and scopes the run
+  -> WorkerSupervisor starts an approved ephemeral worker
+  -> worker requests provider/tool operations through Rust brokers
+  -> Rust streams normalized task events to React
+  -> Rust validates and persists the terminal result
+```
+
+Rust remains the only owner of credentials, provider network access, SQLite,
+files, domain writes, budgets, and audit state. React has no worker or shell
+permission. See [`docs/agent/SUBPROCESS_ARCHITECTURE.md`](agent/SUBPROCESS_ARCHITECTURE.md).
 
 ### Event Streaming
 
@@ -87,6 +109,11 @@ Event emitted: task:cancelled
     ↓
 Status updated in database
 ```
+
+For a subprocess-backed run, cancellation additionally sends a graceful protocol
+message, waits for a bounded grace period, terminates the complete process tree,
+reaps the child, and cleans task-owned temporary data before recording the final
+state. A worker process exit is not itself a successful task result.
 
 ---
 

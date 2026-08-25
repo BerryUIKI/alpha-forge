@@ -358,18 +358,18 @@ pnpm tauri build
 
 # Verify no security warnings
 # Check binary for sensitive strings
-strings target/release/investment-os.exe | grep -i "password\|secret\|key"
+strings target/release/alpha-forge.exe | grep -i "password\|secret\|key"
 ```
 
 **Step 5: Signing Verification**
 
 ```bash
 # macOS
-codesign --verify --deep --strict "Investment OS.app"
-spctl --assess --verbose "Investment OS.app"
+codesign --verify --deep --strict "AlphaForge.app"
+spctl --assess --verbose "AlphaForge.app"
 
 # Windows
-signtool verify /pa investment-os.exe
+signtool verify /pa alpha-forge.exe
 ```
 
 ### 7.2 Post-Release Monitoring

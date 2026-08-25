@@ -64,15 +64,15 @@ dist/assets/index-BZoK4Mvz.js  570.52 kB │ gzip: 166.44 kB
 
 | Platform | Binary | Size | Target | Status |
 |----------|--------|------|--------|--------|
-| **Windows** | `investment-os.exe` | 21 MB | < 30 MB | ✅ PASS |
+| **Windows** | `alpha-forge.exe` | 21 MB | < 30 MB | ✅ PASS |
 | **macOS** | (not tested) | - | < 30 MB | ⏸️ Pending |
 
 ### 2.2 Installer Size
 
 | Platform | Installer Type | Size | Target | Status |
 |----------|----------------|------|--------|--------|
-| **Windows MSI** | `Investment OS_0.1.0_x64_en-US.msi` | 7.1 MB | < 15 MB | ✅ PASS |
-| **Windows NSIS** | `Investment OS_0.1.0_x64-setup.exe` | 4.9 MB | < 10 MB | ✅ PASS |
+| **Windows MSI** | `AlphaForge_0.1.0_x64_en-US.msi` | 7.1 MB | < 15 MB | ✅ PASS |
+| **Windows NSIS** | `AlphaForge_0.1.0_x64-setup.exe` | 4.9 MB | < 10 MB | ✅ PASS |
 | **macOS DMG** | (not tested) | - | < 15 MB | ⏸️ Pending |
 
 ### 2.3 Distribution Size
@@ -337,7 +337,7 @@ dist/assets/index-BZoK4Mvz.js  570.52 kB │ gzip: 166.44 kB
 ### 10.1 Frontend Build Log
 
 ```
-> @investment-os/desktop@0.1.0 build
+> @alpha-forge/desktop@0.1.0 build
 > tsc && vite build
 
 vite v6.4.3 building for production...
@@ -368,7 +368,7 @@ Compiling agent-core v0.1.0
 Compiling artifact-core v0.1.0
 Compiling tauri-plugin-store v2.4.4
 Compiling tauri-plugin-opener v2.5.4
-Compiling investment-os v0.1.0
+Compiling alpha-forge v0.1.0
 Finished `release` profile [optimized] target(s) in 3m 14s
 ```
 

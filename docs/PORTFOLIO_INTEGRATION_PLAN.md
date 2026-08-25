@@ -1,4 +1,4 @@
-# Portfolio Integration Plan (Wealthfolio → Investment OS)
+# Portfolio Integration Plan (Wealthfolio → AlphaForge)
 
 **Status:** Approved — implementation start
 **Branch:** `feature/portfolio-integration` (forked from `dev`)
@@ -29,11 +29,11 @@ Related reference material (do not re-derive):
 Wealthfolio is a mature open-source portfolio tracker (Tauri 2 + React + Rust,
 AGPL-3.0, v3.7.0) with a full financial domain: accounts, holdings, activities
 (transactions), lots, valuation, performance, snapshots, goals, net worth, and
-imports. Investment OS (this repo) is an AI-native research workspace whose
+imports. AlphaForge (this repo) is an AI-native research workspace whose
 current `portfolio` domain module is a placeholder (4 basic structs, ~150 lines).
 
 The user decided: **full monorepo merge (Route C)** — absorb Wealthfolio's
-capability into Investment OS's Portfolio module, resolve all Wealthfolio
+capability into AlphaForge's Portfolio module, resolve all Wealthfolio
 technical debt in the process, and keep development unfrozen by shipping in
 phases.
 
@@ -56,7 +56,7 @@ phases.
 
 ---
 
-## 4. Current state — Investment OS portfolio surface
+## 4. Current state — AlphaForge portfolio surface
 
 Everything below already exists and is *functional but minimal*. Phase 3
 replaces/extends it; do not delete it blindly — extend it.

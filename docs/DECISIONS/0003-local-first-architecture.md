@@ -6,7 +6,7 @@
 
 ## Context
 
-Investment OS stores sensitive user data: research documents, investment theses, portfolio positions, and API credentials. We needed to decide whether to build a cloud-first architecture (backend API + database) or a local-first architecture (everything on the user's machine).
+AlphaForge stores sensitive user data: research documents, investment theses, portfolio positions, and API credentials. We needed to decide whether to build a cloud-first architecture (backend API + database) or a local-first architecture (everything on the user's machine).
 
 ## Decision
 

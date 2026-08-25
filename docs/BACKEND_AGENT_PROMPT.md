@@ -2,7 +2,7 @@
 
 ## Your Task
 
-You are implementing backend features for Investment OS. Before writing any code, you MUST follow the frontend-backend integration standards to ensure smooth collaboration.
+You are implementing backend features for AlphaForge. Before writing any code, you MUST follow the frontend-backend integration standards to ensure smooth collaboration.
 
 ---
 
