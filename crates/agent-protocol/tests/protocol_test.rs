@@ -252,3 +252,59 @@ fn test_multibyte_utf8_sliced_across_chunks() {
     assert_eq!(raw.run_id, "run-utf8");
     assert_eq!(raw.message_type, "run.progress");
 }
+
+#[test]
+fn test_broker_response_type_mismatch_rejection() {
+    let run_id = "run-type-mismatch";
+    let mut validator = SessionValidator::new(run_id);
+
+    // Complete handshake
+    let hello = ProtocolEnvelope::new(
+        run_id,
+        "worker.hello",
+        serde_json::json!({ "workerId": "w", "workerVersion": "1", "protocolVersions": [1], "supportedFeatures": [] }),
+    );
+    validator.validate_incoming(&hello).unwrap();
+    let config = ProtocolEnvelope::new(
+        run_id,
+        "host.configure",
+        serde_json::json!({ "workerId": "w", "runId": run_id, "workspaceId": "ws", "timeoutMs": 1000 }),
+    );
+    validator.record_outgoing(&config).unwrap();
+    let ready = ProtocolEnvelope::new(
+        run_id,
+        "worker.ready",
+        serde_json::json!({ "supportedFeatures": [] }),
+    );
+    validator.validate_incoming(&ready).unwrap();
+    let start = ProtocolEnvelope::new(
+        run_id,
+        "host.start",
+        serde_json::json!({ "runId": run_id, "prompt": "p" }),
+    );
+    validator.record_outgoing(&start).unwrap();
+
+    // Worker asks for tool.request
+    let tool_req = ProtocolEnvelope::new(
+        run_id,
+        "tool.request",
+        serde_json::json!({
+            "requestId": "req-tool-1",
+            "toolName": "research.search",
+            "parameters": {}
+        }),
+    );
+    validator.validate_incoming(&tool_req).unwrap();
+
+    // Host mistakenly responds with provider.response
+    let mismatched_resp = ProtocolEnvelope::new(
+        run_id,
+        "provider.response",
+        serde_json::json!({
+            "requestId": "req-tool-1",
+            "content": "some text"
+        }),
+    );
+    let res = validator.record_outgoing(&mismatched_resp);
+    assert!(matches!(res, Err(ProtocolError::InvalidReplyTo { .. })));
+}
