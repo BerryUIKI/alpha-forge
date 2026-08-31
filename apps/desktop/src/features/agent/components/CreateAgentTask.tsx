@@ -42,7 +42,15 @@ export function CreateAgentTask({ workspaceId, onSuccess, onCancel }: CreateAgen
       setIsOpen(false);
       onSuccess?.(task.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("failedToCreateTask"));
+      if (err instanceof Error && err.message) {
+        setError(err.message);
+      } else if (typeof err === "string" && err.trim().length > 0) {
+        setError(err);
+      } else if (err && typeof err === "object" && "message" in err && typeof (err as { message?: unknown }).message === "string") {
+        setError((err as { message: string }).message);
+      } else {
+        setError(t("failedToCreateTask"));
+      }
     }
   };
 
