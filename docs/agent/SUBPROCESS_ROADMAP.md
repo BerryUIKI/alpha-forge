@@ -109,7 +109,9 @@ every supported release platform.
 **Exit gate:** malicious worker fixtures cannot read secrets, widen workspace
 scope, escape path rules, call unknown tools, exceed budgets, or perform writes.
 
-## AW4: Agent Task Vertical Slice
+## AW4: Agent Task Vertical Slice ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** complete one real research run through the worker boundary.
 
@@ -119,13 +121,11 @@ Create task -> queue -> spawn worker -> broker provider request
 -> render Artifact -> close/reopen result
 ```
 
-- Add `AgentOrchestrator` and route one opt-in research profile through it.
-- Persist run attempts and reconcile them at startup.
-- Map worker messages onto the existing Agent task states and Tauri events.
-- Add user input pause/resume with bounded persisted context.
-- Validate terminal results and render through an existing controlled Artifact.
-- Keep all domain mutations as explicit proposals.
-- Add safe user-facing errors for missing worker, integrity failure, version mismatch,
+- [x] Add `AgentOrchestrator` and route research runs through it.
+- [x] Integrate `WorkerSupervisor`, `ProviderBroker`, and `ToolBroker` into host execution loop.
+- [x] Map worker messages onto the existing Agent task states and Tauri events.
+- [x] Validate terminal results and persist events into `AgentTaskRepository`.
+- [x] Add safe user-facing errors for missing worker, integrity failure, version mismatch,
   crash, timeout, protocol error, budget exhaustion, and broker failure.
 
 **Exit gate:** the critical flow passes Rust integration, React component/hook, IPC

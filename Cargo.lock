@@ -121,6 +121,7 @@ name = "alpha-forge"
 version = "0.1.0"
 dependencies = [
  "agent-core",
+ "agent-protocol",
  "anyhow",
  "artifact-core",
  "async-trait",

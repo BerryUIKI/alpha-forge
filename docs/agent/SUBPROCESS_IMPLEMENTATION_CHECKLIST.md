@@ -18,14 +18,14 @@ Check an item only when its implementation, tests, and documentation are merged.
 
 - [x] Create `crates/agent-protocol/` for shared Serde contracts and validation.
 - [x] Create `crates/agent-worker/` or an equivalent dedicated worker binary crate.
-- [ ] Add `apps/desktop/src-tauri/src/agent/orchestrator.rs`.
-- [ ] Add `apps/desktop/src-tauri/src/agent/supervisor.rs`.
-- [ ] Add `apps/desktop/src-tauri/src/agent/worker_registry.rs`.
-- [ ] Add `apps/desktop/src-tauri/src/agent/provider_broker.rs`.
-- [ ] Add `apps/desktop/src-tauri/src/agent/tool_broker.rs`.
+- [x] Add `apps/desktop/src-tauri/src/agent/orchestrator.rs`.
+- [x] Add `crates/agent-core/src/supervisor.rs`.
+- [x] Add `crates/agent-core/src/manifest.rs` (WorkerRegistry).
+- [x] Add `crates/agent-core/src/broker/provider_broker.rs`.
+- [x] Add `crates/agent-core/src/broker/tool_broker.rs`.
 - [ ] Add `apps/desktop/src-tauri/src/agent/recovery.rs`.
 - [ ] Replace the placeholder sandbox module with enforced platform adapters.
-- [ ] Keep Tauri commands thin: validate, call service, map result.
+- [x] Keep Tauri commands thin: validate, call service, map result.
 
 ## 3. Worker Protocol
 

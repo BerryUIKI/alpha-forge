@@ -18,6 +18,7 @@ tauri-plugin-store = "2"
 
 domain = { path = "../../../crates/domain" }
 agent-core = { path = "../../../crates/agent-core" }
+agent-protocol = { path = "../../../crates/agent-protocol" }
 artifact-core = { path = "../../../crates/artifact-core" }
 provider-core = { path = "../../../crates/provider-core" }
 option-core = { path = "../../../crates/option-core" }
