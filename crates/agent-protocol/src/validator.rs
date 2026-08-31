@@ -208,11 +208,29 @@ impl SessionValidator {
             }
             "provider.response" | "tool.response" => {
                 if let Some(req_id) = envelope.payload.get("requestId").and_then(|v| v.as_str()) {
-                    if self.pending_broker_requests.remove(req_id).is_none() {
-                        return Err(ProtocolError::InvalidReplyTo {
-                            message_id: envelope.message_id.clone(),
-                            reply_to: req_id.to_string(),
-                        });
+                    match self.pending_broker_requests.remove(req_id) {
+                        Some(expected_req_type) => {
+                            let expected_resp_type = match expected_req_type.as_str() {
+                                "provider.request" => "provider.response",
+                                "tool.request" => "tool.response",
+                                _ => "",
+                            };
+                            if envelope.message_type != expected_resp_type {
+                                return Err(ProtocolError::InvalidReplyTo {
+                                    message_id: envelope.message_id.clone(),
+                                    reply_to: format!(
+                                        "{} (expected {}, got {})",
+                                        req_id, expected_resp_type, envelope.message_type
+                                    ),
+                                });
+                            }
+                        }
+                        None => {
+                            return Err(ProtocolError::InvalidReplyTo {
+                                message_id: envelope.message_id.clone(),
+                                reply_to: req_id.to_string(),
+                            });
+                        }
                     }
                 }
             }
