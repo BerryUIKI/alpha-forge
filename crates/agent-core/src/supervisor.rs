@@ -263,11 +263,12 @@ impl WorkerSupervisor {
     pub async fn cancel_gracefully(&mut self, grace_period_ms: u64) -> SupervisorResult<()> {
         info!(run_id = %self.run_id, grace_period_ms, "Cancelling worker gracefully");
 
-        // Send cancel message
+        // Send cancel message with a bounded timeout to avoid deadlocking if stdin pipe buffer is full
         let cancel = MessagePayload::RunCancel(RunCancel {
             reason: "User requested task cancellation".into(),
         });
-        let _ = self.send_typed_message(cancel).await;
+        let _ =
+            tokio::time::timeout(Duration::from_millis(250), self.send_typed_message(cancel)).await;
 
         if let Some(ref mut child) = self.child {
             match tokio::time::timeout(Duration::from_millis(grace_period_ms), child.wait()).await {
