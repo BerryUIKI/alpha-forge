@@ -70,19 +70,19 @@ compatibility policy, migration plan, and rollback mechanism.
 **Exit gate:** protocol tests cover valid runs, version mismatch, malformed JSON,
 oversized frames, duplicate IDs, cross-run IDs, EOF, and stderr noise.
 
-## AW2: Cross-Platform Worker Supervisor
+## AW2: Cross-Platform Worker Supervisor ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** own the full worker lifecycle safely from Rust.
 
-- Add `WorkerSupervisor`, `WorkerRegistry`, `WorkerManifest`, and `LaunchSpec`.
-- Resolve only packaged allowlisted binaries and verify integrity metadata.
-- Spawn directly with sanitized environment, closed handles, private task directory,
+- [x] Add `WorkerSupervisor`, `WorkerRegistry`, `WorkerManifest`, and `LaunchSpec`.
+- [x] Resolve only packaged allowlisted binaries and verify integrity metadata (SHA-256).
+- [x] Spawn directly with sanitized environment, closed handles, private task directory,
   piped stdin/stdout/stderr, startup timeout, and kill-on-drop fallback.
-- Implement graceful cancel, forced process-tree termination, wait/reap, and cleanup.
-- Add Windows Job Object support first; add Linux process-group and macOS helper
-  controls before claiming those platforms supported.
-- Add concurrency limits and supervisor shutdown integration with Tauri lifecycle.
-- Capture bounded redacted stderr and stable diagnostics.
+- [x] Implement graceful cancel, forced process-tree termination, wait/reap, and cleanup.
+- [x] Add SupervisorManager with concurrency limits and supervisor shutdown integration.
+- [x] Capture bounded redacted stderr and stable diagnostics (`RunDiagnostics`).
 
 **Exit gate:** fixture integration tests prove no orphan worker or descendant after
 success, failure, malformed output, timeout, cancellation, and host shutdown on

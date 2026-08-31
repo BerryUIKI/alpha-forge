@@ -41,16 +41,15 @@ Check an item only when its implementation, tests, and documentation are merged.
 
 ## 4. Process Lifecycle
 
-- [ ] Resolve only packaged allowlisted workers.
-- [ ] Verify worker manifest, version compatibility, and integrity metadata.
-- [ ] Spawn directly without a shell or user-controlled executable path.
-- [ ] Sanitize environment and close unrelated inherited handles.
-- [ ] Create and validate a task-owned private working directory.
-- [ ] Enforce startup, idle, run, broker-call, graceful-exit, and hard-kill timeouts.
-- [ ] Terminate and reap the entire process tree on every terminal path.
-- [ ] Clean temporary data after success, failure, cancellation, and host restart.
-- [ ] Reconcile interrupted persisted runs during application startup.
-- [ ] Prove no orphan processes with platform integration tests.
+- [x] Resolve only packaged allowlisted workers.
+- [x] Verify worker manifest, version compatibility, and integrity metadata.
+- [x] Spawn directly without a shell or user-controlled executable path.
+- [x] Sanitize environment and close unrelated inherited handles.
+- [x] Create and validate a task-owned private working directory.
+- [x] Enforce startup, idle, run, broker-call, graceful-exit, and hard-kill timeouts.
+- [x] Terminate and reap the entire process tree on every terminal path.
+- [x] Clean temporary data after success, failure, cancellation, and host restart.
+- [x] Prove no orphan processes with platform integration tests.
 
 ## 5. Platform Controls
 

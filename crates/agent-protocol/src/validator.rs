@@ -50,8 +50,13 @@ impl SessionValidator {
 
     /// Validates an incoming message envelope from the worker.
     pub fn validate_incoming(&mut self, envelope: &RawEnvelope) -> ProtocolResult<()> {
-        // 1. Header and Run ID checks
-        envelope.validate_header(Some(&self.run_id))?;
+        // 1. Header and Run ID checks (worker.hello is allowed before host configures run_id)
+        let expected_run = if envelope.message_type == "worker.hello" {
+            None
+        } else {
+            Some(self.run_id.as_str())
+        };
+        envelope.validate_header(expected_run)?;
 
         // 2. Duplicate Message ID check
         if !self.seen_message_ids.insert(envelope.message_id.clone()) {

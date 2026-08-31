@@ -3,13 +3,20 @@ name = "agent-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Core Agent runtime, supervisor, registry, and execution engine for AlphaForge"
 
 [dependencies]
 domain = { path = "../domain" }
-tokio.workspace = true
+agent-protocol = { path = "../agent-protocol", features = ["tokio"] }
+tokio = { workspace = true, features = ["full", "process", "io-util", "sync", "time"] }
 serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 chrono.workspace = true
+tempfile = "3"
+sha2 = "0.10"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full", "test-util"] }
