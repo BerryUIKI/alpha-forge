@@ -70,8 +70,10 @@ impl PerformanceService {
             });
         }
 
-        let start_value = filtered.first().unwrap().total_value;
-        let end_value = filtered.last().unwrap().total_value;
+        let (start_value, end_value) = match (filtered.first(), filtered.last()) {
+            (Some(first), Some(last)) => (first.total_value, last.total_value),
+            _ => (Decimal::ZERO, Decimal::ZERO),
+        };
 
         // Net contribution = sum of external flows
         let net_contribution: Decimal = filtered.iter().map(|v| v.net_contribution).sum();
@@ -154,8 +156,8 @@ impl PerformanceService {
         }
 
         // Compute cumulative returns
-        if !points.is_empty() {
-            let start_value = points.first().unwrap().total_value;
+        if let Some(first) = points.first() {
+            let start_value = first.total_value;
             let mut cumulative_net_contribution = Decimal::ZERO;
             for point in &mut points {
                 cumulative_net_contribution += point.net_contribution;
@@ -179,8 +181,11 @@ impl PerformanceService {
             return None;
         }
 
-        let first_date = series.first().unwrap().valuation_date;
-        let last = series.last().unwrap();
+        let (first, last) = match (series.first(), series.last()) {
+            (Some(f), Some(l)) => (*f, *l),
+            _ => return None,
+        };
+        let first_date = first.valuation_date;
 
         // Build cash flows: each valuation is a flow of net_contribution,
         // the final valuation also includes total_value as a positive flow.
