@@ -239,3 +239,16 @@ fn test_malformed_json_frame_rejection() {
     let res = reader.read_frame();
     assert!(matches!(res, Err(ProtocolError::InvalidJson(_))));
 }
+
+#[test]
+fn test_multibyte_utf8_sliced_across_chunks() {
+    // Chinese characters and emoji: "你好世界 🚀 AlphaForge"
+    let json_frame = "{\"protocolVersion\":1,\"runId\":\"run-utf8\",\"messageId\":\"msg-1\",\"type\":\"run.progress\",\"payload\":{\"message\":\"你好世界 🚀 AlphaForge\"}}\n";
+    let mut reader = SyncFrameReader::new(Cursor::new(json_frame));
+
+    let frame = reader.read_frame().unwrap();
+    assert!(frame.is_some());
+    let raw = frame.unwrap();
+    assert_eq!(raw.run_id, "run-utf8");
+    assert_eq!(raw.message_type, "run.progress");
+}

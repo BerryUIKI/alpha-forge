@@ -34,10 +34,10 @@ impl<R: BufRead> SyncFrameReader<R> {
         self.total_bytes_read
     }
 
-    /// Reads the next newline-delimited protocol frame and parses it into a RawEnvelope.
+    /// Reads and deserializes the next envelope from the stream.
     /// Returns Ok(None) on clean EOF.
     pub fn read_frame(&mut self) -> ProtocolResult<Option<RawEnvelope>> {
-        let mut line = String::new();
+        let mut line_bytes = Vec::new();
 
         // Read line with bounded frame check
         let mut bytes_in_line = 0;
@@ -70,9 +70,7 @@ impl<R: BufRead> SyncFrameReader<R> {
                 });
             }
 
-            let s = std::str::from_utf8(&available[..take_len])
-                .map_err(|e| ProtocolError::Validation(format!("Invalid UTF-8 in frame: {}", e)))?;
-            line.push_str(s);
+            line_bytes.extend_from_slice(&available[..take_len]);
             bytes_in_line += take_len;
             self.total_bytes_read += take_len;
             self.reader.consume(take_len);
@@ -82,7 +80,9 @@ impl<R: BufRead> SyncFrameReader<R> {
             }
         }
 
-        let trimmed = line.trim();
+        let s = std::str::from_utf8(&line_bytes)
+            .map_err(|e| ProtocolError::Validation(format!("Invalid UTF-8 in frame: {}", e)))?;
+        let trimmed = s.trim();
         if trimmed.is_empty() {
             return Ok(None);
         }
