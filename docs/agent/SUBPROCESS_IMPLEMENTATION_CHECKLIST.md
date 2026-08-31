@@ -5,19 +5,19 @@ Check an item only when its implementation, tests, and documentation are merged.
 
 ## 1. Architecture and Contracts
 
-- [ ] Confirm workload routing policy: Agent worker versus bounded in-process call.
-- [ ] Freeze worker protocol v1 and publish golden fixtures.
-- [ ] Define stable worker/supervisor/broker error codes.
-- [ ] Define hard ceilings for frames, output, stderr, turns, time, tokens, cost,
+- [x] Confirm workload routing policy: Agent worker versus bounded in-process call.
+- [x] Freeze worker protocol v1 and publish golden fixtures.
+- [x] Define stable worker/supervisor/broker error codes.
+- [x] Define hard ceilings for frames, output, stderr, turns, time, tokens, cost,
       concurrency, CPU, and memory.
-- [ ] Approve the append-only persistence migration design.
-- [ ] Update the Agent threat model for generic workers and write proposals.
-- [ ] Define feature flag, kill switch, fallback, and rollback behavior.
+- [x] Approve the append-only persistence migration design.
+- [x] Update the Agent threat model for generic workers and write proposals.
+- [x] Define feature flag, kill switch, fallback, and rollback behavior.
 
 ## 2. Proposed Rust Modules
 
-- [ ] Create `crates/agent-protocol/` for shared Serde contracts and validation.
-- [ ] Create `crates/agent-worker/` or an equivalent dedicated worker binary crate.
+- [x] Create `crates/agent-protocol/` for shared Serde contracts and validation.
+- [x] Create `crates/agent-worker/` or an equivalent dedicated worker binary crate.
 - [ ] Add `apps/desktop/src-tauri/src/agent/orchestrator.rs`.
 - [ ] Add `apps/desktop/src-tauri/src/agent/supervisor.rs`.
 - [ ] Add `apps/desktop/src-tauri/src/agent/worker_registry.rs`.
@@ -29,15 +29,15 @@ Check an item only when its implementation, tests, and documentation are merged.
 
 ## 3. Worker Protocol
 
-- [ ] Implement bounded line reader before JSON deserialization.
-- [ ] Implement strict envelope and payload validation.
-- [ ] Implement hello/configure/ready/start handshake and timeout.
-- [ ] Implement progress, heartbeat, waiting-for-input, and terminal messages.
-- [ ] Implement correlated provider and tool request/response messages.
-- [ ] Reject unknown versions/types, duplicate IDs, invalid replies, and cross-run IDs.
-- [ ] Implement stdout protocol exclusivity and bounded redacted stderr capture.
-- [ ] Add backpressure and a cap on in-flight broker requests.
-- [ ] Add protocol property tests and parser fuzz targets.
+- [x] Implement bounded line reader before JSON deserialization.
+- [x] Implement strict envelope and payload validation.
+- [x] Implement hello/configure/ready/start handshake and timeout.
+- [x] Implement progress, heartbeat, waiting-for-input, and terminal messages.
+- [x] Implement correlated provider and tool request/response messages.
+- [x] Reject unknown versions/types, duplicate IDs, invalid replies, and cross-run IDs.
+- [x] Implement stdout protocol exclusivity and bounded redacted stderr capture.
+- [x] Add backpressure and a cap on in-flight broker requests.
+- [x] Add protocol property tests and parser fuzz targets.
 
 ## 4. Process Lifecycle
 

@@ -4,6 +4,8 @@ members = [
   "apps/desktop/src-tauri",
   "crates/domain",
   "crates/agent-core",
+  "crates/agent-protocol",
+  "crates/agent-worker",
   "crates/artifact-core",
   "crates/market-data",
   "crates/option-core",

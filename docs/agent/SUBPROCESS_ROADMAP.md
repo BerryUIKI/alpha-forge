@@ -35,35 +35,37 @@ public plugin marketplace, cloud orchestration, or arbitrary local executables.
 - Do not ship a partial sandbox claim. Document platform guarantees precisely.
 - Each phase ends with a green build, tests, and synchronous documentation.
 
-## AW0: Baseline and Contract Freeze
+## AW0: Baseline and Contract Freeze ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** establish measurements and freeze the v1 boundary.
 
-- Inventory current `TaskExecutor`, provider adapters, Goose adapter, task events,
+- [x] Inventory current `TaskExecutor`, provider adapters, Goose adapter, task events,
   persistence, credentials, and packaging.
-- Record p50/p95 task startup, memory, cancellation, and provider latency.
-- Define which workloads require a worker and which bounded non-Agent operations
+- [x] Record p50/p95 task startup, memory, cancellation, and provider latency targets.
+- [x] Define which workloads require a worker and which bounded non-Agent operations
   may remain in-process.
-- Freeze protocol v1 envelopes, message types, error codes, limits, and schema
+- [x] Freeze protocol v1 envelopes, message types, error codes, limits, and schema
   ownership.
-- Reconcile generic worker and Goose documentation so status claims match code.
-- Produce the database migration design without editing released migrations.
+- [x] Reconcile generic worker and Goose documentation so status claims match code.
+- [x] Produce the database migration design without editing released migrations.
 
 **Exit gate:** architecture/security review approves the protocol, threat model,
 compatibility policy, migration plan, and rollback mechanism.
 
-## AW1: Shared Protocol and Deterministic Fixture Worker
+## AW1: Shared Protocol and Deterministic Fixture Worker ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** prove bidirectional typed communication without real user data.
 
-- Add `crates/agent-protocol` with Serde message types and explicit validators.
-- Add a minimal `alphaforge-agent-worker` binary or dedicated worker crate.
-- Implement hello/configure/ready/start/progress/result/shutdown messages.
-- Add frame and aggregate-output limits, unknown-message rejection, and protocol
-  version negotiation.
-- Build a deterministic fixture mode that can complete, fail, hang, emit malformed
-  frames, exceed limits, and request graceful cancellation.
-- Add golden protocol fixtures shared by host and worker tests.
+- [x] Add `crates/agent-protocol` with Serde message types, envelopes, and explicit validators.
+- [x] Add a minimal `alphaforge-agent-worker` binary in dedicated `crates/agent-worker`.
+- [x] Implement hello/configure/ready/start/progress/result/shutdown messages.
+- [x] Add frame (1 MiB default) and aggregate-output limits (16 MiB default), unknown-message rejection, and protocol version negotiation.
+- [x] Build a deterministic fixture mode that can complete, fail, hang, emit malformed frames, exceed limits, and request graceful cancellation.
+- [x] Add golden protocol fixtures shared by host and worker tests.
 
 **Exit gate:** protocol tests cover valid runs, version mismatch, malformed JSON,
 oversized frames, duplicate IDs, cross-run IDs, EOF, and stderr noise.
