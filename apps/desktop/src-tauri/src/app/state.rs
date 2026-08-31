@@ -19,6 +19,7 @@ use crate::database::repositories::option_position_repository::OptionPositionRep
 use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::plugin_repository::PluginRepository;
 use crate::database::repositories::portfolio_repository::PortfolioRepository;
+use crate::database::repositories::proposal_repository::ProposalRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::research_note_repository::ResearchNoteRepository;
 use crate::database::repositories::research_project_repository::ResearchProjectRepository;
@@ -243,7 +244,7 @@ impl AppState {
         let artifact_manager = Arc::new(ArtifactManager::new(app_handle.clone()));
 
         Ok(Self {
-            db_pool,
+            db_pool: db_pool.clone(),
             settings_service,
             workspace_service,
             agent_service,
@@ -286,7 +287,9 @@ impl AppState {
             artifact_manager,
             // Goose service initialized as None (enabled when M10 is activated)
             goose_service: None,
-            proposal_service: ProposalService::new(),
+            proposal_service: ProposalService::with_repository(ProposalRepository::new(
+                db_pool.clone(),
+            )),
         })
     }
 }

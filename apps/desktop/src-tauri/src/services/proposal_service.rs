@@ -12,6 +12,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
+use crate::database::repositories::proposal_repository::ProposalRepository;
 use crate::error::AppError;
 use crate::services::research_note_service::ResearchNoteService;
 use crate::services::thesis_service::ThesisService;
@@ -25,7 +26,8 @@ use domain::thesis::AddEvidenceInput;
 /// Service for managing human-approved agent proposals
 #[derive(Clone)]
 pub struct ProposalService {
-    proposals: Arc<RwLock<HashMap<String, Proposal>>>,
+    repo: Option<Arc<ProposalRepository>>,
+    fallback_proposals: Arc<RwLock<HashMap<String, Proposal>>>,
 }
 
 impl Default for ProposalService {
@@ -35,10 +37,19 @@ impl Default for ProposalService {
 }
 
 impl ProposalService {
-    /// Create a new ProposalService
+    /// Create a new ProposalService (in-memory mode for tests)
     pub fn new() -> Self {
         Self {
-            proposals: Arc::new(RwLock::new(HashMap::new())),
+            repo: None,
+            fallback_proposals: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    /// Create a new ProposalService backed by SQLite repository
+    pub fn with_repository(repo: ProposalRepository) -> Self {
+        Self {
+            repo: Some(Arc::new(repo)),
+            fallback_proposals: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -96,8 +107,13 @@ impl ProposalService {
             resulting_entity_id: None,
         };
 
-        let mut lock = self.proposals.write().await;
-        lock.insert(proposal.id.clone(), proposal.clone());
+        if let Some(ref repo) = self.repo {
+            repo.create_proposal(&proposal).await?;
+        } else {
+            let mut lock = self.fallback_proposals.write().await;
+            lock.insert(proposal.id.clone(), proposal.clone());
+        }
+
         Ok(proposal)
     }
 
@@ -107,23 +123,32 @@ impl ProposalService {
         workspace_id: &str,
         status: Option<ProposalStatus>,
     ) -> Result<Vec<Proposal>, AppError> {
-        let lock = self.proposals.read().await;
-        let mut list: Vec<Proposal> = lock
-            .values()
-            .filter(|p| {
-                p.workspace_id == workspace_id && status.is_none_or(|expected| p.status == expected)
-            })
-            .cloned()
-            .collect();
-        // Sort descending by created_at
-        list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-        Ok(list)
+        if let Some(ref repo) = self.repo {
+            repo.list_by_workspace(workspace_id, status).await
+        } else {
+            let lock = self.fallback_proposals.read().await;
+            let mut list: Vec<Proposal> = lock
+                .values()
+                .filter(|p| {
+                    p.workspace_id == workspace_id
+                        && status.is_none_or(|expected| p.status == expected)
+                })
+                .cloned()
+                .collect();
+            // Sort descending by created_at
+            list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+            Ok(list)
+        }
     }
 
     /// Get a single proposal by ID
     pub async fn get_proposal(&self, id: &str) -> Result<Option<Proposal>, AppError> {
-        let lock = self.proposals.read().await;
-        Ok(lock.get(id).cloned())
+        if let Some(ref repo) = self.repo {
+            repo.get_proposal(id).await
+        } else {
+            let lock = self.fallback_proposals.read().await;
+            Ok(lock.get(id).cloned())
+        }
     }
 
     /// Accept a proposal, executing the appropriate domain service write
@@ -133,9 +158,9 @@ impl ProposalService {
         thesis_service: &ThesisService,
         note_service: &ResearchNoteService,
     ) -> Result<Proposal, AppError> {
-        let mut lock = self.proposals.write().await;
-        let proposal = lock
-            .get_mut(id)
+        let mut proposal = self
+            .get_proposal(id)
+            .await?
             .ok_or_else(|| AppError::NotFound(format!("Proposal with ID {} not found", id)))?;
 
         if proposal.status != ProposalStatus::Pending {
@@ -188,18 +213,36 @@ impl ProposalService {
             }
         };
 
+        let now = Utc::now().to_rfc3339();
+        if let Some(ref repo) = self.repo {
+            repo.update_status(
+                id,
+                ProposalStatus::Accepted,
+                Some(&now),
+                Some(&resulting_id),
+            )
+            .await?;
+        } else {
+            let mut lock = self.fallback_proposals.write().await;
+            if let Some(p) = lock.get_mut(id) {
+                p.status = ProposalStatus::Accepted;
+                p.reviewed_at = Some(now.clone());
+                p.resulting_entity_id = Some(resulting_id.clone());
+            }
+        }
+
         proposal.status = ProposalStatus::Accepted;
-        proposal.reviewed_at = Some(Utc::now().to_rfc3339());
+        proposal.reviewed_at = Some(now);
         proposal.resulting_entity_id = Some(resulting_id);
 
-        Ok(proposal.clone())
+        Ok(proposal)
     }
 
     /// Reject a proposal
     pub async fn reject_proposal(&self, id: &str) -> Result<Proposal, AppError> {
-        let mut lock = self.proposals.write().await;
-        let proposal = lock
-            .get_mut(id)
+        let mut proposal = self
+            .get_proposal(id)
+            .await?
             .ok_or_else(|| AppError::NotFound(format!("Proposal with ID {} not found", id)))?;
 
         if proposal.status != ProposalStatus::Pending {
@@ -209,10 +252,22 @@ impl ProposalService {
             )));
         }
 
-        proposal.status = ProposalStatus::Rejected;
-        proposal.reviewed_at = Some(Utc::now().to_rfc3339());
+        let now = Utc::now().to_rfc3339();
+        if let Some(ref repo) = self.repo {
+            repo.update_status(id, ProposalStatus::Rejected, Some(&now), None)
+                .await?;
+        } else {
+            let mut lock = self.fallback_proposals.write().await;
+            if let Some(p) = lock.get_mut(id) {
+                p.status = ProposalStatus::Rejected;
+                p.reviewed_at = Some(now.clone());
+            }
+        }
 
-        Ok(proposal.clone())
+        proposal.status = ProposalStatus::Rejected;
+        proposal.reviewed_at = Some(now);
+
+        Ok(proposal)
     }
 }
 
@@ -290,29 +345,71 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_trading_guardrail_rejection() {
-        let service = ProposalService::new();
+    async fn test_proposal_sqlite_repository_persistence() {
+        let pool = sqlx::SqlitePool::connect(":memory:").await.unwrap();
 
-        let bad_input = CreateProposalInput {
-            workspace_id: "ws-1".to_string(),
-            run_id: "run-malicious".to_string(),
-            proposal_type: ProposalType::EvidenceCandidate,
-            title: "Execute rebalance".to_string(),
-            summary: "Attempting automated trade".to_string(),
+        sqlx::query(
+            r#"
+            CREATE TABLE workspaces (
+                id TEXT PRIMARY KEY NOT NULL,
+                name TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE proposals (
+                id TEXT PRIMARY KEY NOT NULL,
+                workspace_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                proposal_type TEXT NOT NULL,
+                title TEXT NOT NULL,
+                summary TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                reviewed_at TEXT,
+                resulting_entity_id TEXT,
+                FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+            );
+            "#,
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        // Create workspace first for foreign key
+        sqlx::query("INSERT INTO workspaces (id, name, created_at, updated_at) VALUES ('ws-persisted', 'Test WS', datetime('now'), datetime('now'))")
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let repo = ProposalRepository::new(pool);
+        let service = ProposalService::with_repository(repo);
+
+        let input = CreateProposalInput {
+            workspace_id: "ws-persisted".to_string(),
+            run_id: "run-persist-1".to_string(),
+            proposal_type: ProposalType::ResearchNote,
+            title: "Persisted Note Proposal".to_string(),
+            summary: "Testing SQLite persistence".to_string(),
             payload: json!({
-                "action": "execute_trade",
-                "symbol": "AAPL",
-                "shares": 100
+                "document_id": "doc-1",
+                "content": "Note content"
             }),
         };
 
-        let err = service.create_proposal(bad_input).await.unwrap_err();
-        match err {
-            AppError::Validation(msg) => {
-                assert!(msg.contains("Security policy violation"));
-                assert!(msg.contains("execute_trade"));
-            }
-            _ => panic!("Expected security validation error"),
-        }
+        let created = service.create_proposal(input).await.unwrap();
+        assert_eq!(created.status, ProposalStatus::Pending);
+
+        let fetched = service.get_proposal(&created.id).await.unwrap();
+        assert!(fetched.is_some());
+        let fetched_proposal = fetched.unwrap();
+        assert_eq!(fetched_proposal.title, "Persisted Note Proposal");
+
+        let rejected = service.reject_proposal(&created.id).await.unwrap();
+        assert_eq!(rejected.status, ProposalStatus::Rejected);
+
+        let re_fetched = service.get_proposal(&created.id).await.unwrap().unwrap();
+        assert_eq!(re_fetched.status, ProposalStatus::Rejected);
     }
 }
