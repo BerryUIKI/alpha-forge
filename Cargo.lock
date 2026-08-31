@@ -33,6 +33,7 @@ name = "agent-core"
 version = "0.1.0"
 dependencies = [
  "agent-protocol",
+ "async-trait",
  "chrono",
  "domain",
  "serde",

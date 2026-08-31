@@ -74,25 +74,25 @@ Check an item only when its implementation, tests, and documentation are merged.
 
 ## 6. Provider Broker
 
-- [ ] Keep all provider keys in the Rust host and OS keychain.
-- [ ] Enforce typed provider/model capabilities and endpoint policy.
-- [ ] Add request timeout, cancellation, retry classification, and concurrency limits.
-- [ ] Normalize input, cached, output, reasoning, and total tokens.
-- [ ] Capture latency, request status, price version, and estimated cost.
-- [ ] Record `unknown` when the provider does not report usage.
-- [ ] Redact provider errors before worker, UI, persistence, or logs receive them.
-- [ ] Test OpenAI, DeepSeek, local provider, failure, and cancellation adapters.
+- [x] Keep all provider keys in the Rust host and OS keychain.
+- [x] Enforce typed provider/model capabilities and endpoint policy.
+- [x] Add request timeout, cancellation, retry classification, and concurrency limits.
+- [x] Normalize input, cached, output, reasoning, and total tokens.
+- [x] Capture latency, request status, price version, and estimated cost.
+- [x] Record `unknown` when the provider does not report usage.
+- [x] Redact provider errors before worker, UI, persistence, or logs receive them.
+- [x] Test OpenAI, DeepSeek, local provider, failure, and cancellation adapters.
 
 ## 7. Tool Broker
 
-- [ ] Register tools through a deny-by-default typed registry.
-- [ ] Attach authoritative workspace/task/entity scope in Rust.
-- [ ] Start with read-only research and provenance tools.
-- [ ] Use IDs and bounded opaque references instead of arbitrary paths.
-- [ ] Validate and size-limit every tool request and response.
-- [ ] Reject SQL, shell, credential, arbitrary URL, and trading capabilities.
-- [ ] Convert every mutation request into a user-reviewed proposal.
-- [ ] Add prompt-injection, traversal, cross-workspace, oversized, and unknown-tool tests.
+- [x] Register tools through a deny-by-default typed registry.
+- [x] Attach authoritative workspace/task/entity scope in Rust.
+- [x] Start with read-only research and provenance tools.
+- [x] Use IDs and bounded opaque references instead of arbitrary paths.
+- [x] Validate and size-limit every tool request and response.
+- [x] Reject SQL, shell, credential, arbitrary URL, and trading capabilities.
+- [x] Convert every mutation request into a user-reviewed proposal.
+- [x] Add prompt-injection, traversal, cross-workspace, oversized, and unknown-tool tests.
 
 ## 8. Persistence and Recovery
 

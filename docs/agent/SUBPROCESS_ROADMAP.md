@@ -88,20 +88,22 @@ oversized frames, duplicate IDs, cross-run IDs, EOF, and stderr noise.
 success, failure, malformed output, timeout, cancellation, and host shutdown on
 every supported release platform.
 
-## AW3: Provider and Tool Brokers
+## AW3: Provider and Tool Brokers ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** keep secrets and privileged capabilities in the Rust host.
 
-- Add `ProviderBroker` over the existing provider adapters.
-- Normalize provider capabilities, output, usage, cached/reasoning tokens, latency,
+- [x] Add `ProviderBroker` over the existing provider adapters.
+- [x] Normalize provider capabilities, output, usage, cached/reasoning tokens, latency,
   estimated cost, and stable errors.
-- Enforce provider/model allowlists, endpoint policy, request timeout, and budgets.
-- Add `ToolBroker` with a deny-by-default registry and typed schemas.
-- Attach authoritative task/workspace/entity scope in Rust.
-- Start with read-only research tools and bounded opaque content references.
-- Add request correlation, backpressure, per-call timeout, cancellation, redaction,
+- [x] Enforce provider/model allowlists, endpoint policy, request timeout, and budgets.
+- [x] Add `ToolBroker` with a deny-by-default registry and typed schemas.
+- [x] Attach authoritative task/workspace/entity scope in Rust.
+- [x] Start with read-only research tools and bounded opaque content references.
+- [x] Add request correlation, backpressure, per-call timeout, cancellation, redaction,
   and provenance.
-- Reject generic SQL, shell, arbitrary file, arbitrary URL, credential, and trading
+- [x] Reject generic SQL, shell, arbitrary file, arbitrary URL, credential, and trading
   tools.
 
 **Exit gate:** malicious worker fixtures cannot read secrets, widen workspace
