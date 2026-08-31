@@ -20,7 +20,7 @@ function withFeatureBoundary(feature: string, element: ReactNode) {
 
 const artifactWindowRoute = {
   path: "/artifact/:artifactId/:artifactType",
-  element: <ArtifactWindowPage />,
+  element: withFeatureBoundary("artifacts", <ArtifactWindowPage />),
 };
 
 export const router = createBrowserRouter([
