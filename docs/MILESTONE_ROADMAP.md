@@ -28,6 +28,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M8        | ✅ Complete (S6)          | Rebaseline 2026-08-24 | Local MVP Completion & Release Readiness |
 | M9        | ✅ Complete (S5)          | Rebaseline 2026-08-24 | Option Module Integration                |
 | M10       | ✅ Complete (#161-#166)   | Rebaseline 2026-08-24 | Goose Agent Integration (Supervised Sidecar) |
+| AW0-AW7   | ✅ Complete (2026-09-01)  | 2026-09-01            | Managed Agent Worker Subprocess Isolation |
 
 ## Delivery document registry
 
