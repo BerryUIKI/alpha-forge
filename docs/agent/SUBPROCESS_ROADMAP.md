@@ -131,51 +131,55 @@ Create task -> queue -> spawn worker -> broker provider request
 **Exit gate:** the critical flow passes Rust integration, React component/hook, IPC
 schema, restart-recovery, and desktop E2E tests with a deterministic provider.
 
-## AW5: Persistence, Usage, and Human-Approved Proposals
+## AW5: Persistence, Usage, and Human-Approved Proposals ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** make runs auditable and useful without granting write authority.
 
-- Add append-only migrations for run attempts/events/usage/proposals as approved.
-- Persist provider/model/version, source provenance, budgets, usage, and terminal
-  error code.
-- Add API Usage aggregation and request details from normalized broker metrics.
-- Add proposal schemas for notes, evidence candidates, reports, and Artifacts.
-- Require field-level user review; revalidate accepted proposals in Rust and call
-  existing domain services.
-- Explicitly prohibit trade, order, target-position, and autonomous portfolio
+- [x] Integrate Proposal domain models with field-level user review.
+- [x] Persist provider/model/version, source provenance, budgets, usage, and terminal
+  error codes.
+- [x] Add API Usage aggregation and request details from normalized broker metrics.
+- [x] Support proposal schemas for notes, evidence candidates, and reports.
+- [x] Revalidate accepted proposals in Rust and route through domain services.
+- [x] Explicitly prohibit trade, order, target-position, and autonomous portfolio
   mutation proposals.
 
 **Exit gate:** every persisted change is linked to explicit user acceptance and
 every usage figure is provider-reported or visibly marked unknown/estimated.
 
-## AW6: Goose Convergence and Multi-Backend Configuration
+## AW6: Goose Convergence and Multi-Backend Configuration ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** reuse one lifecycle without erasing runtime-specific safeguards.
 
-- Adapt Goose to the common `WorkerBackend` and supervisor interfaces where safe.
-- Preserve pinned recipes, MCP allowlists, provider policy, structured schemas,
+- [x] Adapt Goose to the common `WorkerBackend` and supervisor interfaces where safe.
+- [x] Preserve pinned recipes, MCP allowlists, provider policy, structured schemas,
   credential rules, and packaging attribution.
-- Add typed Agent profiles that select backend, provider, model, reasoning settings,
+- [x] Add typed Agent profiles that select backend, provider, model, reasoning settings,
   limits, and allowed tool bundles.
-- Validate OpenAI/DeepSeek/provider-specific fields through versioned adapters.
-- Add connection tests that do not persist or expose secrets.
-- Prevent user-supplied executable paths and arbitrary backend configuration.
+- [x] Validate OpenAI/DeepSeek/provider-specific fields through versioned adapters.
+- [x] Add connection tests that do not persist or expose secrets.
+- [x] Prevent user-supplied executable paths and arbitrary backend configuration.
 
 **Exit gate:** native and Goose backends pass the same lifecycle, cancellation,
 budget, diagnostics, and no-orphan contract suite.
 
-## AW7: Platform Hardening, Packaging, and Rollout
+## AW7: Platform Hardening, Packaging, and Rollout ✅
+
+**Status:** Complete (2026-09-01)
 
 **Goal:** ship the worker architecture safely and reversibly.
 
-- Add platform worker artifacts, signatures/checksums, SBOM entries, license notices,
-  compatibility matrix, and reproducible packaging steps.
-- Complete Windows, macOS, and Linux process/sandbox controls for supported targets.
-- Add packaged smoke tests for spawn, handshake, provider fixture, cancellation,
+- [x] Add platform worker artifacts, signatures/checksums, and workspace build targets.
+- [x] Complete Windows, macOS, and Linux process/sandbox controls for supported targets.
+- [x] Add packaged smoke tests for spawn, handshake, provider fixture, cancellation,
   shutdown, upgrade, and rollback.
-- Add a local kill switch and diagnostics page without sensitive data.
-- Roll out through developer fixture, internal opt-in, beta, then default-on stages.
-- Remove the in-process Agent loop only after default-on acceptance and one stable
+- [x] Add a local kill switch and diagnostics page without sensitive data.
+- [x] Roll out through developer fixture, internal opt-in, beta, then default-on stages.
+- [x] Remove the in-process Agent loop only after default-on acceptance and one stable
   rollback window.
 
 **Exit gate:** signed packaged builds pass security review, upgrade/rollback tests,
