@@ -15,6 +15,7 @@ pub mod artifact_repository;
 pub mod knowledge_graph_repository;
 pub mod plugin_repository;
 pub mod portfolio_repository;
+pub mod proposal_repository;
 pub mod research_project_repository;
 pub mod settings_repository;
 pub mod thesis_repository;
