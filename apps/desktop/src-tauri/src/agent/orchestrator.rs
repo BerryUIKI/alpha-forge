@@ -117,6 +117,7 @@ impl AgentOrchestrator {
 
         // 3. Runtime execution message loop
         let loop_future = async {
+            let mut completed = false;
             loop {
                 let frame_opt = {
                     let mut supervisor = supervisor_arc.lock().await;
@@ -200,15 +201,25 @@ impl AgentOrchestrator {
                                 .await?;
                         }
                         events::emit_completion(&self.app, &task_id, Some(&output));
+                        completed = true;
                         break;
                     }
                     MessagePayload::RunFailure(fail) => {
                         let fail_msg = format!("Worker failed [{}]: {}", fail.code, fail.message);
                         Self::record_failure(&self.repo, &self.app, &task_id, &fail_msg).await?;
+                        completed = true;
                         break;
                     }
                     _ => {}
                 }
+            }
+
+            if !completed {
+                warn!(task_id = %task_id, "Worker subprocess terminated unexpectedly without terminal status");
+                return Err(AppError::Internal(
+                    "Worker subprocess terminated unexpectedly without reporting a final status"
+                        .into(),
+                ));
             }
 
             Ok::<(), AppError>(())
