@@ -1,6 +1,8 @@
 use crate::envelope::RawEnvelope;
 use crate::error::{ProtocolError, ProtocolResult};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
+
+const MAX_SEEN_MESSAGE_IDS: usize = 2048;
 
 /// Handshake state machine transitions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,6 +22,7 @@ pub struct SessionValidator {
     handshake_state: HandshakeState,
     expected_nonce: Option<String>,
     seen_message_ids: HashSet<String>,
+    message_id_queue: VecDeque<String>,
     pending_broker_requests: HashMap<String, String>, // request_id -> message_type
     pending_user_inputs: HashSet<String>,
 }
@@ -31,6 +34,7 @@ impl SessionValidator {
             handshake_state: HandshakeState::Uninitialized,
             expected_nonce: None,
             seen_message_ids: HashSet::new(),
+            message_id_queue: VecDeque::new(),
             pending_broker_requests: HashMap::new(),
             pending_user_inputs: HashSet::new(),
         }
@@ -48,6 +52,19 @@ impl SessionValidator {
         self.expected_nonce = Some(nonce.into());
     }
 
+    fn track_message_id(&mut self, message_id: String) -> bool {
+        if !self.seen_message_ids.insert(message_id.clone()) {
+            return false;
+        }
+        self.message_id_queue.push_back(message_id);
+        if self.message_id_queue.len() > MAX_SEEN_MESSAGE_IDS {
+            if let Some(oldest) = self.message_id_queue.pop_front() {
+                self.seen_message_ids.remove(&oldest);
+            }
+        }
+        true
+    }
+
     /// Validates an incoming message envelope from the worker.
     pub fn validate_incoming(&mut self, envelope: &RawEnvelope) -> ProtocolResult<()> {
         // 1. Header and Run ID checks (worker.hello is allowed before host configures run_id)
@@ -58,8 +75,8 @@ impl SessionValidator {
         };
         envelope.validate_header(expected_run)?;
 
-        // 2. Duplicate Message ID check
-        if !self.seen_message_ids.insert(envelope.message_id.clone()) {
+        // 2. Duplicate Message ID check (bounded history)
+        if !self.track_message_id(envelope.message_id.clone()) {
             return Err(ProtocolError::DuplicateMessageId(
                 envelope.message_id.clone(),
             ));
@@ -165,7 +182,7 @@ impl SessionValidator {
     /// Records an outgoing host message and advances the state machine.
     pub fn record_outgoing(&mut self, envelope: &RawEnvelope) -> ProtocolResult<()> {
         envelope.validate_header(Some(&self.run_id))?;
-        self.seen_message_ids.insert(envelope.message_id.clone());
+        self.track_message_id(envelope.message_id.clone());
 
         match envelope.message_type.as_str() {
             "host.configure" => {
