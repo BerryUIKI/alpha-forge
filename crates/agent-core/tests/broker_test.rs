@@ -114,3 +114,46 @@ async fn test_tool_broker_scope_injection_and_policy() {
         assert_eq!(bad_res.result["success"], false);
     }
 }
+
+#[tokio::test]
+async fn test_tool_broker_timeout() {
+    let mut broker = ToolBroker::with_timeout(std::time::Duration::from_millis(50));
+
+    struct HangingToolHandler;
+    #[async_trait]
+    impl ToolHandler for HangingToolHandler {
+        async fn execute(
+            &self,
+            _scope: &RunScope,
+            _params: &serde_json::Value,
+        ) -> Result<serde_json::Value, String> {
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+            Ok(json!({ "status": "completed" }))
+        }
+    }
+
+    broker.register_tool(
+        "test.hanging_tool",
+        "Hangs for 200ms",
+        true,
+        Arc::new(HangingToolHandler),
+    );
+
+    let scope = RunScope {
+        workspace_id: "ws-1".into(),
+        task_id: "t-1".into(),
+        session_id: None,
+    };
+
+    let req = ToolRequest {
+        request_id: "req-hang".into(),
+        tool_name: "test.hanging_tool".into(),
+        parameters: json!({}),
+    };
+
+    let res = broker.handle_request(&scope, &req).await.unwrap();
+    assert_eq!(res.request_id, "req-hang");
+    assert!(res.result.get("error").is_some());
+    assert!(res.result["error"].as_str().unwrap().contains("timed out"));
+    assert_eq!(res.result["success"], false);
+}

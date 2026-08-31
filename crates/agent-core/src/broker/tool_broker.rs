@@ -6,6 +6,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::{debug, warn};
 
+use std::time::Duration;
+
 const MAX_TOOL_RESPONSE_BYTES: usize = 256 * 1024;
 
 /// Trait implemented by host-side tool handlers.
@@ -25,12 +27,23 @@ pub struct RegisteredTool {
 /// Host-owned tool broker providing safe, scoped, read-only tools to worker subprocesses.
 pub struct ToolBroker {
     tools: HashMap<String, RegisteredTool>,
+    default_timeout: Duration,
 }
 
 impl ToolBroker {
     pub fn new() -> Self {
         let mut broker = Self {
             tools: HashMap::new(),
+            default_timeout: Duration::from_secs(30),
+        };
+        broker.register_default_tools();
+        broker
+    }
+
+    pub fn with_timeout(timeout: Duration) -> Self {
+        let mut broker = Self {
+            tools: HashMap::new(),
+            default_timeout: timeout,
         };
         broker.register_default_tools();
         broker
@@ -128,8 +141,14 @@ impl ToolBroker {
             "Dispatching brokered tool execution"
         );
 
-        match tool.handler.execute(scope, &req.parameters).await {
-            Ok(result) => {
+        let execution = tokio::time::timeout(
+            self.default_timeout,
+            tool.handler.execute(scope, &req.parameters),
+        )
+        .await;
+
+        match execution {
+            Ok(Ok(result)) => {
                 let serialized = serde_json::to_string(&result).map_err(|e| {
                     SupervisorError::Internal(format!("Failed to serialize tool result: {}", e))
                 })?;
@@ -149,13 +168,23 @@ impl ToolBroker {
                     result,
                 })
             }
-            Err(err) => Ok(ToolResponse {
+            Ok(Err(err)) => Ok(ToolResponse {
                 request_id: req.request_id.clone(),
                 result: json!({
                     "error": err,
                     "success": false
                 }),
             }),
+            Err(_) => {
+                warn!(tool = %req.tool_name, "Tool execution timed out");
+                Ok(ToolResponse {
+                    request_id: req.request_id.clone(),
+                    result: json!({
+                        "error": format!("Tool '{}' execution timed out after {:?}", req.tool_name, self.default_timeout),
+                        "success": false
+                    }),
+                })
+            }
         }
     }
 }
