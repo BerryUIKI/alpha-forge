@@ -147,7 +147,7 @@ impl<W: Write> SyncFrameWriter<W> {
 #[cfg(feature = "tokio")]
 pub mod async_codec {
     use super::*;
-    use tokio::io::{AsyncBufRead, AsyncBufReadExt, AsyncWrite, AsyncWriteExt};
+    use tokio::io::{AsyncBufRead, AsyncBufReadExt, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
     /// Async frame reader for Tokio streams.
     pub struct AsyncFrameReader<R> {
@@ -182,7 +182,8 @@ pub mod async_codec {
 
         pub async fn read_frame(&mut self) -> ProtocolResult<Option<RawEnvelope>> {
             let mut line = String::new();
-            let bytes_read = self.reader.read_line(&mut line).await?;
+            let mut chunk_reader = (&mut self.reader).take((self.max_frame_bytes + 1) as u64);
+            let bytes_read = chunk_reader.read_line(&mut line).await?;
             if bytes_read == 0 {
                 return Ok(None);
             }
