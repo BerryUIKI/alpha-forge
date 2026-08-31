@@ -226,7 +226,7 @@ impl AgentOrchestrator {
         };
 
         // Enforce execution timeout
-        match tokio::time::timeout(timeout, loop_future).await {
+        let result = match tokio::time::timeout(timeout, loop_future).await {
             Ok(Ok(())) => Ok(()),
             Ok(Err(err)) => {
                 let mut supervisor = supervisor_arc.lock().await;
@@ -245,7 +245,12 @@ impl AgentOrchestrator {
                 )
                 .await
             }
-        }
+        };
+
+        // Always unregister worker upon completion to release concurrency slots
+        self.supervisor_manager.unregister_worker(&task_id);
+
+        result
     }
 
     async fn record_progress(
