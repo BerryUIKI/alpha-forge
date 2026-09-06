@@ -95,6 +95,22 @@ export interface TopBarProps {
 }
 
 /**
+ * Unified header props (combines WindowTitleBar and TopBar for macOS-first UX)
+ */
+export interface UnifiedHeaderProps {
+  /** Whether left sidebar is expanded */
+  isLeftSidebarExpanded?: boolean;
+  /** Callback to toggle left sidebar */
+  onToggleLeftSidebar?: () => void;
+  /** Whether right sidebar is expanded */
+  isRightSidebarExpanded?: boolean;
+  /** Callback to toggle right sidebar */
+  onToggleRightSidebar?: () => void;
+  /** Callback to open the global search palette */
+  onOpenSearch?: () => void;
+}
+
+/**
  * Main content area props
  */
 export interface MainContentProps {

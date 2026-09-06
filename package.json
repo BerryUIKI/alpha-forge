@@ -5,16 +5,16 @@
   "description": "Desktop-first AI workspace for investment research",
   "type": "module",
   "scripts": {
-    "dev": "corepack pnpm --dir apps/desktop tauri dev",
-    "dev:web": "corepack pnpm --dir apps/desktop dev",
-    "build": "corepack pnpm --dir apps/desktop build",
+    "dev": "pnpm --dir apps/desktop tauri dev",
+    "dev:web": "pnpm --dir apps/desktop dev",
+    "build": "pnpm --dir apps/desktop build",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "corepack pnpm --filter @alpha-forge/desktop typecheck",
+    "typecheck": "pnpm --filter @alpha-forge/desktop typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "tauri": "corepack pnpm --dir apps/desktop tauri"
+    "tauri": "pnpm --dir apps/desktop tauri"
   },
   "engines": {
     "node": ">=22",
