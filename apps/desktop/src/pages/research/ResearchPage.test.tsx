@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, useLocation, useNavigationType } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { ResearchPage } from "./ResearchPage";
-import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks";
 import { LocaleContext } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/locale";
 
