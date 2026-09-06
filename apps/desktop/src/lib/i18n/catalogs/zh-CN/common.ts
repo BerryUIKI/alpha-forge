@@ -112,6 +112,17 @@ export const common = {
   toolFuturesChainDescription: "查看期货合约链",
   toolTermStructureDescription: "分析期限结构曲线",
   toolDerivativesOverviewDescription: "衍生品市场概览",
+
+  // Market Pulse & Intelligence Feed
+  marketPulse: "大盘脉搏",
+  dataSynced: "数据同步: {time}",
+  secAutomatedParsing: "SEC 自动解析",
+  secFilingFeed: "SEC 财报与研报流",
+  linkedThesis: "关联论点: {title}",
+  evidencePositive: "正向佐证 (+{delta}% 置信度)",
+  evidenceContra: "反向预警 (-{delta}% 置信度)",
+  hoursAgo: "{hours} 小时前",
+  todayAtTime: "今天 {time}",
 } as const;
 
 export type CommonKey = keyof typeof common;
