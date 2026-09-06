@@ -114,6 +114,14 @@ export function useSidebarShortcuts(config: {
     enabled: config.enabled,
   });
 
+  // Ctrl/Cmd + J: Toggle right (Agent Copilot) sidebar
+  useKeyboardShortcut({
+    key: "j",
+    modifiers: ["ctrl"],
+    callback: config.onToggleRight || (() => {}),
+    enabled: config.enabled,
+  });
+
   // Ctrl/Cmd + B: Toggle both sidebars
   useKeyboardShortcut({
     key: "b",

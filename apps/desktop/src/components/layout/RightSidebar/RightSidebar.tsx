@@ -1,21 +1,21 @@
 /**
  * RightSidebar Component
  *
- * Main container for the right collapsible sidebar (Agent panel).
+ * Main container for the right collapsible sidebar (Agent Copilot drawer).
  * Mirrors left sidebar interaction patterns with persistence and resize.
  *
  * Features:
- * - Collapsible sidebar with smooth animation
- * - Drag-to-resize functionality
- * - State persistence via localStorage
- * - Synchronized toggle with MainContent operation bar
- *
- * @version GUI-M0
+ * - Collapsible drawer with smooth animation
+ * - Drag-to-resize functionality with localStorage persistence
+ * - Modern AI copilot presence with live status pulsing
+ * - Shortcuts: ⌘J / Ctrl+2
+ * - 100% standard pure i18n
  */
 
 import { useCallback } from "react";
-import { ChevronRight, GripVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronRight, GripVertical, Sparkles } from "lucide-react";
+import { cn, isMacPlatform } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/useLocale";
 import type { RightSidebarProps } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AgentPanel } from "./AgentPanel";
@@ -28,6 +28,9 @@ export function RightSidebar({
   minWidth = DEFAULT_SIDEBAR_WIDTHS.right.min,
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.right.max,
 }: RightSidebarProps) {
+  const { t } = useLocale();
+  const isMac = isMacPlatform();
+
   // Use sidebar state hook for persistence
   const {
     width,
@@ -57,7 +60,7 @@ export function RightSidebar({
   }, [toggleState, isExpanded, onStateChange]);
 
   if (!isExpanded) {
-    // Collapsed state - minimal UI (just toggle button)
+    // Collapsed state - minimal UI with sleek AI Copilot presence
     return (
       <aside
         className="flex h-full flex-col border-l border-border bg-card transition-[width] duration-300 ease-in-out"
@@ -67,17 +70,29 @@ export function RightSidebar({
         {/* Expand Button */}
         <button
           onClick={handleToggle}
-          className="flex h-14 items-center justify-center border-b border-border transition-colors hover:bg-accent"
-          aria-label="Expand agent sidebar"
-          title="Expand agent sidebar (Ctrl+2)"
+          className="flex h-14 items-center justify-center border-b border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label={t("openAgentPanel")}
+          title={`${t("openAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`}
         >
           <ChevronRight className="h-5 w-5" />
         </button>
 
         {/* Collapsed agent indicator */}
-        <div className="flex flex-1 items-center justify-center">
-          <span className="text-lg">🤖</span>
-        </div>
+        <button
+          type="button"
+          onClick={handleToggle}
+          className="flex flex-1 flex-col items-center justify-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          aria-label={t("openAgentPanel")}
+          title={`${t("openAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`}
+        >
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform hover:scale-110">
+            <Sparkles className="h-4 w-4" />
+            <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </div>
+        </button>
       </aside>
     );
   }
@@ -95,14 +110,17 @@ export function RightSidebar({
       {/* Header with collapse button */}
       <div className="flex items-center justify-between border-b border-border pl-4 pr-2 h-14">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          Agent
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>Agent</span>
         </h3>
         <button
           onClick={handleToggle}
-          className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-accent"
-          aria-label="Collapse agent sidebar"
-          title="Collapse agent sidebar (Ctrl+2)"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label={t("closeAgentPanel")}
+          title={`${t("closeAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`}
         >
           <ChevronRight className="h-4 w-4 rotate-180" />
         </button>
