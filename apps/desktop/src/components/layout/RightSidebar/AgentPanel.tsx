@@ -352,7 +352,11 @@ export function AgentPanel() {
             {/* S1: Structured research results — show parsed completion output */}
             {selectedTask.status === "completed" && (
               <div className="mb-2">
-                <ResearchResultCard payload={completionPayload} />
+                <ResearchResultCard
+                  payload={completionPayload}
+                  workspaceId={workspaceId}
+                  taskId={selectedTask.id}
+                />
               </div>
             )}
 
