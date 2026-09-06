@@ -12,6 +12,7 @@ import { DashboardCard, StatCard } from "@/components/ui";
 import { ErrorState, EmptyState } from "@/components/common";
 import { HoldingsList } from "@/components/portfolio/HoldingsList";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
+import { SecFilingFeed } from "../components/SecFilingFeed";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage, translate } from "@/lib/i18n/locale";
 
@@ -134,6 +135,9 @@ export function OverviewTab() {
           </div>
         </DashboardCard>
       </div>
+
+      {/* Intelligence & Ingestion Feed */}
+      <SecFilingFeed />
     </div>
   );
 }

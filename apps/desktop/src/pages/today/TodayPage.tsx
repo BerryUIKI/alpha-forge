@@ -18,6 +18,8 @@ import { ActivityTab } from "./tabs/ActivityTab";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { LayoutDashboard, TrendingUp, Activity } from "lucide-react";
 
+import { MarketPulseBar } from "./components/MarketPulseBar";
+
 const TAB_STORAGE_KEY = "dashboard-active-tab";
 
 export function TodayPage() {
@@ -58,13 +60,18 @@ export function TodayPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("todayTitle")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("todayDescription")}
-        </p>
+    <div className="flex flex-col">
+      {/* Market Pulse Bar on top of cockpit */}
+      <MarketPulseBar />
+
+      <div className="flex flex-col gap-6 p-6">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t("todayTitle")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("todayDescription")}
+          </p>
+        </div>
       </div>
 
       {/* Tab Bar */}
