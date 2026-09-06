@@ -29,6 +29,27 @@ export const journal = {
   createThesis: "Create thesis",
   thesisTitleRequired: "A title and thesis statement are required.",
   unableToCreateThesis: "Unable to create the thesis.",
+
+  // Thesis Pipeline Board & Cards
+  thesesPipelineTitle: "Thesis Pipeline Tracker",
+  thesesPipelineSub: "From hypothesis to sizing to ongoing falsification tracking",
+  viewBoard: "Board View",
+  viewList: "List View",
+  statusDraft: "Draft",
+  statusActive: "Active",
+  statusValidating: "Validating",
+  statusValidated: "Validated",
+  statusClosed: "Closed",
+  convictionLabel: "Conviction",
+  evidenceCountPill: "{supporting} pro · {contradicting} contra",
+  supportingCount: "{count} supporting",
+  contradictingCount: "{count} contra",
+  noThesesInStage: "No theses in this stage",
+  filterStatus: "Filter status",
+  allStatuses: "All Statuses",
+  cardDetails: "View Details",
+  cardQuickAction: "Transition Status",
+  confidenceScore: "{score}% Conviction",
 } as const;
 
 export type JournalKey = keyof typeof journal;
