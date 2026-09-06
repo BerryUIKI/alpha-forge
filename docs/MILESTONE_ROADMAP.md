@@ -29,6 +29,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M9        | ✅ Complete (S5)          | Rebaseline 2026-08-24 | Option Module Integration                |
 | M10       | ✅ Complete (#161-#166)   | Rebaseline 2026-08-24 | Goose Agent Integration (Supervised Sidecar) |
 | AW0-AW7   | ✅ Complete (2026-09-01)  | 2026-09-01            | Managed Agent Worker Subprocess Isolation |
+| GUI-M4-MACOS | ✅ Complete (#200-#203) | 2026-09-07            | Native macOS GUI Overhaul & Investment Cockpit Pipeline |
 
 ## Delivery document registry
 

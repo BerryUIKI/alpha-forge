@@ -53,6 +53,12 @@ export const agent = {
   researchConfidence: "置信度",
   noResultsAvailable: "暂无结构化结果",
   viewResearchResults: "查看结果",
+  structuredInferenceTitle: "结构化研报推理结果",
+  thesisImpactHeader: "论点影响判断",
+  verifiableEvidenceHeader: "可追溯证据",
+  falsificationTriggersHeader: "证伪预警点",
+  generateInteractiveArtifact: "生成交互式敏感性分析模型",
+  generatingArtifact: "正在启动产物窗口...",
 
   // App readiness
   appInitializing: "初始化中...",

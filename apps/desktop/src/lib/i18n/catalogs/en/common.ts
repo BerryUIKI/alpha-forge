@@ -117,6 +117,17 @@ export const common = {
   toolFuturesChainDescription: "View futures contract chain",
   toolTermStructureDescription: "Analyze term structure curves",
   toolDerivativesOverviewDescription: "Derivatives market overview",
+
+  // Market Pulse & Intelligence Feed
+  marketPulse: "Market Pulse",
+  dataSynced: "Synced: {time}",
+  secAutomatedParsing: "Automated SEC Parsing",
+  secFilingFeed: "SEC Filing & Research Stream",
+  linkedThesis: "Linked Thesis: {title}",
+  evidencePositive: "Positive Confirmation (+{delta}% Conviction)",
+  evidenceContra: "Contra-Evidence Alert (-{delta}% Conviction)",
+  hoursAgo: "{hours}h ago",
+  todayAtTime: "Today {time}",
 } as const;
 
 export type CommonKey = keyof typeof common;
