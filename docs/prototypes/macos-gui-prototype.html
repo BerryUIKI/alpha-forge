@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaForge macOS GUI Prototype</title>
+  <!-- Tailwind CSS via allowlisted CDN -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* macOS typography & smoothing */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+    }
+    /* Scrollbar refinement */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(140, 140, 140, 0.2);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(140, 140, 140, 0.4);
+    }
+    /* Glassmorphism */
+    .glass-surface {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  </style>
+</head>
+<body class="bg-[#0f1115] text-[#e2e4ea] p-4 lg:p-6 min-h-screen flex flex-col justify-center items-center">
+
+  <!-- Outer Presentation Frame -->
+  <div class="w-full max-w-[1420px] flex flex-col items-center">
+    
+    <!-- Top Prototype Toolbar (Theme, Standard i18n Language Toggle, Market Colors) -->
+    <div class="w-full flex items-center justify-between mb-3 px-3 text-xs text-neutral-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span data-i18n="protoTitle">AlphaForge macOS 原型系统 v2.0</span>
+        </span>
+        <span class="hidden sm:inline text-neutral-500" data-i18n="protoSubtitle">· 纯净多语言 (Standard i18n) · 统一顶栏 · 投研闭环</span>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <!-- Strict i18n Language Switcher -->
+        <button id="langToggleBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700/60 transition-colors font-medium">
+          <span>🌐</span>
+          <span id="langLabel">Language: English</span>
+        </button>
+
+        <!-- Theme Switcher -->
+        <button id="themeToggleBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700/60 transition-colors">
+          <span id="themeIcon">☀️</span>
+          <span id="themeLabel" data-i18n="themeBtnLight">切换亮色</span>
+        </button>
+
+        <!-- Market Color Switcher -->
+        <button id="marketColorBtn" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700/60 transition-colors">
+          <span>📈</span>
+          <span id="marketColorLabel" class="font-medium text-emerald-400" data-i18n="marketGreenUp">美股 (绿涨红跌)</span>
+        </button>
+
+        <span class="hidden md:inline text-neutral-400 text-[11px] bg-neutral-800/80 px-2 py-1 rounded border border-neutral-700/40">
+          <kbd class="font-mono text-neutral-300">⌘K</kbd> <span data-i18n="spotlightHint">聚光灯</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- macOS Window Container -->
+    <div id="macAppWindow" class="w-full h-[850px] bg-[#16181f] text-[#eceef3] rounded-2xl border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.65)] flex flex-col overflow-hidden transition-colors duration-250 relative">
+      
+      <!-- ================= 1. UNIFIED MACOS TITLEBAR & TOOLBAR ================= -->
+      <header class="h-[46px] border-b border-white/[0.08] bg-[#1a1c24]/90 glass-surface flex items-center justify-between px-3 shrink-0 z-30 select-none">
+        
+        <!-- Left: macOS Traffic Lights + Sidebar Toggle + Workspace -->
+        <div class="flex items-center gap-3">
+          <!-- Traffic Lights -->
+          <div class="flex items-center gap-2 pr-3 group cursor-pointer" title="Window Controls">
+            <div class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e] flex items-center justify-center text-[8px] text-black/60 opacity-90 group-hover:opacity-100">
+              <span class="hidden group-hover:block font-bold">✕</span>
+            </div>
+            <div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123] flex items-center justify-center text-[8px] text-black/60 opacity-90 group-hover:opacity-100">
+              <span class="hidden group-hover:block font-bold">−</span>
+            </div>
+            <div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29] flex items-center justify-center text-[8px] text-black/60 opacity-90 group-hover:opacity-100">
+              <span class="hidden group-hover:block font-bold">⤢</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-4 w-[1px] bg-white/10"></div>
+
+          <!-- Sidebar Collapse Toggle Button -->
+          <button id="toggleSidebarBtn" class="p-1.5 rounded-md hover:bg-white/10 text-neutral-400 hover:text-white transition-colors" title="Toggle Sidebar (⌘1)">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
+
+          <!-- Workspace Switcher Pill -->
+          <div class="relative">
+            <button id="workspaceBtn" class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-neutral-200 transition-colors">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <span data-i18n="workspaceName">主对冲基金</span>
+              <svg class="w-3 h-3 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Center: Raycast / Spotlight Style Quick Search Pill -->
+        <div class="flex-1 max-w-[420px] px-2">
+          <button id="spotlightTrigger" class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-black/20 hover:bg-black/30 border border-white/10 text-neutral-400 hover:text-neutral-200 text-xs transition-all shadow-inner group">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5 text-neutral-400 group-hover:text-indigo-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span data-i18n="searchPlaceholder">搜索股票标的、论点、研报或向智能体提问...</span>
+            </div>
+            <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neutral-300 border border-white/10">⌘K</kbd>
+          </button>
+        </div>
+
+        <!-- Right: Fast Actions + Agent Copilot Switch -->
+        <div class="flex items-center gap-2">
+          <!-- Market Clock Badge -->
+          <div class="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-[11px] text-emerald-400 border border-emerald-500/20 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span data-i18n="marketStatus">美东交易中 14:32</span>
+          </div>
+
+          <!-- Quick Action: New Research/Thesis -->
+          <button class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium shadow-sm transition-colors" title="New Research (⌘N)">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span class="hidden md:inline" data-i18n="btnNewResearch">新建研报</span>
+          </button>
+
+          <!-- Divider -->
+          <div class="h-4 w-[1px] bg-white/10"></div>
+
+          <!-- AI Agent Copilot Panel Toggle -->
+          <button id="toggleAgentBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-medium transition-all" title="Toggle Agent Copilot (⌘J)">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            <span data-i18n="btnAgentPanel">智能体助手</span>
+            <kbd class="hidden xl:inline text-[9px] px-1 rounded bg-indigo-900/50 text-indigo-300">⌘J</kbd>
+          </button>
+        </div>
+
+      </header>
+
+      <!-- ================= 2. MAIN WORKSPACE BODY ================= -->
+      <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- (2.1) LEFT NAVIGATION SIDEBAR (Collapsible) -->
+        <aside id="leftSidebar" class="w-[230px] border-r border-white/[0.08] bg-[#14161d] flex flex-col justify-between shrink-0 transition-all duration-300 select-none">
+          
+          <!-- Navigation Groups -->
+          <div class="flex-1 overflow-y-auto p-2.5 space-y-4">
+            
+            <!-- Group 1: 驾驶舱 Cockpit -->
+            <div>
+              <div class="sidebar-label px-2 text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1" data-i18n="groupCockpit">驾驶舱</div>
+              <div class="space-y-0.5">
+                <button class="nav-item active w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 transition-colors">
+                  <svg class="w-4 h-4 text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="7" height="9" x="3" y="3" rx="1"/>
+                    <rect width="7" height="5" x="14" y="3" rx="1"/>
+                    <rect width="7" height="9" x="14" y="12" rx="1"/>
+                    <rect width="7" height="5" x="3" y="16" rx="1"/>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navToday">今日总览</span>
+                </button>
+                <button class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span class="sidebar-text" data-i18n="navWatchlist">自选异动</span>
+                  </div>
+                  <span class="sidebar-text px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono">+1.8%</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 2: 投资核心闭环 Core Pipeline -->
+            <div>
+              <div class="sidebar-label px-2 text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1" data-i18n="groupPipeline">投研闭环</div>
+              <div class="space-y-0.5">
+                <button class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <span class="sidebar-text" data-i18n="navResearch">深度研报</span>
+                  </div>
+                  <span class="sidebar-text px-1.5 rounded bg-white/10 text-[10px] text-neutral-300">12</span>
+                </button>
+                <button class="nav-item w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <div class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4 shrink-0 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span class="sidebar-text" data-i18n="navTheses">投资论点</span>
+                  </div>
+                  <span class="sidebar-text px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-mono" data-i18n="thesesCountPill">6 活跃</span>
+                </button>
+                <button class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <svg class="w-4 h-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="20" height="14" x="2" y="7" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navPortfolio">持仓组合</span>
+                </button>
+                <button class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <svg class="w-4 h-4 shrink-0 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                    <path d="M6 6h10"></path>
+                    <path d="M6 10h10"></path>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navJournal">投资日志</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 3: 知识图谱与工具 Knowledge & Tools -->
+            <div>
+              <div class="sidebar-label px-2 text-[10px] font-semibold tracking-wider text-neutral-400 uppercase mb-1" data-i18n="groupKnowledgeTools">知识与工具</div>
+              <div class="space-y-0.5">
+                <button class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <svg class="w-4 h-4 shrink-0 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navKnowledge">知识库</span>
+                </button>
+                <button class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <svg class="w-4 h-4 shrink-0 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="m19 9-5 5-4-4-3 3"></path>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navOptions">期权策略</span>
+                </button>
+                <button class="nav-item w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors">
+                  <svg class="w-4 h-4 shrink-0 text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20"></path>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                  <span class="sidebar-text" data-i18n="navArtifacts">研究产物</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom: Agent Status & User Profile -->
+          <div class="p-2 border-t border-white/[0.08] bg-black/10 space-y-2">
+            <!-- Agent Quick Status Card -->
+            <div id="agentStatusCard" class="p-2 rounded-lg bg-white/5 border border-white/5 text-[11px] flex items-center gap-2.5">
+              <div class="relative flex h-2 w-2 shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </div>
+              <div class="sidebar-text overflow-hidden">
+                <div class="font-medium text-neutral-200 truncate">Claude 3.7 Sonnet</div>
+                <div class="text-[10px] text-neutral-500 truncate" data-i18n="agentReadyText">投研核心处于待命状态</div>
+              </div>
+            </div>
+
+            <!-- User Menu -->
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+                  AF
+                </div>
+                <span class="sidebar-text text-xs text-neutral-300 truncate" data-i18n="userTitle">投资专席</span>
+              </div>
+              <button class="sidebar-text p-1 text-neutral-500 hover:text-neutral-300 rounded hover:bg-white/5" title="Settings">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- (2.2) CENTER MAIN DASHBOARD VIEW -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-[#161820]">
+          
+          <!-- Market Pulse Strip (Compact Live Bar) -->
+          <section class="h-10 border-b border-white/[0.06] bg-black/10 px-5 flex items-center justify-between shrink-0 text-xs overflow-x-auto">
+            <div class="flex items-center gap-5">
+              <span class="text-neutral-400 text-[11px] font-medium flex items-center gap-1 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span data-i18n="marketPulse">大盘脉搏</span>
+              </span>
+              
+              <!-- SPX -->
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-neutral-300">S&P 500</span>
+                <span class="font-mono text-neutral-200">5,864.20</span>
+                <span class="market-up font-mono text-xs text-emerald-400 font-medium">+0.68%</span>
+              </div>
+              <!-- NASDAQ -->
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-neutral-300">NASDAQ 100</span>
+                <span class="font-mono text-neutral-200">18,342.10</span>
+                <span class="market-up font-mono text-xs text-emerald-400 font-medium">+1.14%</span>
+              </div>
+              <!-- US10Y -->
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-neutral-300">US 10Y</span>
+                <span class="font-mono text-neutral-200">4.182%</span>
+                <span class="market-down font-mono text-xs text-rose-400 font-medium">-2.4bp</span>
+              </div>
+              <!-- VIX -->
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-neutral-300">VIX</span>
+                <span class="font-mono text-neutral-200">14.62</span>
+                <span class="market-down font-mono text-xs text-emerald-400 font-medium">-4.1%</span>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-neutral-400 shrink-0 flex items-center gap-2">
+              <span data-i18n="syncedTime">数据同步: 10秒前</span>
+              <button class="hover:text-neutral-200">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                  <path d="M16 21h5v-5"></path>
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <!-- Main Content Body Container -->
+          <div class="p-6 max-w-7xl space-y-6">
+
+            <!-- Page Title & Quick Navigation Tabs -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <span data-i18n="pageTitle">今日投研工作台</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal" data-i18n="strategyQuarter">Q3 策略季</span>
+                </h1>
+                <p class="text-xs text-neutral-400 mt-0.5" data-i18n="pageSubtitle">驱动信息、知识、论点到决策全链条，追踪超额收益与风险敞口</p>
+              </div>
+
+              <!-- View Switcher Tabs -->
+              <div class="flex items-center p-1 rounded-xl bg-black/20 border border-white/10 text-xs font-medium text-neutral-400">
+                <button class="px-3 py-1 rounded-lg bg-white/10 text-white shadow-sm" data-i18n="tabTheses">核心论点看板</button>
+                <button class="px-3 py-1 rounded-lg hover:text-neutral-200" data-i18n="tabPortfolio">持仓组合表现</button>
+                <button class="px-3 py-1 rounded-lg hover:text-neutral-200" data-i18n="tabEvidence">研报与情报流</button>
+              </div>
+            </div>
+
+            <!-- Top KPI Cards with Visuals -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Card 1: 组合总资产 -->
+              <div class="p-4 rounded-xl bg-[#1c1e28] border border-white/[0.08] hover:border-white/20 transition-all shadow-sm">
+                <div class="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+                  <span data-i18n="kpiNav">组合总值</span>
+                  <span class="px-1.5 py-0.5 rounded bg-white/5 text-[10px] font-mono text-neutral-300">USD</span>
+                </div>
+                <div class="text-2xl font-bold font-mono tracking-tight text-white">$1,458,220</div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-xs">
+                  <span class="market-up text-emerald-400 font-medium flex items-center gap-0.5">
+                    ↑ +$24,350 (+1.70%)
+                  </span>
+                  <span class="text-[11px] text-neutral-400" data-i18n="kpiNavSub">今日变动</span>
+                </div>
+              </div>
+
+              <!-- Card 2: 活跃投资论点 -->
+              <div class="p-4 rounded-xl bg-[#1c1e28] border border-white/[0.08] hover:border-white/20 transition-all shadow-sm">
+                <div class="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+                  <span data-i18n="kpiTheses">活跃投资论点</span>
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                </div>
+                <div class="text-2xl font-bold font-mono tracking-tight text-white">6 <span class="text-sm font-normal text-neutral-400" data-i18n="thesesUnit">项</span></div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-xs">
+                  <span class="text-purple-300 font-medium" data-i18n="kpiThesesSub">平均置信度: 82%</span>
+                  <span class="text-[11px] text-neutral-400" data-i18n="kpiThesesHarvest">2 项进入收获期</span>
+                </div>
+              </div>
+
+              <!-- Card 3: 模拟超额收益 (Alpha) -->
+              <div class="p-4 rounded-xl bg-[#1c1e28] border border-white/[0.08] hover:border-white/20 transition-all shadow-sm">
+                <div class="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+                  <span data-i18n="kpiAlpha">超额收益</span>
+                  <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[10px] text-emerald-400 font-medium" data-i18n="outperformPill">跑赢</span>
+                </div>
+                <div class="text-2xl font-bold font-mono tracking-tight text-emerald-400">+8.42%</div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-xs">
+                  <span class="text-neutral-300 font-mono">Sharpe: 2.14</span>
+                  <span class="text-[11px] text-neutral-400" data-i18n="kpiAlphaSub">年化超额</span>
+                </div>
+              </div>
+
+              <!-- Card 4: 待触发催化剂 -->
+              <div class="p-4 rounded-xl bg-[#1c1e28] border border-white/[0.08] hover:border-white/20 transition-all shadow-sm">
+                <div class="flex items-center justify-between text-neutral-400 text-xs mb-1.5">
+                  <span data-i18n="kpiCatalysts">本周催化剂</span>
+                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                </div>
+                <div class="text-2xl font-bold font-mono tracking-tight text-amber-300">3 <span class="text-sm font-normal text-neutral-400" data-i18n="eventsUnit">项</span></div>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5 text-xs">
+                  <span class="text-amber-400 font-medium">NVDA GTC, FOMC</span>
+                  <span class="text-[11px] text-neutral-400" data-i18n="kpiCatalystsSub">重点验证</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Investment Theses Pipeline -->
+            <div class="rounded-xl bg-[#1c1e28] border border-white/[0.08] p-5 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                    <span data-i18n="thesesPipelineTitle">投资论点跟踪池</span>
+                  </h2>
+                  <p class="text-xs text-neutral-400 mt-0.5" data-i18n="thesesPipelineSub">从假说到建仓再到定期证伪回顾，全生命周期跟踪</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-neutral-400" data-i18n="filterLabel">筛选状态:</span>
+                  <select class="bg-black/30 border border-white/10 text-xs text-neutral-300 rounded-lg px-2 py-1 outline-none">
+                    <option data-i18n="optAll">全部状态 (6)</option>
+                    <option data-i18n="optValidating">验证中</option>
+                    <option data-i18n="optPortfolio">已建仓持仓</option>
+                    <option data-i18n="optReview">预警回顾</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Thesis Cards Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- Thesis Card 1: NVDA -->
+                <div class="p-4 rounded-xl bg-black/20 border border-white/10 hover:border-purple-500/50 hover:bg-black/30 transition-all cursor-pointer group">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">NVDA</span>
+                        <span class="text-[11px] text-neutral-400" data-i18n="nvdaName">英伟达</span>
+                        <span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium" data-i18n="posLong">多头</span>
+                      </div>
+                      <h3 class="text-xs font-medium text-neutral-300 mt-1 line-clamp-1" data-i18n="nvdaThesisTitle">Blackwell 架构机柜出货超预期放量</h3>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-emerald-400">+32%</span>
+                  </div>
+
+                  <!-- Conviction & Evidence Bar -->
+                  <div class="mt-3 space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="text-neutral-400" data-i18n="convictionLabel">置信度</span>
+                      <span class="font-mono text-purple-300 font-semibold" data-i18n="nvdaConviction">88% (高)</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style="width: 88%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Key Evidences Tags -->
+                  <div class="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-1.5 text-[10px]">
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="nvdaEvidence1">台积电 CoWoS 产能扩张</span>
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="nvdaEvidence2">云厂商资本开支指引上调</span>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span data-i18n="nvdaWeight">持仓权重: 14.2%</span>
+                    <span class="text-indigo-400 hover:underline flex items-center gap-0.5" data-i18n="viewThesisDetail">
+                      查看详情 →
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Thesis Card 2: ASML -->
+                <div class="p-4 rounded-xl bg-black/20 border border-white/10 hover:border-purple-500/50 hover:bg-black/30 transition-all cursor-pointer group">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">ASML</span>
+                        <span class="text-[11px] text-neutral-400" data-i18n="asmlName">阿斯麦</span>
+                        <span class="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 text-[10px] font-medium" data-i18n="posReview">重估中</span>
+                      </div>
+                      <h3 class="text-xs font-medium text-neutral-300 mt-1 line-clamp-1" data-i18n="asmlThesisTitle">High-NA EUV 光刻机订单周期拐点</h3>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-neutral-300">+18%</span>
+                  </div>
+
+                  <!-- Conviction & Evidence Bar -->
+                  <div class="mt-3 space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="text-neutral-400" data-i18n="convictionLabel">置信度</span>
+                      <span class="font-mono text-amber-300 font-semibold" data-i18n="asmlConviction">74% (中)</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div class="h-full bg-amber-500 rounded-full" style="width: 74%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Key Evidences Tags -->
+                  <div class="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-1.5 text-[10px]">
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="asmlEvidence1">中国区出口政策待验证</span>
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="asmlEvidence2">台积电 2nm 试产订单</span>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span data-i18n="asmlWeight">持仓权重: 8.5%</span>
+                    <span class="text-indigo-400 hover:underline flex items-center gap-0.5" data-i18n="viewThesisDetail">
+                      查看详情 →
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Thesis Card 3: MSFT -->
+                <div class="p-4 rounded-xl bg-black/20 border border-white/10 hover:border-purple-500/50 hover:bg-black/30 transition-all cursor-pointer group">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm text-white group-hover:text-purple-300 transition-colors">MSFT</span>
+                        <span class="text-[11px] text-neutral-400" data-i18n="msftName">微软</span>
+                        <span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium" data-i18n="posLong">多头</span>
+                      </div>
+                      <h3 class="text-xs font-medium text-neutral-300 mt-1 line-clamp-1" data-i18n="msftThesisTitle">Azure AI 带动云业务提速至 30%+</h3>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-emerald-400">+22%</span>
+                  </div>
+
+                  <!-- Conviction & Evidence Bar -->
+                  <div class="mt-3 space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="text-neutral-400" data-i18n="convictionLabel">置信度</span>
+                      <span class="font-mono text-purple-300 font-semibold" data-i18n="msftConviction">91% (极高)</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style="width: 91%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Key Evidences Tags -->
+                  <div class="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-1.5 text-[10px]">
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="msftEvidence1">Copilot 席位转化率 22%</span>
+                    <span class="px-2 py-0.5 rounded bg-white/5 text-neutral-300 border border-white/5" data-i18n="msftEvidence2">企业客户续约率 98%</span>
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span data-i18n="msftWeight">持仓权重: 16.0%</span>
+                    <span class="text-indigo-400 hover:underline flex items-center gap-0.5" data-i18n="viewThesisDetail">
+                      查看详情 →
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Two-Column Layout: Holdings Watch & AI Evidence Ingestion -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              <!-- Column 1: Top Holdings & Performance -->
+              <div class="rounded-xl bg-[#1c1e28] border border-white/[0.08] p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect width="20" height="14" x="2" y="7" rx="2" ry="2"></rect>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <span data-i18n="holdingsTitle">核心持仓与分布</span>
+                  </h3>
+                  <button class="text-xs text-indigo-400 hover:underline" data-i18n="viewAllHoldings">全部持仓 →</button>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Row 1 -->
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-black/20 border border-white/5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center text-xs">NV</div>
+                      <div>
+                        <div class="text-xs font-semibold text-white">NVIDIA Corp (NVDA)</div>
+                        <div class="text-[11px] text-neutral-400" data-i18n="nvdaShares">1,200 股 · 成本 $112.50</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xs font-mono font-semibold text-white">$146,400</div>
+                      <div class="market-up text-[11px] font-mono text-emerald-400 font-medium">+30.1% ($33,900)</div>
+                    </div>
+                  </div>
+
+                  <!-- Row 2 -->
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-black/20 border border-white/5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 font-bold flex items-center justify-center text-xs">MS</div>
+                      <div>
+                        <div class="text-xs font-semibold text-white">Microsoft Corp (MSFT)</div>
+                        <div class="text-[11px] text-neutral-400" data-i18n="msftShares">550 股 · 成本 $410.20</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xs font-mono font-semibold text-white">$243,100</div>
+                      <div class="market-up text-[11px] font-mono text-emerald-400 font-medium">+8.2% ($18,490)</div>
+                    </div>
+                  </div>
+
+                  <!-- Row 3 -->
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-black/20 border border-white/5">
+                    <div class="flex items-center gap-3">
+                      <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 font-bold flex items-center justify-center text-xs">AS</div>
+                      <div>
+                        <div class="text-xs font-semibold text-white">ASML Holding (ASML)</div>
+                        <div class="text-[11px] text-neutral-400" data-i18n="asmlShares">150 股 · 成本 $820.00</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xs font-mono font-semibold text-white">$124,500</div>
+                      <div class="market-down text-[11px] font-mono text-rose-400 font-medium">-1.2% (-$1,500)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Column 2: Agent Evidence & Knowledge Stream -->
+              <div class="rounded-xl bg-[#1c1e28] border border-white/[0.08] p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                    </svg>
+                    <span data-i18n="evidenceFeedTitle">最新投研证据与情报流</span>
+                  </h3>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400" data-i18n="secParsingBadge">SEC 自动解析</span>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Item 1 -->
+                  <div class="p-3 rounded-lg bg-black/20 border border-white/5 space-y-1.5">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-semibold text-indigo-400 flex items-center gap-1">
+                        <span>NVDA</span> · <span data-i18n="sec10qTitle">SEC Form 10-Q 季报归档</span>
+                      </span>
+                      <span class="text-neutral-400" data-i18n="timeTwoHoursAgo">2 小时前</span>
+                    </div>
+                    <p class="text-xs text-neutral-300" data-i18n="secItemContent">
+                      数据中心业务营收同比增长 154%，客户预付款项增长 28%，验证持续供应链强劲需求。
+                    </p>
+                    <div class="flex items-center justify-between text-[10px] text-neutral-400 pt-1">
+                      <span data-i18n="linkedThesis1">关联论点: Blackwell 架构机柜</span>
+                      <span class="text-emerald-400" data-i18n="evidencePositive">正向佐证 (+4% 置信度)</span>
+                    </div>
+                  </div>
+
+                  <!-- Item 2 -->
+                  <div class="p-3 rounded-lg bg-black/20 border border-white/5 space-y-1.5">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-semibold text-amber-400 flex items-center gap-1">
+                        <span>ASML</span> · <span data-i18n="asmlCallTitle">业绩电话会文字记录</span>
+                      </span>
+                      <span class="text-neutral-400" data-i18n="timeYesterday">昨天 22:15</span>
+                    </div>
+                    <p class="text-xs text-neutral-300" data-i18n="asmlItemContent">
+                      管理层提示个别逻辑代工客户 High-NA 交付延后至 2026 年初，但总储备积压订单维持 360 亿欧元。
+                    </p>
+                    <div class="flex items-center justify-between text-[10px] text-neutral-400 pt-1">
+                      <span data-i18n="linkedThesis2">关联论点: 光刻机订单恢复周期</span>
+                      <span class="text-rose-400" data-i18n="evidenceRisk">反向风险预警 (-3% 置信度)</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </main>
+
+        <!-- (2.3) RIGHT SIDEBAR: AI INVESTMENT AGENT COPILOT (Collapsible Drawer) -->
+        <aside id="agentSidebar" class="w-[340px] border-l border-white/[0.08] bg-[#14161f] flex flex-col justify-between shrink-0 transition-all duration-300 z-20">
+          
+          <!-- Header -->
+          <div class="h-12 border-b border-white/[0.08] px-4 flex items-center justify-between bg-black/10">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xs text-white font-bold">
+                α
+              </div>
+              <div>
+                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span data-i18n="agentPanelTitle">投研智能体副驾驶</span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                </div>
+                <div class="text-[10px] text-neutral-400" data-i18n="agentContext">当前感知标的: NVDA</div>
+              </div>
+            </div>
+
+            <!-- Close button -->
+            <button id="closeAgentBtn" class="p-1 rounded text-neutral-400 hover:text-white hover:bg-white/10" title="Close Panel (⌘J)">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Chat & Reasoning Body -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+            
+            <!-- User Prompt Simulation -->
+            <div class="flex items-start gap-2.5 justify-end">
+              <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm max-w-[85%] leading-relaxed shadow-sm" data-i18n="agentUserPrompt">
+                分析 NVDA 本季度披露的云厂商资本开支与供应商预付款，并检验与 ASML 的产能错配风险。
+              </div>
+            </div>
+
+            <!-- Agent Structured Output Card (AlphaForge Standard Protocol) -->
+            <div class="space-y-3">
+              <div class="p-3.5 rounded-xl bg-black/30 border border-indigo-500/30 space-y-2.5 shadow-md">
+                
+                <div class="flex items-center justify-between border-b border-white/5 pb-2">
+                  <div class="flex items-center gap-1.5 text-indigo-400 font-semibold">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span data-i18n="structuredOutputTitle">结构化研报推理结果</span>
+                  </div>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono" data-i18n="agentConfidencePill">置信度 88%</span>
+                </div>
+
+                <!-- Section: Core Thesis Impact -->
+                <div>
+                  <div class="text-[11px] font-semibold text-white" data-i18n="agentThesisImpactHeader">核心判断:</div>
+                  <p class="text-[11px] text-neutral-300 mt-1 leading-relaxed" data-i18n="agentThesisImpactContent">
+                    四大云厂商 2025 Capex 展望上修至 $2,100 亿，且 NVDA 供应链已锁定台积电 3nm 与 CoWoS 产能，对下游交付错配风险抵御力强。
+                  </p>
+                </div>
+
+                <!-- Evidence Claims List -->
+                <div class="space-y-1 pt-1">
+                  <div class="text-[10px] font-semibold text-neutral-400 uppercase" data-i18n="agentEvidenceHeader">可追溯证据:</div>
+                  <div class="p-2 rounded bg-white/5 text-[11px] text-neutral-300 border border-white/5 space-y-1">
+                    <div class="flex items-center justify-between text-[10px] text-indigo-300">
+                      <span data-i18n="secCitation">[SEC 10-Q] 供应承诺存货</span>
+                      <span>2024-Q3 P.42</span>
+                    </div>
+                    <div data-i18n="secCitationDetail">客户预付采购协议金额达 $148 亿，环比增加 21%。</div>
+                  </div>
+                </div>
+
+                <!-- Primary Risks -->
+                <div class="p-2 rounded bg-rose-500/10 border border-rose-500/20 text-[11px] text-rose-300">
+                  <div class="font-semibold flex items-center gap-1" data-i18n="agentRiskHeader">⚠️ 证伪预警点:</div>
+                  <div class="mt-0.5 text-neutral-300 text-[10px]" data-i18n="agentRiskContent">若 2025 年 Q2 Blackwell 出货时液冷故障率高于 0.5%，将引发论点降级。</div>
+                </div>
+
+                <!-- Interactive Artifact Button -->
+                <button class="w-full mt-2 py-1.5 px-3 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                    <path d="M8 12h8"></path>
+                    <path d="M12 8v8"></path>
+                  </svg>
+                  <span data-i18n="btnGenerateArtifact">生成交互式敏感性分析模型</span>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Prompt Input -->
+          <div class="p-3 border-t border-white/[0.08] bg-black/20">
+            <div class="relative">
+              <textarea 
+                id="agentInput"
+                rows="2" 
+                placeholder="继续向 Agent 提问，或输入 / 调取投研模板..."
+                data-i18n-placeholder="agentInputPlaceholder"
+                class="w-full bg-[#1c1e28] text-neutral-200 placeholder-neutral-500 text-xs rounded-xl p-2.5 pr-10 border border-white/10 focus:border-indigo-500 focus:outline-none resize-none"
+              ></textarea>
+              <button class="absolute right-2.5 bottom-3.5 p-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors" title="Send (Enter)">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-neutral-500 mt-1.5 px-1">
+              <span data-i18n="enterHint">Shift + Enter 换行</span>
+              <span class="flex items-center gap-1">
+                <span data-i18n="contextPill">上下文: NVDA, 10-Q</span>
+              </span>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+
+      <!-- ================= 3. RAYCAST / SPOTLIGHT ⌘K MODAL ================= -->
+      <div id="spotlightModal" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24 select-none">
+        <div class="w-full max-w-xl bg-[#1a1c26] text-[#e2e4ea] rounded-2xl border border-white/15 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          
+          <!-- Search Header Input -->
+          <div class="p-3.5 border-b border-white/10 flex items-center gap-3">
+            <svg class="w-5 h-5 text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              id="spotlightInput"
+              type="text" 
+              placeholder="搜索任何股票、投资论点、研报、或直接执行命令..."
+              data-i18n-placeholder="spotlightInputPlaceholder"
+              class="w-full bg-transparent text-sm text-white placeholder-neutral-500 outline-none"
+            >
+            <kbd id="closeSpotlightBtn" class="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neutral-400 hover:text-white cursor-pointer">ESC</kbd>
+          </div>
+
+          <!-- Suggestions List -->
+          <div class="max-h-80 overflow-y-auto p-2 space-y-1 text-xs">
+            <div class="px-2 py-1 text-[10px] font-semibold text-neutral-400 uppercase" data-i18n="spotlightSection1">快速建议与活跃标的</div>
+            
+            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer text-white">
+              <div class="flex items-center gap-3">
+                <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono font-bold text-[11px]">NVDA</span>
+                <span data-i18n="spotlightItem1">英伟达 · 论点置信度 88%</span>
+              </div>
+              <span class="text-neutral-400 text-[11px]" data-i18n="spotlightAction1">跳转论点</span>
+            </div>
+
+            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer text-white">
+              <div class="flex items-center gap-3">
+                <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold text-[11px]">ASML</span>
+                <span data-i18n="spotlightItem2">阿斯麦 · 待催化剂验证</span>
+              </div>
+              <span class="text-neutral-400 text-[11px]" data-i18n="spotlightAction2">标的研报</span>
+            </div>
+
+            <div class="px-2 pt-2 pb-1 text-[10px] font-semibold text-neutral-400 uppercase" data-i18n="spotlightSection2">智能体常用动作</div>
+
+            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer text-white">
+              <div class="flex items-center gap-3">
+                <span class="text-indigo-400">⚡️</span>
+                <span data-i18n="spotlightAgentAction1">对当前持仓运行全面多空情景压力测试</span>
+              </div>
+              <span class="text-neutral-400 text-[11px]" data-i18n="quickRun">快捷执行</span>
+            </div>
+
+            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer text-white">
+              <div class="flex items-center gap-3">
+                <span class="text-purple-400">📝</span>
+                <span data-i18n="spotlightAgentAction2">根据最新 SEC 10-Q 更新 NVDA 论点证据库</span>
+              </div>
+              <span class="text-neutral-400 text-[11px]" data-i18n="quickRun">快捷执行</span>
+            </div>
+          </div>
+
+          <div class="p-2 border-t border-white/10 bg-black/20 text-[11px] text-neutral-400 flex items-center justify-between px-3">
+            <div class="flex items-center gap-3">
+              <span data-i18n="spotlightNavHint">↑↓ 导航选择</span>
+              <span data-i18n="spotlightEnterHint">↵ 确认</span>
+              <span data-i18n="spotlightEscHint">ESC 退出</span>
+            </div>
+            <span>AlphaForge Spotlight</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Standard i18n Catalogs & Interactive Prototype Controller -->
+  <script>
+    // -------------------------------------------------------------
+    // Standard Pure i18n Catalogs (No mixed bilingual strings!)
+    // -------------------------------------------------------------
+    const I18N_CATALOGS = {
+      "zh-CN": {
+        protoTitle: "AlphaForge macOS 原型系统 v2.0",
+        protoSubtitle: "· 纯净多语言 (Standard i18n) · 统一顶栏 · 投研闭环",
+        themeBtnLight: "切换亮色",
+        themeBtnDark: "切换暗色",
+        marketGreenUp: "美股 (绿涨红跌)",
+        marketRedUp: "国内 (红涨绿跌)",
+        spotlightHint: "聚光灯",
+        workspaceName: "主对冲基金",
+        searchPlaceholder: "搜索股票标的、论点、研报或向智能体提问...",
+        marketStatus: "美东交易中 14:32",
+        btnNewResearch: "新建研报",
+        btnAgentPanel: "智能体助手",
+        groupCockpit: "驾驶舱",
+        navToday: "今日总览",
+        navWatchlist: "自选异动",
+        groupPipeline: "投研闭环",
+        navResearch: "深度研报",
+        navTheses: "投资论点",
+        thesesCountPill: "6 活跃",
+        navPortfolio: "持仓组合",
+        navJournal: "投资日志",
+        groupKnowledgeTools: "知识与工具",
+        navKnowledge: "知识库",
+        navOptions: "期权策略",
+        navArtifacts: "研究产物",
+        agentReadyText: "投研核心处于待命状态",
+        userTitle: "投资专席",
+        marketPulse: "大盘脉搏",
+        syncedTime: "数据同步: 10秒前",
+        pageTitle: "今日投研工作台",
+        strategyQuarter: "Q3 策略季",
+        pageSubtitle: "驱动信息、知识、论点到决策全链条，追踪超额收益与风险敞口",
+        tabTheses: "核心论点看板",
+        tabPortfolio: "持仓组合表现",
+        tabEvidence: "研报与情报流",
+        kpiNav: "组合总值",
+        kpiNavSub: "今日变动",
+        kpiTheses: "活跃投资论点",
+        thesesUnit: "项",
+        kpiThesesSub: "平均置信度: 82%",
+        kpiThesesHarvest: "2 项进入收获期",
+        kpiAlpha: "超额收益",
+        outperformPill: "跑赢",
+        kpiAlphaSub: "年化超额",
+        kpiCatalysts: "本周催化剂",
+        eventsUnit: "项",
+        kpiCatalystsSub: "重点验证",
+        thesesPipelineTitle: "投资论点跟踪池",
+        thesesPipelineSub: "从假说到建仓再到定期证伪回顾，全生命周期跟踪",
+        filterLabel: "筛选状态:",
+        optAll: "全部状态 (6)",
+        optValidating: "验证中",
+        optPortfolio: "已建仓持仓",
+        optReview: "预警回顾",
+        nvdaName: "英伟达",
+        posLong: "多头",
+        nvdaThesisTitle: "Blackwell 架构机柜出货超预期放量",
+        convictionLabel: "置信度",
+        nvdaConviction: "88% (高)",
+        nvdaEvidence1: "台积电 CoWoS 产能扩张",
+        nvdaEvidence2: "云厂商资本开支指引上调",
+        nvdaWeight: "持仓权重: 14.2%",
+        viewThesisDetail: "查看详情 →",
+        asmlName: "阿斯麦",
+        posReview: "重估中",
+        asmlThesisTitle: "High-NA EUV 光刻机订单周期拐点",
+        asmlConviction: "74% (中)",
+        asmlEvidence1: "中国区出口政策待验证",
+        asmlEvidence2: "台积电 2nm 试产订单",
+        asmlWeight: "持仓权重: 8.5%",
+        msftName: "微软",
+        msftThesisTitle: "Azure AI 带动云业务提速至 30%+",
+        msftConviction: "91% (极高)",
+        msftEvidence1: "Copilot 席位转化率 22%",
+        msftEvidence2: "企业客户续约率 98%",
+        msftWeight: "持仓权重: 16.0%",
+        holdingsTitle: "核心持仓与分布",
+        viewAllHoldings: "全部持仓 →",
+        nvdaShares: "1,200 股 · 成本 $112.50",
+        msftShares: "550 股 · 成本 $410.20",
+        asmlShares: "150 股 · 成本 $820.00",
+        evidenceFeedTitle: "最新投研证据与情报流",
+        secParsingBadge: "SEC 自动解析",
+        sec10qTitle: "SEC Form 10-Q 季报归档",
+        timeTwoHoursAgo: "2 小时前",
+        secItemContent: "数据中心业务营收同比增长 154%，客户预付款项增长 28%，验证持续供应链强劲需求。",
+        linkedThesis1: "关联论点: Blackwell 架构机柜",
+        evidencePositive: "正向佐证 (+4% 置信度)",
+        asmlCallTitle: "业绩电话会文字记录",
+        timeYesterday: "昨天 22:15",
+        asmlItemContent: "管理层提示个别逻辑代工客户 High-NA 交付延后至 2026 年初，但总储备积压订单维持 360 亿欧元。",
+        linkedThesis2: "关联论点: 光刻机订单恢复周期",
+        evidenceRisk: "反向风险预警 (-3% 置信度)",
+        agentPanelTitle: "投研智能体副驾驶",
+        agentContext: "当前感知标的: NVDA",
+        agentUserPrompt: "分析 NVDA 本季度披露的云厂商资本开支与供应商预付款，并检验与 ASML 的产能错配风险。",
+        structuredOutputTitle: "结构化研报推理结果",
+        agentConfidencePill: "置信度 88%",
+        agentThesisImpactHeader: "核心判断:",
+        agentThesisImpactContent: "四大云厂商 2025 Capex 展望上修至 $2,100 亿，且 NVDA 供应链已锁定台积电 3nm 与 CoWoS 产能，对下游交付错配风险抵御力强。",
+        agentEvidenceHeader: "可追溯证据:",
+        secCitation: "[SEC 10-Q] 供应承诺存货",
+        secCitationDetail: "客户预付采购协议金额达 $148 亿，环比增加 21%。",
+        agentRiskHeader: "⚠️ 证伪预警点:",
+        agentRiskContent: "若 2025 年 Q2 Blackwell 出货时液冷故障率高于 0.5%，将引发论点降级。",
+        btnGenerateArtifact: "生成交互式敏感性分析模型",
+        agentInputPlaceholder: "继续向 Agent 提问，或输入 / 调取投研模板...",
+        enterHint: "Shift + Enter 换行",
+        contextPill: "上下文: NVDA, 10-Q",
+        spotlightInputPlaceholder: "搜索任何股票、投资论点、研报、或直接执行命令...",
+        spotlightSection1: "快速建议与活跃标的",
+        spotlightItem1: "英伟达 · 论点置信度 88%",
+        spotlightAction1: "跳转论点",
+        spotlightItem2: "阿斯麦 · 待催化剂验证",
+        spotlightAction2: "标的研报",
+        spotlightSection2: "智能体常用动作",
+        spotlightAgentAction1: "对当前持仓运行全面多空情景压力测试",
+        spotlightAgentAction2: "根据最新 SEC 10-Q 更新 NVDA 论点证据库",
+        quickRun: "快捷执行",
+        spotlightNavHint: "↑↓ 导航选择",
+        spotlightEnterHint: "↵ 确认",
+        spotlightEscHint: "ESC 退出"
+      },
+      "en-US": {
+        protoTitle: "AlphaForge macOS Prototype v2.0",
+        protoSubtitle: "· Standard i18n · Unified Titlebar · Research Pipeline",
+        themeBtnLight: "Light Mode",
+        themeBtnDark: "Dark Mode",
+        marketGreenUp: "US Market (Green Up)",
+        marketRedUp: "Asia Market (Red Up)",
+        spotlightHint: "Spotlight",
+        workspaceName: "Alpha Master Fund",
+        searchPlaceholder: "Search tickers, theses, filings, or ask Agent...",
+        marketStatus: "US Market Open 14:32",
+        btnNewResearch: "New Research",
+        btnAgentPanel: "Agent Copilot",
+        groupCockpit: "Cockpit",
+        navToday: "Dashboard",
+        navWatchlist: "Watchlist Movers",
+        groupPipeline: "Research Pipeline",
+        navResearch: "Research Lab",
+        navTheses: "Theses",
+        thesesCountPill: "6 Active",
+        navPortfolio: "Portfolio",
+        navJournal: "Decision Journal",
+        groupKnowledgeTools: "Knowledge & Tools",
+        navKnowledge: "Knowledge Base",
+        navOptions: "Options Flow",
+        navArtifacts: "Artifacts",
+        agentReadyText: "Research core ready on standby",
+        userTitle: "Trading Desk",
+        marketPulse: "Market Pulse",
+        syncedTime: "Synced: 10s ago",
+        pageTitle: "Investment Cockpit",
+        strategyQuarter: "Q3 Strategy Season",
+        pageSubtitle: "Orchestrating information, knowledge, theses to decisions while tracking alpha and risks",
+        tabTheses: "Theses Board",
+        tabPortfolio: "Portfolio Performance",
+        tabEvidence: "Research & Evidence Stream",
+        kpiNav: "Total Portfolio NAV",
+        kpiNavSub: "Today's Change",
+        kpiTheses: "Active Theses",
+        thesesUnit: "items",
+        kpiThesesSub: "Avg Conviction: 82%",
+        kpiThesesHarvest: "2 entering realization",
+        kpiAlpha: "Excess Alpha",
+        outperformPill: "Outperform",
+        kpiAlphaSub: "Annualized Excess",
+        kpiCatalysts: "Weekly Catalysts",
+        eventsUnit: "events",
+        kpiCatalystsSub: "Key Verification",
+        thesesPipelineTitle: "Thesis Pipeline Tracker",
+        thesesPipelineSub: "From hypothesis to sizing to ongoing falsification tracking",
+        filterLabel: "Filter Status:",
+        optAll: "All Statuses (6)",
+        optValidating: "Validating",
+        optPortfolio: "Active in Portfolio",
+        optReview: "Review Required",
+        nvdaName: "NVIDIA Corp",
+        posLong: "Long",
+        nvdaThesisTitle: "Blackwell Architecture Rack Volume Ramp Ahead of Consensus",
+        convictionLabel: "Conviction",
+        nvdaConviction: "88% (High)",
+        nvdaEvidence1: "TSMC CoWoS Capacity Expansion",
+        nvdaEvidence2: "Hyperscaler Capex Guidance Hikes",
+        nvdaWeight: "Weight: 14.2%",
+        viewThesisDetail: "View Details →",
+        asmlName: "ASML Holding",
+        posReview: "Under Review",
+        asmlThesisTitle: "High-NA EUV Lithography Order Cycle Inflection",
+        asmlConviction: "74% (Medium)",
+        asmlEvidence1: "China Export Policy Pending",
+        asmlEvidence2: "TSMC 2nm Pilot Run Orders",
+        asmlWeight: "Weight: 8.5%",
+        msftName: "Microsoft",
+        msftThesisTitle: "Azure AI Monetization Accelerating Cloud Growth to 30%+",
+        msftConviction: "91% (Very High)",
+        msftEvidence1: "Copilot Seat Conversion at 22%",
+        msftEvidence2: "Enterprise Renewal Rate at 98%",
+        msftWeight: "Weight: 16.0%",
+        holdingsTitle: "Top Holdings & Distribution",
+        viewAllHoldings: "All Holdings →",
+        nvdaShares: "1,200 shs · Avg $112.50",
+        msftShares: "550 shs · Avg $410.20",
+        asmlShares: "150 shs · Avg $820.00",
+        evidenceFeedTitle: "Live Research & Evidence Stream",
+        secParsingBadge: "Automated SEC Parsing",
+        sec10qTitle: "SEC Form 10-Q Filing Ingested",
+        timeTwoHoursAgo: "2h ago",
+        secItemContent: "Data Center revenue up 154% YoY, customer advances up 28%, validating resilient supply chain commitments.",
+        linkedThesis1: "Linked Thesis: Blackwell Rack Ramp",
+        evidencePositive: "Positive Confirmation (+4% Conviction)",
+        asmlCallTitle: "Earnings Call Transcript",
+        timeYesterday: "Yesterday 22:15",
+        asmlItemContent: "Management indicated selective High-NA delivery shifts into early 2026, while total order backlog remains €36B.",
+        linkedThesis2: "Linked Thesis: EUV Order Inflection",
+        evidenceRisk: "Contra-Evidence Alert (-3% Conviction)",
+        agentPanelTitle: "Investment Agent Copilot",
+        agentContext: "Active Subject: NVDA",
+        agentUserPrompt: "Analyze NVDA's hyperscaler capex disclosures vs supplier advances, and test for capacity mismatch against ASML.",
+        structuredOutputTitle: "Structured Research Inference",
+        agentConfidencePill: "Conviction 88%",
+        agentThesisImpactHeader: "Thesis Impact:",
+        agentThesisImpactContent: "Top 4 cloud hyperscalers revised 2025 capex to $210B. NVDA has secured TSMC 3nm & CoWoS supply, showing robust defense against delivery slippage.",
+        agentEvidenceHeader: "Verifiable Evidence:",
+        secCitation: "[SEC 10-Q] Supply Commitments",
+        secCitationDetail: "Customer purchase obligations reached $14.8B, up 21% QoQ.",
+        agentRiskHeader: "⚠️ Falsification Triggers:",
+        agentRiskContent: "If liquid cooling leak incidents exceed 0.5% during GB200 Q2 rollouts, downgrade thesis conviction.",
+        btnGenerateArtifact: "Generate Interactive Sensitivity Artifact",
+        agentInputPlaceholder: "Ask Agent a question or type / for research templates...",
+        enterHint: "Shift + Enter for new line",
+        contextPill: "Context: NVDA, 10-Q",
+        spotlightInputPlaceholder: "Search any ticker, thesis, filing, or run commands...",
+        spotlightSection1: "Quick Suggestions & Active Tickers",
+        spotlightItem1: "NVIDIA Corporation · Conviction 88%",
+        spotlightAction1: "Jump to Thesis",
+        spotlightItem2: "ASML Holding N.V. · Pending Catalyst",
+        spotlightAction2: "View Research",
+        spotlightSection2: "Agent Actions",
+        spotlightAgentAction1: "Run Comprehensive Bull/Bear Stress Test on Portfolio",
+        spotlightAgentAction2: "Update NVDA Evidence Repository from latest SEC 10-Q",
+        quickRun: "Execute",
+        spotlightNavHint: "↑↓ Navigate",
+        spotlightEnterHint: "↵ Select",
+        spotlightEscHint: "ESC Close"
+      }
+    };
+
+    let currentLocale = "zh-CN";
+
+    function applyLocale(locale) {
+      currentLocale = locale;
+      const dict = I18N_CATALOGS[locale];
+      if (!dict) return;
+
+      // Update text content
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (dict[key]) el.textContent = dict[key];
+      });
+
+      // Update placeholders
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (dict[key]) el.setAttribute("placeholder", dict[key]);
+      });
+
+      // Update language toggle label
+      const langLabel = document.getElementById("langLabel");
+      langLabel.textContent = locale === "zh-CN" ? "Language: English" : "语言: 简体中文";
+    }
+
+    // Language toggle event listener
+    const langToggleBtn = document.getElementById("langToggleBtn");
+    langToggleBtn.addEventListener("click", () => {
+      const nextLocale = currentLocale === "zh-CN" ? "en-US" : "zh-CN";
+      applyLocale(nextLocale);
+    });
+
+    // 1. Sidebar Toggle Logic
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const leftSidebar = document.getElementById('leftSidebar');
+    let isSidebarCollapsed = false;
+
+    toggleSidebarBtn.addEventListener('click', () => {
+      isSidebarCollapsed = !isSidebarCollapsed;
+      if (isSidebarCollapsed) {
+        leftSidebar.style.width = '60px';
+        document.querySelectorAll('.sidebar-text, .sidebar-label').forEach(el => el.style.display = 'none');
+      } else {
+        leftSidebar.style.width = '230px';
+        document.querySelectorAll('.sidebar-text, .sidebar-label').forEach(el => el.style.display = '');
+      }
+    });
+
+    // 2. Agent Drawer Toggle Logic
+    const toggleAgentBtn = document.getElementById('toggleAgentBtn');
+    const closeAgentBtn = document.getElementById('closeAgentBtn');
+    const agentSidebar = document.getElementById('agentSidebar');
+    let isAgentOpen = true;
+
+    function setAgentState(open) {
+      isAgentOpen = open;
+      if (isAgentOpen) {
+        agentSidebar.style.width = '340px';
+        agentSidebar.style.opacity = '1';
+        agentSidebar.style.display = 'flex';
+      } else {
+        agentSidebar.style.width = '0px';
+        agentSidebar.style.opacity = '0';
+        setTimeout(() => { if (!isAgentOpen) agentSidebar.style.display = 'none'; }, 200);
+      }
+    }
+
+    toggleAgentBtn.addEventListener('click', () => setAgentState(!isAgentOpen));
+    closeAgentBtn.addEventListener('click', () => setAgentState(false));
+
+    // 3. Spotlight Command Palette (⌘K)
+    const spotlightModal = document.getElementById('spotlightModal');
+    const spotlightTrigger = document.getElementById('spotlightTrigger');
+    const closeSpotlightBtn = document.getElementById('closeSpotlightBtn');
+    const spotlightInput = document.getElementById('spotlightInput');
+
+    function openSpotlight() {
+      spotlightModal.classList.remove('hidden');
+      setTimeout(() => spotlightInput.focus(), 50);
+    }
+    function closeSpotlight() {
+      spotlightModal.classList.add('hidden');
+    }
+
+    spotlightTrigger.addEventListener('click', openSpotlight);
+    closeSpotlightBtn.addEventListener('click', closeSpotlight);
+    spotlightModal.addEventListener('click', (e) => {
+      if (e.target === spotlightModal) closeSpotlight();
+    });
+
+    // Global Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      // ⌘K or Ctrl+K for search
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (spotlightModal.classList.contains('hidden')) openSpotlight();
+        else closeSpotlight();
+      }
+      // ⌘1 for sidebar toggle
+      if ((e.metaKey || e.ctrlKey) && e.key === '1') {
+        e.preventDefault();
+        toggleSidebarBtn.click();
+      }
+      // ⌘J for agent toggle
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setAgentState(!isAgentOpen);
+      }
+      // ESC to close modal
+      if (e.key === 'Escape') {
+        closeSpotlight();
+      }
+    });
+
+    // 4. Light / Dark Theme Switching Demonstration
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeLabel = document.getElementById('themeLabel');
+    const macAppWindow = document.getElementById('macAppWindow');
+    let isLightMode = false;
+
+    themeToggleBtn.addEventListener('click', () => {
+      isLightMode = !isLightMode;
+      const dict = I18N_CATALOGS[currentLocale];
+      if (isLightMode) {
+        macAppWindow.classList.remove('bg-[#16181f]', 'text-[#eceef3]');
+        macAppWindow.classList.add('bg-[#f8f9fb]', 'text-[#1d2129]', 'border-black/10');
+        leftSidebar.classList.remove('bg-[#14161d]');
+        leftSidebar.classList.add('bg-[#f0f2f6]', 'border-black/10');
+        themeIcon.textContent = '🌙';
+        themeLabel.textContent = dict.themeBtnDark;
+      } else {
+        macAppWindow.classList.add('bg-[#16181f]', 'text-[#eceef3]');
+        macAppWindow.classList.remove('bg-[#f8f9fb]', 'text-[#1d2129]', 'border-black/10');
+        leftSidebar.classList.add('bg-[#14161d]');
+        leftSidebar.classList.remove('bg-[#f0f2f6]', 'border-black/10');
+        themeIcon.textContent = '☀️';
+        themeLabel.textContent = dict.themeBtnLight;
+      }
+    });
+
+    // 5. Market Color (US Green vs CN Red) Toggle
+    const marketColorBtn = document.getElementById('marketColorBtn');
+    const marketColorLabel = document.getElementById('marketColorLabel');
+    let isChinaColors = false;
+
+    marketColorBtn.addEventListener('click', () => {
+      isChinaColors = !isChinaColors;
+      const dict = I18N_CATALOGS[currentLocale];
+      const upEls = document.querySelectorAll('.market-up');
+      const downEls = document.querySelectorAll('.market-down');
+
+      if (isChinaColors) {
+        marketColorLabel.textContent = dict.marketRedUp;
+        marketColorLabel.className = 'font-semibold text-rose-400';
+        upEls.forEach(el => {
+          el.classList.remove('text-emerald-400');
+          el.classList.add('text-rose-400');
+        });
+        downEls.forEach(el => {
+          el.classList.remove('text-rose-400');
+          el.classList.add('text-emerald-400');
+        });
+      } else {
+        marketColorLabel.textContent = dict.marketGreenUp;
+        marketColorLabel.className = 'font-semibold text-emerald-400';
+        upEls.forEach(el => {
+          el.classList.remove('text-rose-400');
+          el.classList.add('text-emerald-400');
+        });
+        downEls.forEach(el => {
+          el.classList.remove('text-emerald-400');
+          el.classList.add('text-rose-400');
+        });
+      }
+    });
+
+    // Initialize default locale
+    applyLocale("zh-CN");
+  </script>
+</body>
+</html>

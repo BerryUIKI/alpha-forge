@@ -164,6 +164,7 @@ This milestone spans Phases 2–7 and represents the core product loop.
 The current milestone sequence is:
 
 1. **M8 — Local MVP Completion & Release Readiness**: i18n, local release, privacy, security, legal, and support gates.
+   - **macOS Desktop GUI Overhaul (`GUI-M4-MACOS`)**: Single unified header, native traffic lights, investment pipeline navigation, and AI Copilot drawer ([docs/gui/MACOS_GUI_REDESIGN_PLAN.md](gui/MACOS_GUI_REDESIGN_PLAN.md), [docs/gui/MACOS_GUI_ROADMAP.md](gui/MACOS_GUI_ROADMAP.md)).
 2. **M9 — Option Module Integration**: persistence repair, pricing/provider core, chain, strategy, and portfolio-risk vertical slices.
 3. **M10 — Goose Agent Integration**: post-MVP, read-only first, allowlisted MCP tools, structured output, and human-approved writes.
 
