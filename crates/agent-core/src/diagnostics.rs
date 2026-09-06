@@ -50,14 +50,22 @@ impl StderrCollector {
         });
     }
 
+    fn lock_lines(&self) -> std::sync::MutexGuard<'_, VecDeque<String>> {
+        self.lines.lock().unwrap_or_else(|p| p.into_inner())
+    }
+
+    fn lock_total_bytes(&self) -> std::sync::MutexGuard<'_, usize> {
+        self.total_bytes.lock().unwrap_or_else(|p| p.into_inner())
+    }
+
     pub fn push_line(&self, mut line: String) {
         // Redact simple sensitive patterns if encountered
         if line.contains("api_key") || line.contains("apiKey") || line.contains("sk-") {
             line = "[REDACTED SENSITIVE OUTPUT]".into();
         }
 
-        let mut lines = self.lines.lock().unwrap();
-        let mut total_bytes = self.total_bytes.lock().unwrap();
+        let mut lines = self.lock_lines();
+        let mut total_bytes = self.lock_total_bytes();
 
         let line_len = line.len();
         *total_bytes += line_len;
@@ -74,7 +82,7 @@ impl StderrCollector {
     }
 
     pub fn get_lines(&self) -> Vec<String> {
-        let lines = self.lines.lock().unwrap();
+        let lines = self.lock_lines();
         lines.iter().cloned().collect()
     }
 }
