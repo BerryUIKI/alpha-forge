@@ -158,3 +158,20 @@ pub struct CreateReportInput {
     pub content: String,
     pub report_type: ReportType,
 }
+
+/// SEC EDGAR Filing model for automated regulatory research ingestion.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SecFiling {
+    pub id: String,
+    pub accession_number: String,
+    pub cik: String,
+    pub ticker: String,
+    pub company_name: String,
+    pub form_type: String,
+    pub filing_date: String,
+    pub report_date: Option<String>,
+    pub primary_document: Option<String>,
+    pub primary_doc_description: Option<String>,
+    pub filing_url: String,
+    pub summary: Option<String>,
+}

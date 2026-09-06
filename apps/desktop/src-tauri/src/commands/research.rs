@@ -10,7 +10,7 @@ use crate::error::AppError;
 use domain::research::{
     CreateDocumentInput, CreateNoteInput, CreateProjectInput, CreateReportInput, DocumentType,
     ProjectStatus, ReportType, ResearchDocument, ResearchNote, ResearchProject, ResearchReport,
-    ResearchSearchMatch, ResearchSource,
+    ResearchSearchMatch, ResearchSource, SecFiling,
 };
 
 /// DTO for ResearchProject with camelCase serialization for the IPC boundary.
@@ -506,6 +506,60 @@ pub async fn delete_research_report(
     state.research_report_service.delete_report(&id).await
 }
 
+/// DTO for SecFiling with camelCase serialization for the IPC boundary.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SecFilingDto {
+    pub id: String,
+    pub accession_number: String,
+    pub cik: String,
+    pub ticker: String,
+    pub company_name: String,
+    pub form_type: String,
+    pub filing_date: String,
+    pub report_date: Option<String>,
+    pub primary_document: Option<String>,
+    pub primary_doc_description: Option<String>,
+    pub filing_url: String,
+    pub summary: Option<String>,
+}
+
+impl From<SecFiling> for SecFilingDto {
+    fn from(filing: SecFiling) -> Self {
+        Self {
+            id: filing.id,
+            accession_number: filing.accession_number,
+            cik: filing.cik,
+            ticker: filing.ticker,
+            company_name: filing.company_name,
+            form_type: filing.form_type,
+            filing_date: filing.filing_date,
+            report_date: filing.report_date,
+            primary_document: filing.primary_document,
+            primary_doc_description: filing.primary_doc_description,
+            filing_url: filing.filing_url,
+            summary: filing.summary,
+        }
+    }
+}
+
+/// Tauri command to fetch live SEC EDGAR submissions and filings for a ticker symbol.
+#[tauri::command]
+pub async fn fetch_sec_company_filings(
+    ticker: String,
+    limit: Option<usize>,
+    state: State<'_, AppState>,
+) -> Result<Vec<SecFilingDto>, AppError> {
+    let limit_val = limit.unwrap_or(10).min(50);
+    let filings = state
+        .sec_edgar_service
+        .fetch_recent_filings(&ticker, limit_val)
+        .await
+        .map_err(|e| AppError::Internal(format!("SEC EDGAR error: {}", e)))?;
+
+    Ok(filings.into_iter().map(SecFilingDto::from).collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -589,5 +643,26 @@ mod tests {
         assert!(report_json.contains("\"reportType\":\"analysis\""));
         assert!(!report_json.contains("\"project_id\":"));
         assert!(!report_json.contains("\"report_type\":"));
+
+        let filing = SecFiling {
+            id: "0001045810-000123".to_string(),
+            accession_number: "0001045810-24-000123".to_string(),
+            cik: "0001045810".to_string(),
+            ticker: "NVDA".to_string(),
+            company_name: "NVIDIA CORP".to_string(),
+            form_type: "10-Q".to_string(),
+            filing_date: "2024-08-28".to_string(),
+            report_date: Some("2024-07-28".to_string()),
+            primary_document: Some("nvda-10q.htm".to_string()),
+            primary_doc_description: Some("10-Q".to_string()),
+            filing_url: "https://www.sec.gov/edgar/nvda.htm".to_string(),
+            summary: Some("Summary test".to_string()),
+        };
+        let filing_dto = SecFilingDto::from(filing);
+        let filing_json = serde_json::to_string(&filing_dto).expect("sec filing serialization");
+        assert!(filing_json.contains("\"accessionNumber\":\"0001045810-24-000123\""));
+        assert!(filing_json.contains("\"companyName\":\"NVIDIA CORP\""));
+        assert!(filing_json.contains("\"formType\":\"10-Q\""));
+        assert!(!filing_json.contains("\"accession_number\":"));
     }
 }

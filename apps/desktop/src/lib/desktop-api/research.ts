@@ -253,3 +253,33 @@ export async function deleteResearchReport(id: string): Promise<void> {
   const response: unknown = await invoke("delete_research_report", { id });
   VoidResponseSchema.parse(response);
 }
+
+// SEC EDGAR Filings
+export const SecFilingSchema = z
+  .object({
+    id: z.string().min(1),
+    accessionNumber: z.string().min(1),
+    cik: z.string().min(1),
+    ticker: z.string().min(1),
+    companyName: z.string().min(1),
+    formType: z.string().min(1),
+    filingDate: z.string().min(1),
+    reportDate: z.string().nullable(),
+    primaryDocument: z.string().nullable(),
+    primaryDocDescription: z.string().nullable(),
+    filingUrl: z.string().min(1),
+    summary: z.string().nullable(),
+  })
+  .strict();
+export type SecFiling = z.infer<typeof SecFilingSchema>;
+
+export async function fetchSecCompanyFilings(
+  ticker: string,
+  limit?: number
+): Promise<SecFiling[]> {
+  const response: unknown = await invoke("fetch_sec_company_filings", {
+    ticker,
+    limit: limit ?? 10,
+  });
+  return z.array(SecFilingSchema).parse(response);
+}

@@ -68,10 +68,12 @@ use crate::services::system_service::SystemService;
 use crate::services::thesis_service::ThesisService;
 use crate::services::valuation_service::ValuationService;
 use crate::services::workspace_service::WorkspaceService;
+use provider_core::sec_edgar::SecEdgarService;
 use provider_core::ResearchProvider;
 
 pub struct AppState {
     pub db_pool: SqlitePool,
+    pub sec_edgar_service: Arc<SecEdgarService>,
     pub settings_service: SettingsService,
     pub workspace_service: WorkspaceService,
     pub agent_service: AgentService,
@@ -243,9 +245,11 @@ impl AppState {
 
         // Create artifact manager
         let artifact_manager = Arc::new(ArtifactManager::new(app_handle.clone()));
+        let sec_edgar_service = Arc::new(SecEdgarService::new());
 
         Ok(Self {
             db_pool: db_pool.clone(),
+            sec_edgar_service,
             settings_service,
             workspace_service,
             agent_service,
