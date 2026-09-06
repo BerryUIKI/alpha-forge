@@ -80,13 +80,13 @@ export function parseError(error: unknown): AppError {
   }
 
   // Handle object with error properties
-  if (typeof error === "object" && hasErrorMessage(error)) {
+  if (hasErrorMessage(error)) {
     return {
       type: "backend",
       response: {
-        code: (error as any).code || "INTERNAL",
-        message: (error as any).message || "Unknown error",
-        recoverable: (error as any).recoverable ?? false,
+        code: typeof error.code === "string" ? error.code : "INTERNAL",
+        message: error.message,
+        recoverable: typeof error.recoverable === "boolean" ? error.recoverable : false,
       },
     };
   }
@@ -96,18 +96,21 @@ export function parseError(error: unknown): AppError {
 }
 
 /**
+ * Check if a value is a non-null object record.
+ */
+function isRecord(val: unknown): val is Record<string, unknown> {
+  return typeof val === "object" && val !== null;
+}
+
+/**
  * Type guard to check if an error is an ErrorResponse.
  */
 function isErrorResponse(error: unknown): error is ErrorResponse {
   return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    "message" in error &&
-    "recoverable" in error &&
-    typeof (error as any).code === "string" &&
-    typeof (error as any).message === "string" &&
-    typeof (error as any).recoverable === "boolean"
+    isRecord(error) &&
+    typeof error.code === "string" &&
+    typeof error.message === "string" &&
+    typeof error.recoverable === "boolean"
   );
 }
 
@@ -143,13 +146,8 @@ function isValidationError(error: Error): boolean {
 /**
  * Type guard to check if an object has error message.
  */
-function hasErrorMessage(error: unknown): error is { message: string } {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof (error as any).message === "string"
-  );
+function hasErrorMessage(error: unknown): error is Record<string, unknown> & { message: string } {
+  return isRecord(error) && typeof error.message === "string";
 }
 
 /**
