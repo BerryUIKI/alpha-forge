@@ -29,6 +29,27 @@ export const journal = {
   createThesis: "创建论点",
   thesisTitleRequired: "标题和论点陈述为必填项。",
   unableToCreateThesis: "无法创建论点。",
+
+  // Thesis Pipeline Board & Cards
+  thesesPipelineTitle: "投资论点跟踪池",
+  thesesPipelineSub: "从假说到建仓再到定期证伪回顾，全生命周期跟踪",
+  viewBoard: "看板视图",
+  viewList: "列表视图",
+  statusDraft: "草稿",
+  statusActive: "活跃",
+  statusValidating: "验证中",
+  statusValidated: "已验证",
+  statusClosed: "已关闭",
+  convictionLabel: "置信度",
+  evidenceCountPill: "{supporting} 正向 · {contradicting} 反向",
+  supportingCount: "{count} 项正向",
+  contradictingCount: "{count} 项反向",
+  noThesesInStage: "此阶段暂无论点",
+  filterStatus: "状态筛选",
+  allStatuses: "全部状态",
+  cardDetails: "查看详情",
+  cardQuickAction: "流转状态",
+  confidenceScore: "{score}% 置信度",
 } as const;
 
 export type JournalKey = keyof typeof journal;
