@@ -87,13 +87,14 @@ pub async fn get_open_lots_for_account(
 pub async fn calculate_valuation_day(
     account_id: String,
     date: String,
+    base_currency: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<DailyAccountValuation, AppError> {
     let parsed = NaiveDate::parse_from_str(&date, "%Y-%m-%d")
         .map_err(|e| AppError::Validation(format!("invalid date '{date}': {e}")))?;
     state
         .valuation_service
-        .calculate_day(&account_id, parsed)
+        .calculate_day_with_base_currency(&account_id, parsed, base_currency.as_deref())
         .await
 }
 
@@ -126,11 +127,15 @@ pub async fn get_valuation_series(
 #[tauri::command]
 pub async fn calculate_all_valuations(
     date: String,
+    base_currency: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<Vec<DailyAccountValuation>, AppError> {
     let parsed = NaiveDate::parse_from_str(&date, "%Y-%m-%d")
         .map_err(|e| AppError::Validation(format!("invalid date '{date}': {e}")))?;
-    state.valuation_service.calculate_all(parsed).await
+    state
+        .valuation_service
+        .calculate_all_with_base_currency(parsed, base_currency.as_deref())
+        .await
 }
 
 // ── Performance ─────────────────────────────────────────────────────────────

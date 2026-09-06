@@ -28,7 +28,6 @@ describe("useAppReady", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
   });
 

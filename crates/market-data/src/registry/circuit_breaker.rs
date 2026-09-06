@@ -92,12 +92,18 @@ impl CircuitBreaker {
         }
     }
 
+    fn lock_circuits(&self) -> std::sync::MutexGuard<'_, HashMap<String, Circuit>> {
+        self.circuits
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     /// Check if a request is allowed for the given provider.
     ///
     /// Returns `true` if the circuit is closed or half-open (trial mode).
     /// Returns `false` if the circuit is open and the recovery timeout has not elapsed.
     pub fn is_allowed(&self, provider: &str) -> bool {
-        let mut circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let mut circuits = self.lock_circuits();
         let circuit = circuits
             .entry(provider.to_string())
             .or_insert_with(Circuit::new);
@@ -124,7 +130,7 @@ impl CircuitBreaker {
 
     /// Record a successful request for the given provider.
     pub fn record_success(&self, provider: &str) {
-        let mut circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let mut circuits = self.lock_circuits();
         let circuit = circuits
             .entry(provider.to_string())
             .or_insert_with(Circuit::new);
@@ -150,7 +156,7 @@ impl CircuitBreaker {
 
     /// Record a failed request for the given provider.
     pub fn record_failure(&self, provider: &str) {
-        let mut circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let mut circuits = self.lock_circuits();
         let circuit = circuits
             .entry(provider.to_string())
             .or_insert_with(Circuit::new);
@@ -176,7 +182,7 @@ impl CircuitBreaker {
 
     /// Get the current state of the circuit for a provider.
     pub fn state(&self, provider: &str) -> CircuitState {
-        let circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let circuits = self.lock_circuits();
         circuits
             .get(provider)
             .map(|c| c.state)
@@ -185,25 +191,25 @@ impl CircuitBreaker {
 
     /// Get the current failure count for a provider.
     pub fn failure_count(&self, provider: &str) -> u32 {
-        let circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let circuits = self.lock_circuits();
         circuits.get(provider).map(|c| c.failure_count).unwrap_or(0)
     }
 
     /// Reset the circuit for a specific provider.
     pub fn reset(&self, provider: &str) {
-        let mut circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let mut circuits = self.lock_circuits();
         circuits.remove(provider);
     }
 
     /// Reset all circuits.
     pub fn reset_all(&self) {
-        let mut circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let mut circuits = self.lock_circuits();
         circuits.clear();
     }
 
     /// Get metrics for all providers.
     pub fn metrics(&self) -> Vec<(String, CircuitMetrics)> {
-        let circuits = self.circuits.lock().expect("circuit lock poisoned");
+        let circuits = self.lock_circuits();
         circuits
             .iter()
             .map(|(k, v)| {

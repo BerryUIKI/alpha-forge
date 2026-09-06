@@ -132,7 +132,7 @@ export function useAcceptProposal() {
 
   return useMutation({
     mutationFn: (proposalId: string) => desktopApi.goose.acceptProposal(proposalId),
-    onSuccess: (proposal: Proposal) => {
+    onSuccess: (_proposal: Proposal) => {
       queryClient.invalidateQueries({ queryKey: ["goose", "proposals"] });
       queryClient.invalidateQueries({ queryKey: ["theses"] });
       queryClient.invalidateQueries({ queryKey: ["notes"] });

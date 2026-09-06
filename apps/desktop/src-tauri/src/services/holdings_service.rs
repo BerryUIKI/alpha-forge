@@ -76,7 +76,7 @@ impl HoldingsService {
             if let Some(asset) = self.asset_repo.get(asset_id).await? {
                 let quote = self
                     .quote_repo
-                    .get_for_day(asset_id, &as_of_date, "market")
+                    .get_latest_quote_as_of(asset_id, &as_of_date)
                     .await
                     .ok()
                     .flatten();
@@ -121,8 +121,8 @@ impl HoldingsService {
             let fx_rate = if quote_currency == account_currency {
                 Decimal::ONE
             } else {
-                // TODO: fetch FX rate from a rates table when available
-                Decimal::ONE
+                self.get_fx_rate(quote_currency, account_currency, as_of_date)
+                    .await
             };
 
             // Market value from latest quote
@@ -241,5 +241,55 @@ impl HoldingsService {
             }
         }
         Ok(results)
+    }
+
+    /// Look up FX conversion rate from `from_ccy` to `to_ccy` as of `as_of_date`.
+    ///
+    /// 1. If currencies match, returns 1.0.
+    /// 2. Searches `assets` table for canonical `FX:{from_ccy}/{to_ccy}`. If found, gets the quote for `as_of_date` (or closest prior day).
+    /// 3. If inverted pair `FX:{to_ccy}/{from_ccy}` is found, returns `1.0 / quote.close`.
+    /// 4. Fallback to 1.0 if not found in quotes.
+    pub async fn get_fx_rate(
+        &self,
+        from_ccy: &str,
+        to_ccy: &str,
+        as_of_date: NaiveDate,
+    ) -> Decimal {
+        if from_ccy.eq_ignore_ascii_case(to_ccy) {
+            return Decimal::ONE;
+        }
+
+        let from_upper = from_ccy.trim().to_uppercase();
+        let to_upper = to_ccy.trim().to_uppercase();
+
+        // 1. Direct pair: FX:EUR/USD
+        let direct_key = format!("FX:{}/{}", from_upper, to_upper);
+        if let Ok(Some(asset)) = self.asset_repo.find_by_instrument_key(&direct_key).await {
+            if let Ok(Some(quote)) = self
+                .quote_repo
+                .get_latest_quote_as_of(&asset.id, &as_of_date)
+                .await
+            {
+                if !quote.close.is_zero() {
+                    return quote.close;
+                }
+            }
+        }
+
+        // 2. Inverted pair: FX:USD/EUR (1 / rate)
+        let inv_key = format!("FX:{}/{}", to_upper, from_upper);
+        if let Ok(Some(asset)) = self.asset_repo.find_by_instrument_key(&inv_key).await {
+            if let Ok(Some(quote)) = self
+                .quote_repo
+                .get_latest_quote_as_of(&asset.id, &as_of_date)
+                .await
+            {
+                if !quote.close.is_zero() {
+                    return Decimal::ONE / quote.close;
+                }
+            }
+        }
+
+        Decimal::ONE
     }
 }

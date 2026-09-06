@@ -27,8 +27,20 @@ impl SupervisorManager {
         }
     }
 
+    fn lock_active(&self) -> std::sync::MutexGuard<'_, SupervisorMap> {
+        self.active_supervisors
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    fn lock_registry(&self) -> std::sync::MutexGuard<'_, WorkerRegistry> {
+        self.registry
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     pub fn active_count(&self) -> usize {
-        self.active_supervisors.lock().unwrap().len()
+        self.lock_active().len()
     }
 
     /// Spawns and registers a new supervised worker.
@@ -38,12 +50,12 @@ impl SupervisorManager {
         manifest_id: &str,
     ) -> SupervisorResult<Arc<tokio::sync::Mutex<WorkerSupervisor>>> {
         let (manifest, exe_path) = {
-            let reg = self.registry.lock().unwrap();
+            let reg = self.lock_registry();
             reg.resolve_executable(manifest_id)?
         };
 
         {
-            let mut active = self.active_supervisors.lock().unwrap();
+            let mut active = self.lock_active();
             if active.len() >= self.max_concurrent {
                 return Err(SupervisorError::ConcurrencyLimitReached {
                     max_concurrent: self.max_concurrent,
@@ -57,7 +69,7 @@ impl SupervisorManager {
         let temp_dir = match tempdir().map_err(SupervisorError::SpawnFailed) {
             Ok(dir) => dir,
             Err(e) => {
-                let mut active = self.active_supervisors.lock().unwrap();
+                let mut active = self.lock_active();
                 active.remove(run_id);
                 return Err(e);
             }
@@ -68,14 +80,14 @@ impl SupervisorManager {
         let mut supervisor = WorkerSupervisor::new(run_id, manifest, spec, Some(temp_dir));
 
         if let Err(e) = supervisor.spawn().await {
-            let mut active = self.active_supervisors.lock().unwrap();
+            let mut active = self.lock_active();
             active.remove(run_id);
             return Err(e);
         }
 
         let supervisor_arc = Arc::new(tokio::sync::Mutex::new(supervisor));
         {
-            let mut active = self.active_supervisors.lock().unwrap();
+            let mut active = self.lock_active();
             active.insert(run_id.to_string(), Some(Arc::clone(&supervisor_arc)));
         }
 
@@ -87,20 +99,20 @@ impl SupervisorManager {
         &self,
         run_id: &str,
     ) -> Option<Arc<tokio::sync::Mutex<WorkerSupervisor>>> {
-        let active = self.active_supervisors.lock().unwrap();
+        let active = self.lock_active();
         active.get(run_id).and_then(|opt| opt.clone())
     }
 
     /// Unregisters a worker supervisor after completion.
     pub fn unregister_worker(&self, run_id: &str) {
-        let mut active = self.active_supervisors.lock().unwrap();
+        let mut active = self.lock_active();
         active.remove(run_id);
     }
 
     /// Cancels a running worker and unregisters it.
     pub async fn cancel_worker(&self, run_id: &str, grace_period_ms: u64) -> SupervisorResult<()> {
         let supervisor = {
-            let mut active = self.active_supervisors.lock().unwrap();
+            let mut active = self.lock_active();
             active.remove(run_id).flatten()
         };
 
@@ -116,7 +128,7 @@ impl SupervisorManager {
     pub async fn shutdown_all(&self) {
         info!("Shutting down all active worker supervisors");
         let supervisors: Vec<Arc<tokio::sync::Mutex<WorkerSupervisor>>> = {
-            let mut active = self.active_supervisors.lock().unwrap();
+            let mut active = self.lock_active();
             active.drain().filter_map(|(_, v)| v).collect()
         };
 

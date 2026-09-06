@@ -11,6 +11,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
+import type { MessageKey } from "@/lib/i18n/locale";
 import { useCreateAsset } from "../hooks/useFinancialData";
 import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
 import type {
@@ -40,7 +41,20 @@ const INSTRUMENT_TYPES: InstrumentType[] = [
   "metal",
 ];
 
+const INSTRUMENT_TYPE_MESSAGES: Record<InstrumentType, MessageKey> = {
+  equity: "instrumentTypeEquity",
+  crypto: "instrumentTypeCrypto",
+  fx: "instrumentTypeFx",
+  option: "instrumentTypeOption",
+  metal: "instrumentTypeMetal",
+};
+
 const QUOTE_MODES: QuoteMode[] = ["market", "manual"];
+
+const QUOTE_MODE_MESSAGES: Record<QuoteMode, MessageKey> = {
+  market: "quoteModeMarket",
+  manual: "quoteModeManual",
+};
 
 interface AddAssetDialogProps {
   isOpen: boolean;
@@ -232,7 +246,7 @@ export function AddAssetDialog({
               >
                 {INSTRUMENT_TYPES.map((it) => (
                   <option key={it} value={it}>
-                    {t(`instrumentType${capitalize(it)}` as any)}
+                    {t(INSTRUMENT_TYPE_MESSAGES[it])}
                   </option>
                 ))}
               </select>
@@ -296,7 +310,7 @@ export function AddAssetDialog({
             >
               {QUOTE_MODES.map((mode) => (
                 <option key={mode} value={mode}>
-                  {t(`quoteMode${capitalize(mode)}` as any)}
+                  {t(QUOTE_MODE_MESSAGES[mode])}
                 </option>
               ))}
             </select>
@@ -338,8 +352,4 @@ export function AddAssetDialog({
       </div>
     </div>
   );
-}
-
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

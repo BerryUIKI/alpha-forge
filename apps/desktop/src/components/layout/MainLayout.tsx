@@ -19,7 +19,7 @@ import { RightSidebar } from "./RightSidebar";
 import { TopBar } from "./TopBar";
 import { WindowTitleBar } from "./WindowTitleBar";
 import { GlobalSearchDialog } from "@/features/search";
-import { ActiveWorkspaceProvider } from "@/features/workspace/hooks/useActiveWorkspace.context";
+import { ActiveWorkspaceProvider } from "@/features/workspace/hooks";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
 

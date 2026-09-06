@@ -41,6 +41,3 @@ export function useActiveWorkspace() {
 export function useActiveWorkspaceId(): string {
   return useActiveWorkspace().workspaceId;
 }
-
-// Re-export the provider component from the main file
-export { ActiveWorkspaceProvider } from "./useActiveWorkspace";
