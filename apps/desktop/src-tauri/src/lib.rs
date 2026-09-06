@@ -128,6 +128,7 @@ pub fn run() {
             commands::research::get_research_report,
             commands::research::list_research_reports,
             commands::research::delete_research_report,
+            commands::research::fetch_sec_company_filings,
             // Thesis commands
             commands::thesis::create_thesis,
             commands::thesis::get_thesis,

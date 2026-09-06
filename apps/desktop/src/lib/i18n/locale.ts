@@ -293,6 +293,9 @@ const messages = {
     evidenceContra: "反向预警 (-{delta}% 置信度)",
     hoursAgo: "{hours} 小时前",
     todayAtTime: "今天 {time}",
+    secLoading: "正在获取最新 SEC 监管文件...",
+    secLiveEdgar: "SEC EDGAR 实时源",
+    secViewDocument: "查看 SEC 原文",
     // Research
     researchTitle: "研究",
     researchDescription: "捕获项目、来源出处和文档注释。",
@@ -1139,6 +1142,9 @@ const messages = {
     evidenceContra: "Contra-Evidence Alert (-{delta}% Conviction)",
     hoursAgo: "{hours}h ago",
     todayAtTime: "Today {time}",
+    secLoading: "Ingesting live SEC filings...",
+    secLiveEdgar: "Live SEC EDGAR",
+    secViewDocument: "Open SEC Filing",
     // Research
     researchTitle: "Research",
     researchDescription: "Capture projects, source provenance, and document annotations.",

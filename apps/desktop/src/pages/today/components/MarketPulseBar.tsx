@@ -1,4 +1,4 @@
-import { Activity, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
 
