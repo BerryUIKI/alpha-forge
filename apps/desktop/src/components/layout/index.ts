@@ -19,6 +19,9 @@ export { MainContent, StatusBar } from "./MainContent";
 // Top Bar components
 export { TopBar } from "./TopBar";
 
+// Unified Header component (macOS-first consolidated header)
+export { UnifiedHeader } from "./UnifiedHeader";
+
 // Right Sidebar components
 export { RightSidebar, AgentPanel } from "./RightSidebar";
 
@@ -30,6 +33,7 @@ export type {
   NavGroup as NavGroupType,
   LeftSidebarProps,
   TopBarProps,
+  UnifiedHeaderProps,
   MainContentProps,
   StatusBarProps,
   RightSidebarProps,

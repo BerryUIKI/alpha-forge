@@ -702,6 +702,17 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [ ] Close all P0 findings in the 2026-08-12 integration audit
 - [ ] Pass and retain the complete verification and packaged-smoke matrix
 
+### macOS-First Desktop GUI Overhaul (`GUI-M4-MACOS`)
+
+- [x] Create and archive high-fidelity interactive prototype ([docs/prototypes/macos-gui-prototype.html](prototypes/macos-gui-prototype.html))
+- [x] Publish redesign architecture plan ([docs/gui/MACOS_GUI_REDESIGN_PLAN.md](gui/MACOS_GUI_REDESIGN_PLAN.md))
+- [x] Publish phase-by-phase implementation roadmap ([docs/gui/MACOS_GUI_ROADMAP.md](gui/MACOS_GUI_ROADMAP.md))
+- [ ] Phase 1: Tauri 2 macOS overlay titlebar & Unified Header consolidation
+- [ ] Phase 2: Navigation sidebar alignment with investment research pipeline
+- [ ] Phase 3: AI Copilot drawer with structured reasoning and context awareness
+- [ ] Phase 4: Apple San Francisco typography and glassmorphism polish
+- [ ] Phase 5: Verification, strict standard i18n parity, and test gate
+
 ### Execution path
 
 1. Resolve the [M8 Decision Record](M8_DECISION_RECORD.md).

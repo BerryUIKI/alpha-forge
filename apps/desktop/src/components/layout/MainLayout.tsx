@@ -16,8 +16,7 @@ import { Outlet } from "react-router-dom";
 import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
-import { TopBar } from "./TopBar";
-import { WindowTitleBar } from "./WindowTitleBar";
+import { UnifiedHeader } from "./UnifiedHeader";
 import { GlobalSearchDialog } from "@/features/search";
 import { ActiveWorkspaceProvider } from "@/features/workspace/hooks";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
@@ -65,13 +64,9 @@ export function MainLayout() {
   return (
     <ActiveWorkspaceProvider>
       <div className="flex h-screen flex-col overflow-hidden bg-background">
-        <WindowTitleBar
+        <UnifiedHeader
           isLeftSidebarExpanded={leftState === "expanded"}
           onToggleLeftSidebar={toggleLeftSidebar}
-          onToggleRightSidebar={toggleRightSidebar}
-          onOpenSearch={openSearch}
-        />
-        <TopBar
           isRightSidebarExpanded={rightState === "expanded"}
           onToggleRightSidebar={toggleRightSidebar}
           onOpenSearch={openSearch}
