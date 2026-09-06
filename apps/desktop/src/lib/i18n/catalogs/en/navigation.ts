@@ -13,6 +13,10 @@ export const navigation = {
   options: "Options",
   artifacts: "Artifacts",
   settings: "Settings",
+  cockpit: "Cockpit",
+  pipeline: "Core Pipeline",
+  tools: "Tools",
+  knowledgeTools: "Knowledge & Tools",
 } as const;
 
 export type NavigationKey = keyof typeof navigation;

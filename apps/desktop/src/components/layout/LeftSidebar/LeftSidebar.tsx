@@ -1,23 +1,30 @@
 /**
  * LeftSidebar Component
  *
- * Simplified navigation sidebar with collapsible groups and fixed utilities:
- * - Workspace: Dashboard, Research, Theses, Journal
- * - Tools: Options, Artifacts
- * - Bottom: Knowledge, Portfolio, and the account/settings menu
+ * Core navigation sidebar aligned with the AlphaForge investment loop:
+ * - Cockpit: Dashboard
+ * - Core Pipeline: Research, Theses, Portfolio, Journal
+ * - Knowledge & Tools: Knowledge Base, Options, Artifacts
  *
  * Features:
- * - Collapsible with smooth width animation (220px ↔ 64px)
- * - Drag-to-resize functionality
- * - State persistence via localStorage
- * - Active route highlighting
- * - Keyboard shortcuts (Ctrl+1)
- *
- * @version GUI-M0
+ * - Smooth collapsible animation (220px <-> 64px)
+ * - Drag-to-resize functionality with localStorage persistence
+ * - Real-time Agent readiness pulse status indicator
+ * - 100% standard pure i18n
  */
 
 import { useEffect } from "react";
-import { GripVertical, LayoutDashboard, Search, FileText, Briefcase, BookOpen, BookMarked, LineChart, Puzzle } from "lucide-react";
+import {
+  GripVertical,
+  LayoutDashboard,
+  Search,
+  FileText,
+  Briefcase,
+  BookOpen,
+  BookMarked,
+  LineChart,
+  Puzzle,
+} from "lucide-react";
 import { NavItem } from "./NavItem";
 import { NavGroup } from "./NavGroup";
 import { useSidebarState, useResize } from "@/hooks/layout";
@@ -35,22 +42,30 @@ export function LeftSidebar({
 }: LeftSidebarProps) {
   const { t } = useLocale();
 
-  // Navigation configuration with i18n labels
+  // Navigation configuration aligned with AlphaForge product loop
   const NAV_GROUPS: NavGroupType[] = [
     {
-      id: "workspace",
-      label: t("navWorkspace"),
+      id: "cockpit",
+      label: t("navCockpit"),
       items: [
         { id: "dashboard", label: t("navDashboard"), icon: LayoutDashboard, route: "/" },
+      ],
+    },
+    {
+      id: "pipeline",
+      label: t("navPipeline"),
+      items: [
         { id: "research", label: t("navResearch"), icon: Search, route: "/research" },
         { id: "theses", label: t("navTheses"), icon: FileText, route: "/theses" },
+        { id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" },
         { id: "journal", label: t("navJournal"), icon: BookMarked, route: "/journal" },
       ],
     },
     {
       id: "tools",
-      label: t("navTools"),
+      label: t("navKnowledgeTools"),
       items: [
+        { id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" },
         { id: "options", label: t("navOptions"), icon: LineChart, route: "/options" },
         { id: "artifacts", label: t("navArtifacts"), icon: Puzzle, route: "/artifacts" },
       ],
@@ -85,7 +100,7 @@ export function LeftSidebar({
   });
 
   if (!isExpanded) {
-    // Collapsed state - minimal UI with smooth animation
+    // Collapsed state - minimal UI with icons
     return (
       <aside
         className="flex h-full flex-col border-r border-border bg-card transition-[width] duration-300 ease-in-out"
@@ -93,7 +108,9 @@ export function LeftSidebar({
         aria-label="Left sidebar (collapsed)"
       >
         <div className="flex h-12 items-center justify-center border-b border-border">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-xs font-bold text-white">α</div>
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-bold text-white shadow-sm">
+            α
+          </div>
         </div>
 
         {/* Navigation items (icons only) */}
@@ -106,10 +123,16 @@ export function LeftSidebar({
             </div>
           ))}
         </nav>
-        <div className="space-y-1 border-t border-border p-2">
-          <NavItem item={{ id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" }} collapsed={true} />
-          <div className="flex items-center justify-center gap-1">
-            <NavItem item={{ id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" }} collapsed={true} />
+
+        {/* Footer: Agent status pulse dot + Account Menu */}
+        <div className="space-y-1.5 border-t border-border p-2">
+          <div className="flex items-center justify-center py-1" title={t("agentReadyStatus")}>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div className="flex items-center justify-center">
             <AccountMenu collapsed={true} />
           </div>
         </div>
@@ -127,18 +150,18 @@ export function LeftSidebar({
       style={{ width: `${width}px`, minWidth: `${minWidth}px`, maxWidth: `${maxWidth}px` }}
       aria-label="Left sidebar"
     >
-      {/* Header with product identity. Sidebar control lives in the top bar. */}
+      {/* Header with product identity */}
       <div className="flex h-12 items-center border-b border-border px-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 text-sm font-bold text-white">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-bold text-white shadow-sm">
             α
           </div>
-          <span className="text-base font-bold tracking-tight">AlphaForge</span>
+          <span className="text-sm font-bold tracking-tight">AlphaForge</span>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-2">
+      {/* Navigation Groups */}
+      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
         {NAV_GROUPS.map((group) => (
           <NavGroup key={group.id} label={group.label} collapsed={false}>
             {group.items.map((item) => (
@@ -148,12 +171,20 @@ export function LeftSidebar({
         ))}
       </nav>
 
-      <div className="space-y-1 border-t border-border p-2">
-        <NavItem item={{ id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" }} collapsed={false} />
-        <div className="flex items-center gap-1">
-          <div className="min-w-0 flex-1">
-            <NavItem item={{ id: "portfolio", label: t("navPortfolio"), icon: Briefcase, route: "/portfolio" }} collapsed={false} />
+      {/* Footer: Agent Readiness Card + Account Menu */}
+      <div className="space-y-2 border-t border-border p-2.5">
+        <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs">
+          <div className="flex items-center gap-2 truncate">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="truncate text-[11px] font-medium text-foreground">{t("agentReadyStatus")}</span>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between px-0.5">
+          <span className="text-xs text-muted-foreground truncate font-medium">AlphaForge Desk</span>
           <AccountMenu collapsed={false} />
         </div>
       </div>
