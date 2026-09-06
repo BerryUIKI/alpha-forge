@@ -84,6 +84,7 @@ pub fn synthetic_response() -> StructuredResponse {
         provider: Some("test-provider".into()),
         model: Some("test-model".into()),
         recipe_version: Some("1.0".into()),
+        tokens_used: None,
     }
 }
 

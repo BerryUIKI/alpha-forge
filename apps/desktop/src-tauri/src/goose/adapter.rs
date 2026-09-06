@@ -317,11 +317,13 @@ impl GooseAdapter {
         let exit_code = status.code().unwrap_or(-1);
 
         // Collect stderr
+        let mut stderr_lines = Vec::new();
         if let Some(handle) = stderr_handle {
             if let Ok(lines) = handle.await {
-                for line in lines {
+                for line in &lines {
                     error!(run_id = ?run_id, stderr = %line);
                 }
+                stderr_lines = lines;
             }
         }
 
@@ -335,18 +337,21 @@ impl GooseAdapter {
 
         response.validate()?;
 
+        let tokens_used = extract_tokens_used(&response, &output_buffer, &stderr_lines);
+
         let duration = start_time.elapsed();
         info!(
             run_id = ?run_id,
             duration_ms = duration.as_millis(),
             exit_code = exit_code,
+            tokens_used = tokens_used,
             "Goose execution completed"
         );
 
         Ok(GooseResult {
             run_id,
             response,
-            tokens_used: 0, // TODO: extract from response or logs
+            tokens_used,
             duration,
             exit_code,
         })
@@ -392,9 +397,99 @@ fn redact_sensitive(s: &str) -> String {
     result
 }
 
+/// Extract total tokens used from structured response, raw JSON output, or stderr lines.
+fn extract_tokens_used(
+    response: &StructuredResponse,
+    raw_output: &[u8],
+    stderr_lines: &[String],
+) -> u64 {
+    // 1. Check if structured response explicitly populated tokens_used
+    if let Some(tokens) = response.tokens_used {
+        return tokens;
+    }
+
+    // 2. Try parsing raw JSON output for token metrics (e.g. usage.total_tokens or tokens_used)
+    if let Ok(val) = serde_json::from_slice::<serde_json::Value>(raw_output) {
+        if let Some(tokens) = val
+            .get("tokens_used")
+            .and_then(|v| v.as_u64())
+            .or_else(|| {
+                val.get("usage")
+                    .and_then(|u| u.get("total_tokens"))
+                    .and_then(|v| v.as_u64())
+            })
+            .or_else(|| {
+                val.get("usage")
+                    .and_then(|u| u.get("tokens"))
+                    .and_then(|v| v.as_u64())
+            })
+        {
+            return tokens;
+        }
+    }
+
+    // 3. Inspect stderr lines for common token usage logging patterns (e.g. "tokens: 123", "tokens used: 456", "total_tokens: 789")
+    for line in stderr_lines.iter().rev() {
+        let lower = line.to_ascii_lowercase();
+        for key in &["total tokens:", "total_tokens:", "tokens used:", "tokens:"] {
+            if let Some(pos) = lower.find(key) {
+                let remainder = &line[pos + key.len()..];
+                let token_str: String = remainder
+                    .chars()
+                    .skip_while(|c| c.is_whitespace())
+                    .take_while(|c| c.is_ascii_digit())
+                    .collect();
+                if let Ok(tokens) = token_str.parse::<u64>() {
+                    return tokens;
+                }
+            }
+        }
+    }
+
+    0
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_extract_tokens_used() {
+        let dummy_resp = StructuredResponse {
+            summary: "test".into(),
+            claims: vec![],
+            evidence: vec![],
+            contradictions: vec![],
+            risks: vec![],
+            unknowns: vec![],
+            source_ids: vec![],
+            confidence: 90,
+            provider: None,
+            model: None,
+            recipe_version: None,
+            tokens_used: Some(1500),
+        };
+
+        // Case 1: Populated on response
+        assert_eq!(extract_tokens_used(&dummy_resp, b"{}", &[]), 1500);
+
+        // Case 2: From raw JSON
+        let mut resp_none = dummy_resp.clone();
+        resp_none.tokens_used = None;
+        let raw_json = br#"{"summary":"test","usage":{"total_tokens":4242}}"#;
+        assert_eq!(extract_tokens_used(&resp_none, raw_json, &[]), 4242);
+
+        // Case 3: From stderr logs
+        let stderr = vec![
+            "info: starting goose session".to_string(),
+            "debug: prompt dispatched".to_string(),
+            "Tokens used: 9876".to_string(),
+        ];
+        assert_eq!(extract_tokens_used(&resp_none, b"{}", &stderr), 9876);
+
+        // Case 4: Default fallback 0
+        assert_eq!(extract_tokens_used(&resp_none, b"{}", &[]), 0);
+    }
 
     #[test]
     fn run_id_is_unique() {

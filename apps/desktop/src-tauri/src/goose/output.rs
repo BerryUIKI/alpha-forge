@@ -47,6 +47,10 @@ pub struct StructuredResponse {
 
     /// Recipe version
     pub recipe_version: Option<String>,
+
+    /// Optional token usage reported by agent execution
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tokens_used: Option<u64>,
 }
 
 /// A claim with confidence and source references
@@ -259,6 +263,7 @@ mod tests {
             provider: Some("openai".into()),
             model: Some("gpt-4".into()),
             recipe_version: Some("1.0".into()),
+            tokens_used: None,
         };
 
         assert!(response.validate().is_ok());
@@ -278,6 +283,7 @@ mod tests {
             provider: None,
             model: None,
             recipe_version: None,
+            tokens_used: None,
         };
 
         assert!(response.validate().is_err());
@@ -309,6 +315,7 @@ mod tests {
             provider: None,
             model: None,
             recipe_version: None,
+            tokens_used: None,
         };
 
         assert!(response.validate().is_err());
