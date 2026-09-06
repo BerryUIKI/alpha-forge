@@ -121,7 +121,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(db_pool: SqlitePool, app_handle: AppHandle) -> Result<Self, AppError> {
         // Create repositories
-        let settings_repo = SettingsRepository::new(db_pool.clone());
+        let settings_repo = Arc::new(SettingsRepository::new(db_pool.clone()));
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
         let agent_task_repo = AgentTaskRepository::new(db_pool.clone());
         let agent_task_repo_for_executor = AgentTaskRepository::new(db_pool.clone());
@@ -146,7 +146,7 @@ impl AppState {
         let plugin_repo = PluginRepository::new(db_pool.clone());
 
         // Create services
-        let settings_service = SettingsService::new(settings_repo);
+        let settings_service = SettingsService::new((*settings_repo).clone());
         let workspace_service = WorkspaceService::new(workspace_repo);
         let agent_service = AgentService::new(agent_task_repo);
         let artifact_service = ArtifactService::new(artifact_repo);
@@ -206,10 +206,11 @@ impl AppState {
             disposal_repo.clone(),
             activity_repo.clone(),
         );
-        let valuation_service = ValuationService::new(
+        let valuation_service = ValuationService::with_settings(
             valuation_repo.clone(),
             account_repo.clone(),
             holdings_service.clone(),
+            settings_repo.clone(),
         );
         let performance_service =
             PerformanceService::new(valuation_repo.clone(), account_repo.clone());

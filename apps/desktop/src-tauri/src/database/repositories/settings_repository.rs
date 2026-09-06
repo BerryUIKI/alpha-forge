@@ -5,6 +5,7 @@ use sqlx::SqlitePool;
 use crate::error::AppError;
 
 /// Repository for accessing application settings.
+#[derive(Clone)]
 pub struct SettingsRepository {
     pool: SqlitePool,
 }

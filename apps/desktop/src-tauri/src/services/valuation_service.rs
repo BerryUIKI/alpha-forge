@@ -14,6 +14,7 @@ use domain::financial::{
 use rust_decimal::Decimal;
 
 use crate::database::repositories::account_repository::AccountRepository;
+use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::valuation_repository::ValuationRepository;
 use crate::error::AppError;
 
@@ -23,6 +24,7 @@ pub struct ValuationService {
     valuation_repo: Arc<ValuationRepository>,
     account_repo: Arc<AccountRepository>,
     holdings_service: Arc<HoldingsService>,
+    settings_repo: Option<Arc<SettingsRepository>>,
 }
 
 impl ValuationService {
@@ -35,14 +37,66 @@ impl ValuationService {
             valuation_repo,
             account_repo,
             holdings_service,
+            settings_repo: None,
         }
     }
 
-    /// Calculate and persist one day's valuation for an account.
+    pub fn with_settings(
+        valuation_repo: Arc<ValuationRepository>,
+        account_repo: Arc<AccountRepository>,
+        holdings_service: Arc<HoldingsService>,
+        settings_repo: Arc<SettingsRepository>,
+    ) -> Self {
+        Self {
+            valuation_repo,
+            account_repo,
+            holdings_service,
+            settings_repo: Some(settings_repo),
+        }
+    }
+
+    pub fn with_settings_repo(mut self, settings_repo: Arc<SettingsRepository>) -> Self {
+        self.settings_repo = Some(settings_repo);
+        self
+    }
+
+    /// Resolves the effective base currency (explicit override -> app_settings -> "USD").
+    pub async fn resolve_base_currency(&self, explicit: Option<&str>) -> String {
+        if let Some(ccy) = explicit {
+            let trimmed = ccy.trim();
+            if !trimmed.is_empty() {
+                return trimmed.to_uppercase();
+            }
+        }
+
+        if let Some(ref settings) = self.settings_repo {
+            if let Ok(Some(val)) = settings.get("financial.base_currency").await {
+                let trimmed = val.trim();
+                if !trimmed.is_empty() {
+                    return trimmed.to_uppercase();
+                }
+            }
+        }
+
+        "USD".to_string()
+    }
+
+    /// Calculate and persist one day's valuation for an account using default or configured base currency.
     pub async fn calculate_day(
         &self,
         account_id: &str,
         date: NaiveDate,
+    ) -> Result<DailyAccountValuation, AppError> {
+        self.calculate_day_with_base_currency(account_id, date, None)
+            .await
+    }
+
+    /// Calculate and persist one day's valuation for an account with optional explicit base currency.
+    pub async fn calculate_day_with_base_currency(
+        &self,
+        account_id: &str,
+        date: NaiveDate,
+        base_currency: Option<&str>,
     ) -> Result<DailyAccountValuation, AppError> {
         let account = self
             .account_repo
@@ -50,12 +104,13 @@ impl ValuationService {
             .await?
             .ok_or_else(|| AppError::NotFound(format!("account {account_id} not found")))?;
 
-        let base_currency = "USD".to_string(); // TODO: make configurable
+        let base_currency = self.resolve_base_currency(base_currency).await;
         let fx_rate_to_base = if account.currency == base_currency {
             Decimal::ONE
         } else {
-            // TODO: fetch FX rate from rates table
-            Decimal::ONE
+            self.holdings_service
+                .get_fx_rate(&account.currency, &base_currency, date)
+                .await
         };
 
         let holdings = self.holdings_service.get_holdings(account_id, date).await?;
@@ -124,13 +179,25 @@ impl ValuationService {
         &self,
         date: NaiveDate,
     ) -> Result<Vec<DailyAccountValuation>, AppError> {
+        self.calculate_all_with_base_currency(date, None).await
+    }
+
+    /// Calculate and persist valuations for all active accounts on a date with optional base currency.
+    pub async fn calculate_all_with_base_currency(
+        &self,
+        date: NaiveDate,
+        base_currency: Option<&str>,
+    ) -> Result<Vec<DailyAccountValuation>, AppError> {
         let accounts = self.account_repo.list().await?;
         let mut results = Vec::new();
         for account in &accounts {
             if account.is_archived {
                 continue;
             }
-            match self.calculate_day(&account.id, date).await {
+            match self
+                .calculate_day_with_base_currency(&account.id, date, base_currency)
+                .await
+            {
                 Ok(v) => results.push(v),
                 Err(e) => {
                     tracing::warn!("skipping valuation for account {}: {}", account.id, e);

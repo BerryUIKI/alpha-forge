@@ -297,4 +297,107 @@ mod tests {
         assert_eq!(series[1].valuation_date, aug14);
         assert_eq!(series[2].valuation_date, aug15);
     }
+
+    #[tokio::test]
+    async fn test_calculate_day_with_custom_base_currency_and_fx() {
+        let pool = setup_test_db().await;
+        let account_repo = AccountRepository::new(pool.clone());
+        let asset_repo = AssetRepository::new(pool.clone());
+        let settings_repo = Arc::new(
+            crate::database::repositories::settings_repository::SettingsRepository::new(
+                pool.clone(),
+            ),
+        );
+
+        // Create EUR account
+        let account = account_repo
+            .create(CreateAccountInput {
+                workspace_id: None,
+                name: "EUR Portfolio".to_string(),
+                account_type: AccountType::Securities,
+                group_name: None,
+                currency: "EUR".to_string(),
+                is_default: false,
+                platform_id: None,
+                account_number: None,
+                tracking_mode: TrackingMode::Transactions,
+            })
+            .await
+            .expect("EUR account created");
+
+        // Create EUR stock asset
+        let asset = asset_repo
+            .create(CreateAssetInput {
+                kind: AssetKind::Investment,
+                name: Some("Siemens AG".to_string()),
+                display_code: Some("SIE.DE".to_string()),
+                notes: None,
+                is_active: true,
+                quote_mode: QuoteMode::Market,
+                quote_ccy: "EUR".to_string(),
+                instrument_type: Some(InstrumentType::Equity),
+                instrument_symbol: Some("SIE.DE".to_string()),
+                instrument_exchange_mic: Some("XETR".to_string()),
+                provider_config: None,
+            })
+            .await
+            .expect("Asset created");
+
+        let aug15 = NaiveDate::from_ymd_opt(2026, 8, 15).expect("valid date");
+
+        // Lot: 10 shares @ 100 EUR = 1000 EUR
+        create_lot(&pool, &account.id, &asset.id, "10", "100").await;
+        // Quote: 150 EUR -> Market value = 1500 EUR
+        insert_quote(&pool, &asset.id, aug15, "150").await;
+
+        // Create FX Asset FX:EUR/USD with rate 1.10
+        let fx_asset = asset_repo
+            .create(CreateAssetInput {
+                kind: AssetKind::Fx,
+                name: Some("EUR/USD".to_string()),
+                display_code: Some("EUR/USD".to_string()),
+                notes: None,
+                is_active: true,
+                quote_mode: QuoteMode::Market,
+                quote_ccy: "USD".to_string(),
+                instrument_type: Some(InstrumentType::Fx),
+                instrument_symbol: Some("EUR".to_string()),
+                instrument_exchange_mic: None,
+                provider_config: None,
+            })
+            .await
+            .expect("FX asset created");
+
+        insert_quote(&pool, &fx_asset.id, aug15, "1.10").await;
+
+        // Configure app_settings financial.base_currency to USD
+        settings_repo
+            .set("financial.base_currency", "USD")
+            .await
+            .expect("set base_currency setting");
+
+        let valuation_repo = Arc::new(ValuationRepository::new(pool.clone()));
+        let account_repo_arc = Arc::new(account_repo);
+        let holdings_service = create_holdings_service(&pool);
+
+        let service = ValuationService::new(valuation_repo, account_repo_arc, holdings_service)
+            .with_settings_repo(settings_repo);
+
+        // Calculate day with setting-configured base currency (USD)
+        let val = service
+            .calculate_day(&account.id, aug15)
+            .await
+            .expect("calculation succeeds");
+
+        assert_eq!(val.account_currency, "EUR");
+        assert_eq!(val.base_currency, "USD");
+        // Rate is 1.10
+        assert_eq!(val.fx_rate_to_base, dec("1.10"));
+        // Market value in EUR is 1500, in USD is 1500 * 1.10 = 1650
+        assert_eq!(val.investment_market_value, dec("1500"));
+        assert_eq!(val.investment_market_value_base, dec("1650"));
+        // Cost basis in EUR is 1000, in USD is 1000 * 1.10 = 1100
+        assert_eq!(val.cost_basis, dec("1000"));
+        assert_eq!(val.cost_basis_base, dec("1100"));
+    }
 }
