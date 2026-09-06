@@ -305,4 +305,67 @@ mod tests {
         assert_eq!(summaries.len(), 1);
         assert_eq!(summaries[0].account_id, account1_id);
     }
+
+    #[tokio::test]
+    async fn test_get_fx_rate_scenarios() {
+        let pool = setup_test_db().await;
+        let asset_repo = AssetRepository::new(pool.clone());
+        let quote_repo = QuoteRepository::new(pool.clone());
+        let service = create_service(&pool);
+
+        let date = NaiveDate::from_ymd_opt(2026, 8, 15).unwrap();
+
+        // 1. Same currency -> exactly 1.0
+        let same = service.get_fx_rate("USD", "USD", date).await;
+        assert_eq!(same, dec("1"));
+
+        // Create FX asset FX:EUR/USD (instrument_key becomes FX:EUR/USD)
+        let fx_asset = asset_repo
+            .create(CreateAssetInput {
+                kind: AssetKind::Fx,
+                name: Some("EUR to USD FX Rate".to_string()),
+                display_code: Some("EUR/USD".to_string()),
+                notes: None,
+                is_active: true,
+                quote_mode: QuoteMode::Market,
+                quote_ccy: "USD".to_string(),
+                instrument_type: Some(InstrumentType::Fx),
+                instrument_symbol: Some("EUR".to_string()),
+                instrument_exchange_mic: None,
+                provider_config: None,
+            })
+            .await
+            .expect("Failed to create FX asset");
+
+        // Insert quote for 2026-08-14 (1.0850)
+        quote_repo
+            .upsert(UpsertQuoteInput {
+                asset_id: fx_asset.id.clone(),
+                day: NaiveDate::from_ymd_opt(2026, 8, 14).unwrap(),
+                source: "manual".to_string(),
+                open: None,
+                high: None,
+                low: None,
+                close: dec("1.0850"),
+                adjclose: None,
+                volume: None,
+                currency: "USD".to_string(),
+                notes: None,
+            })
+            .await
+            .expect("Failed to insert quote");
+
+        // 2. Direct pair: EUR -> USD as of 2026-08-15 should find 2026-08-14 quote = 1.0850
+        let eur_to_usd = service.get_fx_rate("EUR", "USD", date).await;
+        assert_eq!(eur_to_usd, dec("1.0850"));
+
+        // 3. Inverted pair: USD -> EUR should be 1 / 1.0850
+        let usd_to_eur = service.get_fx_rate("USD", "EUR", date).await;
+        let expected_inv = dec("1") / dec("1.0850");
+        assert_eq!(usd_to_eur, expected_inv);
+
+        // 4. Missing pair: GBP -> JPY fallback -> 1.0
+        let missing = service.get_fx_rate("GBP", "JPY", date).await;
+        assert_eq!(missing, dec("1"));
+    }
 }

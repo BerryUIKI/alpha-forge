@@ -202,6 +202,26 @@ impl QuoteRepository {
 
         rows.into_iter().map(TryInto::try_into).collect()
     }
+
+    /// Returns the latest quote for an asset on or prior to `as_of_date`.
+    pub async fn get_latest_quote_as_of(
+        &self,
+        asset_id: &str,
+        as_of_date: &chrono::NaiveDate,
+    ) -> Result<Option<Quote>, AppError> {
+        let row = sqlx::query_as::<_, QuoteRow>(
+            "SELECT id, asset_id, day, source, open, high, low, close, adjclose, volume,
+                    currency, notes, created_at, timestamp
+             FROM quotes WHERE asset_id = ? AND day <= ? ORDER BY day DESC, created_at DESC LIMIT 1",
+        )
+        .bind(asset_id)
+        .bind(as_of_date.to_string())
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("failed to get latest quote as of {as_of_date}: {e}")))?;
+
+        row.map(TryInto::try_into).transpose()
+    }
 }
 
 #[derive(sqlx::FromRow)]
