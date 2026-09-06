@@ -90,14 +90,22 @@ impl RateLimiter {
         }
     }
 
+    fn lock_buckets(&self) -> std::sync::MutexGuard<'_, HashMap<String, TokenBucket>> {
+        self.buckets
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     /// Configure the rate limit for a provider.
     pub fn configure(&mut self, provider: impl Into<String>, config: RateLimitConfig) {
         let provider = provider.into();
         let rate = config.requests_per_minute as f64 / 60.0;
         let capacity = config.burst_capacity as f64;
 
-        let mut buckets = self.buckets.lock().expect("rate limiter lock poisoned");
-        buckets.insert(provider.clone(), TokenBucket::new(rate, capacity));
+        {
+            let mut buckets = self.lock_buckets();
+            buckets.insert(provider.clone(), TokenBucket::new(rate, capacity));
+        }
         self.configs.insert(provider, config);
     }
 
@@ -107,7 +115,7 @@ impl RateLimiter {
     pub async fn acquire(&self, provider: &str) -> Duration {
         loop {
             let wait = {
-                let mut buckets = self.buckets.lock().expect("rate limiter lock poisoned");
+                let mut buckets = self.lock_buckets();
                 if let Some(bucket) = buckets.get_mut(provider) {
                     if bucket.try_consume() {
                         // Successfully acquired
@@ -130,7 +138,7 @@ impl RateLimiter {
     ///
     /// Returns `true` if a token was acquired.
     pub fn try_acquire(&self, provider: &str) -> bool {
-        let mut buckets = self.buckets.lock().expect("rate limiter lock poisoned");
+        let mut buckets = self.lock_buckets();
         if let Some(bucket) = buckets.get_mut(provider) {
             bucket.try_consume()
         } else {
@@ -141,7 +149,7 @@ impl RateLimiter {
 
     /// Get the number of remaining tokens for a provider.
     pub fn remaining_tokens(&self, provider: &str) -> u32 {
-        let mut buckets = self.buckets.lock().expect("rate limiter lock poisoned");
+        let mut buckets = self.lock_buckets();
         if let Some(bucket) = buckets.get_mut(provider) {
             bucket.refill();
             bucket.tokens as u32
@@ -152,7 +160,7 @@ impl RateLimiter {
 
     /// Reset the bucket for a provider (refills to capacity).
     pub fn reset(&self, provider: &str) {
-        let mut buckets = self.buckets.lock().expect("rate limiter lock poisoned");
+        let mut buckets = self.lock_buckets();
         buckets.remove(provider);
         // Re-create if configured
         if let Some(config) = self.configs.get(provider) {
