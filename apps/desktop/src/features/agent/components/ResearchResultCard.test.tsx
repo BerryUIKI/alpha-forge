@@ -13,6 +13,12 @@ vi.mock("@/lib/i18n/useLocale", () => ({
         researchRisks: "Risks",
         researchConfidence: "Confidence",
         noResultsAvailable: "No structured results available",
+        structuredInferenceTitle: "Structured Research Inference",
+        thesisImpactHeader: "Thesis Impact",
+        verifiableEvidenceHeader: "Verifiable Evidence",
+        falsificationTriggersHeader: "Falsification Triggers",
+        generateInteractiveArtifact: "Generate Interactive Sensitivity Artifact",
+        generatingArtifact: "Launching Artifact Window...",
       })[key] ?? key,
   }),
 }));
@@ -39,22 +45,21 @@ describe("ResearchResultCard", () => {
 
     render(<ResearchResultCard payload={payload} />);
 
-    expect(screen.getByText("Summary")).toBeInTheDocument();
+    expect(screen.getByText("Thesis Impact:")).toBeInTheDocument();
     expect(screen.getByText("Test summary text.")).toBeInTheDocument();
 
     expect(screen.getByText("Key Claims")).toBeInTheDocument();
     expect(screen.getByText("Claim 1")).toBeInTheDocument();
     expect(screen.getByText("Claim 2")).toBeInTheDocument();
 
-    expect(screen.getByText("Evidence")).toBeInTheDocument();
+    expect(screen.getByText("Verifiable Evidence")).toBeInTheDocument();
     expect(screen.getByText("Evidence 1")).toBeInTheDocument();
 
-    expect(screen.getByText("Risks")).toBeInTheDocument();
+    expect(screen.getByText("Falsification Triggers:")).toBeInTheDocument();
     expect(screen.getByText("Risk 1")).toBeInTheDocument();
     expect(screen.getByText("Risk 2")).toBeInTheDocument();
 
-    expect(screen.getByText("Confidence")).toBeInTheDocument();
-    expect(screen.getByText("80%")).toBeInTheDocument();
+    expect(screen.getByText("Confidence 80%")).toBeInTheDocument();
   });
 
   it("hides empty sections", () => {
@@ -68,10 +73,10 @@ describe("ResearchResultCard", () => {
 
     render(<ResearchResultCard payload={payload} />);
 
-    expect(screen.getByText("Summary")).toBeInTheDocument();
+    expect(screen.getByText("Thesis Impact:")).toBeInTheDocument();
     expect(screen.queryByText("Key Claims")).not.toBeInTheDocument();
-    expect(screen.queryByText("Evidence")).not.toBeInTheDocument();
-    expect(screen.queryByText("Risks")).not.toBeInTheDocument();
+    expect(screen.queryByText("Verifiable Evidence")).not.toBeInTheDocument();
+    expect(screen.queryByText("Falsification Triggers:")).not.toBeInTheDocument();
   });
 
   it("renders confidence badge with appropriate colors", () => {
@@ -85,12 +90,12 @@ describe("ResearchResultCard", () => {
       });
 
     const { unmount } = render(<ResearchResultCard payload={makePayload(20)} />);
-    let badge = screen.getByText("20%");
+    let badge = screen.getByText("Confidence 20%");
     expect(badge).toHaveClass("text-destructive");
     unmount();
 
     render(<ResearchResultCard payload={makePayload(50)} />);
-    badge = screen.getByText("50%");
+    badge = screen.getByText("Confidence 50%");
     expect(badge).toHaveClass("text-amber-600");
   });
 });

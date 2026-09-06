@@ -53,6 +53,12 @@ export const agent = {
   researchConfidence: "Confidence",
   noResultsAvailable: "No structured results available",
   viewResearchResults: "View Results",
+  structuredInferenceTitle: "Structured Research Inference",
+  thesisImpactHeader: "Thesis Impact",
+  verifiableEvidenceHeader: "Verifiable Evidence",
+  falsificationTriggersHeader: "Falsification Triggers",
+  generateInteractiveArtifact: "Generate Interactive Sensitivity Artifact",
+  generatingArtifact: "Launching Artifact Window...",
 
   // App readiness
   appInitializing: "Initializing...",
