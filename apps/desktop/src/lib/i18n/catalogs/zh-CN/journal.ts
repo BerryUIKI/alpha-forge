@@ -50,6 +50,11 @@ export const journal = {
   cardDetails: "查看详情",
   cardQuickAction: "流转状态",
   confidenceScore: "{score}% 置信度",
+  linkedAsset: "关联资产",
+  linkAsset: "关联投资标的（可选）",
+  selectAssetToLink: "选择投资标的...",
+  unlinkAsset: "取消关联",
+  assetLinkedBadge: "关联标的",
 } as const;
 
 export type JournalKey = keyof typeof journal;

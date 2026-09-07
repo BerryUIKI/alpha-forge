@@ -100,3 +100,15 @@ export function useDeleteThesisEvidence() {
     },
   });
 }
+
+export function useLinkThesisAsset() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ thesisId, portfolioAssetId }: { thesisId: string; portfolioAssetId: string | null }) =>
+      desktopApi.thesis.linkThesisAsset(thesisId, portfolioAssetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: THESIS_KEYS.all });
+    },
+  });
+}
+

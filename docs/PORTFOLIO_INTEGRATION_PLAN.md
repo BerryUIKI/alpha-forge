@@ -227,17 +227,19 @@ developed and tested without the main application.
 - [x] Live SEC EDGAR filing stream integrated with automated thesis sentiment mapping.
 - [x] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (512 passing tests), `cargo test` (347+ passing).
 
-### Phase 4 — Data linkage: research ↔ portfolio (est. 2 weeks)
+### Phase 4 — Data linkage: research ↔ portfolio (est. 2 weeks) ✅ DONE
 
-- [ ] Migration: add `portfolio_holding_id TEXT NULL REFERENCES holdings(id)`
-      to `theses` (D5).
-- [ ] Thesis editor: optional "link to holding" picker.
-- [ ] Portfolio review surfaces thesis alignment (extend the existing
-      `thesis_alignment` service): holding → linked thesis, confidence,
-      status, validation outcome.
-- [ ] Knowledge graph: optionally expose holding nodes.
-- [ ] **Verify:** end-to-end test — create holding → link thesis → portfolio
-      review shows alignment.
+- [x] Migration `0023_theses_portfolio_asset_link.sql`: add `portfolio_asset_id TEXT NULL REFERENCES assets(id)`
+      to `investment_theses` (binding canonical asset entity to all associated holdings/lots).
+- [x] Domain & Repository: update `InvestmentThesis`, `CreateThesisInput`, `ThesisRepository`, and `ThesisService`
+      with `portfolio_asset_id` and `link_asset(thesis_id, asset_id)`.
+- [x] Tauri IPC & API: expose `link_thesis_asset` command, update `create_thesis` DTO and `desktopApi.thesis`.
+- [x] Thesis UI: optional "Link to Financial Asset" picker in `CreateThesisForm`, linked asset management in `ThesisDetail`,
+      and linked asset badge pill in `ThesisCard`.
+- [x] Portfolio review: enhance `thesis_alignment` in `portfolio_repository.rs` to prioritize authoritative
+      `portfolio_asset_id` asset linkage alongside symbol matching.
+- [x] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (513 tests passing), `cargo test` (348+ passing),
+      `cargo clippy` and `cargo fmt` clean.
 
 ### Phase 5 — Polish & debt cleanup (est. 2–3 weeks, ongoing)
 

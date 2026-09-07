@@ -692,6 +692,11 @@ const messages = {
     failedToLoadEvidence: "加载证据失败。",
     sourceLabel: "来源：",
     deleteEvidence: "删除证据",
+    linkedAsset: "关联资产",
+    linkAsset: "关联投资标的（可选）",
+    selectAssetToLink: "选择投资标的...",
+    unlinkAsset: "取消关联",
+    assetLinkedBadge: "关联标的",
     // Goose Shadow Analysis
     shadowAnalysis: "影子分析",
     shadowAnalysisDescription: "使用 Goose 对工作区研究数据进行只读分析。结果将显示主张、证据和风险，不会做出任何更改。",
@@ -1546,6 +1551,11 @@ const messages = {
     failedToLoadEvidence: "Failed to load evidence.",
     sourceLabel: "Source: ",
     deleteEvidence: "Delete evidence",
+    linkedAsset: "Linked Financial Asset",
+    linkAsset: "Link to Financial Asset (optional)",
+    selectAssetToLink: "Select portfolio asset...",
+    unlinkAsset: "Unlink Asset",
+    assetLinkedBadge: "Linked Asset",
     // Goose Shadow Analysis
     shadowAnalysis: "Shadow Analysis",
     shadowAnalysisDescription: "Run a read-only analysis of your workspace research data using Goose. Results will show claims, evidence, and risks without making any changes.",
