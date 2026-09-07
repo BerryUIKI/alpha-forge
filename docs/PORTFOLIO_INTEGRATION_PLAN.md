@@ -244,7 +244,7 @@ developed and tested without the main application.
 ### Phase 5 — Polish & debt cleanup (est. 2–3 weeks, ongoing)
 
 - [ ] Broker sync (Wealthfolio `crates/connect`) — optional add-on, gated.
-- [ ] Market-data refresh scheduling & quote caching.
+- [x] Market-data refresh scheduling & quote caching (MarketDataService, Tauri commands, TanStack Query mutations, and UI refresh triggers).
 - [ ] Performance profiling of valuation on large portfolios.
 - [ ] Sweep remaining `unwrap()`/`expect()` in ported code.
 - [ ] Update docs (`DATA_MODEL.md`, `ARCHITECTURE.md`) to include financial

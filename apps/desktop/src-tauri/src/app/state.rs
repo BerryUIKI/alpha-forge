@@ -49,6 +49,7 @@ use crate::services::goose_service::GooseService;
 use crate::services::holdings_service::HoldingsService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::lot_service::LotService;
+use crate::services::market_data_service::MarketDataService;
 use crate::services::net_worth_service::NetWorthService;
 use crate::services::option_service::OptionService;
 use crate::services::performance_service::PerformanceService;
@@ -106,6 +107,7 @@ pub struct AppState {
     pub snapshot_repo: Arc<SnapshotRepository>,
     // Financial services (Phase 2 — Wealthfolio port)
     pub holdings_service: Arc<HoldingsService>,
+    pub market_data_service: Arc<MarketDataService>,
     pub lot_service: LotService,
     pub valuation_service: ValuationService,
     pub performance_service: PerformanceService,
@@ -203,6 +205,10 @@ impl AppState {
             lot_repo.clone(),
             disposal_repo.clone(),
         ));
+        let market_data_service = Arc::new(MarketDataService::new(
+            asset_repo.clone(),
+            quote_repo.clone(),
+        ));
         let lot_service = LotService::new(
             lot_repo.clone(),
             disposal_repo.clone(),
@@ -282,6 +288,7 @@ impl AppState {
             snapshot_repo,
             // Financial services (Phase 2 — Wealthfolio port)
             holdings_service,
+            market_data_service,
             lot_service,
             valuation_service,
             performance_service,

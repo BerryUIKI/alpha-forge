@@ -112,7 +112,7 @@ impl RulesResolver {
         provider: &str,
     ) -> Option<ProviderInstrument> {
         match provider {
-            "YAHOO" => {
+            "YAHOO" | "FIXTURE" => {
                 // Yahoo uses "BTC-USD" format
                 Some(ProviderInstrument {
                     symbol: format!("{}-{}", base, quote),
@@ -142,7 +142,7 @@ impl RulesResolver {
         provider: &str,
     ) -> Option<ProviderInstrument> {
         match provider {
-            "YAHOO" => {
+            "YAHOO" | "FIXTURE" => {
                 // Yahoo uses "EURUSD=X" format
                 Some(ProviderInstrument {
                     symbol: format!("{}{}=X", base, quote),
@@ -180,7 +180,7 @@ impl RulesResolver {
     /// Yahoo and Alpha Vantage accept OCC symbols as equity-like symbols.
     fn resolve_option(&self, occ_symbol: &Arc<str>, provider: &str) -> Option<ProviderInstrument> {
         match provider {
-            "YAHOO" | "ALPHA_VANTAGE" => Some(ProviderInstrument {
+            "YAHOO" | "ALPHA_VANTAGE" | "FIXTURE" => Some(ProviderInstrument {
                 symbol: occ_symbol.to_string(),
                 kind: "option".to_string(),
                 currency: None,
@@ -204,7 +204,7 @@ impl RulesResolver {
                 currency: Some(quote.to_string()),
                 exchange: None,
             }),
-            "YAHOO" => {
+            "YAHOO" | "FIXTURE" => {
                 // Yahoo uses futures symbols for metals
                 let futures = match code.as_ref() {
                     "XAU" => "GC=F", // Gold

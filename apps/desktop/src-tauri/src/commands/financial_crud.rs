@@ -148,6 +148,22 @@ pub async fn list_quotes_for_asset(
     state.quote_repo.list_for_asset(&asset_id).await
 }
 
+#[tauri::command]
+pub async fn refresh_asset_quote(
+    asset_id: String,
+    state: State<'_, AppState>,
+) -> Result<Quote, AppError> {
+    state
+        .market_data_service
+        .refresh_quote_for_asset(&asset_id)
+        .await
+}
+
+#[tauri::command]
+pub async fn refresh_all_active_quotes(state: State<'_, AppState>) -> Result<Vec<Quote>, AppError> {
+    state.market_data_service.refresh_all_active_quotes().await
+}
+
 // ── Activity ────────────────────────────────────────────────────────────────
 
 #[tauri::command]

@@ -129,6 +129,7 @@ dependencies = [
  "csv",
  "domain",
  "keyring",
+ "market-data",
  "option-core",
  "pdf-extract",
  "provider-core",

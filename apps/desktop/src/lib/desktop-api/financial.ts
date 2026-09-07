@@ -811,6 +811,16 @@ export async function listQuotesForAsset(assetId: string): Promise<Quote[]> {
   return z.array(QuoteSchema).parse(res);
 }
 
+export async function refreshAssetQuote(assetId: string): Promise<Quote> {
+  const res = await invoke("refresh_asset_quote", { assetId });
+  return QuoteSchema.parse(res);
+}
+
+export async function refreshAllActiveQuotes(): Promise<Quote[]> {
+  const res = await invoke("refresh_all_active_quotes");
+  return z.array(QuoteSchema).parse(res);
+}
+
 // ── Activity CRUD (Phase 3.5) ──────────────────────────────────────────────
 
 export async function createActivity(

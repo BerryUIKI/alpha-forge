@@ -5,10 +5,9 @@
 
 use async_trait::async_trait;
 use std::borrow::Cow;
-use std::time::Duration;
 
 use crate::errors::MarketDataError;
-use crate::models::{InstrumentKind, ProviderInstrument, Quote, ProviderId};
+use crate::models::{InstrumentKind, ProviderId, ProviderInstrument, Quote};
 use crate::provider::{MarketDataProvider, ProviderCapabilities, RateLimit};
 
 /// Market data provider backed by Yahoo Finance.
