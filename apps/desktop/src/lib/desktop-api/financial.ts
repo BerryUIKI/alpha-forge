@@ -863,6 +863,19 @@ export async function listImportRuns(accountId: string): Promise<ImportRun[]> {
   return z.array(ImportRunSchema).parse(res);
 }
 
+export async function importActivitiesCsv(
+  accountId: string,
+  format: "GENERIC" | "IBKR",
+  csvText: string,
+): Promise<ImportRun> {
+  const res = await invoke("import_activities_csv", {
+    accountId,
+    format,
+    csvText,
+  });
+  return ImportRunSchema.parse(res);
+}
+
 // ── Lot CRUD (Phase 3.5) ───────────────────────────────────────────────────
 
 export async function createLot(input: CreateLotInput): Promise<Lot> {

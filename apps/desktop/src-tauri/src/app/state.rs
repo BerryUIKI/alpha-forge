@@ -42,6 +42,7 @@ use crate::database::repositories::valuation_repository::ValuationRepository;
 
 use crate::error::AppError;
 use crate::providers::ai::OpenAiResearchProvider;
+use crate::services::activity_import_service::ActivityImportService;
 use crate::services::agent_service::AgentService;
 use crate::services::allocation_service::AllocationService;
 use crate::services::artifact_service::ArtifactService;
@@ -108,6 +109,7 @@ pub struct AppState {
     // Financial services (Phase 2 — Wealthfolio port)
     pub holdings_service: Arc<HoldingsService>,
     pub market_data_service: Arc<MarketDataService>,
+    pub activity_import_service: Arc<ActivityImportService>,
     pub lot_service: LotService,
     pub valuation_service: ValuationService,
     pub performance_service: PerformanceService,
@@ -209,6 +211,13 @@ impl AppState {
             asset_repo.clone(),
             quote_repo.clone(),
         ));
+        let activity_import_service = Arc::new(ActivityImportService::new(
+            account_repo.clone(),
+            asset_repo.clone(),
+            activity_repo.clone(),
+            import_run_repo.clone(),
+            lot_repo.clone(),
+        ));
         let lot_service = LotService::new(
             lot_repo.clone(),
             disposal_repo.clone(),
@@ -289,6 +298,7 @@ impl AppState {
             // Financial services (Phase 2 — Wealthfolio port)
             holdings_service,
             market_data_service,
+            activity_import_service,
             lot_service,
             valuation_service,
             performance_service,

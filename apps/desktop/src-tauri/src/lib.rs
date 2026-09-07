@@ -241,6 +241,7 @@ pub fn run() {
             commands::financial_crud::list_activities_by_asset,
             commands::financial_crud::create_import_run,
             commands::financial_crud::list_import_runs,
+            commands::financial_crud::import_activities_csv,
             commands::financial_crud::create_lot,
             commands::financial_crud::get_lot,
             commands::financial_crud::upsert_valuation,

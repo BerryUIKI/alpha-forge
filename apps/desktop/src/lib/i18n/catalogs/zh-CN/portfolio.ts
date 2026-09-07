@@ -202,6 +202,8 @@ export const portfolio = {
   refreshingQuotes: "刷新中…",
   quotesRefreshed: "市场行情已刷新",
   failedToRefreshQuotes: "刷新市场行情失败",
+  importActivitiesTitle: "导入交易活动",
+  importActivitiesDescription: "导入券商对账单 CSV 或通用交易流水",
 } as const;
 
 export type PortfolioKey = keyof typeof portfolio;

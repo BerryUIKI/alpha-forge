@@ -216,6 +216,19 @@ pub async fn list_import_runs(
     state.import_run_repo.list_by_account(&account_id).await
 }
 
+#[tauri::command]
+pub async fn import_activities_csv(
+    account_id: String,
+    format: String,
+    csv_text: String,
+    state: State<'_, AppState>,
+) -> Result<ImportRun, AppError> {
+    state
+        .activity_import_service
+        .import_csv(&account_id, &format, &csv_text)
+        .await
+}
+
 // ── Lot ─────────────────────────────────────────────────────────────────────
 
 #[tauri::command]

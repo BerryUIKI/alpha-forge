@@ -72,6 +72,21 @@ impl ImportRunRepository {
         })
     }
 
+    pub async fn get(&self, id: &str) -> Result<Option<ImportRun>, AppError> {
+        let row = sqlx::query_as::<_, ImportRunRow>(
+            "SELECT id, account_id, source_system, run_type, mode, status, started_at,
+                    finished_at, review_mode, applied_at, checkpoint_in, checkpoint_out,
+                    summary, warnings, error, created_at, updated_at
+             FROM import_runs WHERE id = ?",
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("failed to get import run: {e}")))?;
+
+        row.map(TryInto::try_into).transpose()
+    }
+
     pub async fn list_by_account(&self, account_id: &str) -> Result<Vec<ImportRun>, AppError> {
         let rows = sqlx::query_as::<_, ImportRunRow>(
             "SELECT id, account_id, source_system, run_type, mode, status, started_at,
