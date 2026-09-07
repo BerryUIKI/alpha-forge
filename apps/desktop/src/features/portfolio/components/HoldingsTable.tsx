@@ -8,10 +8,10 @@
  */
 
 import { useLocale } from "@/lib/i18n/useLocale";
-import { useHoldings } from "@/features/portfolio/hooks/useFinancialData";
+import { useHoldings, useRefreshAllActiveQuotes } from "@/features/portfolio/hooks/useFinancialData";
 import { fmtMoney, fmtNumber, fmtPercent, fmtGainLoss, gainLossClass } from "./helpers";
 import { LoadingSpinner, EmptyState, ErrorState } from "@/components/common";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 
 interface HoldingsTableProps {
   accountId: string;
@@ -21,6 +21,7 @@ interface HoldingsTableProps {
 export function HoldingsTable({ accountId, asOfDate }: HoldingsTableProps) {
   const { t } = useLocale();
   const holdings = useHoldings(accountId, asOfDate);
+  const refreshQuotesMutation = useRefreshAllActiveQuotes();
 
   if (holdings.isLoading) {
     return <LoadingSpinner className="p-8" />;
@@ -48,9 +49,23 @@ export function HoldingsTable({ accountId, asOfDate }: HoldingsTableProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          {t("accounts")} ({summary.holdings.length})
-        </h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {t("accounts")} ({summary.holdings.length})
+          </h3>
+          <button
+            type="button"
+            onClick={() => refreshQuotesMutation.mutate()}
+            disabled={refreshQuotesMutation.isPending}
+            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50 transition-colors"
+            title={t("refreshQuotes")}
+          >
+            <RefreshCw
+              className={`h-3 w-3 ${refreshQuotesMutation.isPending ? "animate-spin" : ""}`}
+            />
+            {refreshQuotesMutation.isPending ? t("refreshingQuotes") : t("refreshQuotes")}
+          </button>
+        </div>
         <span className="text-xs text-muted-foreground">
           {t("totalValue")}: {fmtMoney(summary.total_market_value, summary.holdings[0]?.currency)}
         </span>
