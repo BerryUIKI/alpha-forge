@@ -14,6 +14,7 @@ pub struct InvestmentThesis {
     pub status: ThesisStatus,
     pub validation_date: Option<DateTime<Utc>>,
     pub outcome: Option<String>,
+    pub portfolio_asset_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -78,12 +79,46 @@ impl std::fmt::Display for EvidenceDirection {
 }
 
 /// Input for creating a new investment thesis.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CreateThesisInput {
     pub workspace_id: String,
     pub title: String,
     pub thesis: String,
     pub confidence: Option<i32>,
+    pub portfolio_asset_id: Option<String>,
+}
+
+impl CreateThesisInput {
+    pub fn new(
+        workspace_id: impl Into<String>,
+        title: impl Into<String>,
+        thesis: impl Into<String>,
+    ) -> Self {
+        Self {
+            workspace_id: workspace_id.into(),
+            title: title.into(),
+            thesis: thesis.into(),
+            confidence: None,
+            portfolio_asset_id: None,
+        }
+    }
+
+    pub fn with_confidence(mut self, confidence: i32) -> Self {
+        self.confidence = Some(confidence);
+        self
+    }
+
+    pub fn with_portfolio_asset_id(mut self, asset_id: impl Into<String>) -> Self {
+        self.portfolio_asset_id = Some(asset_id.into());
+        self
+    }
+}
+
+/// Input for linking or unlinking a thesis to a financial portfolio asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LinkThesisAssetInput {
+    pub thesis_id: String,
+    pub portfolio_asset_id: Option<String>,
 }
 
 /// Input for adding evidence to a thesis.

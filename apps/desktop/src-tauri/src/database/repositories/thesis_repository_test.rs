@@ -33,6 +33,7 @@ mod tests {
                 status TEXT NOT NULL DEFAULT 'draft',
                 validation_date TEXT,
                 outcome TEXT,
+                portfolio_asset_id TEXT,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
@@ -94,6 +95,7 @@ mod tests {
             title: "NVIDIA Growth Thesis".to_string(),
             thesis: "NVIDIA will continue to dominate AI chip market".to_string(),
             confidence: Some(75),
+            portfolio_asset_id: None,
         };
 
         let thesis = repo.create_thesis(input).await.unwrap();
@@ -118,6 +120,7 @@ mod tests {
             title: "Test Thesis".to_string(),
             thesis: "Test content".to_string(),
             confidence: None,
+            portfolio_asset_id: None,
         };
 
         let thesis = repo.create_thesis(input).await.unwrap();
@@ -135,6 +138,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: Some(60),
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -163,6 +167,7 @@ mod tests {
                 title: "Timestamp integrity".to_string(),
                 thesis: "A test thesis".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -189,6 +194,7 @@ mod tests {
                 title: "Confidence integrity".to_string(),
                 thesis: "A test thesis".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -216,6 +222,7 @@ mod tests {
             title: "Thesis 1".to_string(),
             thesis: "Content 1".to_string(),
             confidence: None,
+            portfolio_asset_id: None,
         })
         .await
         .unwrap();
@@ -225,6 +232,7 @@ mod tests {
             title: "Thesis 2".to_string(),
             thesis: "Content 2".to_string(),
             confidence: None,
+            portfolio_asset_id: None,
         })
         .await
         .unwrap();
@@ -244,6 +252,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -267,6 +276,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: Some(50),
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -293,6 +303,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -325,6 +336,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -346,6 +358,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -376,6 +389,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -413,6 +427,7 @@ mod tests {
                 title: "Test".to_string(),
                 thesis: "Content".to_string(),
                 confidence: None,
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -444,7 +459,8 @@ mod tests {
                 workspace_id: "test-workspace".to_string(),
                 title: "High".to_string(),
                 thesis: "Content".to_string(),
-                confidence: Some(150), // Should be clamped to 100
+                confidence: Some(150),
+                portfolio_asset_id: None, // Should be clamped to 100
             })
             .await
             .unwrap();
@@ -456,7 +472,8 @@ mod tests {
                 workspace_id: "test-workspace".to_string(),
                 title: "Low".to_string(),
                 thesis: "Content".to_string(),
-                confidence: Some(-10), // Should be clamped to 0
+                confidence: Some(-10),
+                portfolio_asset_id: None, // Should be clamped to 0
             })
             .await
             .unwrap();
@@ -473,6 +490,7 @@ mod tests {
                 title: "Confidence history".to_string(),
                 thesis: "Content".to_string(),
                 confidence: Some(40),
+                portfolio_asset_id: None,
             })
             .await
             .unwrap();
@@ -488,5 +506,35 @@ mod tests {
         assert_eq!(history.len(), 2);
         assert_eq!(history[0].confidence, 65);
         assert_eq!(history[1].confidence, 40);
+    }
+
+    #[tokio::test]
+    async fn test_link_and_unlink_portfolio_asset() {
+        let pool = setup_test_db().await;
+        let repo = ThesisRepository::new(pool);
+        let thesis = repo
+            .create_thesis(CreateThesisInput {
+                workspace_id: "test-workspace".to_string(),
+                title: "Asset linkage test".to_string(),
+                thesis: "Direct link to asset entity".to_string(),
+                confidence: Some(80),
+                portfolio_asset_id: Some("asset-initial".to_string()),
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(thesis.portfolio_asset_id.as_deref(), Some("asset-initial"));
+
+        // Unlink asset
+        repo.link_asset(&thesis.id, None).await.unwrap();
+        let updated = repo.get_thesis(&thesis.id).await.unwrap().unwrap();
+        assert_eq!(updated.portfolio_asset_id, None);
+
+        // Re-link asset
+        repo.link_asset(&thesis.id, Some("asset-new"))
+            .await
+            .unwrap();
+        let updated2 = repo.get_thesis(&thesis.id).await.unwrap().unwrap();
+        assert_eq!(updated2.portfolio_asset_id.as_deref(), Some("asset-new"));
     }
 }
