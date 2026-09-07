@@ -42,6 +42,7 @@ import {
   listActivitiesByAsset,
   createImportRun,
   listImportRuns,
+  importActivitiesCsv,
   createLot,
   getLot,
   upsertValuation,
@@ -795,6 +796,17 @@ describe("financial API — Phase 3.5 CRUD services", () => {
     mockInvoke.mockResolvedValue([mockImportRun]);
     const res = await listImportRuns("acc-1");
     expect(res).toHaveLength(1);
+  });
+
+  it("importActivitiesCsv calls import_activities_csv", async () => {
+    mockInvoke.mockResolvedValue(mockImportRun);
+    const res = await importActivitiesCsv("acc-1", "GENERIC", "csv,content");
+    expect(res.id).toBe("imp-1");
+    expect(mockInvoke).toHaveBeenCalledWith("import_activities_csv", {
+      accountId: "acc-1",
+      format: "GENERIC",
+      csvText: "csv,content",
+    });
   });
 
   it("createLot calls create_lot", async () => {

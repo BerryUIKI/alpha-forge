@@ -32,6 +32,7 @@ pub mod thesis_service;
 pub mod workspace_service;
 
 // Financial services (Phase 2 — Wealthfolio port)
+pub mod activity_import_service;
 pub mod allocation_service;
 pub mod holdings_service;
 pub mod income_service;
@@ -86,3 +87,6 @@ mod strategy_service_test;
 
 #[cfg(test)]
 mod market_data_service_test;
+
+#[cfg(test)]
+mod activity_import_service_test;

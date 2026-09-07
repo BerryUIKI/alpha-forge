@@ -263,3 +263,23 @@ export function useRefreshAllActiveQuotes() {
     },
   });
 }
+
+// ── Broker Activity Statement CSV Import ───────────────────────────────────
+
+export function useImportActivitiesCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      accountId,
+      format,
+      csvText,
+    }: {
+      accountId: string;
+      format: "GENERIC" | "IBKR";
+      csvText: string;
+    }) => desktopApi.financial.importActivitiesCsv(accountId, format, csvText),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
