@@ -16,6 +16,7 @@ import {
   listResearchSources,
   searchResearchDocument,
   semanticSearchResearchDocument,
+  fetchSecCompanyFilings,
 } from "./research";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -204,6 +205,32 @@ describe("research desktop API", () => {
     mockInvoke.mockResolvedValueOnce([]);
     await semanticSearchResearchDocument("document-1", "revenue growth");
     expect(mockInvoke).toHaveBeenCalledWith("semantic_search_research_document", { id: "document-1", query: "revenue growth" });
+  });
+
+  it("fetches SEC filings for a company ticker", async () => {
+    const mockFilings = [
+      {
+        id: "0001045810-24-000123",
+        accessionNumber: "0001045810-24-000123",
+        cik: "0001045810",
+        ticker: "NVDA",
+        companyName: "NVIDIA CORP",
+        formType: "10-Q",
+        filingDate: "2024-08-28",
+        reportDate: "2024-07-28",
+        primaryDocument: "nvda-10q.htm",
+        primaryDocDescription: "Form 10-Q",
+        filingUrl: "https://www.sec.gov/edgar/nvda.htm",
+        summary: "Quarterly report",
+      },
+    ];
+    mockInvoke.mockResolvedValueOnce(mockFilings);
+    const result = await fetchSecCompanyFilings("NVDA", 5);
+    expect(result).toEqual(mockFilings);
+    expect(mockInvoke).toHaveBeenCalledWith("fetch_sec_company_filings", {
+      ticker: "NVDA",
+      limit: 5,
+    });
   });
 });
 

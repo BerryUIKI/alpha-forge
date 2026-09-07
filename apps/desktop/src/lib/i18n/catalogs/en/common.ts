@@ -128,6 +128,9 @@ export const common = {
   evidenceContra: "Contra-Evidence Alert (-{delta}% Conviction)",
   hoursAgo: "{hours}h ago",
   todayAtTime: "Today {time}",
+  secLoading: "Ingesting live SEC filings...",
+  secLiveEdgar: "Live SEC EDGAR",
+  secViewDocument: "Open SEC Filing",
 } as const;
 
 export type CommonKey = keyof typeof common;

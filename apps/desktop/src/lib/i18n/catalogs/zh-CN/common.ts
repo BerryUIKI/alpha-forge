@@ -123,6 +123,9 @@ export const common = {
   evidenceContra: "反向预警 (-{delta}% 置信度)",
   hoursAgo: "{hours} 小时前",
   todayAtTime: "今天 {time}",
+  secLoading: "正在获取最新 SEC 监管文件...",
+  secLiveEdgar: "SEC EDGAR 实时源",
+  secViewDocument: "查看 SEC 原文",
 } as const;
 
 export type CommonKey = keyof typeof common;

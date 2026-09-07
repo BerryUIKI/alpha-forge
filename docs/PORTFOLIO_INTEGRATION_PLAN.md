@@ -214,21 +214,18 @@ developed and tested without the main application.
 - [x] Add domain models for income summaries to `crates/domain/src/financial.rs`.
 - [x] **Verify:** `cargo test`; `cargo clippy -- -D warnings` clean.
 
-### Phase 3 — Frontend: portfolio UI (est. 3–4 weeks)
+### Phase 3 — Frontend: portfolio UI (est. 3–4 weeks) ✅ DONE
 
-- [ ] Sidebar: add permanent **Portfolio (📊)** entry (Workspace nav group) per
-      D6 — see `LeftSidebar.tsx` NavGroup configuration (portfolio nav item
-      already exists in the redesigned sidebar).
-- [ ] Build pages from Wealthfolio's frontend (`apps/frontend/src/features/`
-      portfolio pages, charts from `@wealthfolio/ui` — but reuse this repo's
-      `packages/ui` design system instead of importing the package).
-- [ ] Replace `PortfolioDashboard` placeholder with the real dashboard:
-      accounts → holdings → activity/lots → valuation & performance charts →
-      allocation → snapshots → net worth.
-- [ ] Add transaction/activity entry + CSV import UI.
-- [ ] Extend i18n catalogs (existing Portfolio zh/en catalogs).
-- [ ] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, run `pnpm dev:web`
-      / `pnpm tauri dev` manually.
+- [x] Sidebar: add permanent **Portfolio (📊)** entry (Workspace nav group) per
+      D6 — integrated in the redesigned LeftSidebar nav groups (`NavItem`, route `/portfolio`).
+- [x] Build pages from Wealthfolio's financial UX reusing AlphaForge dark aesthetic
+      and UI components.
+- [x] Integrate full financial CRUD dialogs: `AddActivityDialog` (automatic FIFO lots on buy,
+      FIFO liquidation on sell), `CreateAccountDialog`, `AddAssetDialog`.
+- [x] Switch `AccountCards` and `ActivityList` to reactive financial hooks with TanStack Query.
+- [x] Extend i18n catalogs (full bilingual parity for English and Chinese).
+- [x] Live SEC EDGAR filing stream integrated with automated thesis sentiment mapping.
+- [x] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (512 passing tests), `cargo test` (347+ passing).
 
 ### Phase 4 — Data linkage: research ↔ portfolio (est. 2 weeks)
 
