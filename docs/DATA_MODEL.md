@@ -369,9 +369,9 @@ Workspace
   └── Watchlist
 ```
 
-Research ↔ financial linkage (Phase 4): an Investment Thesis may reference a
-portfolio holding (`theses.portfolio_holding_id` → holding), making the
-research → decision → validation loop traceable to actual positions.
+Research ↔ financial linkage (Phase 4): an Investment Thesis directly references a
+canonical portfolio asset (`investment_theses.portfolio_asset_id` → `assets.id`), making the
+research → decision → validation loop traceable to real portfolio instruments and holdings.
 
 ## Design Rules
 

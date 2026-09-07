@@ -174,16 +174,17 @@ React (AgentPanel)
 
 ## Current IPC Command Families
 
-The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, Artifacts, internal plugins, Options, and Goose scaffolding. Registration parity across all 176 commands is verified by `scripts/check-ipc-registration.mjs`.
+The application registers command families for system/settings, credentials, workspaces, Agent tasks, research, theses, knowledge graph, portfolio, financial management, market data, Artifacts, internal plugins, Options, and Goose scaffolding. Registration parity across all 188 commands is verified by `scripts/check-ipc-registration.mjs`.
 
 Current integration status:
 
 - **Agent Runtime (S1 Complete)**: End-to-end task creation, background execution, real-time event streaming, cancellation, failure surfacing, and structured research output rendering are fully accepted.
 - **IPC Normalization (S2 Complete)**: 100% of command families (`Workspace`, `Settings`, `Credentials`, `System`, `Options`, `Agent`, `Artifacts`, `Plugins`, `Research`, `Thesis`, `KnowledgeGraph`, `Portfolio`, `Financial`) are normalized to `camelCase` DTOs with strict runtime Zod schema validation and checked serialization fixtures.
-- **Research, Thesis, Knowledge Graph, Portfolio (S4 Complete)**: Functional UI surfaces connected to SQLx persistence with URL context authority, provenance tracking, and full state coverage.
+- **Research, Thesis, Knowledge Graph (S4 Complete)**: Functional UI surfaces connected to SQLx persistence with URL context authority, provenance tracking, and full state coverage.
+- **Financial & Portfolio Engine (Phases 1-4 Complete)**: Ported core financial models from Wealthfolio onto SQLx (`platforms`, `accounts`, `assets`, `quotes`, `activities`, `lots`, `lot_disposals`, `snapshots`, `valuations`, `taxonomies`). Features full FIFO lot accounting, deterministic synthetic & provider market-data quoting (`MarketDataService`), broker CSV / IBKR statement import (`ActivityImportService`), and bidirectional research linking (`investment_theses.portfolio_asset_id` → `assets.id`).
 - **Options (S5 Complete)**: Option chain acquisition, contract selection, strategy building, persistence, Greeks/pricing calculations, and no-trading boundary enforcement are fully verified.
 - **Artifacts & Plugins (S3 Complete)**: Isolated Artifact-window route, least-privilege capability boundary (`capabilities/artifact-window.json`), disabled plugin enforcement, and predefined safe React renderers are fully verified.
-- **Release Readiness (S6 Complete)**: Full 6-stage stabilization program (S0-S6) accepted; 100% IPC parity (176/176), 0 typecheck errors, 55 test files passing, clean lint, fmt, clippy, and Rust workspace test suite.
+- **Release Readiness (S6 Complete)**: Full 6-stage stabilization program (S0-S6) accepted; 100% IPC parity (188/188), 0 typecheck errors, clean lint, fmt, clippy, vitest suite, and Rust workspace test suite.
 - **Managed Agent Workers (Planned)**: ADR-0010 is accepted; the generic worker
   protocol, supervisor, brokers, and platform isolation remain an implementation
   workstream. Goose keeps its specialized sidecar policy and will converge on the
