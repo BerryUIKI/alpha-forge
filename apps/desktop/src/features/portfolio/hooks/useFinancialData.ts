@@ -240,3 +240,46 @@ export function useRecordSell() {
     },
   });
 }
+
+// ── Market Data Quote Refresh ──────────────────────────────────────────────
+
+export function useRefreshAssetQuote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (assetId: string) =>
+      desktopApi.financial.refreshAssetQuote(assetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useRefreshAllActiveQuotes() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => desktopApi.financial.refreshAllActiveQuotes(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+// ── Broker Activity Statement CSV Import ───────────────────────────────────
+
+export function useImportActivitiesCsv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      accountId,
+      format,
+      csvText,
+    }: {
+      accountId: string;
+      format: "GENERIC" | "IBKR";
+      csvText: string;
+    }) => desktopApi.financial.importActivitiesCsv(accountId, format, csvText),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}

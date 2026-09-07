@@ -22,6 +22,7 @@ agent-protocol = { path = "../../../crates/agent-protocol" }
 artifact-core = { path = "../../../crates/artifact-core" }
 provider-core = { path = "../../../crates/provider-core" }
 option-core = { path = "../../../crates/option-core" }
+market-data = { path = "../../../crates/market-data" }
 shared = { path = "../../../crates/shared" }
 
 tokio.workspace = true

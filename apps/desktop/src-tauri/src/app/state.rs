@@ -42,6 +42,7 @@ use crate::database::repositories::valuation_repository::ValuationRepository;
 
 use crate::error::AppError;
 use crate::providers::ai::OpenAiResearchProvider;
+use crate::services::activity_import_service::ActivityImportService;
 use crate::services::agent_service::AgentService;
 use crate::services::allocation_service::AllocationService;
 use crate::services::artifact_service::ArtifactService;
@@ -49,6 +50,7 @@ use crate::services::goose_service::GooseService;
 use crate::services::holdings_service::HoldingsService;
 use crate::services::knowledge_graph_service::KnowledgeGraphService;
 use crate::services::lot_service::LotService;
+use crate::services::market_data_service::MarketDataService;
 use crate::services::net_worth_service::NetWorthService;
 use crate::services::option_service::OptionService;
 use crate::services::performance_service::PerformanceService;
@@ -106,6 +108,8 @@ pub struct AppState {
     pub snapshot_repo: Arc<SnapshotRepository>,
     // Financial services (Phase 2 — Wealthfolio port)
     pub holdings_service: Arc<HoldingsService>,
+    pub market_data_service: Arc<MarketDataService>,
+    pub activity_import_service: Arc<ActivityImportService>,
     pub lot_service: LotService,
     pub valuation_service: ValuationService,
     pub performance_service: PerformanceService,
@@ -203,6 +207,17 @@ impl AppState {
             lot_repo.clone(),
             disposal_repo.clone(),
         ));
+        let market_data_service = Arc::new(MarketDataService::new(
+            asset_repo.clone(),
+            quote_repo.clone(),
+        ));
+        let activity_import_service = Arc::new(ActivityImportService::new(
+            account_repo.clone(),
+            asset_repo.clone(),
+            activity_repo.clone(),
+            import_run_repo.clone(),
+            lot_repo.clone(),
+        ));
         let lot_service = LotService::new(
             lot_repo.clone(),
             disposal_repo.clone(),
@@ -282,6 +297,8 @@ impl AppState {
             snapshot_repo,
             // Financial services (Phase 2 — Wealthfolio port)
             holdings_service,
+            market_data_service,
+            activity_import_service,
             lot_service,
             valuation_service,
             performance_service,

@@ -198,6 +198,12 @@ export const portfolio = {
   quantityRequired: "Quantity is required for buy/sell activities.",
   priceRequired: "Unit price is required for buy/sell activities.",
   unableToCreateActivity: "Unable to create activity.",
+  refreshQuotes: "Refresh Quotes",
+  refreshingQuotes: "Refreshing…",
+  quotesRefreshed: "Market quotes refreshed",
+  failedToRefreshQuotes: "Failed to refresh market quotes",
+  importActivitiesTitle: "Import Activities",
+  importActivitiesDescription: "Import broker statement CSVs or generic transactions",
 } as const;
 
 export type PortfolioKey = keyof typeof portfolio;

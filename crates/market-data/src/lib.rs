@@ -62,7 +62,9 @@ pub use models::{
 };
 
 // Re-export provider types
-pub use provider::{MarketDataProvider, ProviderCapabilities, RateLimit};
+pub use provider::{
+    FixtureProvider, MarketDataProvider, ProviderCapabilities, RateLimit, YahooProvider,
+};
 
 // Re-export registry types
 pub use registry::{

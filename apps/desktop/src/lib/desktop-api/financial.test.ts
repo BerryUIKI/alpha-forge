@@ -34,12 +34,15 @@ import {
   upsertQuote,
   getQuoteForDay,
   listQuotesForAsset,
+  refreshAssetQuote,
+  refreshAllActiveQuotes,
   createActivity,
   getActivity,
   listActivitiesByAccount,
   listActivitiesByAsset,
   createImportRun,
   listImportRuns,
+  importActivitiesCsv,
   createLot,
   getLot,
   upsertValuation,
@@ -712,6 +715,22 @@ describe("financial API — Phase 3.5 CRUD services", () => {
     expect(res).toHaveLength(1);
   });
 
+  it("refreshAssetQuote calls refresh_asset_quote", async () => {
+    mockInvoke.mockResolvedValue(mockQuote);
+    const res = await refreshAssetQuote("asset-1");
+    expect(res.id).toBe("q-1");
+    expect(mockInvoke).toHaveBeenCalledWith("refresh_asset_quote", {
+      assetId: "asset-1",
+    });
+  });
+
+  it("refreshAllActiveQuotes calls refresh_all_active_quotes", async () => {
+    mockInvoke.mockResolvedValue([mockQuote]);
+    const res = await refreshAllActiveQuotes();
+    expect(res).toHaveLength(1);
+    expect(mockInvoke).toHaveBeenCalledWith("refresh_all_active_quotes");
+  });
+
   it("createActivity calls create_activity", async () => {
     mockInvoke.mockResolvedValue(mockActivity);
     const res = await createActivity({
@@ -777,6 +796,17 @@ describe("financial API — Phase 3.5 CRUD services", () => {
     mockInvoke.mockResolvedValue([mockImportRun]);
     const res = await listImportRuns("acc-1");
     expect(res).toHaveLength(1);
+  });
+
+  it("importActivitiesCsv calls import_activities_csv", async () => {
+    mockInvoke.mockResolvedValue(mockImportRun);
+    const res = await importActivitiesCsv("acc-1", "GENERIC", "csv,content");
+    expect(res.id).toBe("imp-1");
+    expect(mockInvoke).toHaveBeenCalledWith("import_activities_csv", {
+      accountId: "acc-1",
+      format: "GENERIC",
+      csvText: "csv,content",
+    });
   });
 
   it("createLot calls create_lot", async () => {

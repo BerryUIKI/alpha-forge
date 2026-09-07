@@ -148,6 +148,22 @@ pub async fn list_quotes_for_asset(
     state.quote_repo.list_for_asset(&asset_id).await
 }
 
+#[tauri::command]
+pub async fn refresh_asset_quote(
+    asset_id: String,
+    state: State<'_, AppState>,
+) -> Result<Quote, AppError> {
+    state
+        .market_data_service
+        .refresh_quote_for_asset(&asset_id)
+        .await
+}
+
+#[tauri::command]
+pub async fn refresh_all_active_quotes(state: State<'_, AppState>) -> Result<Vec<Quote>, AppError> {
+    state.market_data_service.refresh_all_active_quotes().await
+}
+
 // ── Activity ────────────────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -198,6 +214,19 @@ pub async fn list_import_runs(
     state: State<'_, AppState>,
 ) -> Result<Vec<ImportRun>, AppError> {
     state.import_run_repo.list_by_account(&account_id).await
+}
+
+#[tauri::command]
+pub async fn import_activities_csv(
+    account_id: String,
+    format: String,
+    csv_text: String,
+    state: State<'_, AppState>,
+) -> Result<ImportRun, AppError> {
+    state
+        .activity_import_service
+        .import_csv(&account_id, &format, &csv_text)
+        .await
 }
 
 // ── Lot ─────────────────────────────────────────────────────────────────────

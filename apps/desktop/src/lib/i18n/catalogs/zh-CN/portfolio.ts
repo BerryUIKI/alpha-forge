@@ -198,6 +198,12 @@ export const portfolio = {
   quantityRequired: "买入/卖出活动的数量为必填项。",
   priceRequired: "买入/卖出活动的单价为必填项。",
   unableToCreateActivity: "无法创建活动。",
+  refreshQuotes: "刷新行情",
+  refreshingQuotes: "刷新中…",
+  quotesRefreshed: "市场行情已刷新",
+  failedToRefreshQuotes: "刷新市场行情失败",
+  importActivitiesTitle: "导入交易活动",
+  importActivitiesDescription: "导入券商对账单 CSV 或通用交易流水",
 } as const;
 
 export type PortfolioKey = keyof typeof portfolio;

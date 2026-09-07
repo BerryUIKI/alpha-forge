@@ -4,11 +4,11 @@
 //! following the Wealthfolio pattern.
 
 use async_trait::async_trait;
+use chrono::Datelike;
 use std::borrow::Cow;
-use std::time::Duration;
 
 use crate::errors::MarketDataError;
-use crate::models::{InstrumentKind, ProviderInstrument, Quote, ProviderId};
+use crate::models::{InstrumentKind, ProviderId, ProviderInstrument, Quote};
 use crate::provider::{MarketDataProvider, ProviderCapabilities, RateLimit};
 
 /// Market data provider backed by synthetic fixture metadata.
@@ -68,23 +68,70 @@ impl MarketDataProvider for FixtureProvider {
 
     async fn get_latest_quote(
         &self,
-        _instrument: &ProviderInstrument,
+        instrument: &ProviderInstrument,
     ) -> Result<Quote, MarketDataError> {
-        Err(MarketDataError::NotSupported {
-            operation: "get_latest_quote".to_string(),
-            provider: self.id().to_string(),
-        })
+        let now = chrono::Utc::now();
+        // Deterministic baseline price derived from symbol characters (e.g. AAPL -> ~185.00)
+        let hash_val: u32 = instrument.symbol.chars().map(|c| c as u32).sum();
+        let base_price = rust_decimal::Decimal::from(100 + (hash_val % 200));
+        let open = base_price - rust_decimal::Decimal::new(15, 1);
+        let high = base_price + rust_decimal::Decimal::new(25, 1);
+        let low = base_price - rust_decimal::Decimal::new(20, 1);
+        let volume = rust_decimal::Decimal::from(1_500_000 + (hash_val as u64 * 100));
+        let currency = instrument.currency.as_deref().unwrap_or("USD").to_string();
+
+        Ok(Quote::ohlcv(
+            now,
+            open,
+            high,
+            low,
+            base_price,
+            volume,
+            currency,
+            self.provider_id.to_string(),
+        ))
     }
 
     async fn get_historical_quotes(
         &self,
-        _instrument: &ProviderInstrument,
-        _start: chrono::NaiveDate,
-        _end: chrono::NaiveDate,
+        instrument: &ProviderInstrument,
+        start: chrono::NaiveDate,
+        end: chrono::NaiveDate,
     ) -> Result<Vec<Quote>, MarketDataError> {
-        Err(MarketDataError::NotSupported {
-            operation: "get_historical_quotes".to_string(),
-            provider: self.id().to_string(),
-        })
+        if start > end {
+            return Ok(Vec::new());
+        }
+        let currency = instrument.currency.as_deref().unwrap_or("USD").to_string();
+        let hash_val: u32 = instrument.symbol.chars().map(|c| c as u32).sum();
+        let base_price = rust_decimal::Decimal::from(100 + (hash_val % 200));
+        let mut current = start;
+        let mut quotes = Vec::new();
+
+        while current <= end {
+            // Monday=1 .. Sunday=7
+            let weekday = current.weekday().number_from_monday();
+            if weekday <= 5 {
+                let timestamp = current.and_hms_opt(16, 0, 0).unwrap_or_default().and_utc();
+                let day_offset = rust_decimal::Decimal::new(weekday as i64, 1);
+                let close = base_price + day_offset;
+                quotes.push(Quote::ohlcv(
+                    timestamp,
+                    close - rust_decimal::Decimal::new(10, 1),
+                    close + rust_decimal::Decimal::new(20, 1),
+                    close - rust_decimal::Decimal::new(15, 1),
+                    close,
+                    rust_decimal::Decimal::from(1_000_000),
+                    currency.clone(),
+                    self.provider_id.to_string(),
+                ));
+            }
+            if let Some(next) = current.succ_opt() {
+                current = next;
+            } else {
+                break;
+            }
+        }
+
+        Ok(quotes)
     }
 }

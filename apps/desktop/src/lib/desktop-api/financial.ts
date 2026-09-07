@@ -811,6 +811,16 @@ export async function listQuotesForAsset(assetId: string): Promise<Quote[]> {
   return z.array(QuoteSchema).parse(res);
 }
 
+export async function refreshAssetQuote(assetId: string): Promise<Quote> {
+  const res = await invoke("refresh_asset_quote", { assetId });
+  return QuoteSchema.parse(res);
+}
+
+export async function refreshAllActiveQuotes(): Promise<Quote[]> {
+  const res = await invoke("refresh_all_active_quotes");
+  return z.array(QuoteSchema).parse(res);
+}
+
 // ── Activity CRUD (Phase 3.5) ──────────────────────────────────────────────
 
 export async function createActivity(
@@ -851,6 +861,19 @@ export async function createImportRun(
 export async function listImportRuns(accountId: string): Promise<ImportRun[]> {
   const res = await invoke("list_import_runs", { accountId });
   return z.array(ImportRunSchema).parse(res);
+}
+
+export async function importActivitiesCsv(
+  accountId: string,
+  format: "GENERIC" | "IBKR",
+  csvText: string,
+): Promise<ImportRun> {
+  const res = await invoke("import_activities_csv", {
+    accountId,
+    format,
+    csvText,
+  });
+  return ImportRunSchema.parse(res);
 }
 
 // ── Lot CRUD (Phase 3.5) ───────────────────────────────────────────────────

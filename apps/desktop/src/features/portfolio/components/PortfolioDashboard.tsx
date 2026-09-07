@@ -26,8 +26,9 @@ import { QuickActions } from "./QuickActions";
 import { CreateAccountDialog } from "./CreateAccountDialog";
 import { AddAssetDialog } from "./AddAssetDialog";
 import { AddActivityDialog } from "./AddActivityDialog";
+import { ImportActivitiesDialog } from "./ImportActivitiesDialog";
 import { useListAllFinancialAccounts } from "../hooks/useFinancialData";
-import { Plus, ArrowUpRight, PencilLine } from "lucide-react";
+import { Plus, ArrowUpRight, PencilLine, Upload } from "lucide-react";
 
 /** Default view date — "today" as of the running app. */
 function todayIso(): string {
@@ -43,6 +44,7 @@ export function PortfolioDashboard() {
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
   const [isAddAssetOpen, setIsAddAssetOpen] = useState(false);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+  const [isImportActivitiesOpen, setIsImportActivitiesOpen] = useState(false);
 
   // Portfolio is a global dimension (ADR-0008): every account is listed
   // regardless of the active workspace.
@@ -166,6 +168,22 @@ export function PortfolioDashboard() {
             <ArrowUpRight className="h-4 w-4" />
             {t("addActivityTitle")}
           </button>
+          <button
+            onClick={() => {
+              if (selectedAccountId) {
+                setIsImportActivitiesOpen(true);
+              } else {
+                setSelectedAccountId("");
+                window.alert(t("selectAnAccount"));
+              }
+            }}
+            disabled={!selectedAccountId}
+            className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+            title={t("importActivitiesDescription")}
+          >
+            <Upload className="h-4 w-4" />
+            {t("importActivitiesTitle")}
+          </button>
         </div>
       </div>
 
@@ -190,6 +208,12 @@ export function PortfolioDashboard() {
         accountId={selectedAccountId}
         accountCurrency={baseCurrency}
         onSuccess={() => setIsAddActivityOpen(false)}
+      />
+      <ImportActivitiesDialog
+        isOpen={isImportActivitiesOpen}
+        onClose={() => setIsImportActivitiesOpen(false)}
+        accountId={selectedAccountId}
+        onSuccess={() => setIsImportActivitiesOpen(false)}
       />
     </div>
   );
