@@ -46,6 +46,31 @@ describe("thesis API", () => {
       title: thesis.title,
       thesis: "Demand exceeds supply.",
       confidence: 70,
+      portfolioAssetId: null,
+    });
+  });
+
+  it("links a thesis to a portfolio asset", async () => {
+    const linkedThesis = {
+      id: "thesis-1",
+      workspaceId: "workspace-1",
+      title: "Demand remains durable",
+      thesis: "Demand exceeds supply.",
+      confidence: 70,
+      status: "draft",
+      validationDate: null,
+      outcome: null,
+      portfolioAssetId: "asset-123",
+      createdAt: "2026-08-21T10:00:00Z",
+      updatedAt: "2026-08-21T10:00:00Z",
+    };
+    mockInvoke.mockResolvedValueOnce(linkedThesis);
+
+    const { linkThesisAsset } = await import("./thesis");
+    await expect(linkThesisAsset("thesis-1", "asset-123")).resolves.toEqual(linkedThesis);
+    expect(mockInvoke).toHaveBeenCalledWith("link_thesis_asset", {
+      thesisId: "thesis-1",
+      portfolioAssetId: "asset-123",
     });
   });
 

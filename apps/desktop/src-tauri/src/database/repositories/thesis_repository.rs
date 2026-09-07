@@ -27,11 +27,13 @@ impl ThesisRepository {
         let now = Utc::now();
         let confidence = input.confidence.unwrap_or(50).clamp(0, 100);
 
+        let portfolio_asset_id = input.portfolio_asset_id.as_deref();
+
         sqlx::query(
             r#"
             INSERT INTO investment_theses
-                (id, workspace_id, title, thesis, confidence, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (id, workspace_id, title, thesis, confidence, status, portfolio_asset_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&id)
@@ -40,6 +42,7 @@ impl ThesisRepository {
         .bind(&input.thesis)
         .bind(confidence)
         .bind("draft")
+        .bind(portfolio_asset_id)
         .bind(now.to_rfc3339())
         .bind(now.to_rfc3339())
         .execute(&self.pool)
@@ -57,9 +60,31 @@ impl ThesisRepository {
             status: ThesisStatus::Draft,
             validation_date: None,
             outcome: None,
+            portfolio_asset_id: input.portfolio_asset_id,
             created_at: now,
             updated_at: now,
         })
+    }
+
+    /// Link or unlink a portfolio asset to a thesis.
+    pub async fn link_asset(
+        &self,
+        thesis_id: &str,
+        asset_id: Option<&str>,
+    ) -> Result<(), AppError> {
+        let now = Utc::now();
+        sqlx::query(
+            "UPDATE investment_theses SET portfolio_asset_id = ?, updated_at = ? WHERE id = ?",
+        )
+        .bind(asset_id)
+        .bind(now.to_rfc3339())
+        .bind(thesis_id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            AppError::Internal(format!("Failed to link portfolio asset to thesis: {e}"))
+        })?;
+        Ok(())
     }
 
     /// Get a thesis by ID.
@@ -67,7 +92,7 @@ impl ThesisRepository {
         let row = sqlx::query_as::<_, ThesisRow>(
             r#"
             SELECT id, workspace_id, title, thesis, confidence, status,
-                   validation_date, outcome, created_at, updated_at
+                   validation_date, outcome, portfolio_asset_id, created_at, updated_at
             FROM investment_theses
             WHERE id = ?
             "#,
@@ -88,7 +113,7 @@ impl ThesisRepository {
         let rows = sqlx::query_as::<_, ThesisRow>(
             r#"
             SELECT id, workspace_id, title, thesis, confidence, status,
-                   validation_date, outcome, created_at, updated_at
+                   validation_date, outcome, portfolio_asset_id, created_at, updated_at
             FROM investment_theses
             WHERE workspace_id = ?
             ORDER BY updated_at DESC
@@ -105,8 +130,10 @@ impl ThesisRepository {
     /// Update thesis status.
     pub async fn update_status(&self, id: &str, status: ThesisStatus) -> Result<(), AppError> {
         let status_str = status.to_string();
-        sqlx::query("UPDATE investment_theses SET status = ? WHERE id = ?")
+        let now = Utc::now();
+        sqlx::query("UPDATE investment_theses SET status = ?, updated_at = ? WHERE id = ?")
             .bind(&status_str)
+            .bind(now.to_rfc3339())
             .bind(id)
             .execute(&self.pool)
             .await
@@ -270,6 +297,7 @@ struct ThesisRow {
     status: String,
     validation_date: Option<String>,
     outcome: Option<String>,
+    portfolio_asset_id: Option<String>,
     created_at: String,
     updated_at: String,
 }
@@ -303,6 +331,7 @@ impl TryFrom<ThesisRow> for InvestmentThesis {
                 .map(|value| parse_timestamp(&value, "thesis validation"))
                 .transpose()?,
             outcome: row.outcome,
+            portfolio_asset_id: row.portfolio_asset_id,
             created_at: parse_timestamp(&row.created_at, "thesis creation")?,
             updated_at: parse_timestamp(&row.updated_at, "thesis update")?,
         })

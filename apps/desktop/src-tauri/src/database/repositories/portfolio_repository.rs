@@ -128,7 +128,33 @@ impl PortfolioRepository {
         &self,
         workspace_id: &str,
     ) -> Result<Vec<ThesisAlignment>, AppError> {
-        let rows = sqlx::query_as::<_, ThesisAlignmentRow>("SELECT DISTINCT p.symbol, t.id AS thesis_id, t.title AS thesis_title, t.confidence, t.status FROM positions p JOIN portfolio_accounts a ON a.id = p.account_id JOIN investment_theses t ON lower(t.title || ' ' || t.thesis) LIKE '%' || lower(p.symbol) || '%' WHERE a.workspace_id = ? AND t.workspace_id = ? ORDER BY p.symbol, t.updated_at DESC").bind(workspace_id).bind(workspace_id).fetch_all(&self.pool).await.map_err(|e| AppError::Internal(format!("Failed to check thesis alignment: {e}")))?;
+        let rows = sqlx::query_as::<_, ThesisAlignmentRow>(
+            r#"
+            SELECT DISTINCT
+                p.symbol,
+                t.id AS thesis_id,
+                t.title AS thesis_title,
+                t.confidence,
+                t.status
+            FROM positions p
+            JOIN portfolio_accounts a ON a.id = p.account_id
+            JOIN investment_theses t ON (
+                t.portfolio_asset_id IN (
+                    SELECT ast.id FROM assets ast
+                    WHERE upper(COALESCE(ast.instrument_symbol, ast.display_code, '')) = upper(p.symbol)
+                )
+                OR lower(t.title || ' ' || t.thesis) LIKE '%' || lower(p.symbol) || '%'
+            )
+            WHERE a.workspace_id = ? AND t.workspace_id = ?
+            ORDER BY p.symbol, t.updated_at DESC
+            "#,
+        )
+        .bind(workspace_id)
+        .bind(workspace_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to check thesis alignment: {e}")))?;
+
         Ok(rows
             .into_iter()
             .map(|row| ThesisAlignment {

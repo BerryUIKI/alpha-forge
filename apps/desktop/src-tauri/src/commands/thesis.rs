@@ -22,6 +22,7 @@ pub struct InvestmentThesisDto {
     pub status: ThesisStatus,
     pub validation_date: Option<String>,
     pub outcome: Option<String>,
+    pub portfolio_asset_id: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -37,6 +38,7 @@ impl From<InvestmentThesis> for InvestmentThesisDto {
             status: thesis.status,
             validation_date: thesis.validation_date.map(|dt| dt.to_rfc3339()),
             outcome: thesis.outcome,
+            portfolio_asset_id: thesis.portfolio_asset_id,
             created_at: thesis.created_at.to_rfc3339(),
             updated_at: thesis.updated_at.to_rfc3339(),
         }
@@ -97,6 +99,7 @@ pub async fn create_thesis(
     title: String,
     thesis: String,
     confidence: Option<i32>,
+    portfolio_asset_id: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<InvestmentThesisDto, AppError> {
     state
@@ -106,7 +109,21 @@ pub async fn create_thesis(
             title,
             thesis,
             confidence,
+            portfolio_asset_id,
         })
+        .await
+        .map(InvestmentThesisDto::from)
+}
+
+#[tauri::command]
+pub async fn link_thesis_asset(
+    thesis_id: String,
+    portfolio_asset_id: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<InvestmentThesisDto, AppError> {
+    state
+        .thesis_service
+        .link_asset(&thesis_id, portfolio_asset_id)
         .await
         .map(InvestmentThesisDto::from)
 }
@@ -292,15 +309,18 @@ mod tests {
             status: ThesisStatus::Active,
             validation_date: Some(now),
             outcome: Some("Success".to_string()),
+            portfolio_asset_id: Some("asset-1".to_string()),
             created_at: now,
             updated_at: now,
         };
         let thesis_dto = InvestmentThesisDto::from(thesis);
         let thesis_json = serde_json::to_string(&thesis_dto).expect("thesis serialization");
         assert!(thesis_json.contains("\"workspaceId\":\"ws-1\""));
+        assert!(thesis_json.contains("\"portfolioAssetId\":\"asset-1\""));
         assert!(thesis_json.contains("\"validationDate\":"));
         assert!(thesis_json.contains("\"createdAt\":"));
         assert!(!thesis_json.contains("\"workspace_id\":"));
+        assert!(!thesis_json.contains("\"portfolio_asset_id\":"));
         assert!(!thesis_json.contains("\"validation_date\":"));
 
         let evidence = ThesisEvidence {

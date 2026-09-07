@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Link2, Unlink } from "lucide-react";
 import { ErrorState, LoadingSpinner } from "@/components/common";
 import type { EvidenceDirection, InvestmentThesis } from "@/lib/desktop-api/thesis";
 import {
   useActivateThesis, useAddThesisEvidence, useCloseThesis, useCompleteThesisValidation,
-  useDeleteThesis, useDeleteThesisEvidence, useStartThesisValidation, useThesisConfidenceHistory,
-  useThesisEvidence, useUpdateThesisConfidence,
+  useDeleteThesis, useDeleteThesisEvidence, useLinkThesisAsset, useStartThesisValidation,
+  useThesisConfidenceHistory, useThesisEvidence, useUpdateThesisConfidence,
 } from "../hooks/useTheses";
 import { useKnowledgeEntities, useLinkThesisKnowledgeEntity, useThesisKnowledgeLinks } from "../hooks/useKnowledgeGraph";
+import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 interface ThesisDetailProps { thesis: InvestmentThesis; onDeleted: () => void; }
@@ -20,6 +21,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const [sourceId, setSourceId] = useState("");
   const [outcome, setOutcome] = useState("");
   const [validated, setValidated] = useState(true);
+  const [selectedAssetId, setSelectedAssetId] = useState("");
   const [error, setError] = useState("");
   const evidenceQuery = useThesisEvidence(thesis.id);
   const confidenceHistory = useThesisConfidenceHistory(thesis.id);
@@ -27,6 +29,8 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const knowledgeLinks = useThesisKnowledgeLinks(thesis.id);
   const linkKnowledgeEntity = useLinkThesisKnowledgeEntity();
   const [knowledgeEntityId, setKnowledgeEntityId] = useState("");
+  const activeAssetsQuery = useListActiveAssets();
+  const linkThesisAsset = useLinkThesisAsset();
   const activate = useActivateThesis();
   const startValidation = useStartThesisValidation();
   const completeValidation = useCompleteThesisValidation();
@@ -35,7 +39,9 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const remove = useDeleteThesis();
   const addEvidence = useAddThesisEvidence();
   const deleteEvidence = useDeleteThesisEvidence();
-  const pending = activate.isPending || startValidation.isPending || completeValidation.isPending || updateConfidence.isPending || close.isPending || remove.isPending || addEvidence.isPending;
+  const pending = activate.isPending || startValidation.isPending || completeValidation.isPending || updateConfidence.isPending || close.isPending || remove.isPending || addEvidence.isPending || linkThesisAsset.isPending;
+
+  const linkedAsset = activeAssetsQuery.data?.find((a) => a.id === thesis.portfolioAssetId);
 
   async function run(action: () => Promise<unknown>) { try { setError(""); await action(); } catch (cause) { setError(cause instanceof Error ? cause.message : t("thesisUpdateFailed")); } }
   async function saveEvidence(event: React.FormEvent) {
@@ -83,6 +89,62 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
               </li>
             ))}
           </ol>
+        )}
+      </div>
+      <div className="border-t border-border pt-4">
+        <h3 className="font-semibold flex items-center gap-1.5">
+          <Link2 className="h-4 w-4 text-primary" />
+          {t("linkedAsset")}
+        </h3>
+        {linkedAsset ? (
+          <div className="mt-2 flex items-center justify-between rounded-md bg-muted/60 p-3 text-sm">
+            <div>
+              <span className="font-semibold text-primary">
+                {linkedAsset.display_code || linkedAsset.instrument_symbol || linkedAsset.id}
+              </span>
+              {linkedAsset.name && (
+                <span className="ml-2 text-muted-foreground">{linkedAsset.name}</span>
+              )}
+              <span className="ml-2 text-xs uppercase px-1.5 py-0.5 rounded bg-white/10 text-neutral-300">
+                {linkedAsset.kind}
+              </span>
+            </div>
+            <button
+              onClick={() => run(() => linkThesisAsset.mutateAsync({ thesisId: thesis.id, portfolioAssetId: null }))}
+              disabled={pending}
+              className="flex items-center gap-1 text-xs text-destructive hover:underline"
+            >
+              <Unlink className="h-3 w-3" />
+              {t("unlinkAsset")}
+            </button>
+          </div>
+        ) : (
+          <div className="mt-2 flex gap-2">
+            <select
+              value={selectedAssetId}
+              onChange={(e) => setSelectedAssetId(e.target.value)}
+              className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm"
+            >
+              <option value="">{t("selectAssetToLink")}</option>
+              {activeAssetsQuery.data?.map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.display_code || asset.instrument_symbol || asset.name || asset.id}
+                  {asset.name && asset.display_code ? ` - ${asset.name}` : ""}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => run(async () => {
+                if (!selectedAssetId) return;
+                await linkThesisAsset.mutateAsync({ thesisId: thesis.id, portfolioAssetId: selectedAssetId });
+                setSelectedAssetId("");
+              })}
+              disabled={pending || !selectedAssetId}
+              className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent disabled:opacity-50"
+            >
+              {t("link")}
+            </button>
+          </div>
         )}
       </div>
       <div className="border-t border-border pt-4">

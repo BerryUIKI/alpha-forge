@@ -139,6 +139,7 @@ pub fn run() {
             commands::thesis::update_thesis_confidence,
             commands::thesis::close_thesis,
             commands::thesis::delete_thesis,
+            commands::thesis::link_thesis_asset,
             commands::thesis::add_thesis_evidence,
             commands::thesis::list_thesis_evidence,
             commands::thesis::delete_thesis_evidence,

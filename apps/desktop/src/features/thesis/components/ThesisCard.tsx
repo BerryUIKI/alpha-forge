@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { InvestmentThesis, ThesisStatus } from "@/lib/desktop-api/thesis";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useThesisEvidence } from "../hooks/useTheses";
+import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 
 interface ThesisCardProps {
   thesis: InvestmentThesis;
@@ -18,6 +19,12 @@ export function ThesisCard({
 }: ThesisCardProps) {
   const { t } = useLocale();
   const evidenceQuery = useThesisEvidence(thesis.id);
+  const activeAssetsQuery = useListActiveAssets();
+
+  const linkedAsset = useMemo(() => {
+    if (!thesis.portfolioAssetId) return null;
+    return activeAssetsQuery.data?.find((a) => a.id === thesis.portfolioAssetId) ?? null;
+  }, [thesis.portfolioAssetId, activeAssetsQuery.data]);
 
   const evidenceCounts = useMemo(() => {
     const list = evidenceQuery.data ?? [];
@@ -88,9 +95,16 @@ export function ThesisCard({
       <div>
         {/* Card Header: Title and Status Badge */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold text-white tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
-            {thesis.title}
-          </h3>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold text-white tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
+              {thesis.title}
+            </h3>
+            {linkedAsset && (
+              <span className="inline-flex items-center gap-1 w-fit rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary border border-primary/20">
+                {linkedAsset.display_code || linkedAsset.instrument_symbol || linkedAsset.name}
+              </span>
+            )}
+          </div>
           <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-neutral-300 capitalize border border-white/5">
             {statusLabel}
           </span>
