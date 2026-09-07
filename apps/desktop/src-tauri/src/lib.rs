@@ -233,6 +233,8 @@ pub fn run() {
             commands::financial_crud::upsert_quote,
             commands::financial_crud::get_quote_for_day,
             commands::financial_crud::list_quotes_for_asset,
+            commands::financial_crud::refresh_asset_quote,
+            commands::financial_crud::refresh_all_active_quotes,
             commands::financial_crud::create_activity,
             commands::financial_crud::get_activity,
             commands::financial_crud::list_activities_by_account,
