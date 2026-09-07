@@ -357,10 +357,7 @@ impl ActivityImportService {
                 let currency = rec.get(4).unwrap_or("USD").trim().to_ascii_uppercase();
                 let symbol = rec.get(5).unwrap_or("").trim().to_ascii_uppercase();
                 let date_time_str = rec.get(6).unwrap_or("").trim();
-                let date_part = date_time_str
-                    .split([',', ' '])
-                    .next()
-                    .unwrap_or("");
+                let date_part = date_time_str.split([',', ' ']).next().unwrap_or("");
 
                 let activity_date = NaiveDate::parse_from_str(date_part, "%Y-%m-%d")
                     .or_else(|_| NaiveDate::parse_from_str(date_part, "%Y%m%d"))
