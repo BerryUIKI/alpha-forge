@@ -34,6 +34,8 @@ import {
   upsertQuote,
   getQuoteForDay,
   listQuotesForAsset,
+  refreshAssetQuote,
+  refreshAllActiveQuotes,
   createActivity,
   getActivity,
   listActivitiesByAccount,
@@ -710,6 +712,22 @@ describe("financial API — Phase 3.5 CRUD services", () => {
     mockInvoke.mockResolvedValue([mockQuote]);
     const res = await listQuotesForAsset("asset-1");
     expect(res).toHaveLength(1);
+  });
+
+  it("refreshAssetQuote calls refresh_asset_quote", async () => {
+    mockInvoke.mockResolvedValue(mockQuote);
+    const res = await refreshAssetQuote("asset-1");
+    expect(res.id).toBe("q-1");
+    expect(mockInvoke).toHaveBeenCalledWith("refresh_asset_quote", {
+      assetId: "asset-1",
+    });
+  });
+
+  it("refreshAllActiveQuotes calls refresh_all_active_quotes", async () => {
+    mockInvoke.mockResolvedValue([mockQuote]);
+    const res = await refreshAllActiveQuotes();
+    expect(res).toHaveLength(1);
+    expect(mockInvoke).toHaveBeenCalledWith("refresh_all_active_quotes");
   });
 
   it("createActivity calls create_activity", async () => {

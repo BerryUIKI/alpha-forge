@@ -240,3 +240,26 @@ export function useRecordSell() {
     },
   });
 }
+
+// ── Market Data Quote Refresh ──────────────────────────────────────────────
+
+export function useRefreshAssetQuote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (assetId: string) =>
+      desktopApi.financial.refreshAssetQuote(assetId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useRefreshAllActiveQuotes() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => desktopApi.financial.refreshAllActiveQuotes(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
