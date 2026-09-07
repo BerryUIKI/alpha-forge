@@ -67,6 +67,7 @@ commands.allow = [
   "update_thesis_confidence",
   "close_thesis",
   "delete_thesis",
+  "link_thesis_asset",
   "add_thesis_evidence",
   "list_thesis_evidence",
   "delete_thesis_evidence",

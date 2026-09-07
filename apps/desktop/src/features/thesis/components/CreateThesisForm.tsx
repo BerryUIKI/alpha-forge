@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCreateThesis } from "../hooks/useTheses";
+import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 interface CreateThesisFormProps {
@@ -12,8 +13,10 @@ export function CreateThesisForm({ workspaceId, onCreated }: CreateThesisFormPro
   const [title, setTitle] = useState("");
   const [thesis, setThesis] = useState("");
   const [confidence, setConfidence] = useState(50);
+  const [portfolioAssetId, setPortfolioAssetId] = useState<string>("");
   const [error, setError] = useState("");
   const createThesis = useCreateThesis();
+  const activeAssetsQuery = useListActiveAssets();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -28,10 +31,12 @@ export function CreateThesisForm({ workspaceId, onCreated }: CreateThesisFormPro
         title: title.trim(),
         thesis: thesis.trim(),
         confidence,
+        portfolioAssetId: portfolioAssetId || undefined,
       });
       setTitle("");
       setThesis("");
       setConfidence(50);
+      setPortfolioAssetId("");
       setError("");
       onCreated(created.id);
     } catch (cause) {
@@ -48,6 +53,23 @@ export function CreateThesisForm({ workspaceId, onCreated }: CreateThesisFormPro
       <div>
         <label htmlFor="thesis-title" className="mb-1 block text-sm font-medium">{t("titleLabel")}</label>
         <input id="thesis-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t("titlePlaceholder")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label htmlFor="thesis-asset" className="mb-1 block text-sm font-medium">{t("linkAsset")}</label>
+        <select
+          id="thesis-asset"
+          value={portfolioAssetId}
+          onChange={(e) => setPortfolioAssetId(e.target.value)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+        >
+          <option value="">{t("selectAssetToLink")}</option>
+          {activeAssetsQuery.data?.map((asset) => (
+            <option key={asset.id} value={asset.id}>
+              {asset.display_code || asset.instrument_symbol || asset.name || asset.id}
+              {asset.name && asset.display_code ? ` - ${asset.name}` : ""}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label htmlFor="thesis-statement" className="mb-1 block text-sm font-medium">{t("thesisStatementLabel")}</label>

@@ -25,6 +25,7 @@ export const InvestmentThesisSchema = z
     status: ThesisStatusSchema,
     validationDate: z.string().nullable(),
     outcome: z.string().nullable(),
+    portfolioAssetId: z.string().nullable().optional(),
     createdAt: z.string().min(1),
     updatedAt: z.string().min(1),
   })
@@ -58,6 +59,7 @@ export interface CreateThesisParams {
   title: string;
   thesis: string;
   confidence?: number;
+  portfolioAssetId?: string | null;
 }
 
 const VoidResponseSchema = z.union([z.null(), z.undefined()]);
@@ -68,6 +70,18 @@ export async function createThesis(params: CreateThesisParams): Promise<Investme
     title: params.title,
     thesis: params.thesis,
     confidence: params.confidence ?? null,
+    portfolioAssetId: params.portfolioAssetId ?? null,
+  });
+  return InvestmentThesisSchema.parse(response);
+}
+
+export async function linkThesisAsset(
+  thesisId: string,
+  portfolioAssetId: string | null
+): Promise<InvestmentThesis> {
+  const response: unknown = await invoke("link_thesis_asset", {
+    thesisId,
+    portfolioAssetId: portfolioAssetId || null,
   });
   return InvestmentThesisSchema.parse(response);
 }

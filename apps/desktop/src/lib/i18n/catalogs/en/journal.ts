@@ -50,6 +50,11 @@ export const journal = {
   cardDetails: "View Details",
   cardQuickAction: "Transition Status",
   confidenceScore: "{score}% Conviction",
+  linkedAsset: "Linked Financial Asset",
+  linkAsset: "Link to Financial Asset (optional)",
+  selectAssetToLink: "Select portfolio asset...",
+  unlinkAsset: "Unlink Asset",
+  assetLinkedBadge: "Linked Asset",
 } as const;
 
 export type JournalKey = keyof typeof journal;

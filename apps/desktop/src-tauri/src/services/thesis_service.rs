@@ -217,4 +217,18 @@ impl ThesisService {
     ) -> Result<Vec<ThesisConfidenceSnapshot>, AppError> {
         self.repo.list_confidence_history(thesis_id).await
     }
+
+    /// Link or unlink a portfolio asset to a thesis.
+    pub async fn link_asset(
+        &self,
+        thesis_id: &str,
+        asset_id: Option<String>,
+    ) -> Result<InvestmentThesis, AppError> {
+        let asset_id_clean = asset_id.as_deref().map(str::trim).filter(|s| !s.is_empty());
+        self.repo.link_asset(thesis_id, asset_id_clean).await?;
+        self.repo
+            .get_thesis(thesis_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Thesis '{}' not found", thesis_id)))
+    }
 }
