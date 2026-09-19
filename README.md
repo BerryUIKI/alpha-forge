@@ -61,9 +61,9 @@ AlphaForge helps you:
 
 ## Status
 
-**Current program state (2026-08-24): Stabilization complete (S0-S6 accepted). Local MVP is release-ready.**
+**Current program state (2026-09-20): Core milestones are complete; M11 Portfolio Hardening & Release Candidate is planned.**
 
-The stabilization roadmap (S0-S6) has been fully completed and accepted. S0 (baseline build recovery), S1 (core Agent loop recovery with real-time streaming and structured output), S2 (IPC contract normalization across 100% of the 176 Tauri commands with Zod runtime validation), S3 (Artifact window least-privilege capability isolation and plugin safety), S4 (Research and Portfolio workflow closure with URL context authority and provenance tracking), S5 (Option module re-acceptance and pricing engines), and S6 (Release-readiness re-acceptance) are all accepted. M10 (Goose Agent Integration) remains planned behind its strict opt-in entry gate. See the [stabilization roadmap](docs/STABILIZATION_ROADMAP.md) and [architecture document](docs/ARCHITECTURE.md).
+The stabilization roadmap (S0-S6), M10 supervised Goose integration, AW0-AW7 managed Agent Worker isolation, and the native macOS GUI overhaul are complete on `dev`. Recent Portfolio work added canonical financial CRUD, thesis-to-asset linkage, market-data refresh, quote caching, and Generic/IBKR activity-statement import. M11 now governs legacy-surface cleanup, large-portfolio performance, release packaging, and cross-platform packaged acceptance. See the [M11 execution plan](docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md), [milestone roadmap](docs/MILESTONE_ROADMAP.md), and [architecture document](docs/ARCHITECTURE.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -78,7 +78,8 @@ The stabilization roadmap (S0-S6) has been fully completed and accepted. S0 (bas
 | M7 | ✅ Stabilized (S3) | Internal Plugin Ecosystem & Safe Renderers |
 | M8 | ✅ Complete (S6) | Local MVP Completion & Release Readiness |
 | M9 | ✅ Complete (S5) | Option Module Integration & Pricing Models |
-| M10 | 📋 Planned | Goose Agent Integration (Opt-in Entry Gate) |
+| M10 | ✅ Complete | Supervised Goose Agent Integration |
+| M11 | 📋 Planned | Portfolio Hardening & Release Candidate |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
@@ -92,24 +93,26 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - React 19 + TypeScript + Vite foundation
 - Rust backend with SQLite persistence
 - IPC communication layer with strict Zod validation and static registration parity checks
-- Comprehensive documentation (17+ documents)
+- Comprehensive product, architecture, operations, and contributor documentation
 - Agent task lifecycle: creation, background Tokio execution, real-time event streaming (`task:progress`, `task:completed`, etc.), cancellation, failure context, and structured `ResearchCompletion` result rendering
 - Real-time event streaming
 - Cancellation support
 - Artifact persistence layer
 - Artifact runtime manager
-- Artifact-window routing and isolation merged in PR #88 with focused route and permission tests; packaged smoke acceptance remains pending
+- Artifact-window routing, isolation, and permission tests
 - Research workspace, thesis, knowledge graph, and portfolio workflows
-- Validated internal plugin registry, predefined renderers, and Settings management are reachable; company-comparison Artifact creation is pending review
+- Validated internal plugin registry, predefined renderers, and Settings management
+- Supervised Goose sidecar with read-only MCP scopes, human-approved proposals, and a zero-trading boundary
+- Financial Portfolio workflows with thesis linkage, market-data refresh, and Generic/IBKR file import
 
-### Stabilization priorities
+### Active M11 priorities
 
-- Review the controlled company-comparison create-to-Artifact workflow
-- Review the controlled Option strategy create/read/delete workflow
-- Complete remaining cross-layer IPC coverage and retain fixture evidence
-- Retain evidence for CI, E2E, packaged smoke, security, and release gates
+- Audit and retire superseded Portfolio runtime paths safely
+- Establish and meet approved large-portfolio performance budgets
+- Produce reproducible macOS Apple Silicon and Windows NSIS packages
+- Retain checksum, SBOM, packaged-smoke, upgrade, security, and release-gate evidence
 - Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
-- M10: constrained Goose Agent integration after MVP completion
+- Live broker synchronization and FIRE planning remain deferred pending separate approval
 
 ---
 
@@ -121,7 +124,7 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 | **Backend** | Rust, Tokio, SQLx, SQLite |
 | **Frontend** | React 19, TypeScript, Vite 6 |
 | **UI** | Tailwind CSS 4, shadcn/ui, Radix UI, Lucide |
-| **AI** | OpenAI Responses API integration under stabilization; Goose planned |
+| **AI** | OpenAI Responses integration and supervised Goose sidecar |
 | **Quality** | ESLint, Prettier, Vitest, Rustfmt, Clippy |
 
 ---
@@ -209,6 +212,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | [Goose integration](docs/goose/README.md) | Post-MVP Goose boundaries and roadmap |
 | [Delivery playbook](docs/milestones/DELIVERY_PLAYBOOK.md) | Milestone execution and evidence rules |
 | [Sequential task breakdown](docs/milestones/SEQUENTIAL_TASK_BREAKDOWN.md) | One-task-at-a-time child-agent execution queue |
+| [M11 execution plan](docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md) | Active Portfolio hardening and release-candidate task queue |
 
 ### Technical Documentation
 
@@ -263,7 +267,7 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/roadmap-dark.svg">
-  <img src="assets/roadmap-light.svg" alt="Roadmap Timeline M0-M10" width="760">
+  <img src="assets/roadmap-light.svg" alt="Roadmap Timeline M0-M11" width="760">
 </picture>
 
 ### Phase Overview
@@ -273,18 +277,19 @@ All contributions must follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 - Desktop runtime
 - Application foundation
 
-**Intelligence (M2–M3)**: ⚠️ Stabilization required
-- Agent runtime repairs and the Artifact-window route are merged; packaged Artifact verification remains pending
+**Intelligence (M2–M3)**: ✅ Stabilized
+- Agent execution, managed worker isolation, and least-privilege Artifact windows are integrated
 
-**Features (M4–M6)**: ✅ Implemented; verification continues
+**Features (M4–M6)**: ✅ Complete
 - Research workspace, thesis tracking, and portfolio analysis
 
-**Extensibility (M7)**: ⚠️ Partial
+**Extensibility (M7)**: ✅ Complete within the internal-plugin boundary
 
-**Release and post-MVP (M8–M10)**:
-- 📋 Local MVP completion and release readiness
-- 📋 Option module integration
-- 📋 Goose Agent integration after MVP completion
+**Release and post-MVP (M8–M10)**: ✅ Complete
+- Local MVP, Option research, and supervised Goose integration
+
+**Release candidate (M11)**: 📋 Planned
+- Portfolio hardening, performance budgets, reproducible packages, and packaged acceptance
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for details.
 
@@ -307,7 +312,8 @@ Security is a top priority. See [SECURITY.md](SECURITY.md) for:
 1. **No production authentication, billing, or licensing**: These are deliberately deferred from the local MVP.
 2. **No cloud backup or automatic updates**: Users control manual local exports and manual downloads.
 3. **No macOS notarization in the MVP**: A Gatekeeper warning is a known release risk.
-4. **AI-provider integration remains stabilization-scoped**: The OpenAI Responses adapter exists, but full workflow and packaged verification are not yet accepted.
+4. **External AI providers require explicit configuration**: Credentials remain outside React and provider use is opt-in.
+5. **No live broker synchronization**: Generic and IBKR statement files can be imported, but direct broker connectivity is deferred.
 
 ---
 

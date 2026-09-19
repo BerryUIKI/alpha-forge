@@ -4,19 +4,18 @@ This directory is the canonical documentation set for localizing the AlphaForge 
 
 ## Current baseline
 
-At the original baseline used to write this plan:
+The M8 i18n foundation and S6 re-acceptance are complete on `dev`. AlphaForge
+has one application locale provider, English and Simplified-Chinese namespaced
+catalogs, persisted locale selection, shared formatters, localized stable-error
+presentation, and catalog-parity tests. Option and Goose surfaces were added
+through M9 and M10. Reuse and extend this framework; do not create a second
+locale system.
 
-- The React application does not have an application-wide locale provider or message catalog.
-- User-facing strings are embedded in components.
-- Locale-aware number and date presentation is a UI requirement in [UI Guidelines](../UI_GUIDELINES.md), but it is not yet centralized.
-- The M8 launch-locale decision is still governed by the [M8 Decision Record](../M8_DECISION_RECORD.md).
-- An M8 locale prototype was subsequently integrated, including an application locale provider and message catalogs. The 2026-08-12 integration audit nevertheless reopened release acceptance because hard-coded user-facing strings and unsafe translation fallbacks remain.
+## Accepted MVP boundary
 
-Reuse and repair the integrated translation framework; do not create a second locale system.
-
-## MVP boundary
-
-The planned MVP foundation supports Simplified Chinese (`zh-CN`) and English (`en`). The product owner must record the launch default in the M8 decision record before implementation is merged. English is the source and missing-key fallback locale so development remains deterministic.
+The accepted MVP foundation supports Simplified Chinese (`zh-CN`) and English
+(`en`). English is the source and missing-key fallback locale so development
+remains deterministic. Additional locales require a separately approved scope.
 
 The first delivery includes:
 
@@ -38,22 +37,22 @@ The first delivery does not include:
 
 ## Document map
 
-| Document | Purpose |
-| --- | --- |
-| [Architecture](ARCHITECTURE.md) | Ownership boundaries, catalog design, formatting, error localization, and runtime flow |
-| [Implementation Plan](IMPLEMENTATION_PLAN.md) | Ordered work packages, file-level path, tests, gates, and definition of done |
-| [Terminology Guide](TERMINOLOGY_GUIDE.md) | Canonical English source terms for investment research, portfolio, and agent domains |
-| [String Inventory](STRING_INVENTORY.md) | Complete inventory of all user-visible strings by namespace and owner |
-| [Milestone Roadmap](../MILESTONE_ROADMAP.md) | Program sequencing and M8 acceptance gates |
-| [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md) | Rules an implementation agent must follow for every milestone work package |
+| Document                                                | Purpose                                                                                |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [Architecture](ARCHITECTURE.md)                         | Ownership boundaries, catalog design, formatting, error localization, and runtime flow |
+| [Implementation Plan](IMPLEMENTATION_PLAN.md)           | Ordered work packages, file-level path, tests, gates, and definition of done           |
+| [Terminology Guide](TERMINOLOGY_GUIDE.md)               | Canonical English source terms for investment research, portfolio, and agent domains   |
+| [String Inventory](STRING_INVENTORY.md)                 | Complete inventory of all user-visible strings by namespace and owner                  |
+| [Milestone Roadmap](../MILESTONE_ROADMAP.md)            | Program sequencing and M8 acceptance gates                                             |
+| [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md) | Rules an implementation agent must follow for every milestone work package             |
 
-## Required decisions before implementation
+## Recorded ownership decisions
 
-| Decision                                            | Owner                        | Gate                              |
-| --------------------------------------------------- | ---------------------------- | --------------------------------- |
-| Launch default: `zh-CN` or `en`                     | Product owner                | Before catalog rollout            |
-| Product name and finance terminology glossary       | Product + bilingual reviewer | Before critical-flow translation  |
-| Currency display policy for mixed-market portfolios | Product owner                | Before portfolio localization     |
-| Translation reviewer and review SLA | @BerryUIKI (product owner)   | Before declaring M8 i18n complete |
+| Decision                                            | Owner                        | Status                                |
+| --------------------------------------------------- | ---------------------------- | ------------------------------------- |
+| Launch default and supported locale identifiers     | Product owner                | Recorded for the accepted rollout     |
+| Product name and finance terminology glossary       | Product + bilingual reviewer | Published and maintained              |
+| Currency display policy for mixed-market portfolios | Product owner                | Implemented through shared formatters |
+| Translation reviewer and review SLA                 | @BerryUIKI (product owner)   | Required for catalog changes          |
 
 Locale selection changes presentation only. Stored timestamps remain UTC/ISO 8601, persisted enum values and error codes remain stable, and monetary values retain their original currency code.

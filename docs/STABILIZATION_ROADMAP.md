@@ -1,15 +1,15 @@
 # AlphaForge Stabilization Roadmap
 
-**Status:** Active
+**Status:** Complete; retained as historical acceptance evidence
 **Established:** 2026-08-12
-**Last reviewed:** 2026-08-15
+**Last reviewed:** 2026-09-20
 **Purpose:** Restore a truthful, tested, end-to-end MVP baseline before feature expansion.
 
 ## Why stabilization is required
 
 The 2026-08-12 integration audit found that substantial frontend and backend code exists, but several core user journeys are blocked by incompatible IPC contracts, unreachable UI, incomplete runtime wiring, and contradictory status documentation.
 
-The program must not continue to describe M8 or M9 as accepted until the stabilization gates below are satisfied. M10 Goose remains planned.
+The stabilization gates below were satisfied through S6. M8 and M9 were re-accepted, and M10 subsequently completed through PRs #161 through #166. The active forward plan is [M11 Portfolio Hardening and Release Candidate](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
 
 See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md) for evidence and the detailed rectification sequence.
 
@@ -33,7 +33,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 | S4 — Research and portfolio workflow closure | ✅ Complete | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware. |
 | S5 — Option module re-acceptance | ✅ Complete | End-to-end chain acquisition, contract inspection, strategy persistence, and numerical pricing workflows verified. |
 | S6 — Release-readiness re-acceptance | ✅ Complete | Verification matrix, E2E flows, packaging, security, and English docs fully audited and accepted. |
-| M10 — Goose integration | Planned after S6 | Opt-in, read-only, pinned, scoped Goose analysis passes its own entry gate. |
+| M10 — Goose integration | ✅ Complete (PRs #161-#166) | Opt-in, supervised, pinned, workspace-scoped Goose integration passed its entry and acceptance gates. |
 
 ## S0 — Baseline truth and build recovery
 
@@ -228,9 +228,9 @@ Select workspace
 - [x] README, Architecture, Product, Roadmap, and milestone documents agree.
 - [x] A release owner explicitly accepts the local MVP.
 
-## M10 entry gate after stabilization
+## M10 entry gate after stabilization — completed
 
-Goose remains planned until all of the following are true:
+M10 began only after the following conditions were satisfied:
 
 - S6 is accepted.
 - The upstream version, license, CLI/API, packaging, and checksum are reverified.

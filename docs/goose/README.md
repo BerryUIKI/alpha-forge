@@ -4,7 +4,10 @@ This directory defines the post-MVP integration boundary for the Goose Agent. In
 
 ## Schedule gate
 
-Goose integration is milestone M10 and must not begin until the M8 MVP milestone is complete. The planned sequence completes M9 Option integration first unless the product owner explicitly authorizes M10 as an independent post-MVP workstream. Documentation, dependency review, and throwaway technical research may occur earlier, but no Goose binary, runtime, provider credential, extension, or background execution path is shipped in the MVP.
+The post-MVP schedule gate was satisfied: M8 and M9 completed before M10, and
+the supervised Goose integration was delivered through PRs #161 through #166.
+M10 is complete. Future Goose upgrades must preserve the accepted boundary and
+require an active milestone or focused maintenance authorization.
 
 ## Why integrate Goose
 
@@ -47,7 +50,9 @@ React task UI
   -> user accepts or rejects any proposed write
 ```
 
-This sidecar adapter is the preferred first spike because it isolates an evolving upstream runtime behind one Rust interface. A direct library or service API may replace it only after the M10 technical spike proves it safer and easier to package.
+The supervised sidecar adapter is the accepted topology because it isolates an
+evolving upstream runtime behind one Rust interface. A direct library or
+service API may replace it only through a new approved ADR and security review.
 
 Do not enable Tauri shell access for React. Rust starts the approved executable directly with a fixed path and bounded arguments; user input never becomes a command line or shell fragment.
 
@@ -68,7 +73,7 @@ credential, provider, and packaging policies. See the
 | [Managed Agent Workers](../agent/README.md)             | Shared subprocess architecture, implementation roadmap, and checklist              |
 | [Security](../SECURITY.md)                              | Application-wide trust and permission model                                        |
 
-## Upstream facts to reverify at M10 kickoff
+## Upstream facts to reverify before any Goose upgrade
 
 Goose evolves quickly, so the implementation agent must recheck these sources before choosing a version or API:
 

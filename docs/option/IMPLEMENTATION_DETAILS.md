@@ -1,6 +1,9 @@
 # Option Module Implementation Details
 
-This document translates the Option specifications into the current repository's concrete implementation path. It is not an authorization to implement M9 before the milestone gate.
+This document translates the Option specifications into the repository's
+concrete implementation path. M9 is complete through S5; use this as a
+maintenance reference, not as authorization to reactivate or broaden the
+milestone.
 
 **Rebaseline (M9-01):** ADRs for pricing models, data providers, and Artifact isolation are approved. See [ADR-0005](../DECISIONS/0005-option-pricing-models.md), [ADR-0006](../DECISIONS/0006-option-data-providers.md), and [ADR-0007](../DECISIONS/0007-option-artifact-isolation.md).
 

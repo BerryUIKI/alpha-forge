@@ -1,8 +1,9 @@
 # Portfolio Integration Plan (Wealthfolio → AlphaForge)
 
-**Status:** Approved — implementation start
-**Branch:** `feature/portfolio-integration` (forked from `dev`)
-**Date:** 2026-08-13
+**Status:** Phases 0-4 integrated; Phase 5 hardening is governed by M11
+**Historical branch:** `feature/portfolio-integration` (merged into `dev`)
+**Originally approved:** 2026-08-13
+**Baseline revalidated:** 2026-09-20 at `origin/dev` commit `9e21553`
 **Author:** Handoff from planning session (see conversation history)
 **Goal:** Fully integrate Wealthfolio's portfolio functionality into this
 repository's Portfolio module, resolving Wealthfolio's technical debt instead
@@ -47,19 +48,22 @@ phases.
 | D2 | **Single SQLite database.** All tables (research + financial) in one DB file. | Fewer databases, simpler backups/sync, local-first. |
 | D3 | **ORM = SQLx.** Wealthfolio uses Diesel; we migrate all financial persistence to SQLx. | Matches this repo's existing ORM. No Diesel in this repo. |
 | D4 | **Domain model unification.** Financial domain (Account, Holding, Activity, Lot, Portfolio, Snapshot) and research domain (Thesis, Research, Artifact, KnowledgeGraph) remain separate modules in the same `crates/domain` crate, linked by foreign keys. | Keeps modules independent; avoids a god-model. |
-| D5 | **Data linking:** `InvestmentThesis.portfolio_holding_id: Option<String>` links a thesis to a specific holding (user-optional). | Core product synergy: research → decision → validation loop. |
+| D5 | **Data linking:** `InvestmentThesis.portfolio_asset_id: Option<String>` links a thesis to a canonical financial asset (user-optional). | One asset may appear in multiple accounts/lots, so the canonical asset is the stable research link. |
 | D6 | **Sidebar placement:** permanent **Portfolio (📊)** entry in the left sidebar (Workspace group). | User-approved mockup. Note (2026-08-16): implemented in the redesigned `LeftSidebar` nav groups (`NavItem`, route `/portfolio`). |
 | D7 | **Phased execution** so the app never freezes. | Development continuity. |
 | D8 | **Do NOT copy Wealthfolio's debt:** 3,264 unwrap/expect panic points, Diesel-specific repo layer, hardcoded prod URLs, addon runtime. | Debt resolution is a primary goal. |
-| D9 | **Parallel agents allowed** for independent workstreams (e.g., migration + UI). | User approved multi-agent parallel work. |
+| D9 | **Historical integration phases allowed parallel agents** for independent workstreams (for example, migration and UI). The active M11 queue is strictly sequential. | Preserve the original delivery decision without overriding the current execution contract. |
 | D10 | **No autonomous trading.** The app tracks portfolios; it never executes trades or auto-decides investments. | Product constraint (AGENTS.md §15). |
 
 ---
 
-## 4. Current state — AlphaForge portfolio surface
+## 4. Historical pre-integration state
 
-Everything below already exists and is *functional but minimal*. Phase 3
-replaces/extends it; do not delete it blindly — extend it.
+This section records the original baseline used to approve the integration. It
+is not the current implementation inventory. Use the
+[Portfolio Roadmap](portfolio/ROADMAP.md), current source, and the
+[M11 execution plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md) for
+current work. Do not use this historical snapshot to recreate superseded code.
 
 ### 4.1 Domain (`crates/domain/src/portfolio.rs`, ~150 lines)
 
@@ -123,7 +127,7 @@ apps/desktop (Tauri)  ── IPC ──►  commands/  ──►  services/
 crates/domain ◄─── (pure models, no I/O) ──── repositories (SQLx)
    ├── portfolio (financial domain, ported from Wealthfolio)
    ├── thesis / research / workspace / ...   (research domain, existing)
-   └── cross-links: thesis.portfolio_holding_id → holdings.id
+   └── cross-links: thesis.portfolio_asset_id → financial_assets.id
                                                           │
                                             SQLx migrations (single SQLite DB)
 ```
@@ -165,30 +169,30 @@ crates/domain ◄─── (pure models, no I/O) ──── repositories (SQLx
 
 ## 7. Phased execution plan
 
-Each phase ends with a working build + tests on `feature/portfolio-integration`.
-Phases are independent enough that some can run in parallel with different
-agents, but **Phase 1 must precede Phase 2**, and **Phase 2 must precede
-Phase 3**.
+The phases below record the historical integration sequence completed on
+`feature/portfolio-integration`. The active M11 work must instead follow the
+[M11 execution plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md), with
+one task branch and one PR executed sequentially from the latest `origin/dev`.
 
-### Phase 0 — Prerequisite: debt baseline (est. 3–4 days)
+### Phase 0 — Prerequisite: debt baseline ✅ Done
 
-- [ ] Agree the target error model (`AppError` shape: code/message/context/recoverable).
-- [ ] Port **only** the cleanest Wealthfolio services as the "reference
+- [x] Agree the target error model (`AppError` shape: code/message/context/recoverable).
+- [x] Port **only** the cleanest Wealthfolio services as the "reference
       implementation" to learn the domain; do not copy panic-prone code.
-- [ ] Decide model precision policy: `rust_decimal` for money/quantity
+- [x] Decide model precision policy: `rust_decimal` for money/quantity
       (matches Wealthfolio); keep `f64` only for display-only ratios.
 
-### Phase 1 — Storage: financial schema on SQLx (est. 2–3 weeks)
+### Phase 1 — Storage: financial schema on SQLx ✅ Done
 
-- [ ] Add SQLx migrations porting the financial schema from
+- [x] Add SQLx migrations porting the financial schema from
       `docs/wealthfolio-audit/04-data-structure-spec.md` (accounts, holdings,
       activities, lots, valuations/snapshots, goals, net-worth, tax/cash-flow
       tables as needed for the chosen feature slice).
-- [ ] Keep existing research tables untouched; add `portfolio_holding_id` FK
-      to `theses` only in Phase 4 (migration for it later).
-- [ ] Build SQLx repositories following `portfolio_repository.rs` conventions
+- [x] Keep existing research tables intact and add the nullable
+      `portfolio_asset_id` link through append-only migration 0023 in Phase 4.
+- [x] Build SQLx repositories following `portfolio_repository.rs` conventions
       (module + `_test.rs` per repo).
-- [ ] **Verify:** `cargo test` green; migration runs from clean DB;
+- [x] **Verify:** `cargo test` green; migration runs from clean DB;
       no `unwrap()` in new repo code.
 
 ### Phase 2 — Core: financial business logic (est. 3–4 weeks) ✅ DONE
@@ -243,15 +247,22 @@ developed and tested without the main application.
 
 ### Phase 5 — Polish & debt cleanup (est. 2–3 weeks, ongoing)
 
-- [ ] Broker sync (Wealthfolio `crates/connect`) — optional add-on, gated.
+- [x] Generic and IBKR activity-statement file import (PR #213).
 - [x] Market-data refresh scheduling & quote caching (MarketDataService, Tauri commands, TanStack Query mutations, and UI refresh triggers).
-- [ ] Performance profiling of valuation on large portfolios.
-- [ ] Sweep remaining `unwrap()`/`expect()` in ported code.
-- [ ] Update docs (`DATA_MODEL.md`, `ARCHITECTURE.md`) to include financial
-      domain.
-- [ ] Final: full `pnpm check` + `cargo clippy -- -D warnings` clean.
+- [x] Update top-level `DATA_MODEL.md` and `ARCHITECTURE.md` for the financial domain (PR #215).
+- [ ] Audit canonical versus legacy Portfolio runtime paths and remove only approved superseded surfaces.
+- [ ] Establish and meet approved large-portfolio performance budgets.
+- [ ] Sweep remaining production panic paths identified by the M11 audit.
+- [ ] Produce reproducible macOS Apple Silicon and Windows NSIS packages.
+- [ ] Retain packaged smoke and release-candidate acceptance evidence.
 
-**Total estimate: ~15 weeks (3.5 months).**
+The active sequence and acceptance criteria are defined in the
+[M11 execution plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
+Live broker synchronization and FIRE/retirement planning are deferred to a
+separately approved milestone.
+
+The original estimate was approximately 15 weeks. It is historical and must not
+be used as a forecast for M11.
 
 ---
 
@@ -264,9 +275,9 @@ developed and tested without the main application.
 | Frontend scope creep (charts, tables) | Reuse existing `packages/ui` + `financial-components` package; no `@wealthfolio/ui` import. |
 | DB migration conflicts with research tables | Append-only migrations; name financial migrations `0015_...` onward; never edit applied migrations. |
 | Thesis-holding link breaks existing thesis flow | `Option<String>` FK, nullable; UI defaults to "no link". |
-| Parallel agents collide on shared files | Use per-phase file ownership map (see below); merge via PR review. |
+| Multiple collaborators collide on shared files | Assign one M11 task at a time and merge each focused PR into `dev` before the next task starts. |
 
-### Suggested agent file-ownership (parallel work)
+### Historical agent file ownership
 
 | Agent | Owns |
 |-------|------|
@@ -288,16 +299,14 @@ developed and tested without the main application.
 
 ---
 
-## 10. Open questions (defer to implementation)
+## 10. Recorded scope dispositions
 
-1. Feature slice for first release: full Wealthfolio surface or MVP subset
-   (accounts + holdings + transactions + valuation + performance + allocation)?
-   **Recommendation: MVP subset first, add goals/net-worth/FIRE in Phase 5.**
-2. Keep Wealthfolio's `crates/market-data` provider set (Yahoo, Alpha Vantage,
-   Finnhub, ...) or start with one provider? **Recommendation: start with
-   fixture + Yahoo.**
-3. Wealthfolio's CSV import formats — port all or the common ones (IBKR,
-   Coinbase, generic)? **Recommendation: generic + IBKR first.**
+1. The first integrated release uses the approved local Portfolio subset;
+   FIRE/retirement planning is deferred.
+2. Market data begins with deterministic fixture behavior and the approved
+   provider path; additional providers require their own review.
+3. File import supports Generic and IBKR activity statements. Other formats
+   and live broker synchronization are deferred.
 
 ---
 

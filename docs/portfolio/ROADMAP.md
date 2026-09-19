@@ -48,10 +48,10 @@ never `f64`.
 | Phase 1 | ✅ Complete | Financial schema on SQLx (migrations 0015–0021) + repositories |
 | Phase 2 | ✅ Complete | Core financial services (holdings, lots, valuation, performance, allocation, snapshots, net worth) + 18 commands |
 | Phase 2.5 | ✅ Done | Market-data crate (quotes, asset profiles), income service |
-| Phase 3 | 📋 Planned | Frontend UI (dashboard, accounts, holdings, activities) |
-| Phase 3.5 | 📋 Planned | Repository-level CRUD commands (platform, account, asset, quote seed) |
-| Phase 4 | 📋 Planned | Thesis ↔ holding linkage |
-| Phase 5 | 📋 Planned | Polish, broker sync, import formats, FIRE calculator |
+| Phase 3 | ✅ Complete | Frontend UI (dashboard, accounts, holdings, activities) |
+| Phase 3.5 | ✅ Complete | Repository-level CRUD commands (platform, account, asset, quote seed) |
+| Phase 4 | ✅ Complete | Thesis ↔ financial-asset linkage (PR #209) |
+| Phase 5 | 🚧 In progress | Hardening and release-candidate work tracked by M11 |
 
 Planning estimates are indicative; do not treat calendar weeks as a completion
 claim.
@@ -128,73 +128,78 @@ testable without the main application.
 
 ---
 
-## Phase 3 — Frontend UI 📋 Planned
+## Phase 3 — Frontend UI ✅ Complete
 
 **Goal:** Replace the placeholder `PortfolioDashboard` with the real portfolio
 workspace.
 
 ### Deliverables
-- [ ] Sidebar: permanent **Portfolio (📊)** entry (D6)
-- [ ] Account management: create/edit/archive accounts, platforms
-- [ ] Holdings view: positions, cost basis, market value, gains
-- [ ] Activity ledger: transactions, dividends, fees
-- [ ] Lot tracking: open lots, FIFO disposal history
-- [ ] Valuation & performance charts (time-weighted, XIRR)
-- [ ] Allocation view: actual vs target, drift warnings
-- [ ] Snapshots & net worth timeline
-- [ ] Income view: dividends/interest aggregation, YoY growth
+- [x] Sidebar: permanent Portfolio entry (D6)
+- [x] Account management and canonical financial CRUD dialogs
+- [x] Holdings view: positions, cost basis, market value, and gains
+- [x] Activity ledger: transactions, dividends, and fees
+- [x] Lot tracking and FIFO disposal support
+- [x] Valuation and performance charts
+- [x] Allocation view and drift warnings
+- [x] Snapshots and net-worth surfaces
+- [x] Income aggregation services and UI integration
 
 ### Acceptance
-- [ ] `pnpm lint` + `pnpm typecheck` green
-- [ ] i18n catalogs extended (existing Portfolio zh/en)
-- [ ] Empty / partial / error states for every async surface
+- [x] `pnpm lint` and `pnpm typecheck` passed at integration
+- [x] English and Simplified-Chinese catalogs extended with parity
+- [x] Loading, empty, partial, offline, and error behavior covered on the integrated surfaces
 
 ---
 
-## Phase 3.5 — Repository CRUD Commands 📋 Planned
+## Phase 3.5 — Repository CRUD Commands ✅ Complete
 
 **Goal:** Thin Tauri commands exposing repository-level CRUD so the main
 application can seed data without frontend work.
 
 ### Deliverables
-- [ ] `create_platform`, `list_platforms`, `get_platform`
-- [ ] `create_financial_account`, `list_financial_accounts`, `archive_financial_account`
-- [ ] `create_asset`, `upsert_quote`
-- [ ] `create_activity`
-- [ ] `create_lot` (manual lot seeding)
-- [ ] `create_taxonomy` (categories for allocation)
-- [ ] Market-data commands: `search_symbols`, `get_quote`, `get_asset_profile`
+- [x] Platform CRUD
+- [x] Financial-account CRUD and archive behavior
+- [x] Asset and quote CRUD
+- [x] Activity creation and list operations
+- [x] Lot operations used by holdings and FIFO flows
+- [x] Taxonomy and allocation-target CRUD
+- [x] Market-data resolution and refresh commands
 
 ### Acceptance
-- [ ] All commands registered in `lib.rs` with `AppState` wiring
-- [ ] Command tests (repository-backed) green
+- [x] Commands registered with `AppState` wiring and IPC parity coverage
+- [x] Repository-backed command and service tests passed at integration
 
 ---
 
-## Phase 4 — Thesis ↔ Holding Linkage 📋 Planned
+## Phase 4 — Thesis ↔ Financial-Asset Linkage ✅ Complete
 
 **Goal:** Connect research to decisions (D5).
 
 ### Deliverables
-- [ ] Migration: `theses.portfolio_holding_id TEXT NULL REFERENCES holdings(id)`
-- [ ] Thesis editor: optional holding picker
-- [ ] Portfolio review surfaces linked thesis alignment, confidence, validation
-- [ ] Knowledge graph: optional holding nodes
+- [x] Append-only migration `0023_theses_portfolio_asset_link.sql`
+- [x] Optional financial-asset picker and link/unlink behavior in thesis UI
+- [x] Portfolio review alignment uses authoritative asset linkage with symbol fallback
+- [x] Linked asset identity is visible from thesis cards and details
 
 ### Acceptance
-- [ ] End-to-end: create holding → link thesis → review shows alignment
+- [x] Create or select asset -> link thesis -> review shows alignment
 
 ---
 
-## Phase 5 — Polish & Extras 📋 Planned
+## Phase 5 — Hardening & Release Candidate 🚧 In progress
 
 ### Deliverables
-- [ ] Broker sync (Wealthfolio `crates/connect`) — optional, gated add-on
-- [ ] CSV import formats: generic + IBKR first
-- [ ] FIRE / retirement calculator port (`planning::retirement`)
-- [ ] Market-data refresh scheduling & quote caching
-- [ ] Sweep remaining `unwrap()`/`expect()` in ported code
-- [ ] Final full `pnpm check` + `cargo clippy -- -D warnings` clean
+
+- [x] Generic and IBKR activity-statement file import (PR #213)
+- [x] Market-data refresh and quote caching (PR #211)
+- [x] Top-level financial architecture and data-model synchronization (PR #215)
+- [ ] Audit and retire superseded Portfolio runtime paths
+- [ ] Establish and meet approved large-portfolio performance budgets
+- [ ] Sweep remaining production panic paths identified by the M11 audit
+- [ ] Produce macOS Apple Silicon and Windows NSIS release-candidate packages
+- [ ] Retain cross-platform packaged smoke and release-gate evidence
+
+Live broker synchronization and FIRE/retirement planning are deferred. They require separate product, credential, privacy, security, and architecture approval and are not part of M11.
 
 ---
 
@@ -216,12 +221,13 @@ Phase 3.5 (CRUD commands) — enables app-seeding for Phase 3
 Phase 4 (thesis linkage) — after theses + holdings both exist
     │
     ▼
-Phase 5 (polish, sync, FIRE)
+Phase 5 / M11 (hardening and release candidate)
 ```
 
-Phase 1 → Phase 2 must precede everything. Phase 2.5 is independent of the
-frontend and can proceed in parallel with Phase 3 planning. Phase 4 requires
-Phase 3 (holding management UI) to be usable.
+Phases 1 through 4 are complete. Phase 5 is governed by the
+[M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
+Historical phase dependencies remain useful for architecture context but are no
+longer an active branch sequence.
 
 ---
 
@@ -231,7 +237,7 @@ Phase 3 (holding management UI) to be usable.
 - [ ] `cargo clippy --all-targets --all-features -- -D warnings` clean
 - [ ] No new `unwrap()`/`expect()` outside tests
 - [ ] Docs updated before the code ships
-- [ ] PR merged via single-feature PR into `feature/portfolio-integration`
+- [ ] PR merged through a focused task branch into `dev`
 
 ---
 
@@ -241,4 +247,5 @@ Phase 3 (holding management UI) to be usable.
 - [API Specification](API_SPEC.md) — live command surface
 - [Domain Models](DOMAIN_MODELS.md) — enum/struct reference
 - [Frontend Integration](FRONTEND_INTEGRATION.md) — flagship UI plan
+- [M11 Execution Plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md) — active hardening and release queue
 - [Wealthfolio Audit](../wealthfolio-audit/README.md) — 14 audit documents

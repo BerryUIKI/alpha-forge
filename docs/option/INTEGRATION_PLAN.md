@@ -1,8 +1,11 @@
 # Option Module Integration Plan
 
-## Purpose and schedule
+## Purpose and historical schedule
 
-This plan integrates the Option module into the current AlphaForge architecture as milestone M9. M9 begins only after the M8 local MVP gate is complete, unless the product owner explicitly changes the milestone order. This prevents a large derivatives feature from destabilizing MVP release work.
+This plan records how the Option module was integrated as milestone M9 after the
+M8 local MVP gate. M9 is complete through S5. The stages below are retained as
+architecture and acceptance history; they are not an active implementation
+queue.
 
 The plan supersedes the earlier assumption that `integration/option` can be merged into `dev` in one step. The historical candidate remains valuable, but current `dev` has evolved and the candidate changes shared agent, workspace, and application-state files.
 
@@ -17,7 +20,9 @@ The current `dev` baseline contains:
 - `crates/option-core`, Option services and Tauri commands, the desktop API module, route, hooks, and feature components.
 - The Option specifications in this directory.
 
-The runtime is not yet accepted as a complete vertical slice:
+At the M9 rebaseline, the runtime was not yet accepted as a complete vertical
+slice. The following gaps are historical and were subsequently closed or
+explicitly deferred before S5 acceptance:
 
 - The canonical persistence baseline is implemented and focused migration verification passes; repository CRUD/isolation coverage remains pending.
 - Option IPC request/response naming is now normalized at the command boundary: Rust request/response DTOs use camelCase serde while domain and database models remain snake_case. The desktop API no longer invokes the unsupported `create_option_chain` command; `fetch_option_chain` is the acquisition and persistence path.
@@ -174,4 +179,7 @@ Before merge, each slice documents how to disable its route or feature flag with
 
 ## Success criteria
 
-M9 is complete only when all required slices are on `dev`, the release gate has evidence, and the milestone record is updated. Candidate-branch code, unchecked boxes, or a successful compile alone are insufficient.
+M9 met these criteria through S5: required slices are on `dev`, the release
+gate has evidence, and the milestone record is complete. Candidate-branch code,
+unchecked historical boxes, or a successful compile alone remain insufficient
+evidence for future Option changes.

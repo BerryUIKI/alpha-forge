@@ -7,21 +7,25 @@
 ## Work Package Summary
 
 ### I18N-0: Decision and Inventory ✅
+
 - Decision record complete
 - String inventory documented
 - Terminology guide published
 
 ### I18N-1: Runtime Foundation ✅
+
 - Locale provider implemented
 - System language detection added
 - Formatters tested
 
 ### I18N-2: Application Shell ✅
+
 - Navigation localized
 - Settings localized
 - Common states localized
 
 ### I18N-3: Critical Workflows ✅
+
 - Workspace/Today (M8-05)
 - Research (M8-06)
 - Journal/Thesis (M8-07)
@@ -30,6 +34,7 @@
 - Agent (M8-10)
 
 ### I18N-4: Artifact and Error Integration ✅
+
 - Error catalog created
 - Error-code mapping implemented
 - Locale access provided
@@ -79,6 +84,7 @@ pnpm lint
 **Total message keys**: ~200+
 
 **Coverage by namespace**:
+
 - Common UI: 26 keys
 - Navigation: 6 keys
 - Settings: 26 keys
@@ -99,9 +105,9 @@ pnpm lint
    - Translator review
    - Locale selector update
 
-2. **Option Module**: Deferred to M9
-   - Option catalog namespace reserved
-   - Will be added during M9 integration
+2. **Option Module**: Completed through M9
+   - Option catalog namespace is integrated
+   - Future Option surfaces must preserve catalog parity
 
 3. **Advanced Features**:
    - Right-to-left (RTL) support
@@ -205,18 +211,23 @@ pnpm lint
    - Document known untranslated surfaces
    - Publish localized screenshots
 
-3. **Post-Release**:
+3. **Ongoing Maintenance**:
    - Monitor user feedback on translations
    - Plan additional locales based on demand
-   - Integrate i18n with Option module (M9)
+   - Preserve Option and Goose catalog parity with every feature change
 
 ---
 
 ## Conclusion
 
-The i18n implementation contains English and Simplified Chinese catalogs, system-language detection, and localized error infrastructure. Release acceptance is not current: the 2026-08-12 integration audit reopened M8 and identified remaining hard-coded user-facing strings and unsafe translation fallbacks. Complete the stabilization roadmap and repeat packaged bilingual QA before declaring the application ready for release.
+The i18n implementation contains English and Simplified Chinese catalogs,
+system-language detection, and localized error infrastructure. M8 was
+re-accepted through S6. M11 repeats packaged bilingual smoke evidence for the
+release candidate without reopening the accepted two-locale architecture.
 
-**Historical i18n checklist status**: Completed before the 2026-08-12 release rebaseline; packaged release acceptance must be repeated.
+**Historical i18n checklist status**: Complete; M11 owns the next packaged
+release-candidate evidence refresh.
+
 - [x] Launch default and reviewers recorded
 - [x] `en` and `zh-CN` catalogs have parity
 - [x] Locale persistence, fallback, formatters tested
