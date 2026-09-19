@@ -52,6 +52,12 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+function dateDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
 describe("PerformanceTab", () => {
   it("shows loading state initially", () => {
     vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockReturnValue(
@@ -131,7 +137,7 @@ describe("PerformanceTab", () => {
     vi.mocked(desktopApi.financial.getPerformanceTimeSeries).mockResolvedValue(
       [
         {
-          date: "2026-08-01",
+          date: dateDaysAgo(20),
           total_value: "10000",
           total_value_base: "10000",
           net_contribution: "0",
@@ -140,7 +146,7 @@ describe("PerformanceTab", () => {
           daily_return_pct: null,
         },
         {
-          date: "2026-08-15",
+          date: dateDaysAgo(5),
           total_value: "10500",
           total_value_base: "10500",
           net_contribution: "0",
@@ -154,8 +160,8 @@ describe("PerformanceTab", () => {
       desktopApi.financial.computePerformanceSummary,
     ).mockResolvedValue({
       account_id: "a1",
-      start_date: "2026-07-17",
-      end_date: "2026-08-17",
+      start_date: dateDaysAgo(30),
+      end_date: dateDaysAgo(0),
       total_return_pct: "0.05",
       xirr_pct: "0.12",
       twr_pct: "0.05",
