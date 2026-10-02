@@ -1,8 +1,8 @@
 # Portfolio Module — API Specification
 
-> **Status:** Phase 1 complete (storage layer). Phase 2 ✅ Done (services). Phase 2.5 ✅ Done (market data, income)
-> **Target branch:** `feature/portfolio-integration`
-> **Audience:** Main dev developer integrating portfolio into the main application.
+> **Status:** Phases 1 through 4 integrated on `dev`; Phase 5 hardening is tracked by M11
+> **Active plan:** [`../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md`](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md)
+> **Audience:** Contributors maintaining the canonical financial API.
 > **All documentation is in English.**
 
 ---
@@ -51,16 +51,16 @@ SQLx + SQLite (migrations/0015-0021)  ← Phase 1 ✅
 | Phase 2.5 | ✅ Done | Market-data crate (quotes, asset profiles, providers) + income service | `docs/portfolio/ROADMAP.md`, `crates/market-data/` |
 | Phase 3.5 | ✅ Done | Repository-level CRUD Tauri commands (40+ commands in `commands/financial_crud.rs`) | `docs/portfolio/API_SPEC.md` (section 2) |
 | Phase 3 | ✅ Done | Frontend UI (pages, components, dialogs, dashboard) | `docs/portfolio/FRONTEND_INTEGRATION.md` |
-| Phase 4 | ⏳ Pending | Thesis ↔ holding linkage | `docs/portfolio/THESIS_LINKAGE.md` |
-| Phase 5 | ⏳ Pending | Polish, broker sync, market data | TBD |
+| Phase 4 | ✅ Done | Thesis ↔ canonical financial-asset linkage | migration 0023, thesis/portfolio services and UI |
+| Phase 5 | 🚧 In progress | Legacy cleanup, scale budgets, and release-candidate acceptance | `docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md` |
 
 ---
 
-## 2. Required Tauri Commands
+## 2. Canonical Tauri Commands
 
-The following commands must be registered in `apps/desktop/src-tauri/src/commands/mod.rs`
-and wired into `AppState`. The main dev developer should add these to the Tauri
-`invoke_handler()` registration.
+The following commands are part of the canonical financial surface. Agents must
+verify registration and `AppState` wiring against current source before changing
+them; M11-01 owns the canonical-versus-legacy inventory.
 
 ### 2.1 Platform Management
 

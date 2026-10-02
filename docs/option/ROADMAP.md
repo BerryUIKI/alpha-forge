@@ -1,8 +1,12 @@
 # Option Analysis Platform - Roadmap
 
-> Target feature decomposition for M9. See [README](README.md) for the verified baseline and [Integration Plan](INTEGRATION_PLAN.md) for the current execution sequence.
+> Historical M9 feature decomposition. See [README](README.md) for the accepted
+> baseline and [Integration Plan](INTEGRATION_PLAN.md) for the execution history.
 
-The original seven-phase design is retained because it captures the intended product scope. Its checkboxes describe acceptance on `dev`, not file presence on a historical feature or integration branch. The current `dev` baseline contains only a partial foundation; `origin/integration/option` is an unverified candidate implementation.
+The original seven-phase design is retained because it captures the intended
+product scope. M9 is complete through S5. Unchecked items below are deferred or
+broader future capabilities unless the accepted M9 scope explicitly required
+them; they do not make the completed milestone active again.
 
 ## Timeline Overview
 
@@ -12,11 +16,14 @@ The original seven-phase design is retained because it captures the intended pro
 | Phase 2 | Weeks 4-6   | ✅ Present on `dev` | Core Backend & Pricing Engine |
 | Phase 3 | Weeks 7-9   | ✅ Present on `dev` | Frontend Foundation           |
 | Phase 4 | Weeks 10-13 | ✅ Present on `dev` | Strategy Builder              |
-| Phase 5 | Weeks 14-17 | 📋 Planned          | Advanced Analysis             |
-| Phase 6 | Weeks 18-20 | 🚧 Partial on `dev` | Portfolio Integration         |
-| Phase 7 | Weeks 21-24 | 📋 Planned          | Testing & Polish              |
+| Phase 5 | Weeks 14-17 | Deferred beyond M9  | Advanced Analysis             |
+| Phase 6 | Weeks 18-20 | ✅ Accepted scope   | Portfolio Integration         |
+| Phase 7 | Weeks 21-24 | ✅ Accepted scope   | Testing & Polish              |
 
-**Planning estimate**: 24 weeks in the original plan. The current `dev` baseline contains Phases 1-4 implementations and Phase 6 foundation. The M9 release gate requires completing remaining Phase 6, Phase 7, and the integration gate checklist. Do not treat calendar weeks as a completion claim.
+**Planning estimate**: 24 weeks in the original plan. This estimate is
+historical. S5 accepted the approved M9 scope; deferred advanced-analysis items
+require a future milestone. Do not treat calendar weeks or unchecked deferred
+items as current commitments.
 
 ---
 

@@ -717,24 +717,30 @@ Vibe coding means using AI to accelerate implementation while preserving a codeb
 
 ## 18. Portfolio Integration (Wealthfolio → AlphaForge)
 
-The Portfolio module is being upgraded to full financial capability by
-integrating functionality from the Wealthfolio codebase (AGPL-3.0, local
-clone at `F:\dev\wealthfolio`).
+The core Wealthfolio-derived financial capability is integrated. Current
+Portfolio hardening and release-candidate work is governed by the M11 plan.
+The Wealthfolio codebase (AGPL-3.0, local clone at `F:\dev\wealthfolio`)
+remains a read-only reference.
 
 **READ FIRST before touching anything portfolio-related:**
 [`docs/PORTFOLIO_INTEGRATION_PLAN.md`](docs/PORTFOLIO_INTEGRATION_PLAN.md)
+and
+[`docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md`](docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md)
 
 Key rules:
 
-- Work on `feature/portfolio-integration` (forked from `dev`), never `main`.
+- Create each M11 task branch from the latest `origin/dev` and target `dev`.
+  Never develop directly on `dev` or `main`.
 - Financial persistence uses **SQLx** (same as the rest of this repo).
   Do not introduce Diesel.
 - **Do not copy Wealthfolio's unwrap/expect panic points** — port business
   logic with typed, recoverable errors only.
 - Keep research and financial domains as separate modules in `crates/domain`,
-  linked by foreign keys (`theses.portfolio_holding_id` → `holdings.id`).
+  linked through the canonical asset relationship
+  (`theses.portfolio_asset_id` → `financial_assets.id`).
 - Reference docs: `docs/wealthfolio-audit/` (14 audit documents of Wealthfolio).
-- Follow the phase plan; each phase must end with a green build + tests.
+- Follow the sequential M11 task plan; every implementation PR must include
+  synchronous English documentation and end with the required green checks.
 
 ---
 

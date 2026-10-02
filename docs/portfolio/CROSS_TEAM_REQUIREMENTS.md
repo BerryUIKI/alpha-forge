@@ -1,16 +1,22 @@
 # Portfolio Module — Cross-Team Requirements
 
-> **Status:** Phase 1 complete. Requirements for main dev branch coordination.
-> **Audience:** Main dev developer who will merge `feature/portfolio-integration` into `dev`/`main`.
+> **Status:** Historical merge-coordination record; the integration branch has been merged into `dev`.
+> **Audience:** Contributors auditing migration and compatibility history.
 > **All documentation is in English.**
+
+> Do not execute the historical merge instructions below. Current cleanup and
+> release work is governed by the
+> [M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md)
+> and begins with an evidence-backed canonical/legacy surface audit.
 
 ---
 
 ## 1. Summary
 
-The Portfolio module (Phase 1) is complete on `feature/portfolio-integration` and
-is ready for the main dev developer to review and merge. The following items
-require coordination with the main dev branch.
+This document preserves the coordination requirements used when the original
+Portfolio integration was merged. Migrations 0015 through 0021 and subsequent
+Portfolio work are already present on `dev`. Treat the remaining sections as
+historical context, not as current branch or merge instructions.
 
 ---
 

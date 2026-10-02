@@ -2,7 +2,15 @@
 
 This directory is the canonical, consolidated documentation set for AlphaForge's Option analysis module. Start here before changing Option code.
 
-## Rebaseline status (M9-01)
+## Accepted status
+
+M9 is complete through stabilization gate S5. The canonical schema, pricing
+core, provider flow, chain and strategy UI, controlled Artifact path, workspace
+isolation, and no-trading release boundary are integrated on `dev`. The
+documents in this directory remain the canonical maintenance reference; their
+historical plans do not reactivate completed work.
+
+## Rebaseline decisions (M9-01)
 
 The Option scope was re-validated against `dev` on 2026-08-17. The approved decisions are recorded in three ADRs:
 
@@ -12,7 +20,11 @@ The Option scope was re-validated against `dev` on 2026-08-17. The approved deci
 | [ADR-0006 Option Data Providers](../DECISIONS/0006-option-data-providers.md)         | Demo provider in the M9 release; file and live providers deferred         | Accepted |
 | [ADR-0007 Option Artifact Isolation](../DECISIONS/0007-option-artifact-isolation.md) | Inline analysis components; no new Artifact renderer or permission for M9 | Accepted |
 
-The current `dev` baseline contains the `option-core` pricing crate (Black-Scholes pricing, analytical Greeks, IV solver, strategy payoffs), the canonical `0014_options_support` migration with focused migration tests, and Option repositories, services, commands, typed desktop API modules, and feature components. Remaining M9 acceptance gaps are unchanged from the integration plan and are tracked there.
+The current `dev` baseline contains the `option-core` pricing crate
+(Black-Scholes pricing, analytical Greeks, IV solver, and strategy payoffs), the
+canonical `0014_options_support` migration with focused migration tests, and
+Option repositories, services, commands, typed desktop API modules, feature
+components, and accepted release-gate evidence.
 
 ## Status at consolidation
 
@@ -30,7 +42,14 @@ Documentation and code status are intentionally reported separately.
 
 The phrase "candidate branch" refers to `origin/integration/option` at the time of the original consolidation. That branch and the historical `feat/m9-*` feature branches have been folded into `dev` through merged PRs; there is no remaining unmerged Option candidate branch on the remote. A branch name or historical commit message is not acceptance evidence.
 
-PR #95 merged the chain-to-contract view, PR #97 merged validated atomic strategy persistence, and PR #98 merged the controlled selected-contract create/read/delete UI without unsupported leg editing. M9 is not accepted until the remaining gates pass. Implementation packages O1 through O6 are defined in [Integration Plan](INTEGRATION_PLAN.md) and authorized by [ADR-0005](../DECISIONS/0005-option-pricing-models.md), [ADR-0006](../DECISIONS/0006-option-data-providers.md), and [ADR-0007](../DECISIONS/0007-option-artifact-isolation.md).
+PR #95 merged the chain-to-contract view, PR #97 merged validated atomic
+strategy persistence, and PR #98 merged the controlled selected-contract
+create/read/delete UI without unsupported leg editing. S5 subsequently
+re-accepted M9. Historical implementation packages O1 through O6 are defined
+in [Integration Plan](INTEGRATION_PLAN.md) and constrained by
+[ADR-0005](../DECISIONS/0005-option-pricing-models.md),
+[ADR-0006](../DECISIONS/0006-option-data-providers.md), and
+[ADR-0007](../DECISIONS/0007-option-artifact-isolation.md).
 
 ## Canonical document set
 
@@ -58,12 +77,12 @@ These ten entries replace references to an unspecified “ten planned documents.
 - Live data providers are not enabled until their licensing, credentials, timeout, validation, and failure behavior are approved.
 - Option results become structured, traceable research artifacts; they do not bypass the thesis and evidence workflow.
 
-## How an implementation agent should start
+## How a maintenance agent should start
 
-1. Read the [Milestone Roadmap](../MILESTONE_ROADMAP.md) and confirm M9 is active.
+1. Read the [Milestone Roadmap](../MILESTONE_ROADMAP.md) and confirm the active milestone authorizes the proposed Option change.
 2. Follow the repository-wide [Delivery Playbook](../milestones/DELIVERY_PLAYBOOK.md).
 3. Read the approved Option [Decision Records](../DECISIONS/0005-option-pricing-models.md) before changing calculation, provider, or Artifact code.
-4. Run the baseline audit in [Integration Plan](INTEGRATION_PLAN.md).
+4. Use the historical baseline audit in [Integration Plan](INTEGRATION_PLAN.md) as context, then inspect current source and tests.
 5. Use [Implementation Details](IMPLEMENTATION_DETAILS.md) to select one vertical slice.
 6. Follow the Option [Git Workflow](GIT_WORKFLOW.md) and open a narrowly scoped PR.
 7. Update documentation and attach real test evidence; never mark a phase complete from file presence alone.

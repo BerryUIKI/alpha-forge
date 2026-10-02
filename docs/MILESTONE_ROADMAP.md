@@ -2,7 +2,7 @@
 
 > Vision: Build an AI-native investment research operating environment
 
-**Status reviewed:** 2026-08-15
+**Status reviewed:** 2026-09-20
 
 ## Core Product Loop
 
@@ -30,6 +30,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M10       | ✅ Complete (#161-#166)   | Rebaseline 2026-08-24 | Goose Agent Integration (Supervised Sidecar) |
 | AW0-AW7   | ✅ Complete (2026-09-01)  | 2026-09-01            | Managed Agent Worker Subprocess Isolation |
 | GUI-M4-MACOS | ✅ Complete (#200-#203) | 2026-09-07            | Native macOS GUI Overhaul & Investment Cockpit Pipeline |
+| M11       | 📋 Planned                | Rebaseline 2026-09-20 | Portfolio Hardening & Release Candidate |
 
 ## Delivery document registry
 
@@ -42,10 +43,11 @@ This roadmap is the program entry point. Implementation agents must follow the l
 | M9 Option            | [Option Index](option/README.md), [Product](option/PRODUCT.md), [Use Cases](option/USE_CASES.md), [Architecture](option/ARCHITECTURE.md), [Data Model](option/DATA_MODEL.md), [API Specification](option/API_SPEC.md), [Roadmap](option/ROADMAP.md), [Implementation Details](option/IMPLEMENTATION_DETAILS.md), [Integration Plan](option/INTEGRATION_PLAN.md), [Git Workflow](option/GIT_WORKFLOW.md), [ADR-0005 Pricing](DECISIONS/0005-option-pricing-models.md), [ADR-0006 Providers](DECISIONS/0006-option-data-providers.md), [ADR-0007 Artifact Isolation](DECISIONS/0007-option-artifact-isolation.md) |
 | M10 Goose            | [Goose Index](goose/README.md), [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md), [Agent Protocol](AGENT_PROTOCOL.md), [Artifact System](ARTIFACT_SYSTEM.md), [Plugin Specification](PLUGIN_SPEC.md)                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Agent worker isolation | [Agent Runtime Index](agent/README.md), [ADR-0010](DECISIONS/0010-managed-agent-worker-subprocess.md), [Architecture](agent/SUBPROCESS_ARCHITECTURE.md), [Roadmap](agent/SUBPROCESS_ROADMAP.md), [Checklist](agent/SUBPROCESS_IMPLEMENTATION_CHECKLIST.md) |
+| M11 Portfolio/release | [M11 Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md), [Portfolio Roadmap](portfolio/ROADMAP.md), [Portfolio Integration Plan](PORTFOLIO_INTEGRATION_PLAN.md), [Release Policy](RELEASE_POLICY.md), [Releases](RELEASES.md) |
 
 Status in this file is authoritative at the program level. Detailed documents own work-package checklists; historical branch names and focused layer-level tests do not override the acceptance gates.
 
-The current corrective program is defined by the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). Evidence for the 2026-08-12 rebaseline is recorded in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
+The completed stabilization program is preserved in the [Stabilization Roadmap](STABILIZATION_ROADMAP.md). M11 is the active forward plan. Evidence for the 2026-08-12 rebaseline remains available in the [Frontend-Backend Integration and Functional Completeness Audit](reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md).
 
 ---
 
@@ -206,9 +208,9 @@ All tests pass
 
 ---
 
-## M2 — Agent Runtime ⚠️
+## M2 — Agent Runtime ✅
 
-**Status**: Lifecycle and credential repairs are merged (#80, #81); milestone acceptance remains incomplete pending the full Agent-to-Artifact verification gates.
+**Status**: Complete within the accepted local product scope; stabilized in S1 and extended by AW0-AW7 managed Agent Worker isolation.
 
 ### Goal
 
@@ -289,9 +291,9 @@ Result persisted in SQLite
 
 ---
 
-## M3 — Artifact Intelligence System ⚠️
+## M3 — Artifact Intelligence System ✅
 
-**Status**: Persistence, renderers, permission primitives, and the isolated Artifact-window route are merged (#88) with focused verification; packaged smoke acceptance remains pending, so milestone acceptance remains incomplete.
+**Status**: Complete; persistence, predefined renderers, isolated Artifact-window routing, least-privilege capabilities, lifecycle tests, and S3 acceptance are integrated.
 
 ### Goal
 
@@ -657,9 +659,9 @@ Artifact rendered
 
 ---
 
-## M8 — Local MVP Completion & Release Readiness 🚧
+## M8 — Local MVP Completion & Release Readiness ✅
 
-**Status**: Reopened on 2026-08-12. Baseline, credential, Agent, Option schema/IPC, and System IPC repairs are merged, but release acceptance remains withdrawn until Artifact routing, remaining workflows, and full verification gates pass.
+**Status**: Complete through S6. Public release operations, cross-platform package evidence, and release-owner acceptance are refreshed under M11 without reopening the local MVP scope.
 
 ### Goal
 
@@ -698,21 +700,21 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 - [x] Performance optimization
 - [x] Security hardening
 - [x] Documentation review
-- [ ] Legal review
+- [ ] Public production legal review (required before any public release operation)
 - [x] Support infrastructure
-- [ ] Close all P0 findings in the 2026-08-12 integration audit
-- [ ] Pass and retain the complete verification and packaged-smoke matrix
+- [x] Close all P0 findings in the 2026-08-12 integration audit
+- [x] Pass and retain the S6 verification and packaged-smoke matrix
 
 ### macOS-First Desktop GUI Overhaul (`GUI-M4-MACOS`)
 
 - [x] Create and archive high-fidelity interactive prototype ([docs/prototypes/macos-gui-prototype.html](prototypes/macos-gui-prototype.html))
 - [x] Publish redesign architecture plan ([docs/gui/MACOS_GUI_REDESIGN_PLAN.md](gui/MACOS_GUI_REDESIGN_PLAN.md))
 - [x] Publish phase-by-phase implementation roadmap ([docs/gui/MACOS_GUI_ROADMAP.md](gui/MACOS_GUI_ROADMAP.md))
-- [ ] Phase 1: Tauri 2 macOS overlay titlebar & Unified Header consolidation
-- [ ] Phase 2: Navigation sidebar alignment with investment research pipeline
-- [ ] Phase 3: AI Copilot drawer with structured reasoning and context awareness
-- [ ] Phase 4: Apple San Francisco typography and glassmorphism polish
-- [ ] Phase 5: Verification, strict standard i18n parity, and test gate
+- [x] Phase 1: Tauri 2 macOS overlay titlebar and Unified Header consolidation
+- [x] Phase 2: Navigation sidebar alignment with the investment research pipeline
+- [x] Phase 3: AI Copilot drawer with structured reasoning and context awareness
+- [x] Phase 4: Apple typography and visual-system polish
+- [x] Phase 5: Verification, i18n parity, and test gate
 
 ### Execution path
 
@@ -732,9 +734,9 @@ Ship a safe, local-first, documentable desktop MVP and close the release-quality
 
 ---
 
-## M9 — Option Module Integration 🚧
+## M9 — Option Module Integration ✅
 
-**Status**: In execution. The rebaseline and decision gate (M9-01) is complete on 2026-08-17: the Option baseline was revalidated against current `dev` (canonical schema and Option IPC repairs merged via #83 and #84; chain-to-strategy UI merged via #95, #97, and #98), and pricing-model, data-provider, and Artifact-isolation decisions are approved in [ADR-0005](DECISIONS/0005-option-pricing-models.md), [ADR-0006](DECISIONS/0006-option-data-providers.md), and [ADR-0007](DECISIONS/0007-option-artifact-isolation.md). M9 acceptance remains incomplete until the remaining vertical slices and the release gate pass.
+**Status**: Complete through S5. The canonical schema, pricing core, provider flow, chain and strategy UI, controlled Artifact path, workspace isolation, and no-trading release gate are accepted on `dev`.
 
 ### Goal
 
@@ -803,6 +805,54 @@ Detailed documentation: [Goose Integration Roadmap](goose/INTEGRATION_ROADMAP.md
 - [x] Domain writes require explicit user confirmation and pass through existing Rust domain services.
 - [x] Cancellation, timeout, retry policy, concurrency, restart, token, cost, and output limits are tested.
 - [x] Packaged builds verify binary integrity via SHA-256 and fail closed on mismatch.
+
+---
+
+## M11 — Portfolio Hardening & Release Candidate 📋
+
+**Status**: Planned. The collaborator queue is ready for assignment after the planning PR merges into `dev`.
+
+### Goal
+
+Convert the completed local product and recent Portfolio integration into a reproducible, cross-platform release candidate without expanding into live broker connectivity, commercial services, or trading.
+
+### Reviewed baseline
+
+- Canonical financial storage, services, CRUD, dashboard UI, and thesis-to-asset linkage are integrated.
+- PR #211 added market-data refresh and quote caching.
+- PR #213 added Generic and IBKR activity-statement file import.
+- PR #215 synchronized the top-level architecture and data model.
+- PR #199 contains the changes associated with issues #194 through #198; tracker status still requires evidence-based reconciliation.
+- M0-M10, S0-S6, AW0-AW7, and GUI-M4-MACOS are complete on the reviewed `dev` baseline.
+
+### Execution path
+
+1. Audit canonical and legacy Portfolio surfaces and approve a disposition for every remaining legacy consumer.
+2. Retire only the superseded runtime paths approved by the audit.
+3. Establish deterministic large-portfolio benchmarks and owner-approved budgets.
+4. Optimize demonstrated bottlenecks without changing financial correctness or provenance.
+5. Produce reproducible macOS Apple Silicon DMG and Windows NSIS packages with checksums and SBOM/attribution.
+6. Retain cross-platform install, upgrade, export, critical-workflow, failure, and uninstall smoke evidence.
+7. Run the release-candidate gate and obtain an explicit release-owner decision.
+
+The task-level objective, acceptance criteria, involved files, branch type, and verification checklist are defined in the [M11 Portfolio Hardening and Release Candidate Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
+
+### Acceptance criteria
+
+- The canonical financial API is the only active in-repository Portfolio path, except for explicitly documented compatibility adapters.
+- Approved large-portfolio budgets pass against deterministic, non-production fixtures.
+- Supported packages are reproducible and carry verified checksums, SBOM/attribution, version, platform, and architecture metadata.
+- macOS and Windows packaged smoke matrices pass against the exact candidate artifacts.
+- English repository, user, operator, release, and milestone documentation agree.
+- No trading, brokerage order routing, autonomous investment decision, hidden cloud upload, or unapproved telemetry is introduced.
+- Publication, production signing, and promotion from `dev` to `main` remain separate explicit actions.
+
+### Deferred from M11
+
+- Live broker synchronization and broker credential storage.
+- FIRE and retirement planning.
+- Authentication, billing, license enforcement, cloud sync, telemetry, and public plugin installation.
+- Additional locales beyond English and Simplified Chinese.
 
 ---
 
@@ -916,21 +966,22 @@ All three pillars must work together.
 
 ### Current Phase
 
-**Stabilization S0 — Baseline truth and build recovery** is active. M8 and M9 remain reopened until the [Stabilization Roadmap](STABILIZATION_ROADMAP.md) acceptance gates are met.
+**M11 — Portfolio Hardening & Release Candidate** is planned. Work begins with M11-01 after this planning PR merges. The [M11 Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md) is the active collaborator queue.
 
-### Completed stabilization repairs
+### Completed programs
 
-- [x] Rust module-tree repair and pnpm workspace baseline (#78, #79)
-- [x] OpenAI credential and Agent lifecycle contracts (#80, #81)
-- [x] Canonical Option schema, Option IPC, and System IPC contracts (#83, #84, #85)
+- [x] Core milestones M0 through M10
+- [x] Stabilization S0 through S6
+- [x] Managed Agent Worker isolation AW0 through AW7
+- [x] Native macOS GUI overhaul and investment cockpit pipeline
+- [x] Portfolio Phase 4 thesis-to-asset linkage, market-data refresh, and Generic/IBKR file import
 
 ### Next Milestones
 
-1. Complete packaged Artifact-window smoke acceptance and retain route/permission evidence.
-2. Review the controlled company-comparison create-to-Artifact workflow.
-3. Retain its validation, disabled-state, Artifact-window, and renderer evidence.
-4. Enforce CI, E2E, packaged smoke, security, and release gates before re-accepting M8/M9.
-5. Reverify upstream and integrate Goose as M10 only after stabilization acceptance.
+1. Complete M11-01 through M11-04 Portfolio audit, cleanup, benchmark, and hardening.
+2. Complete M11-05 and M11-06 release packaging and cross-platform smoke evidence.
+3. Complete M11-07 release-candidate acceptance without automatically publishing or promoting to `main`.
+4. Create a separate decision milestone before any live broker sync, FIRE planning, cloud/commercial service, or expanded locale work.
 
 ### Long-term Vision
 
@@ -950,6 +1001,7 @@ Transform AlphaForge into the definitive AI-powered investment research platform
 - [Development Guide](DEVELOPMENT.md)
 - [Milestone Delivery Playbook](milestones/DELIVERY_PLAYBOOK.md)
 - [Sequential Child-Agent Task Breakdown](milestones/SEQUENTIAL_TASK_BREAKDOWN.md)
+- [M11 Portfolio Hardening and Release Candidate Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md)
 - [i18n Documentation](i18n/README.md)
 - [Option Documentation](option/README.md)
 - [Goose Integration Documentation](goose/README.md)

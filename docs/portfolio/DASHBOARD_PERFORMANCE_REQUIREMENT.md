@@ -1,8 +1,9 @@
-# Dashboard PerformanceTab 接入 Financial API — 开发需求
+# Dashboard PerformanceTab Financial API Requirement
 
 > **Document:** `docs/portfolio/DASHBOARD_PERFORMANCE_REQUIREMENT.md`
-> **Status:** 📋 Requirement — Ready for implementation on `feature/portfolio-integration`
+> **Status:** ✅ Implemented; retained as historical acceptance criteria
 > **Date:** 2026-08-17
+> **Resolved:** Present on `dev` as of the 2026-09-20 baseline review
 > **Requested by:** GUI team (main `dev` branch)
 > **Target team:** Portfolio integration team
 > **Priority:** High
@@ -11,13 +12,13 @@
 
 ## 1. Background
 
-The GUI redesign (merged to `dev` via PRs #105–#113) introduced a tabbed
-dashboard in `apps/desktop/src/pages/today/TodayPage.tsx`. The **Performance
-tab** (`PerformanceTab.tsx`) currently renders **placeholder bars** because the
-main `dev` branch has no portfolio value history API.
+The GUI redesign introduced a tabbed dashboard in
+`apps/desktop/src/pages/today/TodayPage.tsx`. The Performance tab now consumes
+the portfolio performance hook and renders real workspace-level portfolio data
+with loading, error, empty, period-selection, and summary behavior. The
+remaining sections preserve the requirement that guided that implementation.
 
-The `feature/portfolio-integration` branch **already has** the required backend
-capability (Phase 2/3 Wealthfolio port):
+The integrated Portfolio work supplied the required backend capability:
 
 - **Rust commands** (`apps/desktop/src-tauri/src/commands/financial.rs`):
   - `get_performance_time_series(account_id)` → `Vec<PerformancePoint>`
@@ -27,8 +28,8 @@ capability (Phase 2/3 Wealthfolio port):
 - **TS API client** (`apps/desktop/src/lib/desktop-api/financial.ts`)
 - **TanStack Query hooks** (`apps/desktop/src/features/portfolio/hooks/useFinancialData.ts`)
 
-This is a **coordination requirement**: once `feature/portfolio-integration`
-merges into `dev`, the dashboard PerformanceTab should be wired to these APIs.
+This coordination requirement was satisfied when the Portfolio integration and
+dashboard wiring reached `dev`.
 
 ---
 

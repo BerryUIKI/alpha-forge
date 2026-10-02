@@ -1,8 +1,8 @@
 # Sequential Child-Agent Task Breakdown
 
-> Historical delivery queue. As of 2026-08-12, active corrective work is governed by the [Stabilization Roadmap](../STABILIZATION_ROADMAP.md) and the [Integration Gap Audit](../reviews/INTEGRATION_GAP_AUDIT_2026-08-12.md). Completion markers below record prior implementation activity and do not override the reopened M8/M9 program status.
+> Historical delivery queue. M8 through M10 and stabilization S0 through S6 are complete. The active collaborator queue is the [M11 Portfolio Hardening and Release Candidate Execution Plan](M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md). Completion markers below preserve prior planning history and do not override the current program status.
 
-This document preserves the original execution queue for M8 through M10. It is not the active queue while stabilization is in progress.
+This document preserves the original execution queue for M8 through M10. It is not the active queue and must not be used to recreate completed work.
 
 ## Execution contract
 

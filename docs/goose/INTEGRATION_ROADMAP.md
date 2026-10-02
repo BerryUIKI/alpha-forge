@@ -2,7 +2,10 @@
 
 ## Milestone position
 
-This roadmap implements M10 after the M8 MVP completion gate and, by default, after M9. The product owner may authorize it as an independent post-MVP workstream, but it can never move into the MVP. M10 is not active merely because planning documents exist.
+M10 was implemented after the M8 MVP completion gate and M9, then completed
+through PRs #161 through #166. This roadmap preserves the accepted sequence,
+security boundaries, and verification contract. It is not an active queue and
+does not authorize unreviewed Goose upgrades.
 
 ## Impact assessment
 
@@ -186,7 +189,7 @@ pnpm test:e2e
 pnpm tauri build
 ```
 
-## Rollout stages
+## Accepted rollout stages
 
 1. Developer fixtures only.
 2. Internal read-only shadow mode with synthetic and copied non-sensitive workspaces.
@@ -196,9 +199,9 @@ pnpm tauri build
 
 Every stage has a kill switch that prevents new Goose runs while retaining already persisted, validated results.
 
-## Definition of done
+## Accepted definition of done
 
-- M8 is complete and M10 was explicitly activated.
+- M8 and M9 completed before M10, and M10 was explicitly activated.
 - An ADR pins the upstream source, version, integration surface, license obligations, and credential model.
 - Goose has no direct SQLite, arbitrary filesystem, shell, credential, or trade capability.
 - All tools are allowlisted, read-only, typed, scoped, bounded, and tested.

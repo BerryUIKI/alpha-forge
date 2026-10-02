@@ -312,7 +312,13 @@ financial API.
 
 ---
 
-## 11. Future Work
+## 11. Current follow-up
 
-- **Phase 4:** Thesis ↔ holding linkage
-- **Phase 5:** Broker sync, market data integration, CSV import via new commands
+- Phase 4 thesis-to-financial-asset linkage is complete.
+- Market-data refresh and Generic/IBKR file import are complete.
+- M11-01 audits the remaining legacy `portfolio` API and hook surface before
+  M11-02 removes or retains each item with evidence.
+- M11 then establishes scale budgets and produces the cross-platform release
+  candidate. See the
+  [M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
+- Live broker synchronization and FIRE/retirement planning are deferred.
