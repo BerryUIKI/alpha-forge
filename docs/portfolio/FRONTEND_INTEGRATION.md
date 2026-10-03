@@ -198,7 +198,7 @@ Not used for portfolio state. Keep cross-page state minimal.
 | `src/features/portfolio/components/QuickActions.tsx` | ✅ New (Phase 3) | Action buttons |
 | `src/features/portfolio/components/CreateAccountDialog.tsx` | ✅ New (Phase 3.5) | Create financial account |
 | `src/features/portfolio/components/AddAssetDialog.tsx` | ✅ New (Phase 3.5) | Create asset/instrument |
-| `src/features/portfolio/components/AddActivityDialog.tsx` | ✅ New (Phase 3.5) | Record activity |
+| `src/features/portfolio/components/AddActivityDialog.tsx` | ✅ Updated (atomic CRUD) | Record activity with client UUID idempotency key; delegates lot synchronization to backend ActivityService |
 | `src/features/portfolio/hooks/useFinancialData.ts` | ✅ New (Phase 3/3.5) | TanStack Query hooks |
 | `src/features/portfolio/hooks/usePortfolio.ts` | ⏳ Legacy (kept) | Old hooks for legacy portfolio commands |
 | `src/lib/desktop-api/financial.ts` | ✅ New (Phase 3/3.5) | IPC client for financial commands |

@@ -445,7 +445,7 @@ pub enum CostBasisMethod {
 
 impl CostBasisMethod {
     pub fn parse(value: &str) -> Option<Self> {
-        match value {
+        match value.to_ascii_uppercase().as_str() {
             "FIFO" => Some(Self::Fifo),
             _ => None,
         }

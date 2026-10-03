@@ -187,3 +187,50 @@ async fn activity_repository_rejects_duplicate_idempotency_key() {
         "duplicate idempotency key must be rejected"
     );
 }
+
+#[tokio::test]
+async fn activity_repository_finds_by_idempotency_key() {
+    let pool = setup_test_db().await;
+    let account_id = create_account(&pool, "acct-find-idem").await;
+    let repo = ActivityRepository::new(pool.clone());
+
+    let found_none = repo
+        .find_by_idempotency_key("non-existent-key")
+        .await
+        .expect("query succeeds");
+    assert!(found_none.is_none());
+
+    let day = NaiveDate::from_ymd_opt(2026, 8, 13).expect("valid date");
+    let input = CreateActivityInput {
+        account_id: account_id.clone(),
+        asset_id: None,
+        activity_type: ActivityType::Dividend,
+        activity_type_override: None,
+        source_type: None,
+        subtype: None,
+        status: ActivityStatus::Posted,
+        activity_date: day,
+        settlement_date: None,
+        quantity: None,
+        unit_price: None,
+        amount: Some(Decimal::from_str_exact("50").expect("valid decimal")),
+        fee: None,
+        tax: None,
+        currency: "USD".to_string(),
+        fx_rate: None,
+        notes: None,
+        metadata: None,
+        source_system: Some("manual".to_string()),
+        source_record_id: None,
+        source_group_id: None,
+        idempotency_key: Some("idem-div-123".to_string()),
+        import_run_id: None,
+    };
+    let created = repo.create(input).await.expect("create succeeds");
+    let found = repo
+        .find_by_idempotency_key("idem-div-123")
+        .await
+        .expect("query succeeds");
+    assert!(found.is_some());
+    assert_eq!(found.unwrap().id, created.id);
+}

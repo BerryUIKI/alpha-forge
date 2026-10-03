@@ -26,7 +26,8 @@ Frontend (React)
 Tauri Command (Rust, commands/financial.rs)  ← Phase 2 ✅
     │
     ▼
-Service Layer (7 services in services/)  ← Phase 2 ✅
+Service Layer (services/*_service.rs)  ← Phase 2 ✅
+    │  ├── activity_service.rs
     │  ├── holdings_service.rs
     │  ├── lot_service.rs
     │  ├── valuation_service.rs
@@ -95,12 +96,19 @@ them; M11-01 owns the canonical-versus-legacy inventory.
 
 | Command | Input | Output | Description |
 |---------|-------|--------|-------------|
-| `create_activity` | `CreateActivityInput` | `Activity` | Record a trade/cash movement |
+| `create_activity` | `CreateActivityInput` | `Activity` | Atomically & idempotently record trade/cash movement with lot synchronization |
 | `get_activity` | `id: String` | `Option<Activity>` | Get activity by ID |
 | `list_activities_by_account` | `account_id: String` | `Vec<Activity>` | All activities for an account |
 | `list_activities_by_asset` | `asset_id: String` | `Vec<Activity>` | All activities for an asset |
 | `create_import_run` | `CreateImportRunInput` | `ImportRun` | Start a batch import session |
 | `list_import_runs` | `account_id: String` | `Vec<ImportRun>` | Import history for an account |
+
+> **Atomicity & Idempotency Guarantee (`create_activity`):**
+> Backed by `ActivityService`. Operates in a single atomic SQLx database transaction:
+> - **Buys:** Persists the activity and automatically opens a new FIFO tax lot (`Lot`) linked by `open_activity_id`.
+> - **Sells:** Verifies open lot inventory, consumes open lots in FIFO order, updates remaining lot quantities/costs, and creates `LotDisposal` records. If available lots are insufficient, the transaction cleanly rolls back and returns a typed validation error, leaving zero partial state.
+> - **Idempotency:** When `idempotency_key` is provided, repeated submissions return the existing `Activity` without duplicating activities, lots, or disposals.
+> - **Exact Arithmetic:** All financial basis and quantity computations are executed in Rust using `rust_decimal::Decimal`.
 
 ### 2.5 Tax Lot Management
 

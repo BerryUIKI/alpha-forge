@@ -14,7 +14,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
-import { useCreateActivity, useCreateLot, useRecordSell, useListActiveAssets } from "../hooks/useFinancialData";
+import { useCreateActivity, useListActiveAssets } from "../hooks/useFinancialData";
 import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
 import { ActivityFormFields } from "./ActivityFormFields";
 import type {
@@ -25,18 +25,6 @@ import type {
 
 /** Activity types that require an asset (quantity × price semantics). */
 const ASSET_REQUIRED_TYPES: ActivityType[] = ["buy", "sell", "split"];
-
-/** Format a value as a decimal string (preserves trailing ".00" for the API). */
-function decStr(v: string): string {
-  const n = parseFloat(v);
-  return isNaN(n) ? "0" : n.toFixed(10).replace(/\.?0+$/, "") || "0";
-}
-
-/** Multiply two decimal strings and return the result as a string. */
-function decMul(a: string, b: string): string {
-  const result = (parseFloat(a) || 0) * (parseFloat(b) || 0);
-  return result.toFixed(10).replace(/\.?0+$/, "") || "0";
-}
 
 function todayString(): string {
   return new Date().toISOString().slice(0, 10);
@@ -59,10 +47,9 @@ export function AddActivityDialog({
 }: AddActivityDialogProps) {
   const { t } = useLocale();
   const createMutation = useCreateActivity();
-  const createLotMutation = useCreateLot();
-  const recordSellMutation = useRecordSell();
   const { data: assets } = useListActiveAssets();
 
+  const [idempotencyKey, setIdempotencyKey] = useState("");
   const [activityType, setActivityType] = useState<ActivityType>("buy");
   const [assetId, setAssetId] = useState("");
   const [status, setStatus] = useState<ActivityStatus>("posted");
@@ -89,6 +76,7 @@ export function AddActivityDialog({
   // Reset form each time the dialog opens
   useEffect(() => {
     if (isOpen) {
+      setIdempotencyKey(crypto.randomUUID());
       setActivityType("buy");
       setAssetId("");
       setStatus("posted");
@@ -137,7 +125,7 @@ export function AddActivityDialog({
       asset_id: assetId || null,
       activity_type: activityType,
       activity_type_override: null,
-      source_type: null,
+      source_type: "TRADE",
       subtype: null,
       status,
       activity_date: activityDate,
@@ -151,49 +139,15 @@ export function AddActivityDialog({
       fx_rate: null,
       notes: notes.trim() || null,
       metadata: null,
-      source_system: null,
+      source_system: "manual",
       source_record_id: null,
       source_group_id: null,
-      idempotency_key: null,
+      idempotency_key: idempotencyKey || null,
       import_run_id: null,
     };
 
     try {
       const activity = await createMutation.mutateAsync(input);
-
-      // Auto-create tax lot for buys (cost basis = qty × unit price).
-      if (activityType === "buy" && assetId && quantity.trim()) {
-        const qty = decStr(quantity.trim());
-        const price = decStr(unitPrice.trim() || "0");
-        const costBasis = decMul(qty, price);
-        const feeVal = fee.trim();
-        await createLotMutation.mutateAsync({
-          account_id: accountId,
-          asset_id: assetId,
-          open_date: activityDate,
-          open_activity_id: activity.id,
-          original_quantity: qty,
-          cost_per_unit: price,
-          original_cost_basis: costBasis,
-          fee_allocated: feeVal && !isNaN(Number(feeVal)) ? feeVal : "0",
-          currency: currency.trim().toUpperCase(),
-          base_currency: currency.trim().toUpperCase(),
-          fx_rate_to_base: "1",
-          fx_rate_to_account: null,
-          account_currency: null,
-          cost_basis_method: "fifo",
-        });
-      }
-
-      // Dispose lots via the FIFO service for sells.
-      if (activityType === "sell" && assetId) {
-        await recordSellMutation.mutateAsync({
-          accountId,
-          assetId,
-          activityId: activity.id,
-        });
-      }
-
       setError("");
       onSuccess?.(activity.id);
       onClose();

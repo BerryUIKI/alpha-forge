@@ -100,12 +100,12 @@ pub fn validate_bundled_payload(plugin_id: &str, payload: &Value) -> Result<(), 
 fn validate_company_comparison_payload(payload: &Value) -> Result<(), AppError> {
     const DIMENSIONS: [&str; 3] = ["revenue", "market_cap", "pe_ratio"];
     let invalid = || AppError::Validation("Invalid company comparison payload".to_string());
-    let payload = payload.as_object().ok_or_else(&invalid)?;
+    let payload = payload.as_object().ok_or_else(invalid)?;
     let dimensions = payload
         .get("comparisonDimensions")
         .and_then(Value::as_array)
         .and_then(|values| values.iter().map(Value::as_str).collect::<Option<Vec<_>>>())
-        .ok_or_else(&invalid)?;
+        .ok_or_else(invalid)?;
     let mut seen_dimensions = HashSet::new();
     if dimensions
         .iter()
@@ -116,23 +116,23 @@ fn validate_company_comparison_payload(payload: &Value) -> Result<(), AppError> 
     let companies = payload
         .get("companies")
         .and_then(Value::as_array)
-        .ok_or_else(&invalid)?;
+        .ok_or_else(invalid)?;
     let mut unique_tickers = HashSet::new();
     for company in companies {
-        let company = company.as_object().ok_or_else(&invalid)?;
+        let company = company.as_object().ok_or_else(invalid)?;
         let ticker = company
             .get("ticker")
             .and_then(Value::as_str)
-            .ok_or_else(&invalid)?;
+            .ok_or_else(invalid)?;
         let normalized_ticker = ticker.trim().to_ascii_uppercase();
         let name = company
             .get("name")
             .and_then(Value::as_str)
-            .ok_or_else(&invalid)?;
+            .ok_or_else(invalid)?;
         let metrics = company
             .get("metrics")
             .and_then(Value::as_object)
-            .ok_or_else(&invalid)?;
+            .ok_or_else(invalid)?;
         if normalized_ticker.is_empty()
             || normalized_ticker.len() > 12
             || !normalized_ticker

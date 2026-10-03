@@ -188,6 +188,25 @@ impl ActivityRepository {
         row.map(TryInto::try_into).transpose()
     }
 
+    pub async fn find_by_idempotency_key(&self, key: &str) -> Result<Option<Activity>, AppError> {
+        let row = sqlx::query_as::<_, ActivityRow>(
+            "SELECT id, account_id, asset_id, activity_type, activity_type_override, source_type,
+                    subtype, status, activity_date, settlement_date, quantity, unit_price, amount,
+                    fee, tax, currency, fx_rate, notes, metadata, source_system, source_record_id,
+                    source_group_id, idempotency_key, import_run_id, is_user_modified, needs_review,
+                    created_at, updated_at
+             FROM activities WHERE idempotency_key = ?",
+        )
+        .bind(key)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| {
+            AppError::Internal(format!("failed to get activity by idempotency key: {e}"))
+        })?;
+
+        row.map(TryInto::try_into).transpose()
+    }
+
     pub async fn list_by_account(&self, account_id: &str) -> Result<Vec<Activity>, AppError> {
         let rows = sqlx::query_as::<_, ActivityRow>(
             "SELECT id, account_id, asset_id, activity_type, activity_type_override, source_type,

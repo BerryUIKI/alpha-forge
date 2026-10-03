@@ -355,7 +355,6 @@ describe("AddActivityDialog", () => {
 
   it("submits form and calls onSuccess for buy activity", async () => {
     financialMock.createActivity.mockResolvedValue({ id: "activity-1" });
-    financialMock.createLot.mockResolvedValue({ id: "lot-1" });
     renderWithProviders(<AddActivityDialog {...defaultProps} />);
     await assetOptionsLoaded();
     fireEvent.change(screen.getByLabelText("Asset name"), {
@@ -369,7 +368,16 @@ describe("AddActivityDialog", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
     await waitFor(() => {
-      expect(financialMock.createActivity).toHaveBeenCalled();
+      expect(financialMock.createActivity).toHaveBeenCalledWith(
+        expect.objectContaining({
+          account_id: "account-1",
+          asset_id: "asset-1",
+          activity_type: "buy",
+          quantity: "10",
+          unit_price: "150.00",
+          idempotency_key: expect.any(String),
+        }),
+      );
     });
     expect(defaultProps.onSuccess).toHaveBeenCalledWith("activity-1");
     expect(defaultProps.onClose).toHaveBeenCalled();

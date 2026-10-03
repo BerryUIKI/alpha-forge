@@ -171,7 +171,7 @@ pub async fn create_activity(
     input: CreateActivityInput,
     state: State<'_, AppState>,
 ) -> Result<Activity, AppError> {
-    state.activity_repo.create(input).await
+    state.activity_service.create_activity(input).await
 }
 
 #[tauri::command]
