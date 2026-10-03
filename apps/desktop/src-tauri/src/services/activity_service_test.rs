@@ -442,4 +442,80 @@ mod tests {
         // 0.12345678 * 60000.00 = 7407.4068 -> round_dp(2) = 7407.41 + 1.50 = 7408.91
         assert_eq!(open_lots[0].original_cost_basis, dec("7408.91"));
     }
+
+    #[tokio::test]
+    async fn buy_activity_without_asset_or_quantity_returns_validation_error() {
+        let pool = setup_test_db().await;
+        let service = create_service(&pool);
+
+        let account_id = create_account(&pool, "acct-validation").await;
+        let day = NaiveDate::from_ymd_opt(2026, 8, 14).expect("valid date");
+
+        // Missing asset_id
+        let input_no_asset = CreateActivityInput {
+            account_id: account_id.clone(),
+            asset_id: None,
+            activity_type: ActivityType::Buy,
+            activity_type_override: None,
+            source_type: None,
+            subtype: None,
+            status: ActivityStatus::Posted,
+            activity_date: day,
+            settlement_date: None,
+            quantity: Some(dec("10")),
+            unit_price: Some(dec("100")),
+            amount: None,
+            fee: None,
+            tax: None,
+            currency: "USD".to_string(),
+            fx_rate: None,
+            notes: None,
+            metadata: None,
+            source_system: None,
+            source_record_id: None,
+            source_group_id: None,
+            idempotency_key: None,
+            import_run_id: None,
+        };
+
+        let err = service
+            .create_activity(input_no_asset)
+            .await
+            .expect_err("should return validation error");
+        assert!(matches!(err, crate::error::AppError::Validation(_)));
+
+        // Missing quantity
+        let asset_id = create_asset(&pool, "GOOGL").await;
+        let input_no_qty = CreateActivityInput {
+            account_id: account_id.clone(),
+            asset_id: Some(asset_id),
+            activity_type: ActivityType::Buy,
+            activity_type_override: None,
+            source_type: None,
+            subtype: None,
+            status: ActivityStatus::Posted,
+            activity_date: day,
+            settlement_date: None,
+            quantity: None,
+            unit_price: Some(dec("100")),
+            amount: None,
+            fee: None,
+            tax: None,
+            currency: "USD".to_string(),
+            fx_rate: None,
+            notes: None,
+            metadata: None,
+            source_system: None,
+            source_record_id: None,
+            source_group_id: None,
+            idempotency_key: None,
+            import_run_id: None,
+        };
+
+        let err2 = service
+            .create_activity(input_no_qty)
+            .await
+            .expect_err("should return validation error");
+        assert!(matches!(err2, crate::error::AppError::Validation(_)));
+    }
 }

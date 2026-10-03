@@ -277,4 +277,62 @@ mod tests {
         assert_eq!(summary.created_count, 0);
         assert_eq!(summary.errors.len(), 1);
     }
+
+    #[tokio::test]
+    async fn test_import_exceeding_batch_budget_returns_validation_error() {
+        let pool = setup_test_db().await;
+        let account_repo = Arc::new(AccountRepository::new(pool.clone()));
+        let asset_repo = Arc::new(AssetRepository::new(pool.clone()));
+        let activity_repo = Arc::new(ActivityRepository::new(pool.clone()));
+        let import_run_repo = Arc::new(ImportRunRepository::new(pool.clone()));
+        let lot_repo = Arc::new(LotRepository::new(pool.clone()));
+        let disposal_repo = Arc::new(LotDisposalRepository::new(pool.clone()));
+
+        let activity_service = Arc::new(ActivityService::new(
+            pool.clone(),
+            activity_repo.clone(),
+            account_repo.clone(),
+            asset_repo.clone(),
+            lot_repo.clone(),
+            disposal_repo.clone(),
+        ));
+
+        let service = ActivityImportService::new(
+            account_repo.clone(),
+            asset_repo.clone(),
+            activity_repo.clone(),
+            import_run_repo.clone(),
+            lot_repo.clone(),
+            activity_service.clone(),
+        );
+
+        let account = account_repo
+            .create(CreateAccountInput {
+                workspace_id: None,
+                name: "Budget Test Account".to_string(),
+                account_type: AccountType::Securities,
+                group_name: None,
+                currency: "USD".to_string(),
+                is_default: false,
+                platform_id: None,
+                account_number: None,
+                tracking_mode: TrackingMode::Transactions,
+            })
+            .await
+            .expect("create account");
+
+        let mut huge_csv =
+            String::from("date,type,symbol,quantity,price,amount,fee,currency,notes\n");
+        for _ in 0..10_001 {
+            huge_csv.push_str("2026-08-01,BUY,NVDA,1,120.00,120.00,0.00,USD,Excessive batch\n");
+        }
+
+        let err = service
+            .import_csv(&account.id, "GENERIC", &huge_csv)
+            .await
+            .expect_err("should reject batch over 10,000 rows");
+
+        assert!(matches!(err, crate::error::AppError::Validation(_)));
+        assert!(err.to_string().contains("exceeds maximum batch budget"));
+    }
 }

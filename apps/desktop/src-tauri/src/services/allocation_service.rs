@@ -199,30 +199,39 @@ impl AllocationService {
             .map(|c| c.category_id.clone())
             .collect();
 
-        let mut applicable = Vec::new();
-        for target in &targets {
-            let constraints = self.target_repo.list_constraints(&target.id).await?;
-            for constraint in &constraints {
-                let present = match constraint.subject_type {
-                    ConstraintSubjectType::Asset => held_assets.contains(&constraint.subject_id),
-                    ConstraintSubjectType::Category => {
-                        held_categories.contains(&constraint.subject_id)
-                    }
-                    ConstraintSubjectType::Account => scope_id
-                        .map(|id| id == constraint.subject_id)
-                        .unwrap_or(false),
-                };
+        let target_ids: Vec<&str> = targets.iter().map(|t| t.id.as_str()).collect();
+        let target_names: HashMap<&str, &str> = targets
+            .iter()
+            .map(|t| (t.id.as_str(), t.name.as_str()))
+            .collect();
 
-                if present {
-                    applicable.push(format!(
-                        "'{}': {} on {} is {:?} ({:?})",
-                        target.name,
-                        constraint.action,
-                        constraint.subject_id,
-                        constraint.effect,
-                        constraint.reason.as_deref().unwrap_or("no reason given"),
-                    ));
-                }
+        let constraints = self
+            .target_repo
+            .list_constraints_for_targets(&target_ids)
+            .await?;
+
+        let mut applicable = Vec::new();
+        for constraint in &constraints {
+            let present = match constraint.subject_type {
+                ConstraintSubjectType::Asset => held_assets.contains(&constraint.subject_id),
+                ConstraintSubjectType::Category => held_categories.contains(&constraint.subject_id),
+                ConstraintSubjectType::Account => scope_id
+                    .map(|id| id == constraint.subject_id)
+                    .unwrap_or(false),
+            };
+
+            if present {
+                let target_name = target_names
+                    .get(constraint.target_id.as_str())
+                    .copied()
+                    .unwrap_or("Target");
+                applicable.push(format!(
+                    "'{target_name}': {} on {} is {:?} ({:?})",
+                    constraint.action,
+                    constraint.subject_id,
+                    constraint.effect,
+                    constraint.reason.as_deref().unwrap_or("no reason given"),
+                ));
             }
         }
 

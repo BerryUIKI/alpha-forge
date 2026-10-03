@@ -180,6 +180,32 @@ impl ActivityImportService {
             priority_a.cmp(&priority_b)
         });
 
+        if parsed_items.len() > 10_000 {
+            let err_msg = format!(
+                "CSV statement exceeds maximum batch budget of 10,000 rows (found {})",
+                parsed_items.len()
+            );
+            let summary_json = serde_json::to_string(&ImportRunSummary {
+                total_rows: parsed_items.len(),
+                created_count: 0,
+                skipped_count: 0,
+                failed_count: parsed_items.len(),
+                errors: vec![err_msg.clone()],
+            })
+            .ok();
+            let _ = self
+                .import_run_repo
+                .finish(
+                    &import_run.id,
+                    "FAILED",
+                    summary_json,
+                    None,
+                    Some(err_msg.clone()),
+                )
+                .await;
+            return Err(AppError::Validation(err_msg));
+        }
+
         let total_rows = parsed_items.len();
         let mut created_count = 0usize;
         let mut skipped_count = 0usize;
@@ -189,6 +215,9 @@ impl ActivityImportService {
         let mut resolved_assets: HashMap<String, String> = HashMap::new();
 
         for (idx, item) in parsed_items.into_iter().enumerate() {
+            if idx > 0 && idx % 100 == 0 {
+                tokio::task::yield_now().await;
+            }
             // Compute deterministic row signature
             let row_content = format!(
                 "{}:{}:{}:{}:{}:{}:{}",

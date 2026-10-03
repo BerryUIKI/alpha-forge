@@ -243,15 +243,36 @@ impl AllocationTargetRepository {
         &self,
         target_id: &str,
     ) -> Result<Vec<AllocationTargetConstraint>, AppError> {
-        let rows = sqlx::query_as::<_, ConstraintRow>(
+        self.list_constraints_for_targets(&[target_id]).await
+    }
+
+    pub async fn list_constraints_for_targets(
+        &self,
+        target_ids: &[&str],
+    ) -> Result<Vec<AllocationTargetConstraint>, AppError> {
+        if target_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let placeholders = target_ids
+            .iter()
+            .map(|_| "?")
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
             "SELECT id, target_id, subject_type, subject_id, action, effect, reason, metadata_json,
                     created_at, updated_at
-             FROM allocation_target_constraints WHERE target_id = ? ORDER BY created_at",
-        )
-        .bind(target_id)
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| AppError::Internal(format!("failed to list allocation constraints: {e}")))?;
+             FROM allocation_target_constraints WHERE target_id IN ({placeholders}) ORDER BY created_at"
+        );
+
+        let mut query = sqlx::query_as::<_, ConstraintRow>(&sql);
+        for id in target_ids {
+            query = query.bind(id);
+        }
+
+        let rows = query.fetch_all(&self.pool).await.map_err(|e| {
+            AppError::Internal(format!("failed to list batch allocation constraints: {e}"))
+        })?;
 
         rows.into_iter().map(TryInto::try_into).collect()
     }
