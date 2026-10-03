@@ -1,9 +1,9 @@
 # Portfolio Integration Plan (Wealthfolio → AlphaForge)
 
-**Status:** Phases 0-4 integrated; Phase 5 hardening is governed by M11
+**Status:** Phases 0-5 fully integrated and hardened; Milestone M11 release candidate approved (2026-10-03)
 **Historical branch:** `feature/portfolio-integration` (merged into `dev`)
 **Originally approved:** 2026-08-13
-**Baseline revalidated:** 2026-09-20 at `origin/dev` commit `9e21553`
+**Baseline revalidated:** 2026-10-03 at `origin/dev`
 **Author:** Handoff from planning session (see conversation history)
 **Goal:** Fully integrate Wealthfolio's portfolio functionality into this
 repository's Portfolio module, resolving Wealthfolio's technical debt instead

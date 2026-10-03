@@ -50,8 +50,7 @@ never `f64`.
 | Phase 2.5 | ✅ Done | Market-data crate (quotes, asset profiles), income service |
 | Phase 3 | ✅ Complete | Frontend UI (dashboard, accounts, holdings, activities) |
 | Phase 3.5 | ✅ Complete | Repository-level CRUD commands (platform, account, asset, quote seed) |
-| Phase 4 | ✅ Complete | Thesis ↔ financial-asset linkage (PR #209) |
-| Phase 5 | 🚧 In progress | Hardening and release-candidate work tracked by M11 |
+| Phase 5 | ✅ Complete | Hardening and release-candidate work tracked by M11 (M11-01 - M11-07) |
 
 Planning estimates are indicative; do not treat calendar weeks as a completion
 claim.
@@ -226,10 +225,7 @@ Phase 4 (thesis linkage) — after theses + holdings both exist
 Phase 5 / M11 (hardening and release candidate)
 ```
 
-Phases 1 through 4 are complete. Phase 5 is governed by the
-[M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
-Historical phase dependencies remain useful for architecture context but are no
-longer an active branch sequence.
+Phases 1 through 5 are complete. Phase 5 (Milestone M11) achieved scale baseline hardening, legacy API retirement, cross-platform release packaging, and formal release-candidate acceptance ([`docs/releases/M11_RELEASE_ACCEPTANCE.md`](../releases/M11_RELEASE_ACCEPTANCE.md)).
 
 ---
 
