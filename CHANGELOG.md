@@ -7,11 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-10-03
+
 ### Added
-- Comprehensive documentation suite (17+ documents)
-- Architecture Decision Records (ADR) system
-- Agent development workflow documentation (AGENTS.md)
-- Product milestone roadmap
+- **Milestone M11 Portfolio Release Candidate:**
+  - Automated release packaging pipeline (`scripts/package-release.mjs`, `scripts/generate-attribution.mjs`, `scripts/smoke-packaged-flows.mjs`).
+  - Third-party licensing & SBOM attribution documentation (`docs/releases/THIRD_PARTY_NOTICES.md`).
+  - Cross-platform packaged smoke verification suite (`docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`).
+  - Formal Release Candidate Acceptance Gate (`docs/releases/M11_RELEASE_ACCEPTANCE.md`).
+- **Milestone M10 Goose Agent Integration:** Supervised sidecar runtime with read-only MCP scopes, shadow analysis, proposal workflows, and strict zero-trading enforcement.
+- **Milestone M9 Options Analytics:** Black-Scholes pricing models, Greeks calculation, implied volatility solver, and interactive strategy payoff diagrams.
+- **Milestone M6 & M11 Financial Portfolio Capabilities:** Multi-account tracking, lot-level cost basis engine, transaction activities, Generic & IBKR statement CSV importing, valuation snapshots, and asset allocation constraint checks.
+- **Thesis-Asset Linkage:** Bidirectional relational linkage between investment theses and portfolio assets (`theses.portfolio_asset_id` → `financial_assets.id`).
+- **Performance Benchmarks:** Criterion benchmark suite covering 9 portfolio scale workloads and frontend sub-50ms transformation budgets (`docs/portfolio/PERFORMANCE_BASELINE.md`).
+
+### Changed
+- Retired 12 deprecated legacy portfolio commands in favor of canonical SQLx services, achieving 100% IPC registration parity (176 commands).
+- Optimized allocation constraint queries from N+1 database queries to a single batched query (-19.6% execution time).
+- Enhanced large CSV statement import resilience with chunked Tokio yields and 10,000-row batch safety limits.
+
+### Fixed
+- Eliminated 5 production panic points (`.unwrap()`) in `ActivityService` lot creation and disposal, replacing them with typed `AppError::Validation`.
+- Closed and verified legacy portfolio deprecation issues #194 through #198 with full audit evidence.
 
 ## [0.1.0] - 2026-07-31
 

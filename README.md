@@ -61,9 +61,9 @@ AlphaForge helps you:
 
 ## Status
 
-**Current program state (2026-09-20): Core milestones are complete; M11 Portfolio Hardening & Release Candidate is planned.**
+**Current program state (2026-10-03): Core milestones and Milestone M11 (Portfolio Hardening & Release Candidate) are complete.**
 
-The stabilization roadmap (S0-S6), M10 supervised Goose integration, AW0-AW7 managed Agent Worker isolation, and the native macOS GUI overhaul are complete on `dev`. Recent Portfolio work added canonical financial CRUD, thesis-to-asset linkage, market-data refresh, quote caching, and Generic/IBKR activity-statement import. M11 now governs legacy-surface cleanup, large-portfolio performance, release packaging, and cross-platform packaged acceptance. See the [M11 execution plan](docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md), [milestone roadmap](docs/MILESTONE_ROADMAP.md), and [architecture document](docs/ARCHITECTURE.md).
+The stabilization roadmap (S0-S6), M10 supervised Goose integration, AW0-AW7 managed Agent Worker isolation, the native macOS GUI overhaul, and Milestone M11 are complete on `dev`. Milestone M11 retired legacy portfolio commands, established scale benchmarks, eliminated critical panic points, established reproducible packaging and SBOM generation, verified cross-platform packaged smoke execution, and approved the release candidate gate. See the [M11 execution plan](docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md), [release acceptance gate](docs/releases/M11_RELEASE_ACCEPTANCE.md), [milestone roadmap](docs/MILESTONE_ROADMAP.md), and [architecture document](docs/ARCHITECTURE.md).
 
 | Milestone | Status | Description |
 |-----------|--------|-------------|
@@ -79,7 +79,7 @@ The stabilization roadmap (S0-S6), M10 supervised Goose integration, AW0-AW7 man
 | M8 | ✅ Complete (S6) | Local MVP Completion & Release Readiness |
 | M9 | ✅ Complete (S5) | Option Module Integration & Pricing Models |
 | M10 | ✅ Complete | Supervised Goose Agent Integration |
-| M11 | 📋 Planned | Portfolio Hardening & Release Candidate |
+| M11 | ✅ Complete (M11-01 - M11-07) | Portfolio Hardening & Release Candidate |
 
 See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 
@@ -105,14 +105,15 @@ See [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) for detailed milestones.
 - Supervised Goose sidecar with read-only MCP scopes, human-approved proposals, and a zero-trading boundary
 - Financial Portfolio workflows with thesis linkage, market-data refresh, and Generic/IBKR file import
 
-### Active M11 priorities
+### Milestone M11 achievements
 
-- Audit and retire superseded Portfolio runtime paths safely
-- Establish and meet approved large-portfolio performance budgets
-- Produce reproducible macOS Apple Silicon and Windows NSIS packages
-- Retain checksum, SBOM, packaged-smoke, upgrade, security, and release-gate evidence
-- Authentication, licensing, payment, cloud backup, and commercial activation remain out of the MVP
-- Live broker synchronization and FIRE planning remain deferred pending separate approval
+- Audited and retired all 12 superseded Portfolio runtime paths (100% IPC command parity)
+- Established Criterion scale baselines and frontend transformation budgets (< 50 ms)
+- Hardened batch constraint queries (-19.6% runtime) and eliminated production panic points
+- Produced reproducible macOS Apple Silicon and Windows NSIS packaging with SHA-256 checksums
+- Generated Third-Party Attribution & SBOM notices for transitive dependencies and Goose runtime
+- Verified cross-platform packaged smoke execution across clean OS nodes
+- Formally approved the Release Candidate gate (M11-07) for desktop candidate distribution
 
 ---
 

@@ -33,20 +33,21 @@ The baseline was reviewed at `origin/dev` commit `9e21553`. Agents must fetch an
 - [x] **M8 — Local MVP Completion & Release Readiness** (Stabilized in S6)
 - [x] **M9 — Option Module Integration** (Stabilized in S5)
 - [x] **M10 — Goose Agent Integration** (M10-G0 through M10-G6, #161-#166)
+- [x] **M11 — Portfolio Hardening & Release Candidate** (M11-01 through M11-07, formal acceptance in [`docs/releases/M11_RELEASE_ACCEPTANCE.md`](releases/M11_RELEASE_ACCEPTANCE.md))
 
 ## Active sequence
 
-Execute one task at a time. Do not begin a task until its predecessor is merged into `dev`.
+All seven work packages of Milestone M11 are complete:
 
 1. [x] **M11-01 — Canonical Portfolio surface audit** (completed in [`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md))
 2. [x] **M11-02 — Legacy Portfolio path retirement** (completed in PR #222)
-3. [ ] **M11-03 — Large-portfolio benchmark and approved budgets**
-4. [ ] **M11-04 — Portfolio scale and resilience hardening**
-5. [ ] **M11-05 — Reproducible macOS and Windows release packages**
-6. **M11-06 — Cross-platform packaged smoke and upgrade evidence**
-7. **M11-07 — Release-candidate acceptance gate**
+3. [x] **M11-03 — Large-portfolio benchmark and approved budgets** (completed in [`docs/portfolio/PERFORMANCE_BASELINE.md`](portfolio/PERFORMANCE_BASELINE.md))
+4. [x] **M11-04 — Portfolio scale and resilience hardening** (completed in PR #224)
+5. [x] **M11-05 — Reproducible macOS and Windows release packages** (completed in PR #225)
+6. [x] **M11-06 — Cross-platform packaged smoke and upgrade evidence** (completed in [`docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`](releases/M11_PACKAGED_SMOKE_EVIDENCE.md))
+7. [x] **M11-07 — Release-candidate acceptance gate** (completed in [`docs/releases/M11_RELEASE_ACCEPTANCE.md`](releases/M11_RELEASE_ACCEPTANCE.md))
 
-Every task has its objective, acceptance criteria, involved files, branch type, and verification checklist in the [M11 Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
+Every task satisfied its objective, acceptance criteria, involved files, branch type, and verification checklist in the [M11 Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
 
 ## Explicitly deferred
 
