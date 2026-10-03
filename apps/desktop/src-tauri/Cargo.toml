@@ -53,3 +53,10 @@ serde_yaml = "0.9"
 lto = true          # Link-time optimization for smaller binaries
 strip = true        # Strip symbols from binary
 codegen-units = 1   # Better optimization at cost of compile time
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "portfolio_scale_benchmark"
+harness = false

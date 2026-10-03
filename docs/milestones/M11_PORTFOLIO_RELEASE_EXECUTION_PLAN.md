@@ -206,11 +206,11 @@ Create deterministic, non-production benchmark fixtures for representative large
 
 **Verification checklist**
 
-- [ ] Benchmarks run from a clean checkout using documented commands.
-- [ ] Fixture generation is deterministic and contains no secrets or user data.
-- [ ] Unit tests still run independently of long benchmarks.
-- [ ] Baseline results and approved budgets are recorded in English.
-- [ ] Formatting, lint, focused tests, links, and `git diff --check` pass.
+- [x] Benchmarks run from a clean checkout using documented commands.
+- [x] Fixture generation is deterministic and contains no secrets or user data.
+- [x] Unit tests still run independently of long benchmarks.
+- [x] Baseline results and approved budgets are recorded in English.
+- [x] Formatting, lint, focused tests, links, and `git diff --check` pass.
 
 ## M11-04 — Meet the approved Portfolio scale and resilience budgets
 

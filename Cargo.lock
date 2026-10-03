@@ -126,6 +126,7 @@ dependencies = [
  "artifact-core",
  "async-trait",
  "chrono",
+ "criterion",
  "csv",
  "domain",
  "keyring",
