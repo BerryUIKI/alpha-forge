@@ -14,7 +14,10 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "tauri": "pnpm --dir apps/desktop tauri"
+    "tauri": "pnpm --dir apps/desktop tauri",
+    "attribution:generate": "node scripts/generate-attribution.mjs",
+    "release:package": "node scripts/package-release.mjs",
+    "release:verify": "node scripts/package-release.mjs --verify"
   },
   "engines": {
     "node": ">=22",
