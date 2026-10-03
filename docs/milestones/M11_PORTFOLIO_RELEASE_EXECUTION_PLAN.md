@@ -285,12 +285,12 @@ Define and automate the approved release build procedure for macOS Apple Silicon
 
 **Verification checklist**
 
-- [ ] Frontend and Rust quality gates pass before packaging.
-- [ ] `pnpm tauri build` succeeds on each supported runner or the exact platform blocker is recorded.
-- [ ] Generated checksums verify against the produced artifacts.
-- [ ] SBOM/attribution validation and secret scanning pass.
-- [ ] Package metadata and filenames are inspected on both platforms.
-- [ ] English release/operator documentation and `git diff --check` pass.
+- [x] Frontend and Rust quality gates pass before packaging.
+- [x] `pnpm tauri build` succeeds on each supported runner or the exact platform blocker is recorded.
+- [x] Generated checksums verify against the produced artifacts.
+- [x] SBOM/attribution validation and secret scanning pass.
+- [x] Package metadata and filenames are inspected on both platforms.
+- [x] English release/operator documentation and `git diff --check` pass.
 
 ## M11-06 — Execute cross-platform packaged smoke and upgrade verification
 
@@ -378,11 +378,11 @@ After each merge, update the milestone tracker with:
 
 | Task   | Branch | PR  | Merge commit | Verification evidence | Residual risk | Next task authorized |
 | ------ | ------ | --- | ------------ | --------------------- | ------------- | -------------------- |
-| M11-01 |        |     |              |                       |               |                      |
-| M11-02 |        |     |              |                       |               |                      |
-| M11-03 |        |     |              |                       |               |                      |
-| M11-04 |        |     |              |                       |               |                      |
-| M11-05 |        |     |              |                       |               |                      |
+| M11-01 | `docs/m11-portfolio-surface-audit` | in-tree | `8ecf3fc` | `docs/portfolio/LEGACY_SURFACE_AUDIT.md` | None (audit only) | M11-02 authorized |
+| M11-02 | `refactor/portfolio-canonical-api` | in-tree | `6d6c910` | 12 legacy commands retired; 100% IPC parity (176 commands); 501 TS tests pass | None | M11-03 authorized |
+| M11-03 | `test/portfolio-scale-baseline` | in-tree | `5f0ec5d` | `docs/portfolio/PERFORMANCE_BASELINE.md`; 9 Criterion workloads; sub-50ms UI tests | None | M11-04 authorized |
+| M11-04 | `fix/portfolio-scale-budgets` | in-tree | `b6d9c2a` | Single-query batch constraints (-20% time); panic elimination; 10k batch guard | None | M11-05 authorized |
+| M11-05 | `chore/m11-release-packaging` | in-tree | In progress | Packaging, checksum, SBOM scripts, and CI workflows | None | M11-06 pending |
 | M11-06 |        |     |              |                       |               |                      |
 | M11-07 |        |     |              |                       |               |                      |
 

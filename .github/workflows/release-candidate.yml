@@ -1,0 +1,191 @@
+name: Release Candidate Packaging (M11-05)
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      candidate_tag:
+        description: "Release candidate tag (e.g. v0.1.0-rc.1)"
+        required: false
+        default: ""
+
+concurrency:
+  group: release-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Frontend checks (typecheck, lint, test)
+        run: |
+          pnpm typecheck
+          pnpm lint
+          pnpm test
+
+      - name: Check IPC registration parity
+        run: node scripts/check-ipc-registration.mjs
+
+  build-macos:
+    name: Build macOS Apple Silicon (DMG)
+    needs: quality-gate
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Code Signing Credentials
+        run: |
+          if [ -n "${{ secrets.APPLE_SIGNING_IDENTITY }}" ]; then
+            echo "✅ Apple Developer ID signing identity provided in release environment."
+          else
+            echo "⚠️ No Apple signing identity provided; building unsigned candidate package."
+          fi
+
+      - name: Build macOS Apple Silicon DMG
+        run: pnpm tauri build --bundles dmg
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+      - name: Collect and normalize macOS artifact
+        run: node scripts/package-release.mjs
+
+      - name: Upload macOS candidate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist-release/*.dmg
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows x64 (NSIS)
+    needs: quality-gate
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Code Signing Credentials
+        shell: pwsh
+        run: |
+          if ("${{ secrets.WINDOWS_CERTIFICATE_THUMBPRINT }}") {
+            Write-Host "✅ Windows Authenticode signing credentials configured."
+          } else {
+            Write-Host "⚠️ No Windows signing credentials configured; building unsigned candidate package."
+          }
+
+      - name: Build Windows NSIS Installer
+        run: pnpm tauri build --bundles nsis
+
+      - name: Collect and normalize Windows artifact
+        run: node scripts/package-release.mjs
+
+      - name: Upload Windows candidate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-nsis
+          path: dist-release/*.exe
+          if-no-files-found: error
+
+  package-and-verify:
+    name: Assemble Candidate & Verify Checksums
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist-release
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-nsis
+          path: dist-release
+
+      - name: Generate Third-Party Attribution & SBOM Notice
+        run: node scripts/generate-attribution.mjs
+
+      - name: Generate SHA-256 Checksum Manifest
+        run: node scripts/package-release.mjs --checksums
+
+      - name: Verify All Release Artifacts Against Checksums
+        run: node scripts/package-release.mjs --verify
+
+      - name: Archive Full Release Candidate Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-forge-release-candidate
+          path: dist-release/
+          if-no-files-found: error
