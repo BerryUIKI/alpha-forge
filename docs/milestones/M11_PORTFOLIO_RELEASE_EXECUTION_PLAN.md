@@ -366,11 +366,11 @@ Run the complete release gate against the exact candidate artifacts, reconcile r
 
 **Verification checklist**
 
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and required E2E tests pass.
-- [ ] `cargo fmt --check`, strict Clippy, and `cargo test --workspace` pass.
-- [ ] IPC parity, package builds, checksums, SBOM, security, and packaged-smoke gates pass.
-- [ ] Local Markdown links, Prettier, English documentation review, and `git diff --check` pass.
-- [ ] Release-owner decision and all residual risks are recorded.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test`, and required E2E tests pass.
+- [x] `cargo fmt --check`, strict Clippy, and `cargo test --workspace` pass.
+- [x] IPC parity, package builds, checksums, SBOM, security, and packaged-smoke gates pass.
+- [x] Local Markdown links, Prettier, English documentation review, and `git diff --check` pass.
+- [x] Release-owner decision and all residual risks are recorded.
 
 ## 7. Coordinator record
 
@@ -383,7 +383,7 @@ After each merge, update the milestone tracker with:
 | M11-03 | `test/portfolio-scale-baseline` | in-tree | `5f0ec5d` | `docs/portfolio/PERFORMANCE_BASELINE.md`; 9 Criterion workloads; sub-50ms UI tests | None | M11-04 authorized |
 | M11-04 | `fix/portfolio-scale-budgets` | in-tree | `b6d9c2a` | Single-query batch constraints (-20% time); panic elimination; 10k batch guard | None | M11-05 authorized |
 | M11-05 | `chore/m11-release-packaging` | in-tree | `2de6fc0` | Packaging, checksum, SBOM scripts, and CI workflows | None | M11-06 authorized |
-| M11-06 | `test/m11-packaged-smoke` | in-tree | In progress | `docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`; pnpm test:smoke passed | None | M11-07 pending |
-| M11-07 |        |     |              |                       |               |                      |
+| M11-06 | `test/m11-packaged-smoke` | in-tree | `f77a106` | `docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`; pnpm test:smoke passed | None | M11-07 authorized |
+| M11-07 | `docs/m11-release-acceptance` | in-tree | Final | `docs/releases/M11_RELEASE_ACCEPTANCE.md`; Milestone M11 100% complete | None | Milestone M11 Complete |
 
 Do not edit completed task criteria retroactively. Record a changed requirement in a new English decision record, update the remaining tasks through a focused `docs/*` PR, and preserve the original acceptance evidence.

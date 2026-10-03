@@ -30,7 +30,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 | M10       | ✅ Complete (#161-#166)   | Rebaseline 2026-08-24 | Goose Agent Integration (Supervised Sidecar) |
 | AW0-AW7   | ✅ Complete (2026-09-01)  | 2026-09-01            | Managed Agent Worker Subprocess Isolation |
 | GUI-M4-MACOS | ✅ Complete (#200-#203) | 2026-09-07            | Native macOS GUI Overhaul & Investment Cockpit Pipeline |
-| M11       | 📋 Planned                | Rebaseline 2026-09-20 | Portfolio Hardening & Release Candidate |
+| M11       | ✅ Complete (M11-01 - M11-07) | 2026-10-03            | Portfolio Hardening & Release Candidate |
 
 ## Delivery document registry
 
@@ -966,7 +966,7 @@ All three pillars must work together.
 
 ### Current Phase
 
-**M11 — Portfolio Hardening & Release Candidate** is planned. Work begins with M11-01 after this planning PR merges. The [M11 Execution Plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md) is the active collaborator queue.
+**M11 — Portfolio Hardening & Release Candidate** is complete. All seven execution work packages (M11-01 through M11-07) have passed verification. Release candidate packages and formal acceptance are documented in [`docs/releases/M11_RELEASE_ACCEPTANCE.md`](releases/M11_RELEASE_ACCEPTANCE.md).
 
 ### Completed programs
 
@@ -975,13 +975,13 @@ All three pillars must work together.
 - [x] Managed Agent Worker isolation AW0 through AW7
 - [x] Native macOS GUI overhaul and investment cockpit pipeline
 - [x] Portfolio Phase 4 thesis-to-asset linkage, market-data refresh, and Generic/IBKR file import
+- [x] Milestone M11 Portfolio Hardening & Release Candidate (M11-01 through M11-07)
 
 ### Next Milestones
 
-1. Complete M11-01 through M11-04 Portfolio audit, cleanup, benchmark, and hardening.
-2. Complete M11-05 and M11-06 release packaging and cross-platform smoke evidence.
-3. Complete M11-07 release-candidate acceptance without automatically publishing or promoting to `main`.
-4. Create a separate decision milestone before any live broker sync, FIRE planning, cloud/commercial service, or expanded locale work.
+1. Execute release-owner production signing ceremony and release tagging for `v0.1.0`.
+2. Plan Phase 6 post-MVP capabilities under a separate approved decision milestone (e.g. expanded localization, additional statement parsers, and custom taxonomies).
+3. Ensure no live trading, automatic execution, or cloud sync is introduced without explicit user authorization.
 
 ### Long-term Vision
 
