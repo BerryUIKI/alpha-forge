@@ -244,11 +244,11 @@ Optimize only the bottlenecks demonstrated by M11-03, preserve financial correct
 
 **Verification checklist**
 
-- [ ] Correctness fixtures pass before and after optimization.
-- [ ] Approved benchmark commands pass with retained results.
-- [ ] Failure, cancellation, timeout, and cache invalidation tests pass where applicable.
-- [ ] Full frontend and Rust quality gates pass.
-- [ ] Documentation, links, and `git diff --check` pass.
+- [x] Correctness fixtures pass before and after optimization.
+- [x] Approved benchmark commands pass with retained results.
+- [x] Failure, cancellation, timeout, and cache invalidation tests pass where applicable.
+- [x] Full frontend and Rust quality gates pass.
+- [x] Documentation, links, and `git diff --check` pass.
 
 ## M11-05 — Produce reproducible macOS and Windows release packages
 

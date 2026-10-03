@@ -229,9 +229,15 @@ impl ActivityService {
 
         // 6b. Handle Buy -> Create Lot.
         if input.activity_type == ActivityType::Buy {
-            let asset_id_str = input.asset_id.as_ref().unwrap();
-            let qty = input.quantity.unwrap();
-            let price = input.unit_price.unwrap();
+            let asset_id_str = input.asset_id.as_deref().ok_or_else(|| {
+                AppError::Validation("Buy activity requires asset_id".to_string())
+            })?;
+            let qty = input.quantity.ok_or_else(|| {
+                AppError::Validation("Buy activity requires quantity".to_string())
+            })?;
+            let price = input.unit_price.ok_or_else(|| {
+                AppError::Validation("Buy activity requires unit_price".to_string())
+            })?;
             let original_cost_basis = storage_money(qty * price + fee);
             let lot_id = uuid::Uuid::new_v4().to_string();
 
@@ -270,8 +276,12 @@ impl ActivityService {
 
         // 6c. Handle Sell -> FIFO Lot Consumption & Disposal.
         if input.activity_type == ActivityType::Sell {
-            let asset_id_str = input.asset_id.as_ref().unwrap();
-            let sell_quantity = input.quantity.unwrap();
+            let asset_id_str = input.asset_id.as_deref().ok_or_else(|| {
+                AppError::Validation("Sell activity requires asset_id".to_string())
+            })?;
+            let sell_quantity = input.quantity.ok_or_else(|| {
+                AppError::Validation("Sell activity requires quantity".to_string())
+            })?;
             let total_proceeds = calculated_amount;
 
             #[derive(sqlx::FromRow)]
