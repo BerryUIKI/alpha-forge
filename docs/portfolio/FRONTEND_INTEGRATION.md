@@ -116,6 +116,7 @@ All repository-level CRUD commands are now exposed as Tauri commands in
 - `list_financial_accounts` / `create_financial_account` / `archive_financial_account` — **wired** in AccountCards / CreateAccountDialog
 - `list_activities_by_account` / `create_activity` — **wired** in ActivityList / AddActivityDialog
 - `list_active_assets` / `create_asset` — **wired** in AddAssetDialog / AddActivityDialog
+- `import_activities_csv` — **wired** in ImportActivitiesDialog (renders applied/skipped summary without auto-closing)
 - Plus quote, lot, taxonomy, import-run, and allocation-target CRUD
 
 **Migration complete:** `AccountCards` and `ActivityList` now use the canonical

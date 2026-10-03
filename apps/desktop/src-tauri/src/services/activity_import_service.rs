@@ -1,26 +1,40 @@
 // ActivityImportService — Parses generic CSV & IBKR activity statements,
-// resolves/creates assets, persists activities, and generates initial FIFO lots on buys.
+// resolves/creates assets, persists activities atomically, and synchronizes FIFO lots.
 //
 // Complies with AlphaForge principles:
 // - Explicit typed AppError (no unwrap / expect panics)
 // - Thin command layer delegation
-// - Idempotent import runs and activity deduplication
+// - Idempotent import runs and deterministic activity deduplication
+// - Full parity with FIFO tax lot creation and lot disposal
 
+use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use chrono::NaiveDate;
 use domain::financial::{
-    ActivityStatus, ActivityType, AssetKind, CostBasisMethod, CreateActivityInput,
-    CreateAssetInput, CreateImportRunInput, CreateLotInput, ImportRun, InstrumentType, QuoteMode,
+    ActivityStatus, ActivityType, AssetKind, CreateActivityInput, CreateAssetInput,
+    CreateImportRunInput, ImportRun, InstrumentType, QuoteMode,
 };
 use rust_decimal::Decimal;
-use std::str::FromStr;
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 use crate::database::repositories::account_repository::AccountRepository;
 use crate::database::repositories::activity_repository::{ActivityRepository, ImportRunRepository};
 use crate::database::repositories::asset_repository::AssetRepository;
 use crate::database::repositories::lot_repository::LotRepository;
 use crate::error::AppError;
+use crate::services::activity_service::ActivityService;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImportRunSummary {
+    pub total_rows: usize,
+    pub created_count: usize,
+    pub skipped_count: usize,
+    pub failed_count: usize,
+    pub errors: Vec<String>,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImportFormat {
@@ -45,7 +59,9 @@ pub struct ActivityImportService {
     asset_repo: Arc<AssetRepository>,
     activity_repo: Arc<ActivityRepository>,
     import_run_repo: Arc<ImportRunRepository>,
+    #[allow(dead_code)]
     lot_repo: Arc<LotRepository>,
+    activity_service: Arc<ActivityService>,
 }
 
 impl ActivityImportService {
@@ -55,6 +71,7 @@ impl ActivityImportService {
         activity_repo: Arc<ActivityRepository>,
         import_run_repo: Arc<ImportRunRepository>,
         lot_repo: Arc<LotRepository>,
+        activity_service: Arc<ActivityService>,
     ) -> Self {
         Self {
             account_repo,
@@ -62,6 +79,7 @@ impl ActivityImportService {
             activity_repo,
             import_run_repo,
             lot_repo,
+            activity_service,
         }
     }
 
@@ -73,7 +91,7 @@ impl ActivityImportService {
         csv_text: &str,
     ) -> Result<ImportRun, AppError> {
         let format = ImportFormat::parse(format_str)?;
-        let account = self
+        let _account = self
             .account_repo
             .get(account_id)
             .await?
@@ -84,7 +102,7 @@ impl ActivityImportService {
             ImportFormat::IbkrCsv => "IBKR_CSV",
         };
 
-        // Create import run record
+        // Create import run record in PROCESSING status
         let import_run = self
             .import_run_repo
             .create(CreateImportRunInput {
@@ -97,50 +115,180 @@ impl ActivityImportService {
             })
             .await?;
 
-        let parsed_items = match format {
-            ImportFormat::GenericCsv => self.parse_generic_csv(csv_text)?,
-            ImportFormat::IbkrCsv => self.parse_ibkr_csv(csv_text)?,
+        let parsed_result = match format {
+            ImportFormat::GenericCsv => self.parse_generic_csv(csv_text),
+            ImportFormat::IbkrCsv => self.parse_ibkr_csv(csv_text),
+        };
+
+        let mut parsed_items = match parsed_result {
+            Ok(items) => items,
+            Err(e) => {
+                let err_msg = e.to_string();
+                let summary_json = serde_json::to_string(&ImportRunSummary {
+                    total_rows: 0,
+                    created_count: 0,
+                    skipped_count: 0,
+                    failed_count: 1,
+                    errors: vec![err_msg.clone()],
+                })
+                .ok();
+                let _ = self
+                    .import_run_repo
+                    .finish(&import_run.id, "FAILED", summary_json, None, Some(err_msg))
+                    .await;
+                return Err(e);
+            }
         };
 
         if parsed_items.is_empty() {
-            return Err(AppError::Validation(
-                "CSV contains no valid activity rows".to_string(),
-            ));
+            let err_msg = "CSV contains no valid activity rows".to_string();
+            let summary_json = serde_json::to_string(&ImportRunSummary {
+                total_rows: 0,
+                created_count: 0,
+                skipped_count: 0,
+                failed_count: 0,
+                errors: vec![err_msg.clone()],
+            })
+            .ok();
+            let _ = self
+                .import_run_repo
+                .finish(
+                    &import_run.id,
+                    "FAILED",
+                    summary_json,
+                    None,
+                    Some(err_msg.clone()),
+                )
+                .await;
+            return Err(AppError::Validation(err_msg));
         }
 
-        for item in parsed_items {
-            // Resolve or create asset if a symbol is specified
+        // Sort parsed items chronologically (and buys before sells on the same day to maintain FIFO lot inventory)
+        parsed_items.sort_by(|a, b| {
+            let date_cmp = a.activity_date.cmp(&b.activity_date);
+            if date_cmp != std::cmp::Ordering::Equal {
+                return date_cmp;
+            }
+            let priority_a = match a.activity_type {
+                ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
+                _ => 1,
+            };
+            let priority_b = match b.activity_type {
+                ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
+                _ => 1,
+            };
+            priority_a.cmp(&priority_b)
+        });
+
+        let total_rows = parsed_items.len();
+        let mut created_count = 0usize;
+        let mut skipped_count = 0usize;
+        let mut failed_count = 0usize;
+        let mut errors = Vec::new();
+        let mut seen_occurrences: HashMap<String, usize> = HashMap::new();
+        let mut resolved_assets: HashMap<String, String> = HashMap::new();
+
+        for (idx, item) in parsed_items.into_iter().enumerate() {
+            // Compute deterministic row signature
+            let row_content = format!(
+                "{}:{}:{}:{}:{}:{}:{}",
+                item.activity_date,
+                item.activity_type,
+                item.symbol.as_deref().unwrap_or(""),
+                item.quantity.unwrap_or(Decimal::ZERO),
+                item.unit_price.unwrap_or(Decimal::ZERO),
+                item.amount.unwrap_or(Decimal::ZERO),
+                item.currency
+            );
+            let count = seen_occurrences.entry(row_content.clone()).or_insert(0);
+            let occurrence = *count;
+            *count += 1;
+
+            let hash_input = format!("{}:{}:{}", source_system, row_content, occurrence);
+            let hash = format!("{:x}", Sha256::digest(hash_input.as_bytes()));
+            let idempotency_key =
+                format!("csv:{}:{}:{}", account_id, item.activity_date, &hash[..16]);
+
+            // Deduplication: if activity with this key already exists in the ledger, skip without error
+            match self
+                .activity_repo
+                .find_by_idempotency_key(&idempotency_key)
+                .await
+            {
+                Ok(Some(_)) => {
+                    skipped_count += 1;
+                    continue;
+                }
+                Ok(None) => {}
+                Err(e) => {
+                    failed_count += 1;
+                    errors.push(format!("Row {}: lookup failed: {e}", idx + 1));
+                    continue;
+                }
+            }
+
+            // Resolve or create asset if symbol is specified
             let asset_id = if let Some(sym) = item.symbol {
-                let key = format!("EQUITY:{}@XNAS", sym.to_ascii_uppercase());
-                let maybe_asset = self.asset_repo.find_by_instrument_key(&key).await?;
-                let asset = match maybe_asset {
-                    Some(a) => a,
-                    None => {
-                        self.asset_repo
-                            .create(CreateAssetInput {
-                                kind: AssetKind::Investment,
-                                name: Some(sym.clone()),
-                                display_code: Some(sym.clone()),
-                                notes: Some("Imported from broker activity statement".to_string()),
-                                is_active: true,
-                                quote_mode: QuoteMode::Market,
-                                quote_ccy: item.currency.clone(),
-                                instrument_type: Some(InstrumentType::Equity),
-                                instrument_symbol: Some(sym),
-                                instrument_exchange_mic: Some("XNAS".to_string()),
-                                provider_config: None,
-                            })
-                            .await?
+                if let Some(cached_id) = resolved_assets.get(&sym) {
+                    Some(cached_id.clone())
+                } else {
+                    let key = format!("EQUITY:{}@XNAS", sym.to_ascii_uppercase());
+                    match self.asset_repo.find_by_instrument_key(&key).await {
+                        Ok(Some(a)) => {
+                            resolved_assets.insert(sym.clone(), a.id.clone());
+                            Some(a.id)
+                        }
+                        Ok(None) => {
+                            match self
+                                .asset_repo
+                                .create(CreateAssetInput {
+                                    kind: AssetKind::Investment,
+                                    name: Some(sym.clone()),
+                                    display_code: Some(sym.clone()),
+                                    notes: Some(
+                                        "Imported from broker activity statement".to_string(),
+                                    ),
+                                    is_active: true,
+                                    quote_mode: QuoteMode::Market,
+                                    quote_ccy: item.currency.clone(),
+                                    instrument_type: Some(InstrumentType::Equity),
+                                    instrument_symbol: Some(sym.clone()),
+                                    instrument_exchange_mic: Some("XNAS".to_string()),
+                                    provider_config: None,
+                                })
+                                .await
+                            {
+                                Ok(a) => {
+                                    resolved_assets.insert(sym.clone(), a.id.clone());
+                                    Some(a.id)
+                                }
+                                Err(e) => {
+                                    failed_count += 1;
+                                    errors.push(format!(
+                                        "Row {}: failed to create asset for {sym}: {e}",
+                                        idx + 1
+                                    ));
+                                    continue;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            failed_count += 1;
+                            errors.push(format!(
+                                "Row {}: failed to lookup asset for {sym}: {e}",
+                                idx + 1
+                            ));
+                            continue;
+                        }
                     }
-                };
-                Some(asset.id)
+                }
             } else {
                 None
             };
 
             let activity_input = CreateActivityInput {
                 account_id: account_id.to_string(),
-                asset_id: asset_id.clone(),
+                asset_id,
                 activity_type: item.activity_type,
                 activity_type_override: None,
                 source_type: Some(source_system.to_string()),
@@ -160,46 +308,57 @@ impl ActivityImportService {
                 source_system: Some(source_system.to_string()),
                 source_record_id: None,
                 source_group_id: None,
-                idempotency_key: None,
+                idempotency_key: Some(idempotency_key),
                 import_run_id: Some(import_run.id.clone()),
             };
 
-            let activity = self.activity_repo.create(activity_input).await?;
-
-            // If it's a buy activity, open a new FIFO lot
-            if activity.activity_type == ActivityType::Buy {
-                if let (Some(a_id), Some(qty), Some(price)) =
-                    (asset_id, activity.quantity, activity.unit_price)
-                {
-                    if qty > Decimal::ZERO {
-                        let total_cost = qty * price + activity.fee.unwrap_or(Decimal::ZERO);
-                        let lot_input = CreateLotInput {
-                            account_id: account_id.to_string(),
-                            asset_id: a_id,
-                            open_date: activity.activity_date,
-                            open_activity_id: Some(activity.id.clone()),
-                            original_quantity: qty,
-                            cost_per_unit: price,
-                            original_cost_basis: total_cost,
-                            fee_allocated: activity.fee.unwrap_or(Decimal::ZERO),
-                            currency: activity.currency.clone(),
-                            base_currency: account.currency.clone(),
-                            fx_rate_to_base: Decimal::ONE,
-                            fx_rate_to_account: Some(Decimal::ONE),
-                            account_currency: Some(account.currency.clone()),
-                            cost_basis_method: CostBasisMethod::Fifo,
-                        };
-                        self.lot_repo.create(lot_input).await?;
-                    }
+            // Atomically create activity + handle lots via ActivityService
+            match self.activity_service.create_activity(activity_input).await {
+                Ok(_) => {
+                    created_count += 1;
+                }
+                Err(e) => {
+                    failed_count += 1;
+                    errors.push(format!("Row {}: {e}", idx + 1));
                 }
             }
         }
 
-        // Return updated import run
+        // Determine terminal status
+        let status = if failed_count == 0 {
+            "COMPLETED"
+        } else if created_count > 0 {
+            "PARTIAL"
+        } else {
+            "FAILED"
+        };
+
+        let summary = ImportRunSummary {
+            total_rows,
+            created_count,
+            skipped_count,
+            failed_count,
+            errors: errors.clone(),
+        };
+        let summary_json = serde_json::to_string(&summary).ok();
+        let warnings = if !errors.is_empty() && created_count > 0 {
+            Some(format!(
+                "{} row(s) failed during import: {}",
+                failed_count,
+                errors.join("; ")
+            ))
+        } else {
+            None
+        };
+        let error_msg = if failed_count > 0 && created_count == 0 {
+            Some(format!("Import failed: {}", errors.join("; ")))
+        } else {
+            None
+        };
+
         self.import_run_repo
-            .get(&import_run.id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Import run disappeared".to_string()))
+            .finish(&import_run.id, status, summary_json, warnings, error_msg)
+            .await
     }
 
     /// Parse generic broker CSV:
@@ -356,7 +515,12 @@ impl ActivityImportService {
                 }
                 let currency = rec.get(4).unwrap_or("USD").trim().to_ascii_uppercase();
                 let symbol = rec.get(5).unwrap_or("").trim().to_ascii_uppercase();
-                let date_time_str = rec.get(6).unwrap_or("").trim();
+                let (date_time_str, col_offset) =
+                    if rec.get(7).map(|s| s.contains(':')).unwrap_or(false) {
+                        (rec.get(6).unwrap_or("").trim(), 1)
+                    } else {
+                        (rec.get(6).unwrap_or("").trim(), 0)
+                    };
                 let date_part = date_time_str.split([',', ' ']).next().unwrap_or("");
 
                 let activity_date = NaiveDate::parse_from_str(date_part, "%Y-%m-%d")
@@ -368,7 +532,7 @@ impl ActivityImportService {
                         ))
                     })?;
 
-                let qty_raw = rec.get(7).unwrap_or("0").replace(',', "");
+                let qty_raw = rec.get(7 + col_offset).unwrap_or("0").replace(',', "");
                 let qty_dec = Decimal::from_str(&qty_raw).unwrap_or(Decimal::ZERO);
 
                 let activity_type = if qty_dec < Decimal::ZERO {
@@ -378,13 +542,13 @@ impl ActivityImportService {
                 };
                 let quantity = Some(qty_dec.abs());
 
-                let price_raw = rec.get(8).unwrap_or("0").replace(',', "");
+                let price_raw = rec.get(8 + col_offset).unwrap_or("0").replace(',', "");
                 let unit_price = Decimal::from_str(&price_raw).ok();
 
-                let amount_raw = rec.get(9).unwrap_or("0").replace(',', "");
+                let amount_raw = rec.get(9 + col_offset).unwrap_or("0").replace(',', "");
                 let amount = Decimal::from_str(&amount_raw).ok().map(|d| d.abs());
 
-                let fee_raw = rec.get(10).unwrap_or("0").replace(',', "");
+                let fee_raw = rec.get(10 + col_offset).unwrap_or("0").replace(',', "");
                 let fee = Decimal::from_str(&fee_raw).ok().map(|d| d.abs());
 
                 rows.push(ParsedActivityRow {

@@ -213,13 +213,6 @@ impl AppState {
             asset_repo.clone(),
             quote_repo.clone(),
         ));
-        let activity_import_service = Arc::new(ActivityImportService::new(
-            account_repo.clone(),
-            asset_repo.clone(),
-            activity_repo.clone(),
-            import_run_repo.clone(),
-            lot_repo.clone(),
-        ));
         let activity_service = Arc::new(ActivityService::new(
             db_pool.clone(),
             activity_repo.clone(),
@@ -227,6 +220,14 @@ impl AppState {
             asset_repo.clone(),
             lot_repo.clone(),
             disposal_repo.clone(),
+        ));
+        let activity_import_service = Arc::new(ActivityImportService::new(
+            account_repo.clone(),
+            asset_repo.clone(),
+            activity_repo.clone(),
+            import_run_repo.clone(),
+            lot_repo.clone(),
+            activity_service.clone(),
         ));
         let lot_service = LotService::new(
             lot_repo.clone(),

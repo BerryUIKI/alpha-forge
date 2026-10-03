@@ -48,6 +48,8 @@
 //! - [`AssetProfile`] - Provider-sourced profile data (sector, industry, etc.)
 //! - [`AssetKind`] - Classification of asset types
 
+#![allow(clippy::double_must_use)]
+
 pub mod errors;
 pub mod models;
 pub mod provider;

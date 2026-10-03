@@ -102,12 +102,14 @@ them; M11-01 owns the canonical-versus-legacy inventory.
 | `list_activities_by_asset` | `asset_id: String` | `Vec<Activity>` | All activities for an asset |
 | `create_import_run` | `CreateImportRunInput` | `ImportRun` | Start a batch import session |
 | `list_import_runs` | `account_id: String` | `Vec<ImportRun>` | Import history for an account |
+| `import_activities_csv` | `account_id: String, format: String, csv_text: String` | `ImportRun` | Parse CSV statement (Generic or IBKR), resolve assets, persist activities, open FIFO lots on Buy, and dispose FIFO lots on Sell |
 
-> **Atomicity & Idempotency Guarantee (`create_activity`):**
-> Backed by `ActivityService`. Operates in a single atomic SQLx database transaction:
+> **Atomicity & Idempotency Guarantee (`create_activity` & `import_activities_csv`):**
+> Backed by `ActivityService` and `ActivityImportService`. Operates in an atomic SQLx database transaction:
 > - **Buys:** Persists the activity and automatically opens a new FIFO tax lot (`Lot`) linked by `open_activity_id`.
 > - **Sells:** Verifies open lot inventory, consumes open lots in FIFO order, updates remaining lot quantities/costs, and creates `LotDisposal` records. If available lots are insufficient, the transaction cleanly rolls back and returns a typed validation error, leaving zero partial state.
-> - **Idempotency:** When `idempotency_key` is provided, repeated submissions return the existing `Activity` without duplicating activities, lots, or disposals.
+> - **Idempotency:** When `idempotency_key` is provided (including deterministic hashes generated for imported statement rows), repeated submissions return existing records without duplicating activities, lots, or disposals.
+> - **Auditability & Terminal Lifecycle:** Import sessions conclude with a terminal status (`COMPLETED`, `PARTIAL`, or `FAILED`), recording `finished_at`, `applied_at`, and a structured JSON `summary` tracking created, skipped, and failed row counts.
 > - **Exact Arithmetic:** All financial basis and quantity computations are executed in Rust using `rust_decimal::Decimal`.
 
 ### 2.5 Tax Lot Management

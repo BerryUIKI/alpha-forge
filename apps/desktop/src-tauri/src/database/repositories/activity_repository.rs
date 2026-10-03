@@ -101,6 +101,50 @@ impl ImportRunRepository {
 
         rows.into_iter().map(TryInto::try_into).collect()
     }
+
+    pub async fn finish(
+        &self,
+        id: &str,
+        status: &str,
+        summary: Option<String>,
+        warnings: Option<String>,
+        error: Option<String>,
+    ) -> Result<ImportRun, AppError> {
+        let now = Utc::now();
+        let finished_at = now.to_rfc3339();
+        let applied_at = if status == "COMPLETED" || status == "PARTIAL" {
+            Some(now.to_rfc3339())
+        } else {
+            None
+        };
+
+        sqlx::query(
+            "UPDATE import_runs
+             SET status = ?,
+                 finished_at = ?,
+                 applied_at = ?,
+                 summary = ?,
+                 warnings = ?,
+                 error = ?,
+                 updated_at = ?
+             WHERE id = ?",
+        )
+        .bind(status)
+        .bind(&finished_at)
+        .bind(&applied_at)
+        .bind(&summary)
+        .bind(&warnings)
+        .bind(&error)
+        .bind(now.to_rfc3339())
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("failed to finish import run: {e}")))?;
+
+        self.get(id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Import run disappeared".to_string()))
+    }
 }
 
 pub struct ActivityRepository {
