@@ -14,7 +14,7 @@ Program status is governed by the [Milestone Roadmap](MILESTONE_ROADMAP.md). The
 - Portfolio storage, services, financial CRUD, dashboard UI, and thesis-to-asset linkage are integrated.
 - On-demand market-data refresh and quote caching are integrated through PR #211.
 - Generic and IBKR activity-statement file import is integrated through PR #213.
-- PR #199 contains the changes associated with issues #194 through #198; the tracker still needs evidence-based reconciliation.
+- PR #199 contains the changes associated with issues #194 through #198; verified and closed in M11-01 with concrete evidence in `docs/portfolio/LEGACY_SURFACE_AUDIT.md`.
 - No pull requests were open when the 2026-09-20 planning baseline was reviewed.
 
 The baseline was reviewed at `origin/dev` commit `9e21553`. Agents must fetch and inspect the latest remote state before starting work.
@@ -38,11 +38,11 @@ The baseline was reviewed at `origin/dev` commit `9e21553`. Agents must fetch an
 
 Execute one task at a time. Do not begin a task until its predecessor is merged into `dev`.
 
-1. **M11-01 — Canonical Portfolio surface audit**
-2. **M11-02 — Legacy Portfolio path retirement**
-3. **M11-03 — Large-portfolio benchmark and approved budgets**
-4. **M11-04 — Portfolio scale and resilience hardening**
-5. **M11-05 — Reproducible macOS and Windows release packages**
+1. [x] **M11-01 — Canonical Portfolio surface audit** (completed in [`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md))
+2. [ ] **M11-02 — Legacy Portfolio path retirement**
+3. [ ] **M11-03 — Large-portfolio benchmark and approved budgets**
+4. [ ] **M11-04 — Portfolio scale and resilience hardening**
+5. [ ] **M11-05 — Reproducible macOS and Windows release packages**
 6. **M11-06 — Cross-platform packaged smoke and upgrade evidence**
 7. **M11-07 — Release-candidate acceptance gate**
 

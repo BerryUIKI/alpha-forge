@@ -26,7 +26,7 @@ The following work is present on the reviewed `dev` baseline:
 - PR #211 completed on-demand market-data refresh and quote caching.
 - PR #213 completed Generic and IBKR activity-statement CSV import.
 - PR #215 synchronized the top-level architecture and data-model documents.
-- PR #199 implemented the fixes described by issues #194 through #198, although the issue tracker still requires evidence-based reconciliation.
+- PR #199 implemented the fixes described by issues #194 through #198; verified and closed in M11-01 with concrete evidence in `docs/portfolio/LEGACY_SURFACE_AUDIT.md`.
 - No pull requests were open when this baseline was reviewed.
 
 These statements describe the reviewed baseline only. Every implementation agent must fetch and inspect the latest `origin/dev` before making a completion claim.
@@ -81,7 +81,7 @@ Deferred work requires a separate milestone and explicit product, privacy, legal
 
 | Order | Task   | Outcome                                  | Depends on         |
 | ----- | ------ | ---------------------------------------- | ------------------ |
-| 1     | M11-01 | Canonical Portfolio surface audit        | Planning PR merged |
+| 1     | M11-01 | Canonical Portfolio surface audit        | ✅ Complete (`docs/portfolio/LEGACY_SURFACE_AUDIT.md`) |
 | 2     | M11-02 | Legacy Portfolio path retirement         | M11-01             |
 | 3     | M11-03 | Large-portfolio benchmark and budget     | M11-02             |
 | 4     | M11-04 | Portfolio scale and resilience hardening | M11-03             |
@@ -127,11 +127,11 @@ Produce an evidence-backed inventory of the canonical financial path and every r
 
 **Verification checklist**
 
-- [ ] Audit commands confirm that every registered Portfolio/financial command appears in the inventory.
-- [ ] Source searches confirm that every legacy TypeScript and Rust consumer has a disposition.
-- [ ] Local Markdown links pass.
-- [ ] Prettier and `git diff --check` pass.
-- [ ] All changed documentation and tracker comments are English.
+- [x] Audit commands confirm that every registered Portfolio/financial command appears in the inventory.
+- [x] Source searches confirm that every legacy TypeScript and Rust consumer has a disposition.
+- [x] Local Markdown links pass.
+- [x] Prettier and `git diff --check` pass.
+- [x] All changed documentation and tracker comments are English.
 
 ## M11-02 — Retire superseded Portfolio runtime paths
 

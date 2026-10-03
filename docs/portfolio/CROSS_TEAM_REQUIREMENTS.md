@@ -258,15 +258,16 @@ These will be built on top of the Phase 1 repositories.
 
 ## 10. Placeholder Retirement Plan
 
-The existing placeholder models will be retired in phases:
+The retirement of placeholder models has progressed through the planned phases:
 
-| Phase | What | When |
-|-------|------|------|
-| Phase 3 | Replace `PortfolioDashboard` UI with real financial dashboard | Frontend phase |
-| Phase 3 | Replace `portfolio_accounts` / `positions` / `transactions` tables with financial tables | After UI migration complete |
-| Phase 5 | Remove old `portfolio_repository.rs` and `portfolio_service.rs` | After all consumers migrated |
-| Phase 5 | Remove old `domain::portfolio` module | After all consumers migrated |
+| Phase / Milestone | What | Status | Notes |
+|-------------------|------|--------|-------|
+| Phase 3 | Replace `PortfolioDashboard` UI with real financial dashboard | ✅ Complete | Flagship financial UI active in `PortfolioPage` |
+| Phase 3/4 | Supersede `portfolio_accounts` / `positions` / `transactions` with canonical financial tables | ✅ Complete | Migrations 0015–0021 & 0023 are canonical; legacy tables remain inert |
+| M11-01 | Audit canonical vs legacy surfaces | ✅ Complete | Documented in [`LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md) |
+| M11-02 | Remove old `commands/portfolio.rs`, `portfolio_repository.rs`, `portfolio_service.rs`, `usePortfolio.ts` | 📋 Scheduled | Unregisters from Tauri and desktop API |
+| M11-02 | Remove `domain::portfolio` module | 📋 Scheduled | Superseded by `crates/domain/src/financial.rs` |
 
-**Do not delete the old code until the new code is fully operational.** Both
-systems can coexist — the new financial tables are completely independent of
-the old placeholder tables.
+**Database note:** Legacy tables (`portfolio_accounts`, `positions`, `transactions`, `portfolio_theme_links`)
+remain inert in existing SQLite databases to preserve migration immutability (0001–0023 are append-only)
+without destructive DDL. Legacy runtime paths are retired in M11-02.

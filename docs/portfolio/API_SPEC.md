@@ -53,15 +53,17 @@ SQLx + SQLite (migrations/0015-0021)  ← Phase 1 ✅
 | Phase 3.5 | ✅ Done | Repository-level CRUD Tauri commands (40+ commands in `commands/financial_crud.rs`) | `docs/portfolio/API_SPEC.md` (section 2) |
 | Phase 3 | ✅ Done | Frontend UI (pages, components, dialogs, dashboard) | `docs/portfolio/FRONTEND_INTEGRATION.md` |
 | Phase 4 | ✅ Done | Thesis ↔ canonical financial-asset linkage | migration 0023, thesis/portfolio services and UI |
-| Phase 5 | 🚧 In progress | Legacy cleanup, scale budgets, and release-candidate acceptance | `docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md` |
+| Phase 5 | 🚧 In progress | Legacy cleanup, scale budgets, and release-candidate acceptance | `docs/portfolio/LEGACY_SURFACE_AUDIT.md`, `docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md` |
 
 ---
 
 ## 2. Canonical Tauri Commands
 
-The following commands are part of the canonical financial surface. Agents must
-verify registration and `AppState` wiring against current source before changing
-them; M11-01 owns the canonical-versus-legacy inventory.
+The following commands are part of the canonical financial surface (64 commands across
+`commands/financial.rs` and `commands/financial_crud.rs`). The 12 legacy placeholder
+commands in `commands/portfolio.rs` were audited in M11-01 and are scheduled for retirement in
+M11-02 (see [`LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md)). Agents must verify registration
+and `AppState` wiring against current source before changing them.
 
 ### 2.1 Platform Management
 

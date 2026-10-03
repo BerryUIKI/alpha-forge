@@ -249,12 +249,12 @@ developed and tested without the main application.
 
 - [x] Generic and IBKR activity-statement file import (PR #213).
 - [x] Market-data refresh scheduling & quote caching (MarketDataService, Tauri commands, TanStack Query mutations, and UI refresh triggers).
-- [x] Update top-level `DATA_MODEL.md` and `ARCHITECTURE.md` for the financial domain (PR #215).
-- [ ] Audit canonical versus legacy Portfolio runtime paths and remove only approved superseded surfaces.
-- [ ] Establish and meet approved large-portfolio performance budgets.
-- [ ] Sweep remaining production panic paths identified by the M11 audit.
-- [ ] Produce reproducible macOS Apple Silicon and Windows NSIS packages.
-- [ ] Retain packaged smoke and release-candidate acceptance evidence.
+- [x] Audit canonical versus legacy Portfolio runtime paths (M11-01, see [`portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md)).
+- [ ] Retire superseded Portfolio runtime paths (M11-02).
+- [ ] Establish and meet approved large-portfolio performance budgets (M11-03).
+- [ ] Sweep remaining production panic paths and scale hardening (M11-04).
+- [ ] Produce reproducible macOS Apple Silicon and Windows NSIS packages (M11-05).
+- [ ] Retain packaged smoke and release-candidate acceptance evidence (M11-06, M11-07).
 
 The active sequence and acceptance criteria are defined in the
 [M11 execution plan](milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).

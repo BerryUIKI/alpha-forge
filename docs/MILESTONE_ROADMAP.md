@@ -822,14 +822,14 @@ Convert the completed local product and recent Portfolio integration into a repr
 - PR #211 added market-data refresh and quote caching.
 - PR #213 added Generic and IBKR activity-statement file import.
 - PR #215 synchronized the top-level architecture and data model.
-- PR #199 contains the changes associated with issues #194 through #198; tracker status still requires evidence-based reconciliation.
+- PR #199 contains the changes associated with issues #194 through #198; verified and closed in M11-01 with concrete evidence in `docs/portfolio/LEGACY_SURFACE_AUDIT.md`.
 - M0-M10, S0-S6, AW0-AW7, and GUI-M4-MACOS are complete on the reviewed `dev` baseline.
 
 ### Execution path
 
-1. Audit canonical and legacy Portfolio surfaces and approve a disposition for every remaining legacy consumer.
-2. Retire only the superseded runtime paths approved by the audit.
-3. Establish deterministic large-portfolio benchmarks and owner-approved budgets.
+1. ✅ Audit canonical and legacy Portfolio surfaces (M11-01, see [`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md)).
+2. Retire only the superseded runtime paths approved by the audit (M11-02).
+3. Establish deterministic large-portfolio benchmarks and owner-approved budgets (M11-03).
 4. Optimize demonstrated bottlenecks without changing financial correctness or provenance.
 5. Produce reproducible macOS Apple Silicon DMG and Windows NSIS packages with checksums and SBOM/attribution.
 6. Retain cross-platform install, upgrade, export, critical-workflow, failure, and uninstall smoke evidence.
