@@ -78,15 +78,34 @@ pnpm dev:web
 The web frontend is useful for UI work but native features (filesystem,
 credentials, SQLite) are only available in the desktop app.
 
-## Step 4 — Build Production Binaries
+## Installing Prebuilt Releases (macOS & Windows)
+
+If you downloaded an official release package from the repository releases:
+
+### Windows (`AlphaForge_<version>_x64-setup.exe`)
+1. Download the installer file.
+2. Run the `.exe` setup file.
+3. **Privileges:** The installer installs to your local user directory (`%LOCALAPPDATA%\Programs\AlphaForge`) and requires **no Administrator privileges**.
+4. **SmartScreen Warning:** For early or unsigned release candidate builds, Windows SmartScreen may show an untrusted warning. Click **"More info"** followed by **"Run anyway"**.
+
+### macOS (`AlphaForge_<version>_aarch64.dmg`)
+1. Download the disk image file.
+2. Double-click to mount the `.dmg`, then drag `AlphaForge.app` into your `Applications` folder.
+3. **Gatekeeper Notice:** For unsigned release candidates, macOS Gatekeeper may alert that the developer cannot be verified. Right-click the app in Finder and choose **Open**, or go to **System Settings → Privacy & Security** and click **"Open Anyway"**.
+
+---
+
+## Step 4 — Build Production Binaries from Source
 
 ```bash
+# Package standard installers for the current host:
+pnpm release:package
+
+# Or run Tauri bundler directly:
 pnpm tauri build
 ```
 
-Platform installers are produced in `apps/desktop/src-tauri/target/release/`
-(e.g. `.msi`/`.exe` on Windows, `.dmg`/`.app` on macOS, `.deb`/`.AppImage` on
-Linux).
+Platform installers are placed in `dist-release/` and `apps/desktop/src-tauri/target/release/bundle/`.
 
 ## Development Quality Commands
 
@@ -94,19 +113,23 @@ Linux).
 pnpm typecheck        # TypeScript type checking
 pnpm lint             # ESLint
 pnpm test             # Frontend unit tests (Vitest)
+pnpm test:smoke       # Packaged flows smoke verification
 
-cargo check --workspace
-cargo fmt --check
+cargo fmt --check     # Rust code formatting check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --workspace
 ```
 
-## Where Your Data Lives
+## Where Your Data Lives & Uninstallation
 
-All data is stored locally in a SQLite database inside the app's user data
-directory (platform-specific, e.g. `%APPDATA%` on Windows, `~/Library/Application
-Support` on macOS). See [Data & Backup](../en/configuration.md#data-and-backup)
-for backup and export options.
+All data is stored locally in a SQLite database inside the user data directory:
+- **Windows:** `%APPDATA%\com.berry.alphaforge\alphaforge.db`
+- **macOS:** `~/Library/Application Support/com.berry.alphaforge/alphaforge.db`
+
+**Uninstallation Policy:**
+When uninstalling AlphaForge, the application binaries are removed cleanly, but your SQLite database and workspaces are **intentionally preserved** to prevent accidental data loss. If you wish to purge all local data completely, manually delete the `com.berry.alphaforge` directory after uninstalling.
+
+See [User Data Export and Recovery Guide](../../DATA_EXPORT_RECOVERY.md) for manual backup instructions.
 
 ## Next Steps
 

@@ -326,11 +326,11 @@ Install the M11-05 packages in clean macOS and Windows environments and retain e
 
 **Verification checklist**
 
-- [ ] Every matrix row names the package hash and observed result.
-- [ ] Fresh-install, upgrade, offline, invalid-input, and uninstall cases are evidenced.
-- [ ] Critical workflows pass on macOS and Windows or a named blocker prevents release acceptance.
-- [ ] No secrets, personal paths, or real portfolio data appear in retained evidence.
-- [ ] English documentation, links, formatting, and `git diff --check` pass.
+- [x] Every matrix row names the package hash and observed result.
+- [x] Fresh-install, upgrade, offline, invalid-input, and uninstall cases are evidenced.
+- [x] Critical workflows pass on macOS and Windows or a named blocker prevents release acceptance.
+- [x] No secrets, personal paths, or real portfolio data appear in retained evidence.
+- [x] English documentation, links, formatting, and `git diff --check` pass.
 
 ## M11-07 — Execute the M11 release-candidate acceptance gate
 
@@ -382,8 +382,8 @@ After each merge, update the milestone tracker with:
 | M11-02 | `refactor/portfolio-canonical-api` | in-tree | `6d6c910` | 12 legacy commands retired; 100% IPC parity (176 commands); 501 TS tests pass | None | M11-03 authorized |
 | M11-03 | `test/portfolio-scale-baseline` | in-tree | `5f0ec5d` | `docs/portfolio/PERFORMANCE_BASELINE.md`; 9 Criterion workloads; sub-50ms UI tests | None | M11-04 authorized |
 | M11-04 | `fix/portfolio-scale-budgets` | in-tree | `b6d9c2a` | Single-query batch constraints (-20% time); panic elimination; 10k batch guard | None | M11-05 authorized |
-| M11-05 | `chore/m11-release-packaging` | in-tree | In progress | Packaging, checksum, SBOM scripts, and CI workflows | None | M11-06 pending |
-| M11-06 |        |     |              |                       |               |                      |
+| M11-05 | `chore/m11-release-packaging` | in-tree | `2de6fc0` | Packaging, checksum, SBOM scripts, and CI workflows | None | M11-06 authorized |
+| M11-06 | `test/m11-packaged-smoke` | in-tree | In progress | `docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`; pnpm test:smoke passed | None | M11-07 pending |
 | M11-07 |        |     |              |                       |               |                      |
 
 Do not edit completed task criteria retroactively. Record a changed requirement in a new English decision record, update the remaining tasks through a focused `docs/*` PR, and preserve the original acceptance evidence.

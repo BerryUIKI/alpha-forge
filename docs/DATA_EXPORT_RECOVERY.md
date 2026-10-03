@@ -66,16 +66,16 @@ Advanced users can directly copy the SQLite database file.
 
 **Database location:**
 
-- **Windows**: `%APPDATA%\alpha-forge\data.db`
-- **macOS**: `~/Library/Application Support/alpha-forge/data.db`
+- **Windows**: `%APPDATA%\com.berry.alphaforge\alpha_forge.db`
+- **macOS**: `~/Library/Application Support/com.berry.alphaforge/alpha_forge.db`
 
 **Procedure:**
 
 1. Close AlphaForge completely
-2. Copy the `data.db` file to your backup location
+2. Copy the `alpha_forge.db` file (and any `-wal` / `-shm` sidecar files if present) to your backup location
 3. Restart AlphaForge
 
-**Warning:** Copying while the application is running may result in a corrupted backup.
+**Warning:** Copying while the application is actively writing may result in an inconsistent snapshot. Always use the built-in backup function in Settings when possible.
 
 ---
 
@@ -88,7 +88,7 @@ Advanced users can directly copy the SQLite database file.
 1. Close AlphaForge completely
 2. Locate your backup `.db` file
 3. Copy it to the database location (see above)
-4. Rename to `data.db` if needed
+4. Rename to `alpha_forge.db`
 5. Restart AlphaForge
 
 **Verification:**
@@ -96,6 +96,7 @@ Advanced users can directly copy the SQLite database file.
 - Check that your workspaces appear in the workspace list
 - Verify recent research projects are accessible
 - Confirm thesis evidence and confidence history are intact
+- Verify portfolio accounts and transaction activities reload seamlessly
 
 ### Method 2: Import Data (Future Feature)
 
@@ -268,7 +269,7 @@ AlphaForge deliberately does not provide cloud backup because:
 
 ### Q: Where is my data stored?
 
-**A:** All data is stored locally in `data.db` (SQLite). See the Database Location section above for the exact path on your OS.
+**A:** All data is stored locally in `alpha_forge.db` (SQLite). See the Database Location section above for the exact path on your OS (`com.berry.alphaforge`).
 
 ### Q: Can I sync between multiple computers?
 
@@ -284,7 +285,7 @@ AlphaForge deliberately does not provide cloud backup because:
 
 ### Q: Will my backup work with future versions?
 
-**A:** Backups are SQLite databases. While SQLite is very stable, future versions of AlphaForge may have schema changes. Always note the version when creating backups.
+**A:** Backups are standard SQLite databases. AlphaForge applies forward-compatible, append-only database migrations (`0001` through `0023`) automatically on startup. Restoring a backup from an older version into a newer application release will seamlessly upgrade the schema.
 
 ---
 
@@ -307,6 +308,7 @@ For issues with data export or recovery:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-08-03 | Initial MVP documentation |
+| 1.1 | 2026-10-03 | Updated database paths to `alpha_forge.db` and added M11-06 schema migration recovery details |
 
 ---
 
