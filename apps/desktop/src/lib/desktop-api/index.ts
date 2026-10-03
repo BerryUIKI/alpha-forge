@@ -6,7 +6,6 @@ import * as artifactsApi from "./artifacts";
 import * as credentialsApi from "./credentials";
 import * as financialApi from "./financial";
 import * as researchApi from "./research";
-import * as portfolioApi from "./portfolio";
 import * as pluginsApi from "./plugins";
 import * as settingsApi from "./settings";
 import * as workspaceApi from "./workspace";
@@ -23,7 +22,6 @@ export const desktopApi = {
   credentials: credentialsApi,
   financial: financialApi,
   research: researchApi,
-  portfolio: portfolioApi,
   plugins: pluginsApi,
   settings: settingsApi,
   workspace: workspaceApi,

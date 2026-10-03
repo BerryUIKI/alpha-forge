@@ -82,8 +82,8 @@ Deferred work requires a separate milestone and explicit product, privacy, legal
 | Order | Task   | Outcome                                  | Depends on         |
 | ----- | ------ | ---------------------------------------- | ------------------ |
 | 1     | M11-01 | Canonical Portfolio surface audit        | ✅ Complete (`docs/portfolio/LEGACY_SURFACE_AUDIT.md`) |
-| 2     | M11-02 | Legacy Portfolio path retirement         | M11-01             |
-| 3     | M11-03 | Large-portfolio benchmark and budget     | M11-02             |
+| 2     | M11-02 | Legacy Portfolio path retirement         | ✅ Complete                                             |
+| 3     | M11-03 | Large-portfolio benchmark and budget     | M11-02                                                  |
 | 4     | M11-04 | Portfolio scale and resilience hardening | M11-03             |
 | 5     | M11-05 | Reproducible release packaging           | M11-04             |
 | 6     | M11-06 | Cross-platform packaged smoke evidence   | M11-05             |
@@ -169,12 +169,12 @@ Remove or narrow only the legacy Portfolio surfaces approved by M11-01, migrate 
 
 **Verification checklist**
 
-- [ ] Focused Rust repository, service, and command tests pass.
-- [ ] Focused TypeScript schema, hook, and component tests pass.
-- [ ] IPC registration and schema parity checks pass.
-- [ ] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass.
-- [ ] `cargo fmt --check`, strict Clippy, and `cargo test --workspace` pass.
-- [ ] Documentation and local links pass; `git diff --check` is clean.
+- [x] Focused Rust repository, service, and command tests pass.
+- [x] Focused TypeScript schema, hook, and component tests pass.
+- [x] IPC registration and schema parity checks pass.
+- [x] `pnpm lint`, `pnpm typecheck`, and `pnpm test` pass.
+- [x] `cargo fmt --check`, strict Clippy, and `cargo test --workspace` pass.
+- [x] Documentation and local links pass; `git diff --check` is clean.
 
 ## M11-03 — Establish the large-portfolio benchmark and performance budget
 

@@ -39,7 +39,7 @@ The baseline was reviewed at `origin/dev` commit `9e21553`. Agents must fetch an
 Execute one task at a time. Do not begin a task until its predecessor is merged into `dev`.
 
 1. [x] **M11-01 — Canonical Portfolio surface audit** (completed in [`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md))
-2. [ ] **M11-02 — Legacy Portfolio path retirement**
+2. [x] **M11-02 — Legacy Portfolio path retirement** (completed in PR #222)
 3. [ ] **M11-03 — Large-portfolio benchmark and approved budgets**
 4. [ ] **M11-04 — Portfolio scale and resilience hardening**
 5. [ ] **M11-05 — Reproducible macOS and Windows release packages**

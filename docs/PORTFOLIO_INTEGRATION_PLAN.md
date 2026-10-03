@@ -250,7 +250,7 @@ developed and tested without the main application.
 - [x] Generic and IBKR activity-statement file import (PR #213).
 - [x] Market-data refresh scheduling & quote caching (MarketDataService, Tauri commands, TanStack Query mutations, and UI refresh triggers).
 - [x] Audit canonical versus legacy Portfolio runtime paths (M11-01, see [`portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md)).
-- [ ] Retire superseded Portfolio runtime paths (M11-02).
+- [x] Retire superseded Portfolio runtime paths (M11-02).
 - [ ] Establish and meet approved large-portfolio performance budgets (M11-03).
 - [ ] Sweep remaining production panic paths and scale hardening (M11-04).
 - [ ] Produce reproducible macOS Apple Silicon and Windows NSIS packages (M11-05).

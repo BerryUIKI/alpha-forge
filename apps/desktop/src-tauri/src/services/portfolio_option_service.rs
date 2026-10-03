@@ -1,25 +1,16 @@
 // Portfolio option service — integrates option positions with portfolio risk analysis
 
 use crate::database::repositories::option_position_repository::OptionPositionRepository;
-use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::error::AppError;
 use domain::option::OptionPosition;
 
 pub struct PortfolioOptionService {
     position_repo: OptionPositionRepository,
-    #[allow(dead_code)]
-    portfolio_repo: PortfolioRepository,
 }
 
 impl PortfolioOptionService {
-    pub fn new(
-        position_repo: OptionPositionRepository,
-        portfolio_repo: PortfolioRepository,
-    ) -> Self {
-        Self {
-            position_repo,
-            portfolio_repo,
-        }
+    pub fn new(position_repo: OptionPositionRepository) -> Self {
+        Self { position_repo }
     }
 
     /// List all option positions for a workspace

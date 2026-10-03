@@ -4,6 +4,7 @@
 //! for the AlphaForge Option Analysis Platform.
 
 #![allow(clippy::too_many_arguments)]
+#![allow(clippy::double_must_use)]
 
 pub mod greeks;
 pub mod pricing;

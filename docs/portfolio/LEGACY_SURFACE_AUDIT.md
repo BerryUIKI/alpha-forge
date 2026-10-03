@@ -246,33 +246,32 @@ The status of the Portfolio integration phases has been reconciled across all au
 
 ---
 
-## 8. M11-02 Execution Plan
+## 8. M11-02 Execution & Retirement Record
 
-The execution plan for Milestone M11-02 (`Retire superseded Portfolio runtime paths`) will perform the following discrete operations:
+In Milestone M11-02 (`Retire superseded Portfolio runtime paths`), all approved legacy items were retired:
 
-1. **Rust Tauri Backend Cleanup:**
-   - Delete `apps/desktop/src-tauri/src/commands/portfolio.rs`.
-   - Remove `pub mod portfolio;` from `apps/desktop/src-tauri/src/commands/mod.rs`.
-   - Delete `apps/desktop/src-tauri/src/services/portfolio_service.rs`.
-   - Remove `pub mod portfolio_service;` from `apps/desktop/src-tauri/src/services/mod.rs`.
-   - Delete `apps/desktop/src-tauri/src/database/repositories/portfolio_repository.rs`.
-   - Remove `pub mod portfolio_repository;` from `apps/desktop/src-tauri/src/database/repositories/mod.rs`.
-   - Decouple `PortfolioOptionService::new` in `apps/desktop/src-tauri/src/services/portfolio_option_service.rs` by removing the unused `portfolio_repo` parameter and field.
-   - Remove `portfolio_service` and `portfolio_repo` from `AppState` in `apps/desktop/src-tauri/src/app/state.rs`.
-   - Unregister the 12 legacy commands from `generate_handler!` in `apps/desktop/src-tauri/src/lib.rs`.
-   - Remove the 12 legacy command names from `apps/desktop/src-tauri/permissions/artifacts.toml`.
+1. **Rust Tauri Backend Cleanup (Completed):**
+   - Removed `apps/desktop/src-tauri/src/commands/portfolio.rs`.
+   - Removed `pub mod portfolio;` from `apps/desktop/src-tauri/src/commands/mod.rs`.
+   - Removed `apps/desktop/src-tauri/src/services/portfolio_service.rs`.
+   - Removed `pub mod portfolio_service;` from `apps/desktop/src-tauri/src/services/mod.rs`.
+   - Removed `apps/desktop/src-tauri/src/database/repositories/portfolio_repository.rs`.
+   - Removed `pub mod portfolio_repository;` from `apps/desktop/src-tauri/src/database/repositories/mod.rs`.
+   - Decoupled `PortfolioOptionService::new` in `apps/desktop/src-tauri/src/services/portfolio_option_service.rs` by eliminating the dead `portfolio_repo` parameter and field.
+   - Removed `portfolio_service` and `portfolio_repo` from `AppState` in `apps/desktop/src-tauri/src/app/state.rs`.
+   - Unregistered all 12 legacy commands from `generate_handler!` in `apps/desktop/src-tauri/src/lib.rs`.
+   - Removed all 12 legacy command entries from `apps/desktop/src-tauri/permissions/artifacts.toml`.
 
-2. **Domain Crate Cleanup:**
-   - Delete `crates/domain/src/portfolio.rs`.
-   - Remove `pub mod portfolio;` from `crates/domain/src/lib.rs`.
+2. **Domain Crate Cleanup (Completed):**
+   - Removed `crates/domain/src/portfolio.rs`.
+   - Removed `pub mod portfolio;` from `crates/domain/src/lib.rs`.
 
-3. **Frontend Desktop API and Hooks Cleanup:**
-   - Delete `apps/desktop/src/lib/desktop-api/portfolio.ts`.
-   - Remove `portfolio` export from `apps/desktop/src/lib/desktop-api/index.ts`.
-   - Delete `apps/desktop/src/features/portfolio/hooks/usePortfolio.ts`.
-   - Delete `apps/desktop/src/features/portfolio/hooks/usePortfolio.test.tsx`.
+3. **Frontend Desktop API and Hooks Cleanup (Completed):**
+   - Removed `apps/desktop/src/lib/desktop-api/portfolio.ts`.
+   - Removed `portfolio` export from `apps/desktop/src/lib/desktop-api/index.ts`.
+   - Removed `apps/desktop/src/features/portfolio/hooks/usePortfolio.ts`.
+   - Removed `apps/desktop/src/features/portfolio/hooks/usePortfolio.test.tsx`.
 
-4. **Verification & IPC Parity:**
-   - Verify `node scripts/check-ipc-registration.mjs` (registered Rust handlers count will decrease from 188 to 176, matching frontend wrappers exactly at 176/176).
-   - Run `pnpm lint`, `pnpm typecheck`, `pnpm test`.
-   - Run `cargo fmt --check`, `cargo clippy --all-targets --all-features -- -D warnings`, `cargo test --workspace`.
+4. **IPC Registration Parity (Verified):**
+   - IPC parity script `node scripts/check-ipc-registration.mjs` verifies exactly 176 registered Rust handlers and 176 frontend invocations with 0 uninvoked and 0 missing commands.
+   - All tests pass: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `cargo fmt --check`, `cargo clippy`, and `cargo test --workspace`.

@@ -18,7 +18,6 @@ use crate::database::repositories::option_contract_repository::OptionContractRep
 use crate::database::repositories::option_position_repository::OptionPositionRepository;
 use crate::database::repositories::option_strategy_repository::OptionStrategyRepository;
 use crate::database::repositories::plugin_repository::PluginRepository;
-use crate::database::repositories::portfolio_repository::PortfolioRepository;
 use crate::database::repositories::proposal_repository::ProposalRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::research_note_repository::ResearchNoteRepository;
@@ -57,7 +56,6 @@ use crate::services::option_service::OptionService;
 use crate::services::performance_service::PerformanceService;
 use crate::services::plugin_service::PluginService;
 use crate::services::portfolio_option_service::PortfolioOptionService;
-use crate::services::portfolio_service::PortfolioService;
 use crate::services::proposal_service::ProposalService;
 use crate::services::research_document_service::ResearchDocumentService;
 use crate::services::research_note_service::ResearchNoteService;
@@ -91,7 +89,6 @@ pub struct AppState {
     pub option_service: OptionService,
     pub strategy_service: StrategyService,
     pub portfolio_option_service: PortfolioOptionService,
-    pub portfolio_service: PortfolioService,
     pub plugin_service: PluginService,
     pub system_service: SystemService,
     // Financial repositories (Phase 3.5 — CRUD commands)
@@ -149,8 +146,6 @@ impl AppState {
         let option_strategy_repo = OptionStrategyRepository::new(db_pool.clone());
         let option_position_repo = OptionPositionRepository::new(db_pool.clone());
         let strategy_leg_repo = StrategyLegRepository::new(db_pool.clone());
-        let portfolio_repo_for_option = PortfolioRepository::new(db_pool.clone());
-        let portfolio_repo = PortfolioRepository::new(db_pool.clone());
         let plugin_repo = PluginRepository::new(db_pool.clone());
 
         // Create services
@@ -181,9 +176,7 @@ impl AppState {
             Arc::new(strategy_leg_repo),
             Arc::new(option_contract_repo_for_strategy),
         );
-        let portfolio_option_service =
-            PortfolioOptionService::new(option_position_repo, portfolio_repo_for_option);
-        let portfolio_service = PortfolioService::new(portfolio_repo);
+        let portfolio_option_service = PortfolioOptionService::new(option_position_repo);
         let plugin_service = PluginService::new(plugin_repo);
         let system_service = SystemService::new(app_handle.clone(), db_pool.clone());
 
@@ -290,7 +283,6 @@ impl AppState {
             option_service,
             strategy_service,
             portfolio_option_service,
-            portfolio_service,
             plugin_service,
             system_service,
             // Financial repositories (Phase 3.5 — CRUD commands)

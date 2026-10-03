@@ -1,3 +1,5 @@
+#![allow(clippy::double_must_use)]
+
 pub mod agent;
 pub mod app;
 pub mod artifacts;
@@ -151,19 +153,6 @@ pub fn run() {
             commands::knowledge_graph::list_knowledge_relationships,
             commands::knowledge_graph::link_thesis_knowledge_entity,
             commands::knowledge_graph::list_thesis_knowledge_links,
-            // Portfolio commands
-            commands::portfolio::list_portfolio_accounts,
-            commands::portfolio::create_portfolio_account,
-            commands::portfolio::create_portfolio_position,
-            commands::portfolio::list_portfolio_positions,
-            commands::portfolio::import_portfolio_transactions_csv,
-            commands::portfolio::list_portfolio_transactions,
-            commands::portfolio::get_portfolio_allocation,
-            commands::portfolio::get_portfolio_concentration_risks,
-            commands::portfolio::link_portfolio_theme,
-            commands::portfolio::get_portfolio_theme_exposure,
-            commands::portfolio::get_portfolio_thesis_alignment,
-            commands::portfolio::generate_portfolio_review,
             // Plugin commands
             commands::plugins::list_plugins,
             commands::plugins::set_plugin_enabled,

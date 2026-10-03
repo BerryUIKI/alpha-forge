@@ -2,8 +2,7 @@
 //
 // Financial migrations (0015-0021) store money/quantity as TEXT decimal
 // strings, dates as YYYY-MM-DD, and timestamps as RFC3339 UTC. These helpers
-// convert raw DB rows into domain types with typed errors — no panics —
-// following the pattern in `portfolio_repository.rs::parse_timestamp`.
+// convert raw DB rows into domain types with typed errors — no panics.
 
 use chrono::{DateTime, NaiveDate, Utc};
 use rust_decimal::Decimal;

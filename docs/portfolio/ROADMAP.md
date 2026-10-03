@@ -194,7 +194,7 @@ application can seed data without frontend work.
 - [x] Market-data refresh and quote caching (PR #211)
 - [x] Top-level financial architecture and data-model synchronization (PR #215)
 - [x] Audit canonical and legacy Portfolio surfaces (M11-01, see [`LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md))
-- [ ] Retire superseded Portfolio runtime paths (M11-02)
+- [x] Retire superseded Portfolio runtime paths (M11-02)
 - [ ] Establish and meet approved large-portfolio performance budgets (M11-03)
 - [ ] Sweep remaining production panic paths and scale hardening (M11-04)
 - [ ] Produce macOS Apple Silicon and Windows NSIS release-candidate packages (M11-05)

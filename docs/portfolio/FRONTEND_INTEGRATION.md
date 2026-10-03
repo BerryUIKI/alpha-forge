@@ -306,10 +306,10 @@ The file `src/lib/desktop-api/financial.ts` wraps all 60+ Phase 2/3.5 Tauri comm
 with camelCase function names. See `API_SPEC.md` Section 2 for the full CRUD command
 reference and Section 9 for the service commands.
 
-The existing `src/lib/desktop-api/portfolio.ts` and `src/features/portfolio/hooks/usePortfolio.ts`
-are kept for backward compatibility with the old placeholder commands but are no longer
-consumed by any portfolio dashboard component. All active components use the canonical
-financial API.
+The legacy `src/lib/desktop-api/portfolio.ts` and `src/features/portfolio/hooks/usePortfolio.ts`
+were audited in M11-01 (see [`LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md)) and retired in M11-02.
+All components and pages exclusively consume the canonical `desktopApi.financial` client and
+`useFinancialData.ts` (or `usePortfolioPerformance.ts`).
 
 ---
 
@@ -317,9 +317,9 @@ financial API.
 
 - Phase 4 thesis-to-financial-asset linkage is complete.
 - Market-data refresh and Generic/IBKR file import are complete.
-- M11-01 audits the remaining legacy `portfolio` API and hook surface before
-  M11-02 removes or retains each item with evidence.
-- M11 then establishes scale budgets and produces the cross-platform release
-  candidate. See the
+- M11-01 audited canonical and legacy Portfolio surfaces (`docs/portfolio/LEGACY_SURFACE_AUDIT.md`).
+- M11-02 retired superseded Portfolio runtime paths and legacy IPC handlers.
+- M11 then establishes scale budgets (M11-03/M11-04) and produces the cross-platform release
+  candidate (M11-05 through M11-07). See the
   [M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
 - Live broker synchronization and FIRE/retirement planning are deferred.

@@ -2,6 +2,8 @@
 //!
 //! Governed by ADR-0010 (Managed Agent Worker Subprocess Architecture) and SUBPROCESS_ROADMAP.md (AW2 & AW3).
 
+#![allow(clippy::double_must_use)]
+
 pub mod broker;
 pub mod diagnostics;
 pub mod error;

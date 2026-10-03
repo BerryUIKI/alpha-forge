@@ -1,7 +1,7 @@
 // Financial repositories — platforms + accounts.
 //
 // SQLx persistence for the financial `platforms` and `accounts` tables
-// (migration 0015). Follows `portfolio_repository.rs` conventions: thin
+// (migration 0015). Follows SQLx repository conventions: thin
 // methods, private `FromRow` structs, `TryFrom<Row> -> domain model` with
 // typed errors.
 

@@ -828,7 +828,7 @@ Convert the completed local product and recent Portfolio integration into a repr
 ### Execution path
 
 1. ✅ Audit canonical and legacy Portfolio surfaces (M11-01, see [`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](portfolio/LEGACY_SURFACE_AUDIT.md)).
-2. Retire only the superseded runtime paths approved by the audit (M11-02).
+2. ✅ Retire only the superseded runtime paths approved by the audit (M11-02).
 3. Establish deterministic large-portfolio benchmarks and owner-approved budgets (M11-03).
 4. Optimize demonstrated bottlenecks without changing financial correctness or provenance.
 5. Produce reproducible macOS Apple Silicon DMG and Windows NSIS packages with checksums and SBOM/attribution.

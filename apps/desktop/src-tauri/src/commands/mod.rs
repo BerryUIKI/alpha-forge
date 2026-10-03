@@ -7,7 +7,6 @@ pub mod goose;
 pub mod knowledge_graph;
 pub mod options;
 pub mod plugins;
-pub mod portfolio;
 pub mod research;
 pub mod settings;
 pub mod system;
