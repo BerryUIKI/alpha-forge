@@ -194,11 +194,11 @@ application can seed data without frontend work.
 - [x] Market-data refresh and quote caching (PR #211)
 - [x] Top-level financial architecture and data-model synchronization (PR #215)
 - [x] Audit canonical and legacy Portfolio surfaces (M11-01, see [`LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md))
-- [x] Retire superseded Portfolio runtime paths (M11-02)
-- [ ] Establish and meet approved large-portfolio performance budgets (M11-03)
-- [ ] Sweep remaining production panic paths and scale hardening (M11-04)
-- [ ] Produce macOS Apple Silicon and Windows NSIS release-candidate packages (M11-05)
-- [ ] Retain cross-platform packaged smoke and release-gate evidence (M11-06, M11-07)
+- [x] Establish approved large-portfolio performance baseline and budgets (M11-03, see [`PERFORMANCE_BASELINE.md`](PERFORMANCE_BASELINE.md))
+- [ ] Meet approved scale and resilience budgets with focused hardening (M11-04)
+- [ ] Sweep remaining production panic paths and error typing (M11-05)
+- [ ] Produce macOS Apple Silicon and Windows NSIS release-candidate packages (M11-06)
+- [ ] Retain cross-platform packaged smoke and release-gate evidence (M11-07)
 
 Live broker synchronization and FIRE/retirement planning are deferred. They require separate product, credential, privacy, security, and architecture approval and are not part of M11.
 
@@ -246,6 +246,7 @@ longer an active branch sequence.
 
 - [Integration Plan](../PORTFOLIO_INTEGRATION_PLAN.md) — approved decisions D1–D10
 - [Legacy Surface Audit](LEGACY_SURFACE_AUDIT.md) — M11-01 authoritative surface inventory and disposition
+- [Performance Baseline](PERFORMANCE_BASELINE.md) — M11-03 large-portfolio benchmarks and approved performance budgets
 - [API Specification](API_SPEC.md) — live command surface
 - [Domain Models](DOMAIN_MODELS.md) — enum/struct reference
 - [Frontend Integration](FRONTEND_INTEGRATION.md) — flagship UI plan

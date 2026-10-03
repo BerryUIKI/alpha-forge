@@ -39,7 +39,6 @@ pub mod snapshot_repository;
 pub mod taxonomy_repository;
 pub mod valuation_repository;
 
-#[cfg(test)]
 pub mod test_support;
 
 #[cfg(test)]

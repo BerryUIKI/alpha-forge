@@ -10,7 +10,7 @@ use sqlx::SqlitePool;
 
 use crate::database::migrations;
 
-pub(crate) async fn setup_test_db() -> SqlitePool {
+pub async fn setup_test_db() -> SqlitePool {
     let pool = SqlitePoolOptions::new()
         .max_connections(1)
         .connect(":memory:")
