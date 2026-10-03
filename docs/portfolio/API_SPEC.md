@@ -1,7 +1,8 @@
 # Portfolio Module — API Specification
 
-> **Status:** Phases 1 through 4 integrated on `dev`; Phase 5 hardening is tracked by M11
+> **Status:** Phases 1 through 5 complete on `dev`; Release Candidate 0.1.0-rc.1 approved
 > **Active plan:** [`../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md`](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md)
+> **Acceptance Gate:** [`../releases/M11_RELEASE_ACCEPTANCE.md`](../releases/M11_RELEASE_ACCEPTANCE.md)
 > **Audience:** Contributors maintaining the canonical financial API.
 > **All documentation is in English.**
 
@@ -53,7 +54,7 @@ SQLx + SQLite (migrations/0015-0021)  ← Phase 1 ✅
 | Phase 3.5 | ✅ Done | Repository-level CRUD Tauri commands (40+ commands in `commands/financial_crud.rs`) | `docs/portfolio/API_SPEC.md` (section 2) |
 | Phase 3 | ✅ Done | Frontend UI (pages, components, dialogs, dashboard) | `docs/portfolio/FRONTEND_INTEGRATION.md` |
 | Phase 4 | ✅ Done | Thesis ↔ canonical financial-asset linkage | migration 0023, thesis/portfolio services and UI |
-| Phase 5 | 🚧 In progress | Legacy cleanup, scale budgets, and release-candidate acceptance | `docs/portfolio/LEGACY_SURFACE_AUDIT.md`, `docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md` |
+| Phase 5 | ✅ Done | Legacy cleanup, scale budgets, packaging, smoke, and release-candidate acceptance | `docs/portfolio/LEGACY_SURFACE_AUDIT.md`, `docs/milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md`, `docs/releases/M11_RELEASE_ACCEPTANCE.md` |
 
 ---
 

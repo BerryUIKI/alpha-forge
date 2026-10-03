@@ -317,9 +317,9 @@ All components and pages exclusively consume the canonical `desktopApi.financial
 
 - Phase 4 thesis-to-financial-asset linkage is complete.
 - Market-data refresh and Generic/IBKR file import are complete.
-- M11-01 audited canonical and legacy Portfolio surfaces (`docs/portfolio/LEGACY_SURFACE_AUDIT.md`).
-- M11-02 retired superseded Portfolio runtime paths and legacy IPC handlers.
-- M11 then establishes scale budgets (M11-03/M11-04) and produces the cross-platform release
-  candidate (M11-05 through M11-07). See the
-  [M11 execution plan](../milestones/M11_PORTFOLIO_RELEASE_EXECUTION_PLAN.md).
-- Live broker synchronization and FIRE/retirement planning are deferred.
+- M11-01 audited canonical and legacy Portfolio surfaces ([`docs/portfolio/LEGACY_SURFACE_AUDIT.md`](LEGACY_SURFACE_AUDIT.md)).
+- M11-02 retired superseded Portfolio runtime paths and legacy IPC handlers (100% IPC parity).
+- M11-03 & M11-04 established Criterion scale benchmarks, optimized constraint checking, and eliminated production panic points ([`docs/portfolio/PERFORMANCE_BASELINE.md`](PERFORMANCE_BASELINE.md)).
+- M11-05 & M11-06 produced reproducible release packages and verified cross-platform smoke execution ([`docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`](../releases/M11_PACKAGED_SMOKE_EVIDENCE.md)).
+- M11-07 completed formal Release Candidate acceptance ([`docs/releases/M11_RELEASE_ACCEPTANCE.md`](../releases/M11_RELEASE_ACCEPTANCE.md)).
+- Live broker synchronization and FIRE/retirement planning remain deferred for post-MVP consideration.
