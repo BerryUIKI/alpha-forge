@@ -17,7 +17,8 @@
     "tauri": "pnpm --dir apps/desktop tauri",
     "attribution:generate": "node scripts/generate-attribution.mjs",
     "release:package": "node scripts/package-release.mjs",
-    "release:verify": "node scripts/package-release.mjs --verify"
+    "release:verify": "node scripts/package-release.mjs --verify",
+    "test:smoke": "node scripts/smoke-packaged-flows.mjs"
   },
   "engines": {
     "node": ">=22",

@@ -159,6 +159,52 @@ corrupted file.
 
 ---
 
+## SmartScreen warning on Windows
+
+**Symptom**: Windows SmartScreen displays "Windows protected your PC" when launching `AlphaForge_<version>_x64-setup.exe`.
+
+**Cause**: Early or unsigned release candidate packages have not accumulated Microsoft SmartScreen reputation.
+
+**Fix**: Click **"More info"** on the prompt dialog, then click **"Run anyway"**. The application will launch with standard unprivileged user permissions (`currentUser` mode).
+
+---
+
+## CSV statement import fails or reports invalid rows
+
+**Symptom**: Importing an activity statement displays an error dialog stating that certain rows failed validation.
+
+**Fixes**:
+1. Check the date format (ISO 8601 `YYYY-MM-DD` recommended).
+2. Ensure numeric values (quantity, price, fee) contain no currency symbols (e.g. use `150.25`, not `$150.25`).
+3. For large files exceeding 10,000 rows, consider splitting into quarterly or yearly batches. The import runs in a database transaction, ensuring no partial data is written if validation fails.
+
+---
+
+## Disabling or recovering from Goose runtime issues
+
+**Symptom**: Goose shadow analysis tasks fail or cause excessive latency.
+
+**Fixes**:
+1. Disable Goose runtime in **Settings → Agent Settings** by toggling off the Goose integration.
+2. Alternatively, launch AlphaForge from the command line with `--disable-goose`.
+3. AlphaForge continues operating normally with built-in heuristic analysis when Goose is disabled.
+
+---
+
+## Operating in offline mode
+
+**Symptom**: No internet connection is available; quotes fail to refresh.
+
+**Behavior**: AlphaForge is local-first. All existing portfolio holdings, transaction lots, research theses, and project notes remain fully readable and editable while offline. Market data refresh will resume once the network connection is restored.
+
+---
+
+## Database migration rollback limitations
+
+**Behavior**: AlphaForge migrations are append-only. Newer application versions safely upgrade prior databases. If you ever downgrade AlphaForge to an older binary version, restore a corresponding local SQLite backup created prior to upgrading.
+
+---
+
 ## Still stuck?
 
 Open an issue at

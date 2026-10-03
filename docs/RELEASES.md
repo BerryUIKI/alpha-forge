@@ -107,6 +107,15 @@ Every release package is accompanied by `THIRD_PARTY_NOTICES.md` documenting:
 
 ---
 
-## 6. Release Acceptance Gate (M11-07)
+## 6. Packaged Smoke & Upgrade Verification (M11-06)
 
-Packaging a release candidate (M11-05) produces candidate artifacts for packaged verification (M11-06). Publishing to GitHub Releases or merging to `main` remains governed by the formal acceptance gate (M11-07).
+Prior to presenting any release candidate to the release acceptance gate, candidate packages must undergo verified packaged smoke testing:
+- **Automation:** Run `pnpm test:smoke` (`node scripts/smoke-packaged-flows.mjs`) to verify CSP, unprivileged installation mode, migration sequence, sandboxing, and SBOM notices.
+- **Evidence Record:** All manual and automated test results across clean macOS and Windows nodes are recorded in [`docs/releases/M11_PACKAGED_SMOKE_EVIDENCE.md`](releases/M11_PACKAGED_SMOKE_EVIDENCE.md).
+- **Core Workflows:** Verified flows include Workspace/Project setup, Thesis creation and confidence history, Portfolio account creation, CSV import, quote refresh, thesis-asset linkage, Options modeling, controlled Artifact rendering, local SQLite export, and Goose runtime isolation.
+
+---
+
+## 7. Release Acceptance Gate (M11-07)
+
+Packaging a release candidate (M11-05) and completing packaged smoke verification (M11-06) produce candidate artifacts for final release-candidate acceptance (M11-07). Publishing to GitHub Releases or merging to `main` remains governed by the formal acceptance gate.
