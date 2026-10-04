@@ -1,5 +1,6 @@
-import { ArrowLeft, Bot, Database, Info, Languages, Palette, Plug, Settings2 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { ArrowLeft, Bot, Database, Info, Languages, Palette, Plug, Settings2, Key } from "lucide-react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { WindowTitleBar } from "./WindowTitleBar";
 
@@ -7,6 +8,7 @@ const SETTINGS_SECTIONS = [
   { id: "general", labelKey: "settingsGeneral", icon: Settings2 },
   { id: "appearance", labelKey: "settingsAppearance", icon: Palette },
   { id: "localization", labelKey: "settingsLocalization", icon: Languages },
+  { id: "usage", labelKey: "apiUsage", icon: Key },
   { id: "agent", labelKey: "settingsAgents", icon: Bot },
   { id: "data", labelKey: "settingsData", icon: Database },
   { id: "internal-plugins", labelKey: "settingsPlugins", icon: Plug },
@@ -16,6 +18,23 @@ const SETTINGS_SECTIONS = [
 export function SettingsLayout() {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (!hash || !mainRef.current) return;
+
+    // Small delay to ensure the DOM tree inside Outlet is mounted
+    const timer = setTimeout(() => {
+      const targetElement = document.getElementById(hash);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [location.hash]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -47,7 +66,7 @@ export function SettingsLayout() {
             ))}
           </nav>
         </aside>
-        <main className="min-w-0 flex-1 overflow-auto">
+        <main ref={mainRef} className="min-w-0 flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>

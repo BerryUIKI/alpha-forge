@@ -19,9 +19,32 @@ export interface WindowTitleBarProps {
   onOpenSearch?: () => void;
 }
 
-function executeEditCommand(command: string) {
+async function executeEditCommand(command: string) {
+  if (command === "copy") {
+    const selection = window.getSelection()?.toString();
+    if (selection && navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(selection).catch(() => undefined);
+      return;
+    }
+  } else if (command === "paste" && navigator?.clipboard?.readText) {
+    try {
+      const text = await navigator.clipboard.readText();
+      const activeEl = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+      if (activeEl && "setRangeText" in activeEl && typeof activeEl.setRangeText === "function") {
+        activeEl.setRangeText(text);
+        return;
+      }
+    } catch {
+      // Fallback below
+    }
+  }
+
   if (typeof document.execCommand === "function") {
-    document.execCommand(command);
+    try {
+      document.execCommand(command);
+    } catch {
+      // Ignore unsupported browser actions
+    }
   }
 }
 

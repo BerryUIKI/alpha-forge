@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
 
@@ -19,6 +21,23 @@ const DEFAULT_BENCHMARKS: BenchmarkItem[] = [
 
 export function MarketPulseBar() {
   const { t } = useLocale();
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncedText, setLastSyncedText] = useState("just now");
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["financial"] }),
+        queryClient.invalidateQueries({ queryKey: ["research"] }),
+        queryClient.invalidateQueries({ queryKey: ["agent"] }),
+      ]);
+      setLastSyncedText("just now");
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
 
   return (
     <section className="flex h-10 w-full items-center justify-between overflow-x-auto border-b border-white/5 bg-black/10 px-5 text-xs select-none">
@@ -56,13 +75,16 @@ export function MarketPulseBar() {
 
       {/* Synced Info */}
       <div className="flex items-center gap-2 text-[11px] text-neutral-400 shrink-0">
-        <span>{formatMessage(t("dataSynced"), { time: "10s" })}</span>
+        <span>{formatMessage(t("dataSynced"), { time: lastSyncedText })}</span>
         <button
           type="button"
-          aria-label="Refresh data"
-          className="rounded p-0.5 hover:text-neutral-200 transition-colors"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          aria-label={t("refresh")}
+          title={t("refresh")}
+          className="rounded p-0.5 hover:text-neutral-200 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className="h-3 w-3" />
+          <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
         </button>
       </div>
     </section>

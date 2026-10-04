@@ -7,6 +7,7 @@
  * @version GUI-E2
  */
 
+import { Link } from "react-router-dom";
 import { useDashboardSummary, useActiveWorkspaceId, useDashboardActivity } from "../hooks/useDashboardData";
 import { DashboardCard, StatCard } from "@/components/ui";
 import { ErrorState, EmptyState } from "@/components/common";
@@ -105,7 +106,14 @@ export function OverviewTab() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <DashboardCard
           title={t("topHoldings")}
-          meta={t("viewAll")}
+          action={
+            <Link
+              to="/portfolio"
+              className="text-xs font-medium uppercase tracking-wide text-primary hover:underline"
+            >
+              {t("viewAll")}
+            </Link>
+          }
           padded={false}
         >
           <div className="px-4">
@@ -121,7 +129,14 @@ export function OverviewTab() {
 
         <DashboardCard
           title={t("recentActivity")}
-          meta={t("viewAll")}
+          action={
+            <Link
+              to="/portfolio"
+              className="text-xs font-medium uppercase tracking-wide text-primary hover:underline"
+            >
+              {t("viewAll")}
+            </Link>
+          }
           padded={false}
         >
           <div className="px-4">

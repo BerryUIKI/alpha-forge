@@ -20,6 +20,7 @@ import type { RightSidebarProps } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AgentPanel } from "./AgentPanel";
 import { useSidebarState, useResize } from "@/hooks/layout";
+import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
 
 export function RightSidebar({
   state: externalState,
@@ -30,6 +31,7 @@ export function RightSidebar({
 }: RightSidebarProps) {
   const { t } = useLocale();
   const isMac = isMacPlatform();
+  const { data: agentStatus = "idle" } = useAgentGlobalStatus();
 
   // Use sidebar state hook for persistence
   const {
@@ -88,8 +90,18 @@ export function RightSidebar({
           <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform hover:scale-110">
             <Sparkles className="h-4 w-4" />
             <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              {agentStatus === "running" && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              )}
+              <span
+                className={cn(
+                  "relative inline-flex rounded-full h-2 w-2",
+                  agentStatus === "running" && "bg-blue-500",
+                  agentStatus === "unconfigured" && "bg-yellow-500",
+                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "idle" && "bg-gray-400",
+                )}
+              ></span>
             </span>
           </div>
         </button>
@@ -111,8 +123,18 @@ export function RightSidebar({
       <div className="flex items-center justify-between border-b border-border pl-4 pr-2 h-14">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            {agentStatus === "running" && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            )}
+            <span
+              className={cn(
+                "relative inline-flex rounded-full h-2 w-2",
+                agentStatus === "running" && "bg-blue-500",
+                agentStatus === "unconfigured" && "bg-yellow-500",
+                agentStatus === "error" && "bg-red-500",
+                agentStatus === "idle" && "bg-gray-400",
+              )}
+            ></span>
           </span>
           <span>Agent</span>
         </h3>

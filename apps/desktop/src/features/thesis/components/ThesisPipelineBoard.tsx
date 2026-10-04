@@ -29,11 +29,14 @@ export function ThesisPipelineBoard({
   const { data, isLoading, error, refetch } = useTheses(workspaceId);
   const [filter, setFilter] = useState<string>("all");
 
+  const [transitionError, setTransitionError] = useState<string | null>(null);
+
   const activate = useActivateThesis();
   const startValidation = useStartThesisValidation();
   const completeValidation = useCompleteThesisValidation();
 
   const handleQuickTransition = async (thesis: InvestmentThesis, nextStatus: ThesisStatus) => {
+    setTransitionError(null);
     try {
       if (nextStatus === "active") {
         await activate.mutateAsync(thesis.id);
@@ -42,12 +45,13 @@ export function ThesisPipelineBoard({
       } else if (nextStatus === "validated") {
         await completeValidation.mutateAsync({
           id: thesis.id,
-          outcome: "Thesis validated from board transition",
+          outcome: t("thesisValidated"),
           validated: true,
         });
       }
     } catch (err) {
-      console.error("Failed to transition thesis status:", err);
+      const msg = err instanceof Error ? err.message : t("unknownError");
+      setTransitionError(msg);
     }
   };
 
@@ -116,6 +120,12 @@ export function ThesisPipelineBoard({
           </select>
         </div>
       </div>
+
+      {transitionError && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {transitionError}
+        </div>
+      )}
 
       {/* Horizontal Kanban Columns */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">

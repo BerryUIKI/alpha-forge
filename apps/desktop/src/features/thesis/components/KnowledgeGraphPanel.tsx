@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 import { useCreateKnowledgeEntity, useCreateKnowledgeRelationship, useKnowledgeEntities, useKnowledgeRelationships } from "../hooks/useKnowledgeGraph";
-import { LoadingSpinner, ErrorState, EmptyState } from "@/components/common";
+import { LoadingSpinner, ErrorState } from "@/components/common";
 import { useLocale } from "@/lib/i18n/useLocale";
 
 export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
@@ -78,10 +78,24 @@ export function KnowledgeGraphPanel({ workspaceId }: { workspaceId: string }) {
     return (
       <section className="rounded-lg border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">{t("knowledgeGraph")}</h2>
-        <EmptyState
-          title={t("noWorkspaces")}
-          description={t("knowledgeGraphDescription")}
-        />
+        <p className="mt-1 text-sm text-muted-foreground">{t("knowledgeGraphDescription")}</p>
+        <div className="mt-4">
+          <form onSubmit={addEntity} className="space-y-2 max-w-md">
+            <div className="flex gap-2">
+              <select value={entityType} onChange={(event) => setEntityType(event.target.value as KnowledgeEntityType)} className="rounded-md border border-input bg-background px-2 text-sm">
+                <option value="company">{t("entityTypeCompany")}</option>
+                <option value="industry">{t("entityTypeIndustry")}</option>
+                <option value="technology">{t("entityTypeTechnology")}</option>
+                <option value="macro_theme">{t("entityTypeMacroTheme")}</option>
+              </select>
+              <input value={name} onChange={(event) => setName(event.target.value)} placeholder={t("entityName")} className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            </div>
+            <button className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent" disabled={createEntity.isPending}>
+              {t("addEntity")}
+            </button>
+          </form>
+          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        </div>
       </section>
     );
   }

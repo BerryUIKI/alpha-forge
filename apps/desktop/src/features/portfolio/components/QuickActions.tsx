@@ -49,6 +49,7 @@ export function QuickActions({ accountId, onRefresh, asOfDate }: QuickActionsPro
         <button
           onClick={handleCreateSnapshot}
           disabled={!accountId || createSnapshot.isPending}
+          title={!accountId ? t("selectAnAccount") : t("createSnapshot")}
           className="flex items-center justify-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Camera className="h-4 w-4" />

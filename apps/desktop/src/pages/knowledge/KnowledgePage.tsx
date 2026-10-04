@@ -16,6 +16,7 @@ import { BookOpen, Plus, X } from "lucide-react";
 import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 import { useProfessionalTerms } from "@/lib/i18n/professional-terms";
+import { knowledgeGraphKeys } from "@/features/thesis/hooks/useKnowledgeGraph";
 
 const ENTITY_TYPES: KnowledgeEntityType[] = ["company", "industry", "technology", "macro_theme"];
 
@@ -44,7 +45,7 @@ export function KnowledgePage() {
   const [newDesc, setNewDesc] = useState("");
 
   const entities = useQuery({
-    queryKey: ["knowledgeEntities", workspaceId],
+    queryKey: knowledgeGraphKeys.entities(workspaceId),
     queryFn: () => desktopApi.knowledgeGraph.listKnowledgeEntities(workspaceId),
     enabled: !!workspaceId,
   });
@@ -53,7 +54,7 @@ export function KnowledgePage() {
     mutationFn: () =>
       desktopApi.knowledgeGraph.createKnowledgeEntity(workspaceId, newType, newName, newDesc || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["knowledgeEntities", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: knowledgeGraphKeys.entities(workspaceId) });
       setShowCreate(false);
       setNewName("");
       setNewType("company");
