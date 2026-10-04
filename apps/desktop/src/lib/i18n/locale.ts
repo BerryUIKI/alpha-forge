@@ -921,6 +921,13 @@ const messages = {
     highestInPeriod: "区间最高",
     lowestInPeriod: "区间最低",
     averageClose: "平均收盘",
+    // Status Bar & System Health
+    systemOperational: "系统运行正常",
+    systemDegraded: "数据库状态异常",
+    systemChecking: "正在检查系统状态…",
+    systemOffline: "已离线",
+    dbHealthy: "数据库已就绪",
+    dbUnhealthy: "数据库异常",
   },
   "en": {
     today: "Today",
@@ -1817,6 +1824,13 @@ const messages = {
     highestInPeriod: "Period High",
     lowestInPeriod: "Period Low",
     averageClose: "Average Close",
+    // Status Bar & System Health
+    systemOperational: "All systems operational",
+    systemDegraded: "Database degraded",
+    systemChecking: "Checking system health…",
+    systemOffline: "Offline",
+    dbHealthy: "Database ready",
+    dbUnhealthy: "Database error",
   },
 } as const;
 

@@ -7,10 +7,11 @@
  * @version GUI-M0
  */
 
-import { Wifi, WifiOff, Bot, Activity, Settings, AlertCircle } from "lucide-react";
+import { Wifi, WifiOff, Bot, Activity, Settings, AlertCircle, Database } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
+import { useSystemHealth } from "@/hooks/useSystemHealth";
 
 // Version from package.json (would be injected at build time)
 const APP_VERSION = "0.1.0";
@@ -19,6 +20,7 @@ export function StatusBar() {
   const { t } = useLocale();
   const { isOnline } = useNetworkStatus();
   const { data: agentStatus = "idle" } = useAgentGlobalStatus();
+  const { isHealthy: isDbHealthy } = useSystemHealth();
 
   // Agent status config
   const agentStatusConfig = {
@@ -55,16 +57,36 @@ export function StatusBar() {
   const agentConfig = agentStatusConfig[agentStatus];
   const AgentIcon = agentConfig.icon;
 
+  const isSystemOperational = isOnline && isDbHealthy;
+
   return (
     <div className="flex h-7 items-center justify-between border-t border-border bg-background px-6">
       {/* Left: System status */}
       <div className="flex items-center gap-3">
-        <div className={`h-1.5 w-1.5 rounded-full ${isOnline ? "bg-green-500" : "bg-red-500"}`} />
-        <span className="text-[11px] text-muted-foreground/60">
-          {isOnline ? "All systems operational" : "Offline"}
+        <div
+          className={`h-1.5 w-1.5 rounded-full ${
+            !isOnline
+              ? "bg-amber-500"
+              : isSystemOperational
+                ? "bg-emerald-500"
+                : "bg-rose-500"
+          }`}
+        />
+        <span className="text-[11px] text-muted-foreground/80">
+          {!isOnline
+            ? t("systemOffline")
+            : isSystemOperational
+              ? t("systemOperational")
+              : t("systemDegraded")}
         </span>
         <span className="text-[11px] text-muted-foreground/30">·</span>
-        <span className="text-[11px] text-muted-foreground/60">Last sync: 2m ago</span>
+        <div
+          className="flex items-center gap-1 text-[11px] text-muted-foreground/60"
+          title={isDbHealthy ? t("dbHealthy") : t("dbUnhealthy")}
+        >
+          <Database className={`h-2.5 w-2.5 ${isDbHealthy ? "text-emerald-500" : "text-amber-500"}`} />
+          <span>{isDbHealthy ? t("dbHealthy") : t("dbUnhealthy")}</span>
+        </div>
       </div>
 
       {/* Right: Agent status + Version */}
