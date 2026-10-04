@@ -30,6 +30,7 @@ const ROUTE_PAGE_NAMES: Record<string, { labelKey: string; groupKey: string }> =
   "/portfolio": { labelKey: "navPortfolio", groupKey: "navWorkspace" },
   "/knowledge": { labelKey: "navKnowledge", groupKey: "navWorkspace" },
   "/options": { labelKey: "navOptions", groupKey: "navTools" },
+  "/quotes": { labelKey: "navQuotes", groupKey: "navTools" },
   "/artifacts": { labelKey: "navArtifacts", groupKey: "navTools" },
   "/settings": { labelKey: "navSettings", groupKey: "navAccount" },
 };

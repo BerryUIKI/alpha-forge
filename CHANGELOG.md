@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Market Quotes Dashboard (行情看板):**
+  - Added standalone top-level route `/quotes` accessible via the Left Sidebar navigation under Tools.
+  - Implemented real-time and historical asset quote tracking cards displaying latest price, day changes, and thesis linkage.
+  - Added on-demand single asset quote refreshing and bulk active assets market data refresh (`useRefreshAllActiveQuotes`, `useRefreshAssetQuote`).
+  - Added historical quote inspection table per active asset with full date, OHLC, volume, and data source breakdown.
+  - Added localized navigation and content strings with 100% parity across `zh-CN` and `en`.
+
 ### Fixed
 - **GUI Placeholder & Parity Hardening:**
   - Synchronized Knowledge Graph TanStack Query keys between `KnowledgePage` and `useKnowledgeGraph`, resolving cache desynchronization.

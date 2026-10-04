@@ -22,6 +22,9 @@ import {
   useCreateActivity,
   useCreateLot,
   useRecordSell,
+  useListQuotesForAsset,
+  useRefreshAssetQuote,
+  useRefreshAllActiveQuotes,
 } from "./useFinancialData";
 
 vi.mock("@/lib/desktop-api", () => ({
@@ -43,6 +46,9 @@ vi.mock("@/lib/desktop-api", () => ({
       createActivity: vi.fn(),
       createLot: vi.fn(),
       recordSell: vi.fn(),
+      listQuotesForAsset: vi.fn(),
+      refreshAssetQuote: vi.fn(),
+      refreshAllActiveQuotes: vi.fn(),
     },
   },
 }));
@@ -306,6 +312,31 @@ describe("Lot hooks", () => {
   });
 });
 
+describe("Quote hooks", () => {
+  it("useListQuotesForAsset calls listQuotesForAsset", async () => {
+    vi.mocked(desktopApi.financial.listQuotesForAsset).mockResolvedValue([
+      { id: "q-1", close: "100" } as any,
+    ]);
+    const { result } = renderHook(() => useListQuotesForAsset("asset-1"), { wrapper });
+    expect(desktopApi.financial.listQuotesForAsset).toHaveBeenCalledWith("asset-1");
+    await waitFor(() => expect(result.current.data).toEqual([{ id: "q-1", close: "100" }]));
+  });
+
+  it("useRefreshAssetQuote calls refreshAssetQuote", async () => {
+    vi.mocked(desktopApi.financial.refreshAssetQuote).mockResolvedValue({ id: "q-1" } as any);
+    const { result } = renderHook(() => useRefreshAssetQuote(), { wrapper });
+    result.current.mutate("asset-1");
+    await waitFor(() => expect(desktopApi.financial.refreshAssetQuote).toHaveBeenCalledWith("asset-1"));
+  });
+
+  it("useRefreshAllActiveQuotes calls refreshAllActiveQuotes", async () => {
+    vi.mocked(desktopApi.financial.refreshAllActiveQuotes).mockResolvedValue([]);
+    const { result } = renderHook(() => useRefreshAllActiveQuotes(), { wrapper });
+    result.current.mutate();
+    await waitFor(() => expect(desktopApi.financial.refreshAllActiveQuotes).toHaveBeenCalledTimes(1));
+  });
+});
+
 describe("financialKeys", () => {
   it("builds hierarchical query keys", () => {
     expect(financialKeys.all).toEqual(["financial"]);
@@ -313,6 +344,7 @@ describe("financialKeys", () => {
     expect(financialKeys.accounts("ws")).toEqual(["financial", "accounts", "ws"]);
     expect(financialKeys.allAccounts()).toEqual(["financial", "accounts", "all"]);
     expect(financialKeys.assets()).toEqual(["financial", "assets"]);
+    expect(financialKeys.quotes("asset-1")).toEqual(["financial", "quotes", "asset-1"]);
     expect(financialKeys.activities("acct")).toEqual(["financial", "activities", "acct"]);
     expect(financialKeys.performance("a", "2026-08-01", "2026-08-18")).toEqual([
       "financial",
