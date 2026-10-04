@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Demo Data Orchestration & First-Run Onboarding Wizard (模拟演示数据与初始引导向导):**
+  - Implemented `demoData.ts` providing institutional-grade seed data: Workspace ("AI & Semiconductor Alpha"), Knowledge Graph entities & linkages, investment theses with empirical evidence, prime brokerage financial account, portfolio assets (NVDA, AAPL, MSFT, TSM), cash deposits and lot activities, 30 days of historical daily OHLC/volume price quotes, asset taxonomy, and 70/30 target asset allocation with rebalancing drift bands.
+  - Implemented `OnboardingWizardModal` automatically displaying on initial launch when 0 workspaces exist, offering a dual-path choice: 1-click loading the full institutional demo dataset or creating a custom workspace.
+  - Added permanent on-demand "Demo Data Management" section to `SettingsPage` enabling demo data re-seeding at any time with TanStack Query cache invalidation and active workspace switching.
+  - Added comprehensive unit tests for `OnboardingWizardModal` and `SettingsPage` demo data integration, verifying 100% locale catalog parity.
 - **Thesis & Agent Deep Research Loop (投资研究与 Agent 深度联动闭环 - Direction 3):**
   - Integrated direct Agent investigation dispatch from `ThesisDetail` (`handleLaunchAgentResearch`), enabling 1-click background evidence harvesting and thesis falsification search.
   - Implemented automated evidence harvesting from Goose Shadow Analysis (`onComplete` -> `handleHarvestShadowEvidence`), persisting structured supporting and contradicting facts directly into `thesis_evidence`.
