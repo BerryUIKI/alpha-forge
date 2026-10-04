@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced placeholder calculations in `StrategyBuilder` with genuine multi-leg break-even analysis.
   - Connected `StatusBar` to `useSystemHealth` for real-time SQLite database health monitoring and localized operational indicators.
   - Linked `SecFilingFeed` dynamically to active portfolio assets and workspace investment theses with interactive ticker pill selection.
+  - Replaced native browser dialogs (`window.confirm`) with accessible in-app `ConfirmDialog` modal components across `ArtifactsPage`, `OptionContractTable`, and `OptionStrategyPanel` with keyboard focus trap and escape handling.
 
 ## [0.1.0-rc.1] - 2026-10-03
 
