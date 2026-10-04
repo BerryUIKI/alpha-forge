@@ -9,6 +9,7 @@ interface MenuAction {
   label: string;
   action?: () => void;
   disabled?: boolean;
+  disabledReason?: string;
   separatorBefore?: boolean;
 }
 
@@ -109,21 +110,29 @@ export function WindowTitleBar({
         label: isLeftSidebarExpanded ? "Collapse Navigation" : "Expand Navigation",
         action: onToggleLeftSidebar,
         disabled: !onToggleLeftSidebar,
+        disabledReason: "Navigation toggle is only available in the main workspace view",
       },
       {
         label: "Toggle Agent Panel",
         action: onToggleRightSidebar,
         disabled: !onToggleRightSidebar,
+        disabledReason: "Agent panel toggle is only available in the main workspace view",
       },
       {
         label: "Open Search",
         separatorBefore: true,
         action: onOpenSearch,
         disabled: !onOpenSearch,
+        disabledReason: "Global search is only available in the main workspace view",
       },
     ],
     Help: [
-      { label: "Keyboard Shortcuts", action: onOpenSearch, disabled: !onOpenSearch },
+      {
+        label: "Keyboard Shortcuts",
+        action: onOpenSearch,
+        disabled: !onOpenSearch,
+        disabledReason: "Keyboard shortcuts palette is only available in the main workspace view",
+      },
       {
         label: "About AlphaForge",
         separatorBefore: true,
@@ -193,6 +202,7 @@ export function WindowTitleBar({
                       className="flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
                       role="menuitem"
                       disabled={item.disabled}
+                      title={item.disabled ? item.disabledReason : undefined}
                       onClick={() => selectAction(item.action)}
                     >
                       {item.label}

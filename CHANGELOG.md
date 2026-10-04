@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Linked `SecFilingFeed` dynamically to active portfolio assets and workspace investment theses with interactive ticker pill selection.
   - Replaced native browser dialogs (`window.confirm`) with accessible in-app `ConfirmDialog` modal components across `ArtifactsPage`, `OptionContractTable`, and `OptionStrategyPanel` with keyboard focus trap and escape handling.
   - Computed real unrealized P&L dollar values and percentage returns from holdings summaries in `OverviewTab` and individual top holdings.
+  - Mounted previously orphaned `StrategyBuilder` component on `OptionsPage` for multi-leg payoff simulation and break-even calculations.
+  - Integrated `ShadowAnalysis` component into `ThesisDetail` for AI shadow-mode validation and hypothesis stress-testing.
+  - Added descriptive `disabledReason` tooltips to disabled navigation and palette actions in `WindowTitleBar`.
 
 ## [0.1.0-rc.1] - 2026-10-03
 

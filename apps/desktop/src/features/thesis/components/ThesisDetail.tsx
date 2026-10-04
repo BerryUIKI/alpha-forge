@@ -10,6 +10,7 @@ import {
 import { useKnowledgeEntities, useLinkThesisKnowledgeEntity, useThesisKnowledgeLinks } from "../hooks/useKnowledgeGraph";
 import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { ShadowAnalysis } from "@/features/goose";
 
 interface ThesisDetailProps { thesis: InvestmentThesis; onDeleted: () => void; }
 
@@ -202,6 +203,14 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
             ))}
           </ul>
         )}
+      </div>
+
+      {/* AI Shadow Mode Analysis */}
+      <div className="border-t border-border pt-4">
+        <ShadowAnalysis
+          workspaceId={thesis.workspaceId}
+          thesisId={thesis.id}
+        />
       </div>
     </section>
   );
