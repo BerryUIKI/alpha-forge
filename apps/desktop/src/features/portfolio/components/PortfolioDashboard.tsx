@@ -15,6 +15,7 @@
  */
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { EmptyState } from "@/components/common";
 import { AccountCards } from "./AccountCards";
@@ -37,6 +38,7 @@ function todayIso(): string {
 
 export function PortfolioDashboard() {
   const { t } = useLocale();
+  const queryClient = useQueryClient();
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const [asOfDate, setAsOfDate] = useState(todayIso());
   const [refreshKey, setRefreshKey] = useState(0);
@@ -62,6 +64,7 @@ export function PortfolioDashboard() {
   const handleRefresh = () => {
     setAsOfDate(todayIso());
     setRefreshKey((k) => k + 1);
+    void queryClient.invalidateQueries({ queryKey: ["financial"] });
   };
 
   return (
@@ -156,14 +159,11 @@ export function PortfolioDashboard() {
             onClick={() => {
               if (selectedAccountId) {
                 setIsAddActivityOpen(true);
-              } else {
-                setSelectedAccountId("");
-                // Nudge the user to select an account first.
-                window.alert(t("selectAnAccount"));
               }
             }}
             disabled={!selectedAccountId}
             className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+            title={selectedAccountId ? t("addActivityTitle") : t("selectAnAccount")}
           >
             <ArrowUpRight className="h-4 w-4" />
             {t("addActivityTitle")}
@@ -172,14 +172,11 @@ export function PortfolioDashboard() {
             onClick={() => {
               if (selectedAccountId) {
                 setIsImportActivitiesOpen(true);
-              } else {
-                setSelectedAccountId("");
-                window.alert(t("selectAnAccount"));
               }
             }}
             disabled={!selectedAccountId}
             className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm font-medium transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-            title={t("importActivitiesDescription")}
+            title={selectedAccountId ? t("importActivitiesDescription") : t("selectAnAccount")}
           >
             <Upload className="h-4 w-4" />
             {t("importActivitiesTitle")}

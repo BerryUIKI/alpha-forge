@@ -96,7 +96,7 @@ export function InternalPluginsPanel() {
                       {plugin.manifest.permissions.length === 0
                         ? t("noPluginPermissions")
                         : plugin.manifest.permissions
-                            .map(() => t("pluginPermissionNetwork"))
+                            .map((p) => (p === "network" ? t("pluginPermissionNetwork") : p))
                             .join(", ")}
                     </span>
                   </div>

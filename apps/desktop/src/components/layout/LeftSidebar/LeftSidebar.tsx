@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import type { LeftSidebarProps, NavGroup as NavGroupType } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AccountMenu } from "./AccountMenu";
+import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
 
 export function LeftSidebar({
   state: externalState,
@@ -41,6 +42,7 @@ export function LeftSidebar({
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
 }: LeftSidebarProps) {
   const { t } = useLocale();
+  const { data: agentStatus = "idle" } = useAgentGlobalStatus();
 
   // Navigation configuration aligned with AlphaForge product loop
   const NAV_GROUPS: NavGroupType[] = [
@@ -126,10 +128,31 @@ export function LeftSidebar({
 
         {/* Footer: Agent status pulse dot + Account Menu */}
         <div className="space-y-1.5 border-t border-border p-2">
-          <div className="flex items-center justify-center py-1" title={t("agentReadyStatus")}>
+          <div
+            className="flex items-center justify-center py-1"
+            title={
+              agentStatus === "running"
+                ? t("statusRunning")
+                : agentStatus === "unconfigured"
+                  ? t("statusUnconfigured")
+                  : agentStatus === "error"
+                    ? t("statusError")
+                    : t("statusIdle")
+            }
+          >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              {agentStatus === "running" && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              )}
+              <span
+                className={cn(
+                  "relative inline-flex rounded-full h-2 w-2",
+                  agentStatus === "running" && "bg-blue-500",
+                  agentStatus === "unconfigured" && "bg-yellow-500",
+                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "idle" && "bg-gray-400",
+                )}
+              ></span>
             </span>
           </div>
           <div className="flex items-center justify-center">
@@ -176,10 +199,28 @@ export function LeftSidebar({
         <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs">
           <div className="flex items-center gap-2 truncate">
             <span className="relative flex h-2 w-2 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              {agentStatus === "running" && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              )}
+              <span
+                className={cn(
+                  "relative inline-flex rounded-full h-2 w-2",
+                  agentStatus === "running" && "bg-blue-500",
+                  agentStatus === "unconfigured" && "bg-yellow-500",
+                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "idle" && "bg-gray-400",
+                )}
+              ></span>
             </span>
-            <span className="truncate text-[11px] font-medium text-foreground">{t("agentReadyStatus")}</span>
+            <span className="truncate text-[11px] font-medium text-foreground">
+              {agentStatus === "running"
+                ? t("statusRunning")
+                : agentStatus === "unconfigured"
+                  ? t("statusUnconfigured")
+                  : agentStatus === "error"
+                    ? t("statusError")
+                    : t("statusIdle")}
+            </span>
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import { useArtifact } from "@/features/artifacts/hooks/useArtifacts";
 import { artifactRegistry } from "@/features/artifacts/renderers";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
+import { desktopApi } from "@/lib/desktop-api";
 import type { Artifact } from "@/lib/desktop-api/artifacts";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -162,6 +163,9 @@ export function ArtifactWindowPage() {
   const handleClose = async () => {
     setCloseError(false);
     try {
+      if (artifactId && UUID_PATTERN.test(artifactId)) {
+        await desktopApi.artifacts.closeArtifact(artifactId).catch(() => undefined);
+      }
       await getCurrentWindow().close();
     } catch {
       setCloseError(true);

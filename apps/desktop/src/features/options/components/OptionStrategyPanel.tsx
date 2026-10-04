@@ -115,6 +115,7 @@ export function OptionStrategyPanel({
             setFormContracts(selectedContracts);
           }}
           disabled={selectedContracts.length === 0}
+          title={selectedContracts.length === 0 ? t("selectContractsForStrategy") : t("createOptionStrategy")}
           className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />

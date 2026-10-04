@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **GUI Placeholder & Parity Hardening:**
+  - Synchronized Knowledge Graph TanStack Query keys between `KnowledgePage` and `useKnowledgeGraph`, resolving cache desynchronization.
+  - Enabled entity creation in `KnowledgeGraphPanel` empty state.
+  - Ensured `ArtifactWindowPage` persists artifact closure to backend SQLite via `desktopApi.artifacts.closeArtifact`.
+  - Replaced hardcoded static emerald pulse in `LeftSidebar` and `RightSidebar` with dynamic `useAgentGlobalStatus()` indicators.
+  - Wired live query invalidation and spinning indicator to `MarketPulseBar` refresh button.
+  - Implemented automatic hash scrolling for navigation in `SettingsLayout`.
+  - Modernized `WindowTitleBar` edit actions with `navigator.clipboard` integration.
+  - Eliminated dead `window.alert` branches in `PortfolioDashboard` and wired comprehensive query cache invalidation on refresh.
+  - Added user feedback banners on thesis status transitions and artifact launch failures.
+  - Provided descriptive disabled state tooltips in `QuickActions` and `OptionStrategyPanel`.
+  - Replaced placeholder calculations in `StrategyBuilder` with genuine multi-leg break-even analysis.
+
 ## [0.1.0-rc.1] - 2026-10-03
 
 ### Added

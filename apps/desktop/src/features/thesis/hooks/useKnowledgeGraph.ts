@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import type { KnowledgeEntityType } from "@/lib/desktop-api/knowledge-graph";
 
-const keys = { all: ["knowledge-graph"] as const, entities: (workspaceId: string) => [...keys.all, "entities", workspaceId] as const, relationships: (workspaceId: string) => [...keys.all, "relationships", workspaceId] as const, links: (thesisId: string) => [...keys.all, "links", thesisId] as const };
+export const knowledgeGraphKeys = { all: ["knowledge-graph"] as const, entities: (workspaceId: string) => [...knowledgeGraphKeys.all, "entities", workspaceId] as const, relationships: (workspaceId: string) => [...knowledgeGraphKeys.all, "relationships", workspaceId] as const, links: (thesisId: string) => [...knowledgeGraphKeys.all, "links", thesisId] as const };
+const keys = knowledgeGraphKeys;
 export function useKnowledgeEntities(workspaceId: string) { return useQuery({ queryKey: keys.entities(workspaceId), queryFn: () => desktopApi.knowledgeGraph.listKnowledgeEntities(workspaceId), enabled: Boolean(workspaceId) }); }
 export function useKnowledgeRelationships(workspaceId: string) { return useQuery({ queryKey: keys.relationships(workspaceId), queryFn: () => desktopApi.knowledgeGraph.listKnowledgeRelationships(workspaceId), enabled: Boolean(workspaceId) }); }
 export function useThesisKnowledgeLinks(thesisId: string) { return useQuery({ queryKey: keys.links(thesisId), queryFn: () => desktopApi.knowledgeGraph.listThesisKnowledgeLinks(thesisId), enabled: Boolean(thesisId) }); }

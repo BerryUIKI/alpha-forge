@@ -95,12 +95,12 @@ export function TopBar({
         {/* Divider */}
         <div className="mx-1 h-5 w-px bg-border/60" />
 
-        {/* New Button */}
+        {/* New Research Button */}
         <button
           onClick={() => navigate("/research")}
           className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
-          aria-label="Create new"
-          title="Create new"
+          aria-label={t("newResearch")}
+          title={t("newResearch")}
         >
           <Plus className="h-4 w-4" />
         </button>

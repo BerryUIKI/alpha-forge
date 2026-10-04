@@ -17,6 +17,7 @@ export function ResearchResultCard({
 }: ResearchResultCardProps) {
   const { t } = useLocale();
   const [isLaunchingArtifact, setIsLaunchingArtifact] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
   const result = parseResearchCompletion(payload);
 
   if (!result) {
@@ -36,6 +37,7 @@ export function ResearchResultCard({
   const handleLaunchArtifact = async () => {
     if (!workspaceId) return;
     setIsLaunchingArtifact(true);
+    setLaunchError(null);
     try {
       const artifact = await desktopApi.artifacts.createArtifact({
         workspaceId,
@@ -50,7 +52,8 @@ export function ResearchResultCard({
       });
       await desktopApi.artifacts.startViewingArtifact(artifact.id);
     } catch (err) {
-      console.error("Failed to launch artifact window:", err);
+      const msg = err instanceof Error ? err.message : t("unknownError");
+      setLaunchError(msg);
     } finally {
       setIsLaunchingArtifact(false);
     }
@@ -148,6 +151,12 @@ export function ResearchResultCard({
           </span>
           <ExternalLink className="h-3 w-3 opacity-60" />
         </button>
+      )}
+
+      {launchError && (
+        <p className="mt-1 text-center text-xs text-destructive">
+          {launchError}
+        </p>
       )}
     </div>
   );

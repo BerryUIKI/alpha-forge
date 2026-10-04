@@ -65,20 +65,36 @@ export function StrategyBuilder({ onBuild }: StrategyBuilderProps) {
       return leg.positionType === "long" ? sum + cost : sum - cost;
     }, 0);
 
-    // Simplified analysis - in production would use strategy_service
-    setAnalysis({
-      netCost,
-      breakEvenPoints: [100], // Placeholder
-      maxProfit: null,
-      maxLoss: Math.abs(netCost),
-    });
+    // Calculate real break-even estimate based on legs and strike prices
+    const breakEvens: number[] = [];
+    const basePrice = parseFloat(underlyingPrice) || 100;
 
-    onBuild?.(legs, {
+    if (legs.length === 1 && legs[0]) {
+      const leg = legs[0];
+      if (leg.optionType === "call") {
+        breakEvens.push(leg.positionType === "long" ? leg.strike + netCost : leg.strike + Math.abs(netCost));
+      } else {
+        breakEvens.push(leg.positionType === "long" ? leg.strike - netCost : leg.strike - Math.abs(netCost));
+      }
+    } else if (legs.length > 1) {
+      // For multi-leg strategies, calculate break-evens from strikes adjusted by net debit/credit
+      legs.forEach((leg) => {
+        const be = leg.optionType === "call" ? leg.strike + netCost : leg.strike - netCost;
+        if (be > 0 && !breakEvens.includes(be)) {
+          breakEvens.push(Number(be.toFixed(2)));
+        }
+      });
+    }
+
+    const calculatedResult: StrategyAnalysis = {
       netCost,
-      breakEvenPoints: [100],
-      maxProfit: null,
-      maxLoss: Math.abs(netCost),
-    });
+      breakEvenPoints: breakEvens.length > 0 ? breakEvens : [basePrice],
+      maxProfit: netCost < 0 ? Math.abs(netCost) : null,
+      maxLoss: netCost > 0 ? netCost : null,
+    };
+
+    setAnalysis(calculatedResult);
+    onBuild?.(legs, calculatedResult);
   };
 
   return (
