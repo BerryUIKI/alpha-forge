@@ -297,6 +297,8 @@ const messages = {
     secLoading: "正在获取最新 SEC 监管文件...",
     secLiveEdgar: "SEC EDGAR 实时源",
     secViewDocument: "查看 SEC 原文",
+    secNoFilings: "暂无相关 SEC 披露文件",
+    secGeneralTracking: "{ticker} 业务进展与资本分配跟踪",
     // Research
     researchTitle: "研究",
     researchDescription: "捕获项目、来源出处和文档注释。",
@@ -1195,6 +1197,8 @@ const messages = {
     secLoading: "Ingesting live SEC filings...",
     secLiveEdgar: "Live SEC EDGAR",
     secViewDocument: "Open SEC Filing",
+    secNoFilings: "No SEC filings found for this asset",
+    secGeneralTracking: "{ticker} Capital Allocation & Operations Tracking",
     // Research
     researchTitle: "Research",
     researchDescription: "Capture projects, source provenance, and document annotations.",

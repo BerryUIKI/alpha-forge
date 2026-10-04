@@ -39,5 +39,6 @@ export function useActiveWorkspace() {
  * Convenience selector for the active workspace id.
  */
 export function useActiveWorkspaceId(): string {
-  return useActiveWorkspace().workspaceId;
+  const ctx = useContext(ActiveWorkspaceContext);
+  return ctx?.workspaceId ?? "";
 }

@@ -46,7 +46,36 @@ vi.mock("@/lib/desktop-api", () => ({
         },
       ]),
     },
+    financial: {
+      listActiveAssets: vi.fn().mockResolvedValue([
+        {
+          id: "asset-nvda",
+          display_code: "NVDA",
+          name: "NVIDIA Corp",
+          kind: "investment",
+        },
+        {
+          id: "asset-aapl",
+          display_code: "AAPL",
+          name: "Apple Inc",
+          kind: "investment",
+        },
+      ]),
+    },
+    thesis: {
+      listTheses: vi.fn().mockResolvedValue([
+        {
+          id: "thesis-nvda",
+          title: "Blackwell Rack Ramp Ahead of Consensus",
+          portfolioAssetId: "asset-nvda",
+        },
+      ]),
+    },
   },
+}));
+
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
+  useActiveWorkspaceId: () => "ws-test-1",
 }));
 
 function renderWithQueryClient(ui: React.ReactElement) {
@@ -75,5 +104,9 @@ describe("Today Cockpit Components", () => {
     expect(screen.getByText("SEC Filing & Research Stream")).toBeInTheDocument();
     expect(screen.getByText("Live SEC EDGAR")).toBeInTheDocument();
     expect(await screen.findByText("NVDA")).toBeInTheDocument();
+    expect(await screen.findByText("AAPL")).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Blackwell Rack Ramp Ahead of Consensus/),
+    ).toBeInTheDocument();
   });
 });

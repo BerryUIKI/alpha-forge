@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, ArrowUpRight, ArrowDownRight, ExternalLink, Loader2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
 import { desktopApi } from "@/lib/desktop-api";
+import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
+import { useTheses } from "@/features/thesis/hooks/useTheses";
+import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import type { SecFiling } from "@/lib/desktop-api/research";
+import type { InvestmentThesis } from "@/lib/desktop-api/thesis";
+import type { Asset } from "@/types/financial";
 
 interface FilingDisplayItem {
   id: string;
@@ -42,13 +48,31 @@ const FALLBACK_FILINGS: FilingDisplayItem[] = [
   },
 ];
 
-function mapSecFilingToDisplay(filing: SecFiling, index: number): FilingDisplayItem {
-  // Deterministically correlate with thesis watchlist
-  const isNvda = filing.ticker === "NVDA";
-  const linkedThesis = isNvda
-    ? "Blackwell Rack Ramp Ahead of Consensus"
-    : `${filing.ticker} Capital Allocation & Market Share`;
+function mapSecFilingToDisplay(
+  filing: SecFiling,
+  index: number,
+  theses: InvestmentThesis[],
+  assetMap: Map<string, Asset>,
+  t: (k: any) => string,
+): FilingDisplayItem {
+  // Find if any thesis is linked to an asset matching this ticker
+  const matchingAsset = Array.from(assetMap.values()).find(
+    (a) =>
+      a.display_code?.toUpperCase() === filing.ticker.toUpperCase() ||
+      a.instrument_symbol?.toUpperCase() === filing.ticker.toUpperCase(),
+  );
 
+  const matchedThesis = matchingAsset
+    ? theses.find((th) => th.portfolioAssetId === matchingAsset.id)
+    : theses.find((th) =>
+        th.title.toUpperCase().includes(filing.ticker.toUpperCase()),
+      );
+
+  const linkedThesis = matchedThesis
+    ? matchedThesis.title
+    : formatMessage(t("secGeneralTracking"), { ticker: filing.ticker });
+
+  // Use natural alternating or sentiment heuristic if available
   const impactType: "positive" | "contra" = index % 2 === 0 ? "positive" : "contra";
   const confidenceDelta = index % 2 === 0 ? 4 : 2;
 
@@ -72,30 +96,75 @@ function mapSecFilingToDisplay(filing: SecFiling, index: number): FilingDisplayI
 
 export function SecFilingFeed() {
   const { t } = useLocale();
+  const workspaceId = useActiveWorkspaceId();
+  const { data: assets = [] } = useListActiveAssets();
+  const { data: theses = [] } = useTheses(workspaceId);
 
-  const { data: nvdaFilings, isLoading: loadingNvda } = useQuery({
-    queryKey: ["sec-filings", "NVDA"],
-    queryFn: () => desktopApi.research.fetchSecCompanyFilings("NVDA", 3),
+  // Collect unique equity tickers from active assets (fallback to NVDA)
+  const equityAssets = assets.filter((a) => a.kind === "investment" || a.kind === ("equity" as any));
+  const availableTickers = Array.from(
+    new Set(
+      equityAssets
+        .map((a) => a.display_code || a.instrument_symbol)
+        .filter((sym): sym is string => typeof sym === "string" && sym.trim().length > 0 && sym.length <= 5),
+    ),
+  );
+
+  const defaultTicker = availableTickers[0] || "NVDA";
+  const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
+
+  const activeTicker = availableTickers.includes(selectedTicker)
+    ? selectedTicker
+    : defaultTicker;
+
+  const { data: filings, isLoading: loadingFilings } = useQuery({
+    queryKey: ["sec-filings", activeTicker],
+    queryFn: () => desktopApi.research.fetchSecCompanyFilings(activeTicker, 3),
     staleTime: 1000 * 60 * 15,
     retry: 1,
   });
 
+  const assetMap = new Map<string, Asset>(assets.map((a) => [a.id, a]));
+
   const liveItems: FilingDisplayItem[] =
-    nvdaFilings && nvdaFilings.length > 0
-      ? nvdaFilings.map((f, i) => mapSecFilingToDisplay(f, i))
+    filings && filings.length > 0
+      ? filings.map((f, i) => mapSecFilingToDisplay(f, i, theses, assetMap, t))
       : FALLBACK_FILINGS;
 
   return (
     <div className="rounded-xl border border-white/10 bg-[#1c1e28] p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-cyan-400" />
-          <h3 className="text-sm font-semibold text-white tracking-tight">
-            {t("secFilingFeed")}
-          </h3>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-cyan-400" />
+            <h3 className="text-sm font-semibold text-white tracking-tight">
+              {t("secFilingFeed")}
+            </h3>
+          </div>
+
+          {/* Active Tickers Selector */}
+          {availableTickers.length > 1 && (
+            <div className="flex items-center gap-1 rounded-lg bg-black/40 p-0.5 border border-white/5">
+              {availableTickers.slice(0, 4).map((sym) => (
+                <button
+                  key={sym}
+                  type="button"
+                  onClick={() => setSelectedTicker(sym)}
+                  className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
+                    activeTicker === sym
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                      : "text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  {sym}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
         <div className="flex items-center gap-2">
-          {loadingNvda && (
+          {loadingFilings && (
             <span className="flex items-center gap-1 text-[10px] text-neutral-400">
               <Loader2 className="h-3 w-3 animate-spin text-cyan-400" />
               {t("secLoading")}
