@@ -18,6 +18,7 @@ import {
   OptionChainList,
   OptionContractTable,
   OptionStrategyPanel,
+  StrategyBuilder,
 } from "@/features/options";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -200,6 +201,11 @@ export function OptionsPage() {
           selectedContracts={selectedContracts}
           onStrategyCreated={() => setSelectedContracts([])}
         />
+      </section>
+
+      {/* Multi-leg Strategy Builder and Payoff Simulation */}
+      <section aria-labelledby="strategy-builder-heading" className="max-w-3xl">
+        <StrategyBuilder />
       </section>
     </div>
   );
