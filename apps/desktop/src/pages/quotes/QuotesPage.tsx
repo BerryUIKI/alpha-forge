@@ -15,6 +15,7 @@ import {
 import {
   AreaChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -178,6 +179,9 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
   const { t } = useLocale();
   const { data: quotes = [], isLoading, error } = useListQuotesForAsset(asset.id);
   const [activeTab, setActiveTab] = useState<"chart" | "table">("chart");
+  const [timeframe, setTimeframe] = useState<"1W" | "1M" | "3M" | "1Y" | "ALL">("1M");
+  const [chartMode, setChartMode] = useState<"area" | "ohlc">("area");
+  const [showSma20, setShowSma20] = useState<boolean>(true);
 
   if (isLoading) {
     return (
@@ -201,15 +205,42 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
     (a, b) => new Date(a.day).getTime() - new Date(b.day).getTime(),
   );
 
-  const chartData = chronologicalQuotes.map((q) => ({
-    day: q.day,
-    close: parseFloat(q.close),
-    open: q.open ? parseFloat(q.open) : null,
-    high: q.high ? parseFloat(q.high) : null,
-    low: q.low ? parseFloat(q.low) : null,
-    volume: q.volume ? parseInt(q.volume, 10) : 0,
-    currency: q.currency || asset.quote_ccy,
-  }));
+  // Filter based on selected timeframe
+  const filteredChronological = (() => {
+    if (timeframe === "ALL" || chronologicalQuotes.length === 0) return chronologicalQuotes;
+    const latestDate = new Date(chronologicalQuotes[chronologicalQuotes.length - 1]?.day || Date.now());
+    let daysToKeep = 30;
+    if (timeframe === "1W") daysToKeep = 7;
+    else if (timeframe === "1M") daysToKeep = 30;
+    else if (timeframe === "3M") daysToKeep = 90;
+    else if (timeframe === "1Y") daysToKeep = 365;
+
+    const cutoff = new Date(latestDate.getTime() - daysToKeep * 24 * 60 * 60 * 1000);
+    const sliced = chronologicalQuotes.filter((q) => new Date(q.day) >= cutoff);
+    return sliced.length > 0 ? sliced : chronologicalQuotes;
+  })();
+
+  // Calculate 20-day Simple Moving Average (SMA 20)
+  const chartData = filteredChronological.map((q, idx, arr) => {
+    const close = parseFloat(q.close);
+    const windowStart = Math.max(0, idx - 19);
+    const windowSlice = arr.slice(windowStart, idx + 1);
+    const sma20 =
+      windowSlice.length >= 3
+        ? windowSlice.reduce((sum, item) => sum + parseFloat(item.close), 0) / windowSlice.length
+        : null;
+
+    return {
+      day: q.day,
+      close,
+      open: q.open ? parseFloat(q.open) : null,
+      high: q.high ? parseFloat(q.high) : null,
+      low: q.low ? parseFloat(q.low) : null,
+      volume: q.volume ? parseInt(q.volume, 10) : 0,
+      sma20: sma20 !== null ? Number(sma20.toFixed(2)) : null,
+      currency: q.currency || asset.quote_ccy,
+    };
+  });
 
   const closePrices = chartData.map((d) => d.close).filter((p) => !isNaN(p));
   const periodHigh = closePrices.length ? Math.max(...closePrices) : null;
@@ -231,7 +262,7 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Quick Metrics */}
           {periodHigh !== null && periodLow !== null && (
             <div className="hidden items-center gap-2 sm:flex">
@@ -288,6 +319,67 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
       ) : activeTab === "chart" ? (
         /* Visual Chart View */
         <div className="space-y-4">
+          {/* Sub-toolbar: Timeframe Buttons + Chart Type + SMA Toggle */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
+            {/* Timeframes */}
+            <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-md text-xs">
+              {(["1W", "1M", "3M", "1Y", "ALL"] as const).map((tf) => (
+                <button
+                  key={tf}
+                  type="button"
+                  onClick={() => setTimeframe(tf)}
+                  className={cn(
+                    "px-2 py-0.5 rounded font-mono text-[11px] font-medium transition-colors",
+                    timeframe === tf
+                      ? "bg-background text-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {tf === "1W" ? t("timeframe1W") : tf === "1M" ? t("timeframe1M") : tf === "3M" ? t("timeframe3M") : tf === "1Y" ? t("timeframe1Y") : t("timeframeAll")}
+                </button>
+              ))}
+            </div>
+
+            {/* Display Options: Mode & Indicators */}
+            <div className="flex items-center gap-3 text-xs">
+              <label className="flex items-center gap-1.5 text-muted-foreground cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={showSma20}
+                  onChange={(e) => setShowSma20(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-0"
+                />
+                <span className="flex items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                  {t("indicatorSma20")}
+                </span>
+              </label>
+
+              <div className="flex items-center rounded bg-muted/60 p-0.5 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setChartMode("area")}
+                  className={cn(
+                    "px-2 py-0.5 rounded font-medium transition-colors",
+                    chartMode === "area" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t("chartModeArea")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChartMode("ohlc")}
+                  className={cn(
+                    "px-2 py-0.5 rounded font-medium transition-colors",
+                    chartMode === "ohlc" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t("chartModeOhlc")}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="h-72 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -315,21 +407,34 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
                     if (!active || !payload?.length) return null;
                     const item = payload[0]?.payload;
                     if (!item) return null;
+                    const isUp = item.open !== null ? item.close >= item.open : true;
                     return (
                       <div className="rounded-lg border border-border bg-card p-2.5 text-xs shadow-md">
                         <div className="font-semibold text-foreground">{String(label)}</div>
                         <div className="mt-1 flex items-center justify-between gap-4">
                           <span className="text-muted-foreground">{t("closePrice")}:</span>
-                          <span className="font-mono font-bold text-primary">
+                          <span className={cn("font-mono font-bold", isUp ? "text-emerald-500" : "text-rose-500")}>
                             {item.close.toFixed(2)} {item.currency}
                           </span>
                         </div>
+                        {item.open !== null && (
+                          <div className="mt-0.5 flex items-center justify-between gap-4 text-muted-foreground">
+                            <span>{t("openPrice")}:</span>
+                            <span className="font-mono">{item.open.toFixed(2)}</span>
+                          </div>
+                        )}
                         {item.high && item.low && (
                           <div className="mt-0.5 flex items-center justify-between gap-4 text-muted-foreground">
                             <span>{t("highLow")}:</span>
                             <span className="font-mono">
                               {item.high.toFixed(2)} / {item.low.toFixed(2)}
                             </span>
+                          </div>
+                        )}
+                        {item.sma20 !== null && (
+                          <div className="mt-0.5 flex items-center justify-between gap-4 text-amber-500">
+                            <span>SMA 20:</span>
+                            <span className="font-mono">{item.sma20.toFixed(2)}</span>
                           </div>
                         )}
                         {item.volume > 0 && (
@@ -345,12 +450,22 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
                 <Area
                   type="monotone"
                   dataKey="close"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  fillOpacity={1}
+                  stroke={chartMode === "ohlc" ? "hsl(var(--primary)/40)" : "hsl(var(--primary))"}
+                  strokeWidth={chartMode === "ohlc" ? 1 : 2}
+                  fillOpacity={chartMode === "ohlc" ? 0.05 : 1}
                   fill="url(#quotePriceGradient)"
                   activeDot={{ r: 5, strokeWidth: 1 }}
                 />
+                {showSma20 && (
+                  <Line
+                    type="monotone"
+                    dataKey="sma20"
+                    stroke="#f59e0b"
+                    strokeWidth={1.8}
+                    dot={false}
+                    name="SMA 20"
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>

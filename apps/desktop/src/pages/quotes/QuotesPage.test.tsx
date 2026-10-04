@@ -234,4 +234,70 @@ describe("QuotesPage", () => {
     expect(await screen.findByText(/High \/ Low|最高 \/ 最低/i)).toBeInTheDocument();
     expect(screen.getByText("50,000,000")).toBeInTheDocument();
   });
+
+  it("renders timeframe buttons and allows toggling timeframe and indicators", async () => {
+    const mockAssets = [
+      {
+        id: "asset-1",
+        kind: "investment" as const,
+        name: "Apple Inc.",
+        display_code: "AAPL",
+        notes: null,
+        metadata: null,
+        is_active: true,
+        quote_mode: "manual" as const,
+        quote_ccy: "USD",
+        instrument_type: "equity" as const,
+        instrument_symbol: "AAPL",
+        instrument_exchange_mic: "XNAS",
+        instrument_key: "AAPL.XNAS",
+        provider_config: null,
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    const mockQuotes = [
+      {
+        id: "quote-1",
+        asset_id: "asset-1",
+        day: "2026-10-03",
+        source: "mock",
+        open: "220.00",
+        high: "225.00",
+        low: "219.50",
+        close: "224.50",
+        adjclose: "224.50",
+        volume: "50000000",
+        currency: "USD",
+        notes: null,
+        created_at: "2026-10-03T20:00:00Z",
+        timestamp: "2026-10-03T20:00:00Z",
+      },
+    ];
+
+    financialMock.listActiveAssets.mockResolvedValue(mockAssets);
+    financialMock.listQuotesForAsset.mockResolvedValue(mockQuotes);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <QuotesPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("AAPL")).toBeInTheDocument();
+
+    // Timeframe buttons exist
+    const oneWeekBtn = await screen.findByRole("button", { name: /1W|1周/i });
+    expect(oneWeekBtn).toBeInTheDocument();
+    fireEvent.click(oneWeekBtn);
+
+    // SMA indicator checkbox exists and can be toggled
+    const smaCheckbox = screen.getByRole("checkbox");
+    expect(smaCheckbox).toBeChecked();
+    fireEvent.click(smaCheckbox);
+    expect(smaCheckbox).not.toBeChecked();
+  });
 });
