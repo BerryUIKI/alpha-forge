@@ -112,7 +112,8 @@ describe("QuotesPage", () => {
 
     expect(await screen.findByText("AAPL")).toBeInTheDocument();
     expect(await screen.findByText("Apple Inc.")).toBeInTheDocument();
-    expect(await screen.findByText("224.50")).toBeInTheDocument();
+    const prices = await screen.findAllByText("224.50");
+    expect(prices.length).toBeGreaterThan(0);
   });
 
   it("triggers refreshAllActiveQuotes when clicking refresh all button", async () => {
@@ -161,5 +162,76 @@ describe("QuotesPage", () => {
     await waitFor(() => {
       expect(financialMock.refreshAllActiveQuotes).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("allows switching between chart view and table view", async () => {
+    const mockAssets = [
+      {
+        id: "asset-1",
+        kind: "investment" as const,
+        name: "Apple Inc.",
+        display_code: "AAPL",
+        notes: null,
+        metadata: null,
+        is_active: true,
+        quote_mode: "manual" as const,
+        quote_ccy: "USD",
+        instrument_type: "equity" as const,
+        instrument_symbol: "AAPL",
+        instrument_exchange_mic: "XNAS",
+        instrument_key: "AAPL.XNAS",
+        provider_config: null,
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    const mockQuotes = [
+      {
+        id: "quote-1",
+        asset_id: "asset-1",
+        day: "2026-10-03",
+        source: "mock",
+        open: "220.00",
+        high: "225.00",
+        low: "219.50",
+        close: "224.50",
+        adjclose: "224.50",
+        volume: "50000000",
+        currency: "USD",
+        notes: null,
+        created_at: "2026-10-03T20:00:00Z",
+        timestamp: "2026-10-03T20:00:00Z",
+      },
+    ];
+
+    financialMock.listActiveAssets.mockResolvedValue(mockAssets);
+    financialMock.listQuotesForAsset.mockResolvedValue(mockQuotes);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <QuotesPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("AAPL")).toBeInTheDocument();
+
+    // Verify Chart view button exists after quote loading resolves
+    const chartTab = await screen.findByRole("button", {
+      name: /Chart View|走势图表/i,
+    });
+    expect(chartTab).toBeInTheDocument();
+
+    // Click Table view button
+    const tableTab = screen.getByRole("button", {
+      name: /Table View|明细表格/i,
+    });
+    fireEvent.click(tableTab);
+
+    // In table view, table headers and cells appear
+    expect(await screen.findByText(/High \/ Low|最高 \/ 最低/i)).toBeInTheDocument();
+    expect(screen.getByText("50,000,000")).toBeInTheDocument();
   });
 });
