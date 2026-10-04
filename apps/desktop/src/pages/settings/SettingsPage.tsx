@@ -39,8 +39,17 @@ export function SettingsPage() {
       await queryClient.invalidateQueries();
       activeWsContext?.setActiveWorkspace(result.workspaceId);
       setMessage(formatMessage(t("demoDataLoadedSuccess"), { name: result.workspaceName }));
-    } catch {
-      setMessage(t("demoDataLoadedError"));
+    } catch (err) {
+      console.error("Failed to seed demo data:", err);
+      const detail =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : err && typeof err === "object" && "message" in err
+              ? String((err as { message: unknown }).message)
+              : null;
+      setMessage(detail ? `${t("demoDataLoadedError")} (${detail})` : t("demoDataLoadedError"));
     } finally {
       setIsSeedingDemo(false);
     }

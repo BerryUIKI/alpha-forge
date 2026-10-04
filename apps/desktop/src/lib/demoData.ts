@@ -84,20 +84,17 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
   await desktopApi.thesis.addThesisEvidence(
     thesis1.id,
     "supporting",
-    "Hyperscalers (Microsoft, Meta, Google) raised 2026 CapEx guidance citing sustained generative AI inference token demand.",
-    "SEC 10-Q Q2 2026",
+    "Hyperscalers (Microsoft, Meta, Google) raised 2026 CapEx guidance citing sustained generative AI inference token demand. [Source: SEC 10-Q Q2 2026]",
   );
   await desktopApi.thesis.addThesisEvidence(
     thesis1.id,
     "supporting",
-    "TSMC CoWoS-L packaging capacity expanded by 120% YoY, clearing previous liquid-cooling manifold supply bottlenecks.",
-    "TSMC Supply Chain Channel Check",
+    "TSMC CoWoS-L packaging capacity expanded by 120% YoY, clearing previous liquid-cooling manifold supply bottlenecks. [Source: Supply Chain Channel Check]",
   );
   await desktopApi.thesis.addThesisEvidence(
     thesis1.id,
     "contradicting",
-    "Enterprise AI ROI gestation period stretching beyond 18 months, causing potential mid-tier cloud capex pause in Q4.",
-    "Gartner Enterprise AI Survey",
+    "Enterprise AI ROI gestation period stretching beyond 18 months, causing potential mid-tier cloud capex pause in Q4. [Source: Gartner Enterprise AI Survey]",
   );
 
   const thesis2 = await desktopApi.thesis.createThesis({
@@ -110,14 +107,12 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
   await desktopApi.thesis.addThesisEvidence(
     thesis2.id,
     "supporting",
-    "EXE:5000 High-NA scanners achieve sub-8nm resolution in Intel and TSMC pilot facilities.",
-    "ASML Technology Symposium",
+    "EXE:5000 High-NA scanners achieve sub-8nm resolution in Intel and TSMC pilot facilities. [Source: ASML Technology Symposium]",
   );
   await desktopApi.thesis.addThesisEvidence(
     thesis2.id,
     "contradicting",
-    "Extreme scanner cost ($380M/unit) prompts foundries to optimize Low-NA double patterning for initial 2nm layers.",
-    "Semiconductor Digest Report",
+    "Extreme scanner cost ($380M/unit) prompts foundries to optimize Low-NA double patterning for initial 2nm layers. [Source: Semiconductor Digest Report]",
   );
 
   // Link Knowledge Graph to Thesis 1
@@ -403,7 +398,7 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
       asset_id: asset.id,
       taxonomy_id: taxonomy.id,
       category_id: equityCat.id,
-      weight: 1.0,
+      weight: 10000,
       source: "manual",
     };
     await desktopApi.financial.assignAssetToTaxonomyCategory(assignment);
@@ -415,9 +410,9 @@ export async function seedDemoData(): Promise<SeedDemoResult> {
     scope_type: "account",
     scope_id: accountId,
     taxonomy_id: taxonomy.id,
-    trigger_type: "drift_band",
+    trigger_type: "threshold",
     drift_band_bps: 500, // 5% tolerance band
-    rebalance_goal: "full",
+    rebalance_goal: "nearest_band",
     min_trade_amount: "500.00",
     whole_shares_only: false,
     allow_sells: true,
