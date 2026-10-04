@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Asset Taxonomies & Allocation Targets (资产分类体系与配置目标体系 - Category 11):**
+  - Integrated Category 11 domain functionality with TanStack Query hooks in `useFinancialData`: `useListTaxonomies`, `useCreateTaxonomy`, `useListTaxonomyCategories`, `useCreateTaxonomyCategory`, `useListAllocationTargets`, `useCreateAllocationTarget`, `useListAllocationWeights`, `useAddAllocationWeight`.
+  - Created `TaxonomyAllocationPanel` mounted in `PortfolioDashboard` displaying multi-dimensional taxonomy hierarchies, model allocation targets, and rebalancing drift bands.
+  - Added target vs actual holding weight comparison with real-time drift compliance indicators (`withinDriftStatus` vs `outOfDriftStatus`) and rebalancing action guidance.
+  - Added 100% parity localized strings for all taxonomy and allocation target workflows across `zh-CN` and `en`.
 - **Market Quotes Dashboard (行情看板):**
   - Added standalone top-level route `/quotes` accessible via the Left Sidebar navigation under Tools.
   - Implemented real-time and historical asset quote tracking cards displaying latest price, day changes, and thesis linkage.
