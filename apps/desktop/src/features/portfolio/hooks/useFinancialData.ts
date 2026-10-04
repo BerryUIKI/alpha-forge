@@ -39,6 +39,7 @@ export const financialKeys = {
   // All accounts across every workspace (global portfolio dimension, ADR-0008).
   allAccounts: () => [...financialKeys.all, "accounts", "all"] as const,
   assets: () => [...financialKeys.all, "assets"] as const,
+  quotes: (assetId: string) => [...financialKeys.all, "quotes", assetId] as const,
   activities: (accountId: string) =>
     [...financialKeys.all, "activities", accountId] as const,
 };
@@ -261,6 +262,14 @@ export function useRefreshAllActiveQuotes() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: financialKeys.all });
     },
+  });
+}
+
+export function useListQuotesForAsset(assetId: string | undefined) {
+  return useQuery({
+    queryKey: financialKeys.quotes(assetId ?? ""),
+    queryFn: () => desktopApi.financial.listQuotesForAsset(assetId!),
+    enabled: Boolean(assetId),
   });
 }
 

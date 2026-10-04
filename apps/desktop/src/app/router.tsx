@@ -11,6 +11,7 @@ import { KnowledgePage } from "@/pages/knowledge/KnowledgePage";
 import { ArtifactsPage } from "@/pages/artifacts/ArtifactsPage";
 import { SettingsPage } from "@/pages/settings/SettingsPage";
 import { OptionsPage } from "@/pages/options/OptionsPage";
+import { QuotesPage } from "@/pages/quotes/QuotesPage";
 import { ArtifactWindowPage } from "@/pages/artifacts/ArtifactWindowPage";
 import type { ReactNode } from "react";
 
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: "knowledge", element: withFeatureBoundary("knowledge", <KnowledgePage />) },
       { path: "artifacts", element: withFeatureBoundary("artifacts", <ArtifactsPage />) },
       { path: "options", element: withFeatureBoundary("options", <OptionsPage />) },
+      { path: "quotes", element: withFeatureBoundary("quotes", <QuotesPage />) },
     ],
   },
 ]);

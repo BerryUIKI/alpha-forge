@@ -17,12 +17,16 @@ The portfolio sidebar entry is a **permanent nav item** in the redesigned
 the GUI redesign (PRs #105–#111); portfolio now always appears in the sidebar
 regardless of the selected functional view.
 
-### 1.2 Route
+### 1.2 Routes
 
 - **Route:** `/portfolio`
-- **Page component:** `src/pages/portfolio/PortfolioPage.tsx`
-- **Layout:** Full-page layout inside `MainLayout`
-- **Registration:** `src/app/router.tsx` — already registered
+  - **Page component:** `src/pages/portfolio/PortfolioPage.tsx`
+  - **Layout:** Full-page layout inside `MainLayout`
+  - **Registration:** `src/app/router.tsx`
+- **Route:** `/quotes` (Market Quotes Dashboard / 行情看板)
+  - **Page component:** `src/pages/quotes/QuotesPage.tsx`
+  - **Layout:** Standalone top-level tool inside `MainLayout`
+  - **Registration:** `src/app/router.tsx` and `LeftSidebar.tsx` (navKnowledgeTools)
 
 ### 1.3 Portfolio Dashboard
 

@@ -23,6 +23,7 @@ import {
   BookOpen,
   BookMarked,
   LineChart,
+  TrendingUp,
   Puzzle,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
@@ -69,6 +70,7 @@ export function LeftSidebar({
       items: [
         { id: "knowledge", label: t("navKnowledge"), icon: BookOpen, route: "/knowledge" },
         { id: "options", label: t("navOptions"), icon: LineChart, route: "/options" },
+        { id: "quotes", label: t("navQuotes"), icon: TrendingUp, route: "/quotes" },
         { id: "artifacts", label: t("navArtifacts"), icon: Puzzle, route: "/artifacts" },
       ],
     },
