@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Trash2, Link2, Unlink } from "lucide-react";
+import { Trash2, Link2, Unlink, Bot, Sparkles, CheckCircle2 } from "lucide-react";
 import { ErrorState, LoadingSpinner } from "@/components/common";
 import type { EvidenceDirection, InvestmentThesis } from "@/lib/desktop-api/thesis";
+import type { StructuredResponse } from "@/lib/desktop-api/goose";
 import {
   useActivateThesis, useAddThesisEvidence, useCloseThesis, useCompleteThesisValidation,
   useDeleteThesis, useDeleteThesisEvidence, useLinkThesisAsset, useStartThesisValidation,
   useThesisConfidenceHistory, useThesisEvidence, useUpdateThesisConfidence,
 } from "../hooks/useTheses";
 import { useKnowledgeEntities, useLinkThesisKnowledgeEntity, useThesisKnowledgeLinks } from "../hooks/useKnowledgeGraph";
+import { useCreateAgentTask, useRunAgentTask } from "@/features/agent/hooks/useAgentTasks";
 import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage } from "@/lib/i18n/locale";
 import { ShadowAnalysis } from "@/features/goose";
 
 interface ThesisDetailProps { thesis: InvestmentThesis; onDeleted: () => void; }
@@ -24,6 +27,9 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const [validated, setValidated] = useState(true);
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [error, setError] = useState("");
+  const [agentNotice, setAgentNotice] = useState<string | null>(null);
+  const createAgentTaskMutation = useCreateAgentTask();
+  const runAgentTaskMutation = useRunAgentTask();
   const evidenceQuery = useThesisEvidence(thesis.id);
   const confidenceHistory = useThesisConfidenceHistory(thesis.id);
   const knowledgeEntities = useKnowledgeEntities(thesis.workspaceId);
@@ -40,9 +46,54 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const remove = useDeleteThesis();
   const addEvidence = useAddThesisEvidence();
   const deleteEvidence = useDeleteThesisEvidence();
-  const pending = activate.isPending || startValidation.isPending || completeValidation.isPending || updateConfidence.isPending || close.isPending || remove.isPending || addEvidence.isPending || linkThesisAsset.isPending;
+  const pending = activate.isPending || startValidation.isPending || completeValidation.isPending || updateConfidence.isPending || close.isPending || remove.isPending || addEvidence.isPending || linkThesisAsset.isPending || createAgentTaskMutation.isPending || runAgentTaskMutation.isPending;
 
   const linkedAsset = activeAssetsQuery.data?.find((a) => a.id === thesis.portfolioAssetId);
+
+  async function handleLaunchAgentResearch() {
+    try {
+      setError("");
+      setAgentNotice(null);
+      const title = `Investigate thesis: ${thesis.title}`;
+      const description = `Thesis statement: "${thesis.thesis}". Please gather supporting evidence and potential falsification / contradicting signals.`;
+      const createdTask = await createAgentTaskMutation.mutateAsync({
+        workspaceId: thesis.workspaceId,
+        title,
+        description,
+      });
+      await runAgentTaskMutation.mutateAsync({
+        taskId: createdTask.id,
+        status: "created",
+      });
+      setAgentNotice(t("agentEvidenceTaskStarted"));
+      setTimeout(() => setAgentNotice(null), 4000);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Failed to launch research agent task");
+    }
+  }
+
+  async function handleHarvestShadowEvidence(result: StructuredResponse) {
+    if (!result.evidence || result.evidence.length === 0) return;
+    try {
+      setError("");
+      let count = 0;
+      for (const ev of result.evidence) {
+        const dir: EvidenceDirection =
+          ev.relation === "contradicts" ? "contradicting" : "supporting";
+        await addEvidence.mutateAsync({
+          thesisId: thesis.id,
+          direction: dir,
+          evidence: ev.excerpt,
+          sourceId: ev.source_id,
+        });
+        count++;
+      }
+      setAgentNotice(formatMessage(t("evidenceHarvestSuccess"), { count: String(count) }));
+      setTimeout(() => setAgentNotice(null), 4000);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Failed to harvest evidence");
+    }
+  }
 
   async function run(action: () => Promise<unknown>) { try { setError(""); await action(); } catch (cause) { setError(cause instanceof Error ? cause.message : t("thesisUpdateFailed")); } }
   async function saveEvidence(event: React.FormEvent) {
@@ -205,11 +256,45 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
         )}
       </div>
 
+      {/* AI Evidence Harvesting & Agent Loop */}
+      <div className="border-t border-border pt-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border bg-muted/30 p-3">
+          <div>
+            <h4 className="text-sm font-semibold flex items-center gap-1.5">
+              <Bot className="h-4 w-4 text-primary" />
+              {t("agentResearchLoopTitle")}
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t("agentResearchLoopDesc")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLaunchAgentResearch}
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {createAgentTaskMutation.isPending || runAgentTaskMutation.isPending
+              ? t("launchingAgentEvidenceTask")
+              : t("launchAgentEvidenceTask")}
+          </button>
+        </div>
+
+        {agentNotice && (
+          <div className="flex items-center gap-2 rounded-md bg-green-500/10 border border-green-500/20 px-3 py-2 text-xs text-green-600 dark:text-green-400">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span>{agentNotice}</span>
+          </div>
+        )}
+      </div>
+
       {/* AI Shadow Mode Analysis */}
       <div className="border-t border-border pt-4">
         <ShadowAnalysis
           workspaceId={thesis.workspaceId}
           thesisId={thesis.id}
+          onComplete={handleHarvestShadowEvidence}
         />
       </div>
     </section>

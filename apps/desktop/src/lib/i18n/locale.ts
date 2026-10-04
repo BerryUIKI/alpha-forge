@@ -719,6 +719,14 @@ const messages = {
     selectAssetToLink: "选择投资标的...",
     unlinkAsset: "取消关联",
     assetLinkedBadge: "关联标的",
+    // Agent Research & Evidence Loop
+    agentResearchLoopTitle: "AI 证据搜集与论点证伪",
+    agentResearchLoopDesc: "派遣 Agent 针对当前论点搜集多方支撑与反驳证据，或一键导入 Goose 影子分析提取的事实主张。",
+    launchAgentEvidenceTask: "启动 Agent 搜集证据",
+    launchingAgentEvidenceTask: "正在启动证据搜集任务…",
+    agentEvidenceTaskStarted: "证据搜集任务已创建并启动",
+    importShadowEvidence: "一键采纳影子分析证据",
+    evidenceHarvestSuccess: "已将 {count} 条证据沉淀至论点库",
     // Goose Shadow Analysis
     shadowAnalysis: "影子分析",
     shadowAnalysisDescription: "使用 Goose 对工作区研究数据进行只读分析。结果将显示主张、证据和风险，不会做出任何更改。",
@@ -1670,6 +1678,14 @@ const messages = {
     selectAssetToLink: "Select portfolio asset...",
     unlinkAsset: "Unlink Asset",
     assetLinkedBadge: "Linked Asset",
+    // Agent Research & Evidence Loop
+    agentResearchLoopTitle: "AI Evidence Harvesting & Thesis Falsification",
+    agentResearchLoopDesc: "Dispatch an autonomous Agent to investigate the thesis with supporting and counter-evidence, or harvest verified facts from Goose shadow analysis.",
+    launchAgentEvidenceTask: "Launch Agent Evidence Hunt",
+    launchingAgentEvidenceTask: "Dispatching evidence collection task…",
+    agentEvidenceTaskStarted: "Evidence collection agent task queued and started",
+    importShadowEvidence: "Harvest Shadow Analysis Evidence",
+    evidenceHarvestSuccess: "Successfully harvested {count} evidence records into thesis",
     // Goose Shadow Analysis
     shadowAnalysis: "Shadow Analysis",
     shadowAnalysisDescription: "Run a read-only analysis of your workspace research data using Goose. Results will show claims, evidence, and risks without making any changes.",

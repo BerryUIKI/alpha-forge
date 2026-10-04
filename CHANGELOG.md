@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Thesis & Agent Deep Research Loop (投资研究与 Agent 深度联动闭环 - Direction 3):**
+  - Integrated direct Agent investigation dispatch from `ThesisDetail` (`handleLaunchAgentResearch`), enabling 1-click background evidence harvesting and thesis falsification search.
+  - Implemented automated evidence harvesting from Goose Shadow Analysis (`onComplete` -> `handleHarvestShadowEvidence`), persisting structured supporting and contradicting facts directly into `thesis_evidence`.
+  - Added user feedback notices and confirmation banners for agent research loop lifecycle events.
+  - Added 100% parity localized keys (`agentResearchLoop*`, `launchAgentEvidenceTask`, `evidenceHarvestSuccess`) across `zh-CN` and `en`.
 - **Asset Taxonomies & Allocation Targets (资产分类体系与配置目标体系 - Category 11):**
   - Integrated Category 11 domain functionality with TanStack Query hooks in `useFinancialData`: `useListTaxonomies`, `useCreateTaxonomy`, `useListTaxonomyCategories`, `useCreateTaxonomyCategory`, `useListAllocationTargets`, `useCreateAllocationTarget`, `useListAllocationWeights`, `useAddAllocationWeight`.
   - Created `TaxonomyAllocationPanel` mounted in `PortfolioDashboard` displaying multi-dimensional taxonomy hierarchies, model allocation targets, and rebalancing drift bands.
