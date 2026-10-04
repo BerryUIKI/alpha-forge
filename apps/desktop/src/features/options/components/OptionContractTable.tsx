@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
+import { ConfirmDialog } from "@/components/common";
 import { useOptionContracts, useDeleteOptionContract } from "@/hooks/useOptions";
 import { useLocale } from "@/lib/i18n/useLocale";
 import type { OptionContract, OptionType } from "@/types/option";
@@ -41,6 +42,7 @@ export function OptionContractTable({
   const [sortField, setSortField] = useState<SortField>("strike");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [filter, setFilter] = useState<OptionType | "all">("all");
+  const [pendingDeleteContractId, setPendingDeleteContractId] = useState<string | null>(null);
 
   const { data: contracts, isLoading, error, refetch } = useOptionContracts(chainId);
   const deleteMutation = useDeleteOptionContract(locale);
@@ -81,10 +83,15 @@ export function OptionContractTable({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t("confirmDeleteContract"))) {
-      deleteMutation.mutate(id);
-    }
+  const handleDelete = (id: string) => {
+    setPendingDeleteContractId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteContractId) return;
+    deleteMutation.mutate(pendingDeleteContractId, {
+      onSettled: () => setPendingDeleteContractId(null),
+    });
   };
 
   const formatPercent = (val: number | null | undefined) =>
@@ -227,9 +234,11 @@ export function OptionContractTable({
                 {showDelete && (
                   <td className="px-3 py-2">
                     <button
+                      type="button"
                       onClick={() => handleDelete(contract.id)}
                       disabled={deleteMutation.isPending}
                       className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label={t("confirmDeleteContract")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -246,6 +255,15 @@ export function OptionContractTable({
           {t("failedToDeleteOptionContract")}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingDeleteContractId)}
+        title={t("confirmDeleteContract")}
+        message={t("confirmDeleteContract")}
+        isConfirming={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDeleteContractId(null)}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
 import { EmptyState } from "@/components/common/EmptyState";
+import { ConfirmDialog } from "@/components/common";
 import {
   useOptionStrategies,
   useCreateOptionStrategy,
@@ -49,15 +50,21 @@ export function OptionStrategyPanel({
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [formContracts, setFormContracts] = useState<OptionContract[] | null>(null);
+  const [pendingDeleteStrategyId, setPendingDeleteStrategyId] = useState<string | null>(null);
 
   const { data: strategies, isLoading, error, refetch } = useOptionStrategies(workspaceId);
   const createMutation = useCreateOptionStrategy(locale);
   const deleteMutation = useDeleteOptionStrategy(locale);
 
   const handleDelete = (id: string) => {
-    if (window.confirm(t("confirmDeleteOptionStrategy"))) {
-      deleteMutation.mutate(id);
-    }
+    setPendingDeleteStrategyId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteStrategyId) return;
+    deleteMutation.mutate(pendingDeleteStrategyId, {
+      onSettled: () => setPendingDeleteStrategyId(null),
+    });
   };
 
   if (isLoading) {
@@ -263,6 +270,15 @@ export function OptionStrategyPanel({
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingDeleteStrategyId)}
+        title={t("deleteOptionStrategy")}
+        message={t("confirmDeleteOptionStrategy")}
+        isConfirming={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDeleteStrategyId(null)}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FileText, Trash2 } from "lucide-react";
-import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
+import { ConfirmDialog, EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspaces";
 import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useArtifacts, useDeleteArtifact } from "@/features/artifacts";
@@ -17,6 +17,7 @@ export function ArtifactsPage() {
   const workspaces = useWorkspaces();
   const workspaceId = useActiveWorkspaceId();
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
+  const [pendingDeleteArtifactId, setPendingDeleteArtifactId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const artifacts = useArtifacts(workspaceId);
   const deleteArtifact = useDeleteArtifact();
@@ -26,19 +27,20 @@ export function ArtifactsPage() {
     setSelectedArtifactId(null);
   }, [workspaceId]);
 
-  // Handle artifact deletion
-  const handleDeleteArtifact = async (id: string) => {
-    if (!window.confirm(t("confirmDeleteArtifact"))) {
-      return;
-    }
+  // Handle artifact deletion confirmation
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteArtifactId) return;
+    const id = pendingDeleteArtifactId;
     setDeleteError(null);
     try {
       await deleteArtifact.mutateAsync(id);
       if (selectedArtifactId === id) {
         setSelectedArtifactId(null);
       }
+      setPendingDeleteArtifactId(null);
     } catch {
       setDeleteError(t("failedToDeleteArtifact"));
+      setPendingDeleteArtifactId(null);
     }
   };
 
@@ -125,7 +127,7 @@ export function ArtifactsPage() {
                   artifact={artifact}
                   isSelected={selectedArtifactId === artifact.id}
                   onSelect={() => setSelectedArtifactId(artifact.id)}
-                  _onDelete={() => handleDeleteArtifact(artifact.id)}
+                  _onDelete={() => setPendingDeleteArtifactId(artifact.id)}
                   t={t}
                 />
               ))}
@@ -147,6 +149,15 @@ export function ArtifactsPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(pendingDeleteArtifactId)}
+        title={t("deleteArtifact")}
+        message={t("confirmDeleteArtifact")}
+        isConfirming={deleteArtifact.isPending}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDeleteArtifactId(null)}
+      />
     </div>
   );
 }

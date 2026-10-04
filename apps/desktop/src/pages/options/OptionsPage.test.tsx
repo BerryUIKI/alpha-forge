@@ -262,12 +262,13 @@ describe("Option chain contract view", () => {
     optionsMock.deleteOptionStrategy.mockImplementation(async () => {
       strategies = [];
     });
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-
     renderWithQuery(<OptionsPage />);
     fireEvent.click(
       await screen.findByRole("button", { name: "Delete option strategy: Call spread" }),
     );
+
+    const confirmButton = await screen.findByRole("button", { name: "Delete" });
+    fireEvent.click(confirmButton);
 
     await waitFor(() =>
       expect(optionsMock.deleteOptionStrategy.mock.calls[0]?.[0]).toBe(strategyId),
