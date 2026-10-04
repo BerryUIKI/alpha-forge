@@ -26,6 +26,11 @@ regardless of the selected functional view.
 - **Route:** `/quotes` (Market Quotes Dashboard / 行情看板)
   - **Page component:** `src/pages/quotes/QuotesPage.tsx`
   - **Layout:** Standalone top-level tool inside `MainLayout`
+  - **Features:**
+    - Active assets quote cards with spread tracking and thesis linkage
+    - Visual price trend chart (`AreaChart` with gradient fill, OHLC/volume tooltip, period metrics)
+    - Tabular historical quote breakdown with toggle
+    - Single asset and global batch quote refresh
   - **Registration:** `src/app/router.tsx` and `LeftSidebar.tsx` (navKnowledgeTools)
 
 ### 1.3 Portfolio Dashboard

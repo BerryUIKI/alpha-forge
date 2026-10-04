@@ -7,10 +7,20 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  Database,
   BarChart2,
   AlertCircle,
+  TrendingUp,
+  Table2,
 } from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import {
   useListActiveAssets,
   useListQuotesForAsset,
@@ -162,11 +172,12 @@ function AssetQuoteCard({
 }
 
 /**
- * Historical Quotes Table for the selected asset.
+ * Historical Quotes Viewer with Visual Trend Chart (AreaChart) & Tabular Breakdown.
  */
 function AssetQuoteHistory({ asset }: { asset: Asset }) {
   const { t } = useLocale();
   const { data: quotes = [], isLoading, error } = useListQuotesForAsset(asset.id);
+  const [activeTab, setActiveTab] = useState<"chart" | "table">("chart");
 
   if (isLoading) {
     return (
@@ -185,9 +196,32 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
     );
   }
 
+  // Quotes are typically returned latest first. Sort chronologically for charts.
+  const chronologicalQuotes = [...quotes].sort(
+    (a, b) => new Date(a.day).getTime() - new Date(b.day).getTime(),
+  );
+
+  const chartData = chronologicalQuotes.map((q) => ({
+    day: q.day,
+    close: parseFloat(q.close),
+    open: q.open ? parseFloat(q.open) : null,
+    high: q.high ? parseFloat(q.high) : null,
+    low: q.low ? parseFloat(q.low) : null,
+    volume: q.volume ? parseInt(q.volume, 10) : 0,
+    currency: q.currency || asset.quote_ccy,
+  }));
+
+  const closePrices = chartData.map((d) => d.close).filter((p) => !isNaN(p));
+  const periodHigh = closePrices.length ? Math.max(...closePrices) : null;
+  const periodLow = closePrices.length ? Math.min(...closePrices) : null;
+  const periodAvg = closePrices.length
+    ? closePrices.reduce((acc, cur) => acc + cur, 0) / closePrices.length
+    : null;
+
   return (
     <div className="rounded-xl border border-border/60 bg-card/60 p-5">
-      <div className="mb-4 flex items-center justify-between">
+      {/* Header with Title and Mode Toggle */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-semibold">
             {t("quoteHistory")}: {asset.display_code || asset.instrument_symbol}
@@ -196,11 +230,54 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
             {asset.name} · {asset.quote_ccy}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Database className="h-3.5 w-3.5" />
-          <span>
-            {quotes.length} {t("quoteHistory")}
-          </span>
+
+        <div className="flex items-center gap-3">
+          {/* Quick Metrics */}
+          {periodHigh !== null && periodLow !== null && (
+            <div className="hidden items-center gap-2 sm:flex">
+              <span className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                {t("highestInPeriod")}: <strong className="font-mono text-foreground">{periodHigh.toFixed(2)}</strong>
+              </span>
+              <span className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                {t("lowestInPeriod")}: <strong className="font-mono text-foreground">{periodLow.toFixed(2)}</strong>
+              </span>
+              {periodAvg !== null && (
+                <span className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                  {t("averageClose")}: <strong className="font-mono text-foreground">{periodAvg.toFixed(2)}</strong>
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Chart / Table View Toggle */}
+          <div className="flex items-center rounded-lg bg-muted p-0.5">
+            <button
+              type="button"
+              onClick={() => setActiveTab("chart")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                activeTab === "chart"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <TrendingUp className="h-3.5 w-3.5" />
+              <span>{t("quoteChartView")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("table")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                activeTab === "table"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Table2 className="h-3.5 w-3.5" />
+              <span>{t("quoteTableView")}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -208,7 +285,78 @@ function AssetQuoteHistory({ asset }: { asset: Asset }) {
         <p className="py-8 text-center text-xs text-muted-foreground">
           {t("noQuotesYet")}
         </p>
+      ) : activeTab === "chart" ? (
+        /* Visual Chart View */
+        <div className="space-y-4">
+          <div className="h-72 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="quotePriceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tickFormatter={(val: string) => (val.length > 5 ? val.slice(5) : val)}
+                />
+                <YAxis
+                  domain={["auto", "auto"]}
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                  tickFormatter={(val: number) => val.toFixed(1)}
+                />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const item = payload[0]?.payload;
+                    if (!item) return null;
+                    return (
+                      <div className="rounded-lg border border-border bg-card p-2.5 text-xs shadow-md">
+                        <div className="font-semibold text-foreground">{String(label)}</div>
+                        <div className="mt-1 flex items-center justify-between gap-4">
+                          <span className="text-muted-foreground">{t("closePrice")}:</span>
+                          <span className="font-mono font-bold text-primary">
+                            {item.close.toFixed(2)} {item.currency}
+                          </span>
+                        </div>
+                        {item.high && item.low && (
+                          <div className="mt-0.5 flex items-center justify-between gap-4 text-muted-foreground">
+                            <span>{t("highLow")}:</span>
+                            <span className="font-mono">
+                              {item.high.toFixed(2)} / {item.low.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {item.volume > 0 && (
+                          <div className="mt-0.5 flex items-center justify-between gap-4 text-muted-foreground">
+                            <span>{t("quoteVolume")}:</span>
+                            <span className="font-mono">{item.volume.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="close"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#quotePriceGradient)"
+                  activeDot={{ r: 5, strokeWidth: 1 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       ) : (
+        /* Tabular View */
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
