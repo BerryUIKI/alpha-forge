@@ -14,6 +14,11 @@ import type {
   CreateAssetInput,
   CreateActivityInput,
   CreateLotInput,
+  CreateTaxonomyInput,
+  CreateTaxonomyCategoryInput,
+  AssetTaxonomyAssignmentInput,
+  CreateAllocationTargetInput,
+  AllocationTargetWeightInput,
 } from "@/types/financial";
 
 // ── Query Key Factory ──────────────────────────────────────────────────────
@@ -42,6 +47,29 @@ export const financialKeys = {
   quotes: (assetId: string) => [...financialKeys.all, "quotes", assetId] as const,
   activities: (accountId: string) =>
     [...financialKeys.all, "activities", accountId] as const,
+  taxonomies: () => [...financialKeys.all, "taxonomies"] as const,
+  taxonomyCategories: (taxonomyId: string) =>
+    [...financialKeys.all, "taxonomyCategories", taxonomyId] as const,
+  assetAssignments: (assetId: string) =>
+    [...financialKeys.all, "assetAssignments", assetId] as const,
+  taxonomyAssignments: (taxonomyId: string) =>
+    [...financialKeys.all, "taxonomyAssignments", taxonomyId] as const,
+  allocationTargets: (includeArchived: boolean) =>
+    [...financialKeys.all, "allocationTargets", includeArchived] as const,
+  allocationWeights: (targetId: string) =>
+    [...financialKeys.all, "allocationWeights", targetId] as const,
+  allocationConstraints: (
+    scopeType: string,
+    scopeId: string | null,
+    asOfDate: string,
+  ) =>
+    [
+      ...financialKeys.all,
+      "allocationConstraints",
+      scopeType,
+      scopeId,
+      asOfDate,
+    ] as const,
 };
 
 // ── Holdings Hooks ─────────────────────────────────────────────────────────
@@ -290,5 +318,164 @@ export function useImportActivitiesCsv() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: financialKeys.all });
     },
+  });
+}
+
+// ── Taxonomy Hooks (Category 11) ───────────────────────────────────────────
+
+export function useListTaxonomies() {
+  return useQuery({
+    queryKey: financialKeys.taxonomies(),
+    queryFn: () => desktopApi.financial.listTaxonomies(),
+  });
+}
+
+export function useCreateTaxonomy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateTaxonomyInput) =>
+      desktopApi.financial.createTaxonomy(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.taxonomies() });
+    },
+  });
+}
+
+export function useListTaxonomyCategories(taxonomyId: string | undefined) {
+  return useQuery({
+    queryKey: financialKeys.taxonomyCategories(taxonomyId ?? ""),
+    queryFn: () => desktopApi.financial.listTaxonomyCategories(taxonomyId!),
+    enabled: Boolean(taxonomyId),
+  });
+}
+
+export function useCreateTaxonomyCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateTaxonomyCategoryInput) =>
+      desktopApi.financial.createTaxonomyCategory(input),
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({
+        queryKey: financialKeys.taxonomyCategories(input.taxonomy_id),
+      });
+    },
+  });
+}
+
+export function useListAssignmentsForAsset(assetId: string | undefined) {
+  return useQuery({
+    queryKey: financialKeys.assetAssignments(assetId ?? ""),
+    queryFn: () => desktopApi.financial.listAssignmentsForAsset(assetId!),
+    enabled: Boolean(assetId),
+  });
+}
+
+export function useListAssignmentsByTaxonomy(taxonomyId: string | undefined) {
+  return useQuery({
+    queryKey: financialKeys.taxonomyAssignments(taxonomyId ?? ""),
+    queryFn: () => desktopApi.financial.listAssignmentsByTaxonomy(taxonomyId!),
+    enabled: Boolean(taxonomyId),
+  });
+}
+
+export function useAssignAssetToTaxonomyCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AssetTaxonomyAssignmentInput) =>
+      desktopApi.financial.assignAssetToTaxonomyCategory(input),
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({
+        queryKey: financialKeys.assetAssignments(input.asset_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: financialKeys.taxonomyAssignments(input.taxonomy_id),
+      });
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useRemoveTaxonomyAssignment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      desktopApi.financial.removeTaxonomyAssignment(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+// ── Allocation Target Hooks (Category 11) ──────────────────────────────────
+
+export function useListAllocationTargets(includeArchived = false) {
+  return useQuery({
+    queryKey: financialKeys.allocationTargets(includeArchived),
+    queryFn: () => desktopApi.financial.listAllocationTargets(includeArchived),
+  });
+}
+
+export function useCreateAllocationTarget() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateAllocationTargetInput) =>
+      desktopApi.financial.createAllocationTarget(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useArchiveAllocationTarget() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      desktopApi.financial.archiveAllocationTarget(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useListAllocationWeights(targetId: string | undefined) {
+  return useQuery({
+    queryKey: financialKeys.allocationWeights(targetId ?? ""),
+    queryFn: () => desktopApi.financial.listAllocationWeights(targetId!),
+    enabled: Boolean(targetId),
+  });
+}
+
+export function useAddAllocationWeight() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AllocationTargetWeightInput) =>
+      desktopApi.financial.addAllocationWeight(input),
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({
+        queryKey: financialKeys.allocationWeights(input.target_id),
+      });
+      queryClient.invalidateQueries({ queryKey: financialKeys.all });
+    },
+  });
+}
+
+export function useCheckAllocationConstraints(
+  scopeType: string | undefined,
+  scopeId: string | null,
+  asOfDate: string,
+) {
+  return useQuery({
+    queryKey: financialKeys.allocationConstraints(
+      scopeType ?? "",
+      scopeId,
+      asOfDate,
+    ),
+    queryFn: () =>
+      desktopApi.financial.checkAllocationConstraints(
+        scopeType!,
+        scopeId,
+        asOfDate,
+      ),
+    enabled: Boolean(scopeType),
   });
 }

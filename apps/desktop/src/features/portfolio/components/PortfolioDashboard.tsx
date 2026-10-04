@@ -28,6 +28,7 @@ import { CreateAccountDialog } from "./CreateAccountDialog";
 import { AddAssetDialog } from "./AddAssetDialog";
 import { AddActivityDialog } from "./AddActivityDialog";
 import { ImportActivitiesDialog } from "./ImportActivitiesDialog";
+import { TaxonomyAllocationPanel } from "./TaxonomyAllocationPanel";
 import { useListAllFinancialAccounts } from "../hooks/useFinancialData";
 import { Plus, ArrowUpRight, PencilLine, Upload } from "lucide-react";
 
@@ -98,6 +99,13 @@ export function PortfolioDashboard() {
           />
         </div>
       </div>
+
+      {/* Category 11: Multi-dimensional Taxonomies & Allocation Targets */}
+      <TaxonomyAllocationPanel
+        scopeType="account"
+        scopeId={selectedAccountId || null}
+        asOfDate={asOfDate}
+      />
 
       {/* Valuation chart */}
       <div className="rounded-lg border bg-card p-4">

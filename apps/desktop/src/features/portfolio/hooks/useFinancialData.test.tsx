@@ -25,6 +25,10 @@ import {
   useListQuotesForAsset,
   useRefreshAssetQuote,
   useRefreshAllActiveQuotes,
+  useListTaxonomies,
+  useCreateTaxonomy,
+  useListTaxonomyCategories,
+  useListAllocationTargets,
 } from "./useFinancialData";
 
 vi.mock("@/lib/desktop-api", () => ({
@@ -49,6 +53,10 @@ vi.mock("@/lib/desktop-api", () => ({
       listQuotesForAsset: vi.fn(),
       refreshAssetQuote: vi.fn(),
       refreshAllActiveQuotes: vi.fn(),
+      listTaxonomies: vi.fn(),
+      createTaxonomy: vi.fn(),
+      listTaxonomyCategories: vi.fn(),
+      listAllocationTargets: vi.fn(),
     },
   },
 }));
@@ -337,6 +345,49 @@ describe("Quote hooks", () => {
   });
 });
 
+describe("Taxonomy and Allocation Target hooks (Category 11)", () => {
+  it("useListTaxonomies calls listTaxonomies", async () => {
+    vi.mocked(desktopApi.financial.listTaxonomies).mockResolvedValue([
+      { id: "tx-1", name: "Asset Class" } as any,
+    ]);
+    const { result } = renderHook(() => useListTaxonomies(), { wrapper });
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(desktopApi.financial.listTaxonomies).toHaveBeenCalledTimes(1);
+  });
+
+  it("useCreateTaxonomy calls createTaxonomy", async () => {
+    vi.mocked(desktopApi.financial.createTaxonomy).mockResolvedValue({ id: "tx-2" } as any);
+    const { result } = renderHook(() => useCreateTaxonomy(), { wrapper });
+    result.current.mutate({
+      name: "Geography",
+      color: "#ff0000",
+      description: null,
+      is_system: false,
+      is_single_select: true,
+      sort_order: 10,
+    });
+    await waitFor(() => expect(desktopApi.financial.createTaxonomy).toHaveBeenCalledTimes(1));
+  });
+
+  it("useListTaxonomyCategories calls listTaxonomyCategories", async () => {
+    vi.mocked(desktopApi.financial.listTaxonomyCategories).mockResolvedValue([
+      { id: "cat-1", name: "Equities" } as any,
+    ]);
+    const { result } = renderHook(() => useListTaxonomyCategories("tx-1"), { wrapper });
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(desktopApi.financial.listTaxonomyCategories).toHaveBeenCalledWith("tx-1");
+  });
+
+  it("useListAllocationTargets calls listAllocationTargets", async () => {
+    vi.mocked(desktopApi.financial.listAllocationTargets).mockResolvedValue([
+      { id: "tg-1", name: "Core 60/40" } as any,
+    ]);
+    const { result } = renderHook(() => useListAllocationTargets(), { wrapper });
+    await waitFor(() => expect(result.current.data).toHaveLength(1));
+    expect(desktopApi.financial.listAllocationTargets).toHaveBeenCalledWith(false);
+  });
+});
+
 describe("financialKeys", () => {
   it("builds hierarchical query keys", () => {
     expect(financialKeys.all).toEqual(["financial"]);
@@ -346,6 +397,10 @@ describe("financialKeys", () => {
     expect(financialKeys.assets()).toEqual(["financial", "assets"]);
     expect(financialKeys.quotes("asset-1")).toEqual(["financial", "quotes", "asset-1"]);
     expect(financialKeys.activities("acct")).toEqual(["financial", "activities", "acct"]);
+    expect(financialKeys.taxonomies()).toEqual(["financial", "taxonomies"]);
+    expect(financialKeys.taxonomyCategories("tx-1")).toEqual(["financial", "taxonomyCategories", "tx-1"]);
+    expect(financialKeys.allocationTargets(false)).toEqual(["financial", "allocationTargets", false]);
+    expect(financialKeys.allocationWeights("tg-1")).toEqual(["financial", "allocationWeights", "tg-1"]);
     expect(financialKeys.performance("a", "2026-08-01", "2026-08-18")).toEqual([
       "financial",
       "performance",
