@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added historical quote inspection table per active asset with full date, OHLC, volume, and data source breakdown.
   - Added visual price trend area chart (`AreaChart` with gradient fill, OHLC/volume tooltip, and high/low/average period metrics) with seamless Chart/Table view toggle.
   - Added localized navigation and content strings with 100% parity across `zh-CN` and `en`.
+- **Investment & Decision Journal Timeline (决策与投资日志):**
+  - Differentiated `/journal` into a dedicated chronological decision timeline capturing thesis lifecycle changes, research project activity, and background agent tasks.
+  - Added category filtering (`all`, `theses`, `research`, `tasks`), confidence progression markers, and validation outcome badges.
 
 ### Fixed
 - **GUI Placeholder & Parity Hardening:**
