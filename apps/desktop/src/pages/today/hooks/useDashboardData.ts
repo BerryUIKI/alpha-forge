@@ -53,27 +53,48 @@ export function useDashboardSummary(workspaceId: string) {
       allHoldings.sort(
         (a, b) => parseFloat(b.market_value_base) - parseFloat(a.market_value_base),
       );
-      const holdings: Holding[] = allHoldings.slice(0, 5).map((holding, idx) => ({
-        id: `holding-${idx}`,
-        ticker: holding.asset_symbol ?? "—",
-        name: holding.asset_name ?? holding.asset_symbol ?? "—",
-        sector: "—",
-        allocation: `${parseFloat(holding.weight_pct).toFixed(1)}%`,
-        value: `$${Number(holding.market_value_base).toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
-        change: "—",
-        changePositive: true,
-      }));
+      const holdings: Holding[] = allHoldings.slice(0, 5).map((holding, idx) => {
+        const uGain = parseFloat(holding.unrealized_gain_base || "0");
+        const cost = parseFloat(holding.cost_basis_base || "0");
+        const pct = cost > 0 ? (uGain / cost) * 100 : 0;
+        return {
+          id: `holding-${idx}`,
+          ticker: holding.asset_symbol ?? "—",
+          name: holding.asset_name ?? holding.asset_symbol ?? "—",
+          sector: "—",
+          allocation: `${parseFloat(holding.weight_pct || "0").toFixed(1)}%`,
+          value: `$${Number(holding.market_value_base || "0").toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
+          change: cost > 0 ? `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%` : "—",
+          changePositive: uGain >= 0,
+        };
+      });
 
       // Total portfolio value across all accounts (base currency)
       const totalValue = summaries.reduce(
-        (sum, summary) => sum + parseFloat(summary.total_market_value_base),
+        (sum, summary) => sum + parseFloat(summary.total_market_value_base || "0"),
         0,
       );
+
+      const totalUnrealizedGain = summaries.reduce(
+        (sum, summary) => sum + parseFloat(summary.total_unrealized_gain_base || "0"),
+        0,
+      );
+
+      const totalCostBasis = summaries.reduce(
+        (sum, summary) => sum + parseFloat(summary.total_cost_basis_base || "0"),
+        0,
+      );
+
+      const unrealizedGainPct =
+        totalCostBasis > 0 ? (totalUnrealizedGain / totalCostBasis) * 100 : 0;
 
       return {
         portfolioValue: totalValue,
         activeTheses,
         holdings,
+        unrealizedGain: totalUnrealizedGain,
+        unrealizedGainPct,
+        totalCostBasis,
       };
     },
     enabled: !!workspaceId,

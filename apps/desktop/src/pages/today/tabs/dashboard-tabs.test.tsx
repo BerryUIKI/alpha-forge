@@ -97,6 +97,8 @@ describe("OverviewTab", () => {
       data: {
         portfolioValue: 50000,
         activeTheses: 3,
+        unrealizedGain: 4250.5,
+        unrealizedGainPct: 9.3,
         holdings: [
           {
             id: "h1",
@@ -130,6 +132,8 @@ describe("OverviewTab", () => {
     renderTab(OverviewTab);
     expect(screen.getByText("$50,000")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("+$4,250.50")).toBeInTheDocument();
+    expect(screen.getByText("+9.30%")).toBeInTheDocument();
     expect(screen.getByText("Apple Inc.")).toBeInTheDocument();
     expect(screen.getByText("New analysis")).toBeInTheDocument();
   });
