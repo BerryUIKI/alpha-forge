@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added category filtering (`all`, `theses`, `research`, `tasks`), confidence progression markers, and validation outcome badges.
 
 ### Fixed
+- **Demo Data DB Constraint Compliance & Diagnostics (演示数据约束与诊断增强):**
+  - Resolved SQLite foreign key constraint failure in thesis evidence creation by embedding source citations into evidence text and omitting invalid non-UUID `source_id` references.
+  - Aligned allocation target creation parameters with schema CHECK constraints (`trigger_type: 'threshold'`, `rebalance_goal: 'nearest_band'`) and set category assignment weight to 10000 basis points (100.00%).
+  - Enhanced error diagnostics in both `OnboardingWizardModal` and `SettingsPage` to report precise underlying error messages.
 - **GUI Placeholder & Parity Hardening:**
   - Synchronized Knowledge Graph TanStack Query keys between `KnowledgePage` and `useKnowledgeGraph`, resolving cache desynchronization.
   - Enabled entity creation in `KnowledgeGraphPanel` empty state.

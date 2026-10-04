@@ -62,7 +62,16 @@ export function OnboardingWizardModal() {
         setActiveWorkspace(created.id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("demoDataLoadedError"));
+      console.error("Failed to execute onboarding action:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : err && typeof err === "object" && "message" in err
+              ? String((err as { message: unknown }).message)
+              : t("demoDataLoadedError");
+      setError(message);
     } finally {
       setIsProcessing(false);
     }
