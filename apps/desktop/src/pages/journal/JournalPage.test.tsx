@@ -66,10 +66,10 @@ describe("JournalPage", () => {
       {
         id: "th-1",
         title: "Semiconductor Fab Expansion Thesis",
-        hypothesis: "Capex expansion outpaces consensus",
+        thesis: "Capex expansion outpaces consensus",
         status: "active",
         confidence: 85,
-        validationOutcome: "Confirmed by supply chain data",
+        outcome: "Confirmed by supply chain data",
         createdAt: "2026-10-01T10:00:00Z",
       },
     ]);
@@ -84,7 +84,8 @@ describe("JournalPage", () => {
     listTasksMock.mockResolvedValue([
       {
         id: "task-1",
-        prompt: "Extract GPU delivery lead times",
+        title: "Extract GPU delivery lead times",
+        description: "Delivery lead times across tier-1 providers",
         status: "completed",
         createdAt: "2026-10-03T08:00:00Z",
         completedAt: "2026-10-03T08:05:00Z",
