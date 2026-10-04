@@ -97,8 +97,17 @@ export function OverviewTab() {
         />
         <StatCard
           label={t("unrealizedPL")}
-          value="—"
-          change={t("comingWithPositionTracking")}
+          value={
+            summary?.unrealizedGain !== undefined
+              ? `${summary.unrealizedGain >= 0 ? "+" : "-"}$${Math.abs(summary.unrealizedGain).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : "—"
+          }
+          change={
+            summary?.unrealizedGainPct !== undefined
+              ? `${summary.unrealizedGainPct >= 0 ? "+" : ""}${summary.unrealizedGainPct.toFixed(2)}%`
+              : undefined
+          }
+          isPositive={(summary?.unrealizedGain ?? 0) >= 0}
         />
       </div>
 
