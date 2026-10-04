@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provided descriptive disabled state tooltips in `QuickActions` and `OptionStrategyPanel`.
   - Replaced placeholder calculations in `StrategyBuilder` with genuine multi-leg break-even analysis.
   - Connected `StatusBar` to `useSystemHealth` for real-time SQLite database health monitoring and localized operational indicators.
+  - Linked `SecFilingFeed` dynamically to active portfolio assets and workspace investment theses with interactive ticker pill selection.
 
 ## [0.1.0-rc.1] - 2026-10-03
 
