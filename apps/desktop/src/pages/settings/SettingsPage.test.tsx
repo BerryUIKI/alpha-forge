@@ -22,6 +22,9 @@ const settingsMock = vi.hoisted(() => ({
   getSetting: vi.fn(),
   setSetting: vi.fn(),
 }));
+const demoDataMock = vi.hoisted(() => ({
+  seedDemoData: vi.fn(),
+}));
 
 vi.mock("@/lib/desktop-api", () => ({
   desktopApi: {
@@ -32,11 +35,16 @@ vi.mock("@/lib/desktop-api", () => ({
   },
 }));
 vi.mock("@tauri-apps/plugin-opener", () => ({ openUrl: vi.fn() }));
+vi.mock("@/lib/demoData", () => ({
+  seedDemoData: demoDataMock.seedDemoData,
+}));
 
 const messages: Record<string, string> = {
   save: "Save",
   apiKeyPlaceholder: "A key is securely stored; enter a new value to replace it",
   agentConfigSaved: "Agent configuration saved",
+  loadDemoDataBtn: "Load Full Demo Portfolio",
+  demoDataLoadedSuccess: "Demo data loaded successfully! Switched to workspace \"{name}\".",
 };
 
 function renderSettings() {
@@ -106,5 +114,24 @@ describe("Settings OpenAI credentials", () => {
 
     expect(screen.getByText("internalPlugins")).toBeInTheDocument();
     await waitFor(() => expect(pluginsMock.listPlugins).toHaveBeenCalledOnce());
+  });
+
+  it("seeds demo data when the load demo data button is clicked", async () => {
+    demoDataMock.seedDemoData.mockResolvedValueOnce({
+      workspaceId: "ws-demo",
+      workspaceName: "AI & Semiconductor Alpha",
+    });
+
+    renderSettings();
+
+    const loadBtn = screen.getByRole("button", { name: "Load Full Demo Portfolio" });
+    fireEvent.click(loadBtn);
+
+    await waitFor(() => expect(demoDataMock.seedDemoData).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(
+        screen.getByText('Demo data loaded successfully! Switched to workspace "AI & Semiconductor Alpha".'),
+      ).toBeInTheDocument(),
+    );
   });
 });

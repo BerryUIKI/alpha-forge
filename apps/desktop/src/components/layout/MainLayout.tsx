@@ -18,6 +18,7 @@ import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
 import { UnifiedHeader } from "./UnifiedHeader";
 import { GlobalSearchDialog } from "@/features/search";
+import { OnboardingWizardModal } from "@/components/onboarding/OnboardingWizardModal";
 import { ActiveWorkspaceProvider } from "@/features/workspace/hooks";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
 import type { SidebarState } from "./types";
@@ -90,6 +91,9 @@ export function MainLayout() {
 
         {/* Global Search Palette */}
         <GlobalSearchDialog isOpen={searchOpen} onClose={closeSearch} />
+
+        {/* First-time Onboarding Wizard */}
+        <OnboardingWizardModal />
       </div>
     </ActiveWorkspaceProvider>
   );

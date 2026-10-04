@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
-import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck, Activity, Database, Bot } from "lucide-react";
+import { useState, useEffect, useContext } from "react";
+import { ExternalLink, HardDriveDownload, RefreshCw, ShieldCheck, Activity, Database, Bot, Sparkles } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 import { formatMessage, LOCALES, type Locale } from "@/lib/i18n/locale";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { seedDemoData } from "@/lib/demoData";
+import { ActiveWorkspaceContext } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { InternalPluginsPanel } from "@/features/plugins";
 import { ApiUsageSettings, AppearanceSettings, ProfessionalTerminologySettings } from "./SettingsPreferences";
 
@@ -22,6 +25,26 @@ export function SettingsPage() {
   const [isSavingAgent, setIsSavingAgent] = useState(false);
   const [agentMessage, setAgentMessage] = useState<string | null>(null);
   const [hasExistingKey, setHasExistingKey] = useState(false);
+
+  // Demo data state
+  const [isSeedingDemo, setIsSeedingDemo] = useState(false);
+  const activeWsContext = useContext(ActiveWorkspaceContext);
+  const queryClient = useQueryClient();
+
+  const handleSeedDemoData = async () => {
+    setIsSeedingDemo(true);
+    setMessage(null);
+    try {
+      const result = await seedDemoData();
+      await queryClient.invalidateQueries();
+      activeWsContext?.setActiveWorkspace(result.workspaceId);
+      setMessage(formatMessage(t("demoDataLoadedSuccess"), { name: result.workspaceName }));
+    } catch {
+      setMessage(t("demoDataLoadedError"));
+    } finally {
+      setIsSeedingDemo(false);
+    }
+  };
 
   // Check if API key exists in secure storage on mount
   useEffect(() => {
@@ -164,6 +187,26 @@ export function SettingsPage() {
       </section>
 
       <div id="internal-plugins" className="scroll-mt-4"><InternalPluginsPanel /></div>
+
+      {/* Demo Data Management Section */}
+      <section id="demo-data" className="scroll-mt-4 rounded-lg border border-border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-0.5 h-5 w-5 text-primary" />
+          <div className="flex-1">
+            <h2 className="font-semibold">{t("demoDataSectionTitle")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("demoDataSectionDesc")}</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            onClick={handleSeedDemoData}
+            disabled={isSeedingDemo}
+            className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isSeedingDemo ? t("loadingDemoDataBtn") : t("loadDemoDataBtn")}
+          </button>
+        </div>
+      </section>
 
       <section id="data" className="scroll-mt-4 rounded-lg border border-border bg-card p-5">
         <div className="flex items-start gap-3">
