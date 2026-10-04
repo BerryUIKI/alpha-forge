@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mounted previously orphaned `StrategyBuilder` component on `OptionsPage` for multi-leg payoff simulation and break-even calculations.
   - Integrated `ShadowAnalysis` component into `ThesisDetail` for AI shadow-mode validation and hypothesis stress-testing.
   - Added descriptive `disabledReason` tooltips to disabled navigation and palette actions in `WindowTitleBar`.
+  - Replaced placeholder modules (`startup.ts`, `formatting/index.ts`, `validation/index.ts`, `types/index.ts`) with production runtime diagnostics, formatting utilities, schema re-exports, and shared domain models.
 
 ## [0.1.0-rc.1] - 2026-10-03
 
