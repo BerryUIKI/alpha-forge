@@ -17,9 +17,8 @@ mod tests {
             .await
             .expect("Failed to create test database");
 
-        // Run migrations
-        sqlx::query(include_str!("../../migrations/0001_initial.sql"))
-            .execute(&pool)
+        // Run all migrations through the real runner
+        crate::database::migrations::run(&pool)
             .await
             .expect("Failed to run migrations");
 
