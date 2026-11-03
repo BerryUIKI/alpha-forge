@@ -8,8 +8,8 @@ import { invoke } from "@tauri-apps/api/core";
 export interface Workspace {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 /**

@@ -9,7 +9,7 @@ build/
 out/
 
 # Tauri
-src-tauri/gen/
+apps/desktop/src-tauri/gen/
 
 # IDE
 .idea/

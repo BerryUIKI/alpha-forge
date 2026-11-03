@@ -17,8 +17,8 @@ describe("Workspace API", () => {
     const mockWorkspace = {
       id: "test-uuid",
       name: "Test Workspace",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockWorkspace);
@@ -35,8 +35,8 @@ describe("Workspace API", () => {
       {
         id: "workspace-1",
         name: "Workspace 1",
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z",
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
       },
     ];
 
@@ -53,8 +53,8 @@ describe("Workspace API", () => {
     const mockWorkspace = {
       id: "test-uuid",
       name: "Test Workspace",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockWorkspace);
@@ -70,8 +70,8 @@ describe("Workspace API", () => {
     const mockWorkspace = {
       id: "test-uuid",
       name: "Updated Name",
-      createdAt: "2024-01-01T00:00:00Z",
-      updatedAt: "2024-01-01T00:00:00Z",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
     };
 
     vi.mocked(invoke).mockResolvedValueOnce(mockWorkspace);

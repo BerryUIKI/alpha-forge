@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Agent development workflow documentation (AGENTS.md)
 - Product milestone roadmap
 
+### Fixed
+- Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.
+- Workspace IPC timestamps now match serde's `created_at` / `updated_at` output.
+- Migrations now run through SQLx's migrator; added `0003_agent_tasks_align` so agent tasks can persist the `created` state and nullable input.
+- SQLite WAL mode and foreign-key enforcement are now configured for every pooled connection.
+
+### Tests
+- Added migration coverage for the full migration chain and agent task schema.
+- Added agent task repository tests.
+- Expanded WorkspaceList tests to cover loading, empty, error, and data states.
+
 ## [0.1.0] - 2026-07-31
 
 ### Added

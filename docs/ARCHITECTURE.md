@@ -91,7 +91,7 @@ investment-os/
 │   ├── src-tauri/                Rust backend
 │   │   ├── src/
 │   │   │   ├── app/              AppState, bootstrap
-│   │   │   ├── commands/         6 command modules (12 commands)
+│   │   │   ├── commands/         7 command modules (20 commands)
 │   │   │   ├── agent/            Agent runtime types (stubs)
 │   │   │   ├── database/         SQLx pool, migrations
 │   │   │   ├── security/         Credentials, sandbox, validation
@@ -146,14 +146,11 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 
 ## Current IPC Commands
 
-| Command | Module | Status |
-|---------|--------|--------|
-| `health_check` | settings | ✅ Active |
-| `get_app_info` | settings | ✅ Active |
-| `get_setting` | settings | ✅ Active (SQLite) |
-| `set_setting` | settings | ✅ Active (SQLite) |
-| `create_task` | agent | Stub — returns completed task |
-| `list_tasks` | agent | Stub — returns [] |
+| Command(s) | Module | Status |
+|------------|--------|--------|
+| `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
+| `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (task records and status transitions; runtime not wired) |
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
@@ -162,10 +159,10 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 ## Database
 
 - **Engine**: SQLite via SQLx
-- **Migrations**: Embedded in `database/migrations.rs`
-- **Current tables**: `app_settings`, `_migrations` (tracking)
-- **Pragmas**: WAL mode, foreign keys enabled
-- **Full schema**: See `DATA_MODEL.md` for planned tables
+- **Migrations**: SQL files in `apps/desktop/src-tauri/migrations/`, embedded by `sqlx::migrate!`, tracked in `_sqlx_migrations`
+- **Current tables**: `app_settings`, `workspaces`, research tables, thesis/evidence tables, `agent_tasks`, `agent_task_events`, artifacts, plugins, portfolio tables, watchlists
+- **Pragmas**: WAL mode and foreign keys configured through `SqliteConnectOptions` for every pooled connection
+- **Full schema**: See `DATA_MODEL.md` for conceptual entities
 
 ## Security
 
