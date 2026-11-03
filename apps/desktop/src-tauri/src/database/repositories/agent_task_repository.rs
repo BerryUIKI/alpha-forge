@@ -62,7 +62,7 @@ impl AgentTaskRepository {
             SELECT id, workspace_id, title, description, status, created_at, updated_at
             FROM agent_tasks
             WHERE workspace_id = ?
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, rowid DESC
             "#,
         )
         .bind(workspace_id)
@@ -175,7 +175,7 @@ impl AgentTaskRepository {
             SELECT id, task_id, event_type, payload, created_at
             FROM agent_task_events
             WHERE task_id = ?
-            ORDER BY created_at ASC
+            ORDER BY created_at ASC, rowid ASC
             "#,
         )
         .bind(task_id)
