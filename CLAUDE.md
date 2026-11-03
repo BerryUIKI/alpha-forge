@@ -16,7 +16,7 @@ It is a research tool, not a brokerage terminal: it must never execute trades or
 
 ## Commands
 
-Prerequisites: Node.js 22+, pnpm 9+, Rust stable with MSVC on Windows (`rust-toolchain.toml` pins `stable-x86_64-pc-windows-msvc`).
+Prerequisites: Node.js 22+, pnpm 9+, Rust stable with MSVC on Windows (`rust-toolchain.toml` pins `stable-x86_64-pc-windows-msvc`). On Windows, run Cargo from a Developer Command Prompt or after loading `vcvars64.bat`; otherwise `link.exe` may not find system libraries such as `bcrypt.lib`.
 
 Install dependencies:
 
