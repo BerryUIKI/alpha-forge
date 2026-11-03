@@ -96,7 +96,7 @@ mod tests {
 
         let descriptions: Vec<String> = descriptions
             .into_iter()
-            .map(|(description,)| description)
+            .map(|(description,)| description.replace(' ', "_"))
             .collect();
         assert_eq!(
             descriptions,
