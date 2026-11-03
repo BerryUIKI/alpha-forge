@@ -25,6 +25,11 @@ pub struct ExecutionResult {
 }
 
 /// Trait for agent runtime implementations.
+///
+/// `async_trait` adds `#[must_use]` to the boxed future; newer Clippy versions
+/// flag that as redundant because the future returns `Result`, which is already
+/// `#[must_use]`.
+#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AgentRuntime: Send + Sync {
     /// Execute an agent task.
