@@ -25,7 +25,7 @@ function renderList() {
   return render(
     <QueryClientProvider client={queryClient}>
       <WorkspaceList />
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -53,7 +53,7 @@ describe("WorkspaceList", () => {
 
     expect(await screen.findByText("No workspaces yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create your first workspace to start organizing your research.")
+      screen.getByText("Create your first workspace to start organizing your research."),
     ).toBeInTheDocument();
   });
 
