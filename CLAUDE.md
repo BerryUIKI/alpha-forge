@@ -37,7 +37,7 @@ Quality checks:
 
 ```bash
 pnpm lint
-pnpm --filter @investment-os/desktop typecheck   # root `pnpm typecheck` is currently broken; see Known gaps
+pnpm typecheck
 pnpm test                                       # Vitest, run once
 pnpm test:watch
 pnpm format
@@ -62,7 +62,7 @@ cargo test -p domain test_task_status_is_terminal
 cargo test -p investment-os migrations
 ```
 
-`./scripts/check.sh` runs typecheck, lint, `cargo fmt --check`, and Clippy with `-D warnings`, but it currently starts with the broken root `typecheck` script.
+`./scripts/check.sh` runs typecheck, lint, `cargo fmt --check`, and Clippy with `-D warnings`.
 
 ## Repository layout
 
@@ -113,8 +113,8 @@ React component
 ### Database and migrations
 
 - SQLite via SQLx. The database file is `investment_os.db` in Tauri's app-data directory. WAL mode and foreign keys are enabled in `database/connection.rs`; the pool uses max 5 connections.
-- Migrations are append-only. Never edit an already-applied migration. Add a new numbered SQL file under `apps/desktop/src-tauri/migrations/` and update the runner and tests together.
-- Current caveat: the migration runner (`database/migrations.rs`) is hand-rolled and only embeds/applies `0001_initial`. `migrations/0002_agent_tasks_enhancement.sql` exists but is not executed by the runner, and tests only load `0001`. The agent-task repository already reads and writes columns added by 0002 (`workspace_id`, `title`, `description`) and writes status `created`, which 0001's `CHECK` constraint does not allow. Keep the runner, migration files, repository code, and tests in sync when changing schema.
+- Migrations are append-only. Never edit an already-applied migration. Add a new numbered SQL file under `apps/desktop/src-tauri/migrations/`; SQLx embeds and applies them in order, tracking state in `_sqlx_migrations`.
+- Table-rebuild migrations run outside a transaction with `-- no-transaction` and manage `PRAGMA foreign_keys` themselves (see `0003_agent_tasks_align.sql`). Keep the schema, repositories, and migration tests in sync when changing persisted data.
 - `0001_initial.sql` already defines most planned tables (research documents/sources/notes, theses/evidence, agent tasks/events, artifacts, plugins, portfolio accounts/positions/transactions, watchlists), even though many corresponding commands and UI pages are still stubs.
 
 ### Agent runtime and artifacts
@@ -136,14 +136,11 @@ React component
 
 - Vitest is configured at the repository root: jsdom, `apps/desktop/src/test/setup.ts`, the `@` alias, and test discovery across `apps/**` and `packages/**`.
 - Frontend tests mock Tauri with `vi.mock("@tauri-apps/api/core", ...)`; they never launch the desktop shell or a real database.
-- Rust tests use `#[tokio::test]` and in-memory SQLite, loading migrations with `include_str!("../../migrations/0001_initial.sql")`.
+- Rust tests use `#[tokio::test]` and in-memory SQLite, running the real migration chain through `database::migrations::run`.
 - Add tests at the layer being changed (domain, repository, service, command, component, hook, schema) per `AGENTS.md` §12, and add a regression test for bug fixes where practical.
 
 ## Known gaps
 
-- Root `pnpm typecheck` fails because it runs `npm run typecheck -w @investment-os/desktop`, but this repository uses pnpm workspaces and has no npm `workspaces` field. Use `pnpm --filter @investment-os/desktop typecheck` or `cd apps/desktop && pnpm typecheck`.
-- The migration runner and agent-task schema are out of sync (see Database and migrations), so agent-task creation against a real database is not reliable until that is fixed.
-- Workspace IPC type casing is inconsistent: Rust `Workspace` serializes `created_at`/`updated_at`, while `src/lib/desktop-api/workspace.ts` declares `createdAt`/`updatedAt` (and tests mock camelCase). Align serde attributes or the TypeScript interface when touching workspace IPC.
 - `AGENTS.md` mentions `pnpm test:e2e`, but no such script or E2E suite exists yet.
 - `pnpm build` only produces the web frontend; use `pnpm tauri build` for a desktop release.
 - GitHub Actions currently runs only CodeQL (`codeql.yml`); there is no CI workflow for lint, tests, or Clippy. Run the checks locally.
