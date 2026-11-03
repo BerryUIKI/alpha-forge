@@ -13,8 +13,8 @@ pub mod services;
 pub mod telemetry;
 pub mod windows;
 
-use tauri::Manager;
 use app::state::AppState;
+use tauri::Manager;
 use tracing::info;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
