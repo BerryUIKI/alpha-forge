@@ -59,7 +59,7 @@ export function WorkspaceList({ onSelect, onCreateNew }: WorkspaceListProps) {
         >
           <h3 className="font-semibold">{workspace.name}</h3>
           <p className="text-sm text-muted-foreground">
-            Created {new Date(workspace.createdAt).toLocaleDateString()}
+            Created {new Date(workspace.created_at).toLocaleDateString()}
           </p>
         </button>
       ))}
