@@ -20,6 +20,7 @@
   - Included in logs or error messages.
   - Committed to version control.
 - React receives only a status indicator: "OpenAI: configured" / "OpenAI: not configured".
+- Implemented in `apps/desktop/src-tauri/src/security/credentials.rs` via the `keyring` crate; the test suite uses an in-memory store instead of the real keychain.
 
 ## Window-Level Permissions
 

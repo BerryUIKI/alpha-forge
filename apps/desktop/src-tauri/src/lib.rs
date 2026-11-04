@@ -66,6 +66,10 @@ pub fn run() {
             commands::agent::queue_agent_task,
             commands::agent::start_agent_task,
             commands::agent::cancel_agent_task,
+            // Provider commands
+            commands::provider::get_provider_status,
+            commands::provider::set_provider_api_key,
+            commands::provider::clear_provider_api_key,
             // Research commands
             commands::research::list_research_documents,
             // Journal commands
