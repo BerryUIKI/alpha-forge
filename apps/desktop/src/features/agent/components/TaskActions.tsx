@@ -2,24 +2,12 @@
 
 import { Play, Square } from "lucide-react";
 import { useToast } from "@/components/common/useToast";
+import { getErrorMessage } from "@/lib/errors";
 import type { AgentTask } from "@/lib/desktop-api/agent";
 import { useCancelAgentTask, useRunAgentTask } from "../hooks/useAgentTasks";
 
 interface TaskActionsProps {
   task: AgentTask;
-}
-
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  if (typeof error === "object" && error !== null && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-    if (typeof message === "string") {
-      return message;
-    }
-  }
-  return "Unexpected error";
 }
 
 export function TaskActions({ task }: TaskActionsProps) {
@@ -44,7 +32,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       onError: (error) => {
         toast({
           title: "Failed to start task",
-          description: errorMessage(error),
+          description: getErrorMessage(error),
           variant: "destructive",
         });
       },
@@ -62,7 +50,7 @@ export function TaskActions({ task }: TaskActionsProps) {
       onError: (error) => {
         toast({
           title: "Failed to cancel task",
-          description: errorMessage(error),
+          description: getErrorMessage(error),
           variant: "destructive",
         });
       },
