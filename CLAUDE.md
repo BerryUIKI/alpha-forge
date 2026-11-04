@@ -137,13 +137,13 @@ React component
 - Vitest is configured at the repository root: jsdom, `apps/desktop/src/test/setup.ts`, the `@` alias, and test discovery across `apps/**` and `packages/**`.
 - Frontend tests mock Tauri with `vi.mock("@tauri-apps/api/core", ...)`; they never launch the desktop shell or a real database.
 - Rust tests use `#[tokio::test]` and in-memory SQLite, running the real migration chain through `database::migrations::run`.
+- `.github/workflows/ci.yml` runs typecheck, lint, Vitest, the web build, `cargo fmt --check`, Clippy, and `cargo test --workspace` on `windows-latest` for pushes to `main` and all pull requests.
 - Add tests at the layer being changed (domain, repository, service, command, component, hook, schema) per `AGENTS.md` §12, and add a regression test for bug fixes where practical.
 
 ## Known gaps
 
 - `AGENTS.md` mentions `pnpm test:e2e`, but no such script or E2E suite exists yet.
 - `pnpm build` only produces the web frontend; use `pnpm tauri build` for a desktop release.
-- GitHub Actions currently runs only CodeQL (`codeql.yml`); there is no CI workflow for lint, tests, or Clippy. Run the checks locally.
 
 ## Git workflow
 
