@@ -1,14 +1,53 @@
 // Hooks for agent tasks.
 
+import { useEffect } from "react";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
+import type { AgentTaskEvent } from "@/lib/desktop-api/agent";
 
-const AGENT_KEYS = {
+const AGENT_TASK_EVENT = "agent-task-event";
+
+export const AGENT_KEYS = {
   all: ["agent"] as const,
   tasks: (workspaceId: string) => [...AGENT_KEYS.all, "tasks", workspaceId] as const,
   task: (id: string) => [...AGENT_KEYS.all, "task", id] as const,
   events: (taskId: string) => [...AGENT_KEYS.all, "events", taskId] as const,
 };
+
+/**
+ * Subscribe to backend agent task events and invalidate cached queries.
+ */
+export function useAgentTaskEvents(taskId?: string) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    let disposed = false;
+    let unlisten: UnlistenFn | undefined;
+
+    listen<AgentTaskEvent>(AGENT_TASK_EVENT, (event) => {
+      if (taskId && event.payload.task_id !== taskId) {
+        return;
+      }
+      void queryClient.invalidateQueries({ queryKey: AGENT_KEYS.all });
+    })
+      .then((stop) => {
+        if (disposed) {
+          stop();
+        } else {
+          unlisten = stop;
+        }
+      })
+      .catch((error) => {
+        console.warn("Failed to subscribe to agent task events", error);
+      });
+
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
+  }, [taskId, queryClient]);
+}
 
 /**
  * Hook to list agent tasks for a workspace.
