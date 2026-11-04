@@ -80,9 +80,9 @@ investment-os/
 ├── apps/desktop/                 Tauri 2 desktop application
 │   ├── src/                      React frontend
 │   │   ├── app/                  App entry, router, providers
-│   │   ├── pages/                6 route pages (all placeholders)
+│   │   ├── pages/                6 route pages (Today hosts workspace + agent tasks; others placeholders)
 │   │   ├── components/           Layout, navigation, feedback, common
-│   │   ├── features/             8 feature modules (all placeholders)
+│   │   ├── features/             8 feature modules (workspace and agent active; others placeholders)
 │   │   ├── lib/desktop-api/      Unified IPC layer (6 modules)
 │   │   ├── hooks/                (future)
 │   │   ├── stores/               (future)
@@ -150,7 +150,7 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 |------------|--------|--------|
 | `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
-| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; real AI provider pending) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; workspace task panel with live timeline; real AI provider pending) |
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |

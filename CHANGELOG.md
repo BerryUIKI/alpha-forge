@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global toast notifications for user actions and errors.
 - Light/dark/system theme switching with persistence and pre-render initialization.
 - Agent tasks now execute in the background, persist output/error, and stream progress events to the frontend.
+- Workspace task panel in the Today page: create tasks, start/cancel execution, and inspect a live execution timeline with output and error details.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 - Added migration coverage for the full migration chain and agent task schema.
 - Added agent task repository tests.
+- Added agent task list, detail, and workspace panel tests covering start/cancel actions and event rendering.
 - Expanded WorkspaceList tests to cover loading, empty, error, and data states.
 
 ## [0.1.0] - 2026-07-31
