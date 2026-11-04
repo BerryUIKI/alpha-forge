@@ -80,9 +80,9 @@ investment-os/
 ├── apps/desktop/                 Tauri 2 desktop application
 │   ├── src/                      React frontend
 │   │   ├── app/                  App entry, router, providers
-│   │   ├── pages/                6 route pages (Today hosts workspace + agent tasks; others placeholders)
+│   │   ├── pages/                6 route pages (Today hosts workspace + agent tasks, Settings hosts provider config; others placeholders)
 │   │   ├── components/           Layout, navigation, feedback, common
-│   │   ├── features/             8 feature modules (workspace and agent active; others placeholders)
+│   │   ├── features/             8 feature modules (workspace, agent, and settings active; others placeholders)
 │   │   ├── lib/desktop-api/      Unified IPC layer (6 modules)
 │   │   ├── hooks/                (future)
 │   │   ├── stores/               (future)

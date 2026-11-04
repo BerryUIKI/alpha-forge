@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Settings page for the AI provider: save or remove an OpenAI API key, stored in the OS keychain, with status-only reads.
 - Comprehensive documentation suite (17+ documents)
 - Architecture Decision Records (ADR) system
 - Agent development workflow documentation (AGENTS.md)
