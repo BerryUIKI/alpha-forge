@@ -7,6 +7,7 @@ use crate::error::AppError;
 use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventType, TaskStatus};
 
 /// Repository for managing agent tasks.
+#[derive(Clone)]
 pub struct AgentTaskRepository {
     pool: SqlitePool,
 }
@@ -50,6 +51,8 @@ impl AgentTaskRepository {
             title: input.title,
             description: input.description,
             status: TaskStatus::Created,
+            output: None,
+            error: None,
             created_at: now,
             updated_at: now,
         })
@@ -59,7 +62,7 @@ impl AgentTaskRepository {
     pub async fn list_by_workspace(&self, workspace_id: &str) -> Result<Vec<AgentTask>, AppError> {
         let rows = sqlx::query_as::<_, AgentTaskRow>(
             r#"
-            SELECT id, workspace_id, title, description, status, created_at, updated_at
+            SELECT id, workspace_id, title, description, status, output, error, created_at, updated_at
             FROM agent_tasks
             WHERE workspace_id = ?
             ORDER BY created_at DESC, rowid DESC
@@ -77,7 +80,7 @@ impl AgentTaskRepository {
     pub async fn get(&self, id: &str) -> Result<Option<AgentTask>, AppError> {
         let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
-            SELECT id, workspace_id, title, description, status, created_at, updated_at
+            SELECT id, workspace_id, title, description, status, output, error, created_at, updated_at
             FROM agent_tasks
             WHERE id = ?
             "#,
@@ -115,6 +118,77 @@ impl AgentTaskRepository {
         .execute(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to update task status: {}", e)))?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
+        }
+
+        Ok(())
+    }
+
+    /// Marks a task as completed and stores its structured output.
+    pub async fn complete(&self, id: &str, output: Option<&str>) -> Result<(), AppError> {
+        let rows_affected = sqlx::query(
+            r#"
+            UPDATE agent_tasks
+            SET status = 'completed', output = ?, error = NULL, updated_at = ?
+            WHERE id = ?
+            "#,
+        )
+        .bind(output)
+        .bind(Utc::now())
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to complete agent task: {}", e)))?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
+        }
+
+        Ok(())
+    }
+
+    /// Marks a task as failed and stores the error message.
+    pub async fn fail(&self, id: &str, error: &str) -> Result<(), AppError> {
+        let rows_affected = sqlx::query(
+            r#"
+            UPDATE agent_tasks
+            SET status = 'failed', output = NULL, error = ?, updated_at = ?
+            WHERE id = ?
+            "#,
+        )
+        .bind(error)
+        .bind(Utc::now())
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to fail agent task: {}", e)))?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
+        }
+
+        Ok(())
+    }
+
+    /// Marks a running task as cancelled.
+    pub async fn mark_cancelled(&self, id: &str) -> Result<(), AppError> {
+        let rows_affected = sqlx::query(
+            r#"
+            UPDATE agent_tasks
+            SET status = 'cancelled', error = NULL, updated_at = ?
+            WHERE id = ?
+            "#,
+        )
+        .bind(Utc::now())
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to cancel agent task: {}", e)))?
         .rows_affected();
 
         if rows_affected == 0 {
@@ -195,6 +269,8 @@ struct AgentTaskRow {
     title: String,
     description: Option<String>,
     status: String,
+    output: Option<String>,
+    error: Option<String>,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
 }
@@ -218,6 +294,8 @@ impl From<AgentTaskRow> for AgentTask {
             title: row.title,
             description: row.description,
             status,
+            output: row.output,
+            error: row.error,
             created_at: row.created_at,
             updated_at: row.updated_at,
         }

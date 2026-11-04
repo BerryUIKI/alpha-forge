@@ -70,6 +70,10 @@ pub struct AgentTask {
     pub description: Option<String>,
     /// Current status in the task lifecycle
     pub status: TaskStatus,
+    /// Structured output produced by the runtime, if any
+    pub output: Option<String>,
+    /// Error message when the task failed
+    pub error: Option<String>,
     /// When the task was created
     pub created_at: DateTime<Utc>,
     /// When the task was last updated
