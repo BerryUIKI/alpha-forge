@@ -16,11 +16,11 @@ import {
 export function ProviderSettings() {
   const { toast } = useToast();
   const statusQuery = useProviderStatus();
-  const saveApiKey = useSetProviderApiKey();
+  const { saveApiKey, isSavingKey } = useSetProviderApiKey();
   const clearApiKey = useClearProviderApiKey();
   const [apiKey, setApiKey] = useState("");
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const trimmed = apiKey.trim();
@@ -28,19 +28,17 @@ export function ProviderSettings() {
       return;
     }
 
-    saveApiKey.mutate(trimmed, {
-      onSuccess: () => {
-        setApiKey("");
-        toast({ title: "API key saved", variant: "success" });
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to save API key",
-          description: getErrorMessage(error),
-          variant: "destructive",
-        });
-      },
-    });
+    try {
+      await saveApiKey(trimmed);
+      setApiKey("");
+      toast({ title: "API key saved", variant: "success" });
+    } catch (error) {
+      toast({
+        title: "Failed to save API key",
+        description: getErrorMessage(error),
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClear = () => {
@@ -112,10 +110,10 @@ export function ProviderSettings() {
         />
         <button
           type="submit"
-          disabled={!apiKey.trim() || saveApiKey.isPending}
+          disabled={!apiKey.trim() || isSavingKey}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
-          {saveApiKey.isPending ? "Saving..." : "Save key"}
+          {isSavingKey ? "Saving..." : "Save key"}
         </button>
       </form>
 

@@ -1,5 +1,6 @@
 // Hooks for AI provider settings.
 
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
 
@@ -19,16 +20,25 @@ export function useProviderStatus() {
 
 /**
  * Hook to save an API key in the OS keychain.
+ *
+ * The key is passed as a direct argument instead of through `useMutation` so it
+ * is not retained in TanStack Query's mutation cache.
  */
 export function useSetProviderApiKey() {
   const queryClient = useQueryClient();
+  const [isSavingKey, setIsSavingKey] = useState(false);
 
-  return useMutation({
-    mutationFn: (apiKey: string) => desktopApi.provider.setProviderApiKey(apiKey),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.status });
-    },
-  });
+  const saveApiKey = async (apiKey: string) => {
+    setIsSavingKey(true);
+    try {
+      await desktopApi.provider.setProviderApiKey(apiKey);
+      await queryClient.invalidateQueries({ queryKey: PROVIDER_KEYS.status });
+    } finally {
+      setIsSavingKey(false);
+    }
+  };
+
+  return { saveApiKey, isSavingKey };
 }
 
 /**
