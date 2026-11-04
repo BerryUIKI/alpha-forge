@@ -1,0 +1,22 @@
+[package]
+name = "alphaforge-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command-line interface for AlphaForge (Investment OS)"
+
+[[bin]]
+name = "alphaforge"
+path = "src/main.rs"
+
+[dependencies]
+investment-os = { path = "../desktop/src-tauri" }
+domain = { path = "../../crates/domain" }
+anyhow.workspace = true
+async-trait = "0.1"
+chrono.workspace = true
+clap = { version = "4", features = ["derive"] }
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
