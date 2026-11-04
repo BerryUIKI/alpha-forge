@@ -110,23 +110,23 @@ Transform the technical skeleton into an extensible application platform.
 ### Deliverables
 
 #### Backend (Rust)
-- [ ] Service layer architecture
-- [ ] Repository layer abstraction
-- [ ] Workspace domain models
-- [ ] Workspace persistence
-- [ ] Desktop API expansion (12+ commands)
+- [x] Service layer architecture
+- [x] Repository layer abstraction
+- [x] Workspace domain models
+- [x] Workspace persistence
+- [x] Desktop API expansion (12+ commands)
 
 #### Frontend (React)
 - [ ] Shared UI foundation (shadcn/ui integration)
-- [ ] Error/loading states
-- [ ] Toast notification system
-- [ ] Theme support (light/dark)
-- [ ] Global error boundary
+- [x] Error/loading states
+- [x] Toast notification system
+- [x] Theme support (light/dark/system)
+- [x] Global error boundary
 
 #### Testing
-- [ ] Vitest test suite setup
-- [ ] Component tests
-- [ ] Hook tests
+- [x] Vitest test suite setup
+- [x] Component tests
+- [x] Hook tests
 - [ ] IPC integration tests
 
 ### Architecture Layers
@@ -178,12 +178,12 @@ Create the core intelligence engine of AlphaForge.
 ### Deliverables
 
 #### Agent Task System
-- [ ] Task lifecycle management
-- [ ] Background execution (Tokio)
-- [ ] Event streaming (Tauri events)
-- [ ] Cancellation support
+- [x] Task lifecycle management
+- [x] Background execution (Tokio)
+- [x] Event streaming (Tauri events)
+- [x] Cancellation support
 - [ ] Retry handling
-- [ ] Timeout enforcement
+- [x] Timeout enforcement
 
 #### Context System
 - [ ] Workspace context
@@ -653,13 +653,15 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M1.5 — Application Foundation** 🚧
+**M2 — Agent Runtime** 🚧
+
+The M1.5 foundation (service/repository layers, workspace persistence, theme/toast, test setup) is in place. M2 now covers task lifecycle, background execution, event streaming, cancellation, timeout enforcement, and a workspace task panel in the UI. Provider integration, context, tools, and retry handling remain.
 
 ### Next Milestones
-1. Complete workspace persistence
-2. Expand desktop API
-3. Build UI foundation
-4. Establish testing framework
+1. Integrate a real AI provider with Rust-side credential storage and structured-output validation
+2. Add context and tool systems for research workflows
+3. Define queue semantics: concurrency limits, restart recovery, and retry
+4. Expand shared UI components and IPC integration tests (M1.5 remainder)
 
 ### Long-term Vision
 Transform AlphaForge into the definitive AI-powered investment research platform where professionals develop, test, and refine investment theses with persistent knowledge and interactive visualizations.
