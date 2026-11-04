@@ -150,7 +150,8 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 |------------|--------|--------|
 | `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
-| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; workspace task panel with live timeline; real AI provider pending) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; workspace task panel with live timeline; OpenAI-backed runtime) |
+| `get_provider_status`, `set_provider_api_key`, `clear_provider_api_key` | provider | ✅ Active (OS keychain storage; status never returns the key) |
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
@@ -166,7 +167,7 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 
 ## Security
 
-- API keys: Will use OS keychain (stub in `security/credentials.rs`)
+- API keys: stored in the OS keychain (`security/credentials.rs`, `keyring` crate); status is exposed to React, the key is never returned
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
 - Input validation: Will use Zod (TS) + manual validation (Rust)

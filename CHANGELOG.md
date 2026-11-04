@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Light/dark/system theme switching with persistence and pre-render initialization.
 - Agent tasks now execute in the background, persist output/error, and stream progress events to the frontend.
 - Workspace task panel in the Today page: create tasks, start/cancel execution, and inspect a live execution timeline with output and error details.
+- OpenAI-backed agent runtime: structured research prompts, schema-validated JSON output, and typed provider errors.
+- Provider configuration commands with API keys stored in the OS keychain; status responses never expose the key.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.

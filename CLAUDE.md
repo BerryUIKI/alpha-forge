@@ -99,7 +99,7 @@ React component
 - Register every new Tauri command in the `invoke_handler` list in `apps/desktop/src-tauri/src/lib.rs`; otherwise the frontend call fails at runtime.
 - Keep commands thin: validate → call service → map result. Services own validation, business rules, and state transitions. Repositories own SQL and convert private SQLx row structs into domain models.
 - `AppState` (`src-tauri/src/app/state.rs`) owns the SQLite pool and service instances. Wire new repositories/services there; database initialization and `AppState` registration happen in `app/bootstrap.rs` and `lib.rs` setup.
-- Errors use `AppError` (`Internal`, `NotFound`, `Validation`, `PermissionDenied`, `Timeout`) and serialize as `{ code, message, recoverable }`. Use typed errors rather than `unwrap()`/`panic!` in production paths.
+- Errors use `AppError` (`Internal`, `NotFound`, `Validation`, `PermissionDenied`, `Timeout`, `Provider`) and serialize as `{ code, message, recoverable }`. Use typed errors rather than `unwrap()`/`panic!` in production paths.
 - Domain models live in `crates/domain`. The other `crates/*` packages are placeholders — do not assume runtime logic lives there.
 
 ### Frontend
@@ -122,7 +122,7 @@ React component
 ### Agent runtime and artifacts
 
 - Canonical task model: `crates/domain/src/task.rs` — `TaskStatus` is `created → queued → running → waiting_for_input → completed/failed/cancelled`, with typed `AgentTaskEvent`s. `commands/agent.rs` exposes CRUD, queue, start, and cancel; `services/agent_service.rs` runs tasks in background Tokio tasks with a 300-second timeout, persists `output`/`error`, and publishes `task_started`/`task_progress`/`task_completed`/`task_failed`/`task_cancelled` events. Cancellation is cooperative via `CancellationToken`.
-- `agent/runtime.rs` defines `AgentRuntime`, `ProgressReporter`, and a simulated `LocalDemoRuntime`; `agent/events.rs` publishes `agent-task-event` through an injected `EventPublisher` (Tauri-backed in production). Real AI provider integration is still pending.
+- `agent/runtime.rs` defines `AgentRuntime`, `ProgressReporter`, and a simulated `LocalDemoRuntime` for tests/demos; `agent/openai_runtime.rs` is the production runtime — it builds a structured research prompt, calls `providers/ai` (`OpenAiClient`), validates the JSON response against `ResearchOutput`, and persists canonical JSON. `agent/events.rs` publishes `agent-task-event` through an injected `EventPublisher` (Tauri-backed in production).
 - The frontend `useAgentTaskEvents` hook subscribes to `agent-task-event` and invalidates agent queries so task status and results update live. `AgentWorkspacePanel` (rendered by `TodayPage` once a workspace is selected) combines task creation, start/cancel actions, and a detail view with the execution timeline, output, and error.
 - Artifact and plugin code (`artifacts/*`, `plugins/*`, `documents/*`, `providers/*`, `security/*`) is placeholder scaffolding. The intended contracts are documented in `docs/ARTIFACT_SYSTEM.md`, `docs/PLUGIN_SPEC.md`, and the manifests in `plugins/*/manifest.json` (`id`, `name`, `version`, `entry`, `inputSchema`, `permissions`, `window`).
 - Treat agent output as untrusted: validate it against a schema and render it with predefined React plugins. Never inject agent-generated HTML into the privileged main-window DOM.
@@ -132,7 +132,7 @@ React component
 ### Security boundaries
 
 - Rust owns credentials, filesystem/network access, and long-running work. React must never receive plaintext keys or bypass `desktopApi`. Follow `AGENTS.md` §8 and `docs/SECURITY.md`.
-- `.env.example` currently lists `VITE_OPENAI_API_KEY`. `VITE_`-prefixed variables are bundled into the frontend, so this must not become the credential path. Credentials belong in Rust/keychain storage (currently a stub at `security/credentials.rs`).
+- `.env.example` currently lists `VITE_OPENAI_API_KEY`. `VITE_`-prefixed variables are bundled into the frontend, so this must not become the credential path. Credentials are stored in the OS keychain via `security/credentials.rs` (`KeyringCredentialStore`, backed by the `keyring` crate); the `provider` commands expose only `{ provider, configured, model }` status, never the key.
 - New privileged operations need the justification, allowed inputs, validation, and misuse prevention documented in `AGENTS.md` §8.
 
 ## Testing
