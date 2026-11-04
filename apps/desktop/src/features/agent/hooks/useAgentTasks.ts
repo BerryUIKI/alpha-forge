@@ -153,6 +153,23 @@ export function useRunAgentTask() {
 }
 
 /**
+ * Hook to retry a failed or cancelled task by requeueing and starting it.
+ */
+export function useRetryAgentTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      await desktopApi.agent.retryAgentTask(taskId);
+      return desktopApi.agent.startAgentTask(taskId);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: AGENT_KEYS.all });
+    },
+  });
+}
+
+/**
  * Hook to cancel a task.
  */
 export function useCancelAgentTask() {
