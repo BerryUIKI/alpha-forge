@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
-import type { AgentTaskEvent } from "@/lib/desktop-api/agent";
+import type { AgentTask, AgentTaskEvent } from "@/lib/desktop-api/agent";
 
 const AGENT_TASK_EVENT = "agent-task-event";
 
@@ -127,6 +127,26 @@ export function useStartAgentTask() {
   return useMutation({
     mutationFn: (taskId: string) => desktopApi.agent.startAgentTask(taskId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AGENT_KEYS.all });
+    },
+  });
+}
+
+/**
+ * Hook to run a task, queueing it first when it has not been queued yet.
+ */
+export function useRunAgentTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (task: Pick<AgentTask, "id" | "status">) => {
+      if (task.status === "created") {
+        await desktopApi.agent.queueAgentTask(task.id);
+      }
+      return desktopApi.agent.startAgentTask(task.id);
+    },
+    // Invalidate even on failure: queueing may have succeeded before the start failed.
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: AGENT_KEYS.all });
     },
   });
