@@ -34,7 +34,7 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
                     Ok(pool) => {
-                        let state = AppState::new(pool);
+                        let state = AppState::new(pool, handle.clone());
                         handle.manage(state);
                         info!("app state initialized");
                     }

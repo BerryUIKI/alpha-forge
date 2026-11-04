@@ -1,27 +1,81 @@
-// Agent runtime interface.
-//
-// Defines the trait for agent execution and provides a demo runtime
-// that simulates task execution without external AI calls.
+// Agent runtime interface and simulated local runtime.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::Mutex;
 use tokio::time::sleep;
 
-use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
-use domain::task::{AgentTask, TaskEventType};
+use domain::task::AgentTask;
 
-/// Result of agent execution
+/// Result of agent execution.
 #[derive(Debug, Clone)]
 pub struct ExecutionResult {
-    /// Whether execution was successful
+    /// Whether execution completed successfully.
     pub success: bool,
-    /// Optional output data (JSON)
+    /// Whether the task was cancelled cooperatively.
+    pub cancelled: bool,
+    /// Optional structured output (JSON).
     pub output: Option<String>,
-    /// Optional error message
+    /// Optional error message.
     pub error: Option<String>,
+}
+
+impl ExecutionResult {
+    pub fn success(output: Option<String>) -> Self {
+        Self {
+            success: true,
+            cancelled: false,
+            output,
+            error: None,
+        }
+    }
+
+    pub fn failure(error: impl Into<String>) -> Self {
+        Self {
+            success: false,
+            cancelled: false,
+            output: None,
+            error: Some(error.into()),
+        }
+    }
+
+    pub fn cancelled() -> Self {
+        Self {
+            success: false,
+            cancelled: true,
+            output: None,
+            error: None,
+        }
+    }
+}
+
+/// Cooperative cancellation token shared between the service and a runtime.
+#[derive(Debug, Clone, Default)]
+pub struct CancellationToken {
+    cancelled: Arc<AtomicBool>,
+}
+
+impl CancellationToken {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn cancel(&self) {
+        self.cancelled.store(true, Ordering::SeqCst);
+    }
+
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::SeqCst)
+    }
+}
+
+/// Callback used by runtimes to publish incremental progress.
+#[allow(unknown_lints, clippy::double_must_use)]
+#[async_trait::async_trait]
+pub trait ProgressReporter: Send + Sync {
+    async fn report(&self, message: String) -> Result<(), AppError>;
 }
 
 /// Trait for agent runtime implementations.
@@ -33,69 +87,58 @@ pub struct ExecutionResult {
 #[async_trait::async_trait]
 pub trait AgentRuntime: Send + Sync {
     /// Execute an agent task.
-    async fn execute(&self, task: AgentTask) -> Result<ExecutionResult, AppError>;
+    async fn execute(
+        &self,
+        task: AgentTask,
+        progress: Arc<dyn ProgressReporter>,
+        cancellation: CancellationToken,
+    ) -> Result<ExecutionResult, AppError>;
 }
 
-/// Local demo runtime that simulates agent execution.
-/// Used for testing the runtime infrastructure without external AI calls.
-pub struct LocalDemoRuntime {
-    repo: Arc<Mutex<AgentTaskRepository>>,
-}
+/// Local demo runtime that simulates execution without external AI calls.
+pub struct LocalDemoRuntime;
 
 impl LocalDemoRuntime {
-    /// Creates a new local demo runtime.
-    pub fn new(repo: AgentTaskRepository) -> Self {
-        Self {
-            repo: Arc::new(Mutex::new(repo)),
-        }
+    pub fn new() -> Self {
+        Self
     }
+}
 
-    /// Simulates task execution with progress events.
-    async fn simulate_execution(&self, task_id: String) -> Result<ExecutionResult, AppError> {
-        // Simulate progress updates
-        let repo = self.repo.lock().await;
-
-        // Step 1: Progress - Analyzing
-        repo.create_event(
-            &task_id,
-            TaskEventType::TaskProgress,
-            Some("Analyzing request...".to_string()),
-        )
-        .await?;
-        sleep(Duration::from_secs(2)).await;
-
-        // Step 2: Progress - Processing
-        repo.create_event(
-            &task_id,
-            TaskEventType::TaskProgress,
-            Some("Processing data...".to_string()),
-        )
-        .await?;
-        sleep(Duration::from_secs(2)).await;
-
-        // Step 3: Progress - Generating output
-        repo.create_event(
-            &task_id,
-            TaskEventType::TaskProgress,
-            Some("Generating output...".to_string()),
-        )
-        .await?;
-        sleep(Duration::from_secs(1)).await;
-
-        // Return success
-        Ok(ExecutionResult {
-            success: true,
-            output: Some(r#"{"summary": "Demo task completed successfully"}"#.to_string()),
-            error: None,
-        })
+impl Default for LocalDemoRuntime {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 #[async_trait::async_trait]
 impl AgentRuntime for LocalDemoRuntime {
-    async fn execute(&self, task: AgentTask) -> Result<ExecutionResult, AppError> {
-        // Simulate async execution
-        self.simulate_execution(task.id.clone()).await
+    async fn execute(
+        &self,
+        _task: AgentTask,
+        progress: Arc<dyn ProgressReporter>,
+        cancellation: CancellationToken,
+    ) -> Result<ExecutionResult, AppError> {
+        progress.report("Analyzing request...".to_string()).await?;
+        sleep(Duration::from_secs(2)).await;
+        if cancellation.is_cancelled() {
+            return Ok(ExecutionResult::cancelled());
+        }
+
+        progress.report("Processing data...".to_string()).await?;
+        sleep(Duration::from_secs(2)).await;
+        if cancellation.is_cancelled() {
+            return Ok(ExecutionResult::cancelled());
+        }
+
+        progress.report("Generating output...".to_string()).await?;
+        sleep(Duration::from_secs(1)).await;
+        if cancellation.is_cancelled() {
+            return Ok(ExecutionResult::cancelled());
+        }
+
+        Ok(ExecutionResult::success(Some(
+            r#"{"summary":"Demo task completed successfully"}"#.to_string(),
+        )))
     }
 }
 
@@ -105,21 +148,32 @@ mod tests {
 
     #[test]
     fn test_execution_result_success() {
-        let result = ExecutionResult {
-            success: true,
-            output: Some("test".to_string()),
-            error: None,
-        };
+        let result = ExecutionResult::success(Some("test".to_string()));
         assert!(result.success);
+        assert!(!result.cancelled);
+        assert_eq!(result.output.as_deref(), Some("test"));
     }
 
     #[test]
     fn test_execution_result_failure() {
-        let result = ExecutionResult {
-            success: false,
-            output: None,
-            error: Some("Something went wrong".to_string()),
-        };
+        let result = ExecutionResult::failure("Something went wrong");
         assert!(!result.success);
+        assert!(!result.cancelled);
+        assert_eq!(result.error.as_deref(), Some("Something went wrong"));
+    }
+
+    #[test]
+    fn test_execution_result_cancelled() {
+        let result = ExecutionResult::cancelled();
+        assert!(!result.success);
+        assert!(result.cancelled);
+    }
+
+    #[test]
+    fn test_cancellation_token() {
+        let token = CancellationToken::new();
+        assert!(!token.is_cancelled());
+        token.cancel();
+        assert!(token.is_cancelled());
     }
 }

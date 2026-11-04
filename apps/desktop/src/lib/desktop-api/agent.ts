@@ -6,13 +6,7 @@ import { invoke } from "@tauri-apps/api/core";
  * Status of an agent task.
  */
 export type TaskStatus =
-  | "created"
-  | "queued"
-  | "running"
-  | "waiting_for_input"
-  | "completed"
-  | "failed"
-  | "cancelled";
+  "created" | "queued" | "running" | "waiting_for_input" | "completed" | "failed" | "cancelled";
 
 /**
  * An agent task represents a research request.
@@ -23,6 +17,8 @@ export interface AgentTask {
   title: string;
   description: string | null;
   status: TaskStatus;
+  output: string | null;
+  error: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,7 +53,7 @@ export interface AgentTaskEvent {
 export async function createAgentTask(
   workspaceId: string,
   title: string,
-  description?: string
+  description?: string,
 ): Promise<AgentTask> {
   return invoke("create_agent_task", {
     workspaceId,

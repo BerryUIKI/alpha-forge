@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 import type { AgentTask } from "@/lib/desktop-api/agent";
-import { useAgentTasks } from "../hooks/useAgentTasks";
+import { useAgentTaskEvents, useAgentTasks } from "../hooks/useAgentTasks";
 
 interface AgentTaskListProps {
   workspaceId: string;
@@ -15,18 +15,14 @@ interface AgentTaskListProps {
 
 export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps) {
   const { isLoading, error, data: tasks, refetch } = useAgentTasks(workspaceId);
+  useAgentTaskEvents();
 
   if (isLoading) {
     return <LoadingSpinner className="p-8" />;
   }
 
   if (error) {
-    return (
-      <ErrorState
-        message="Failed to load agent tasks"
-        onRetry={() => refetch()}
-      />
-    );
+    return <ErrorState message="Failed to load agent tasks" onRetry={() => refetch()} />;
   }
 
   if (!tasks || tasks.length === 0) {
@@ -58,6 +54,7 @@ export function AgentTaskList({ workspaceId, onSelectTask }: AgentTaskListProps)
               <p className="mt-2 text-xs text-muted-foreground">
                 Created {new Date(task.created_at).toLocaleDateString()}
               </p>
+              {task.error && <p className="mt-1 text-xs text-destructive">{task.error}</p>}
             </div>
             <TaskStatusBadge status={task.status} />
           </div>

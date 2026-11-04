@@ -1,9 +1,12 @@
 // Shared application state.
 // Scope: database pool handle, services, configuration, and runtime handles.
-// Agent / artifact / plugin systems will be added in later phases.
+
+use std::sync::Arc;
 
 use sqlx::SqlitePool;
 
+use crate::agent::events::TauriEventPublisher;
+use crate::agent::runtime::LocalDemoRuntime;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
@@ -19,7 +22,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(db_pool: SqlitePool) -> Self {
+    pub fn new(db_pool: SqlitePool, app_handle: tauri::AppHandle) -> Self {
         // Create repositories
         let settings_repo = SettingsRepository::new(db_pool.clone());
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
@@ -28,7 +31,11 @@ impl AppState {
         // Create services
         let settings_service = SettingsService::new(settings_repo);
         let workspace_service = WorkspaceService::new(workspace_repo);
-        let agent_service = AgentService::new(agent_task_repo);
+        let agent_service = AgentService::new(
+            agent_task_repo,
+            Arc::new(LocalDemoRuntime::new()),
+            Arc::new(TauriEventPublisher::new(app_handle)),
+        );
 
         Self {
             db_pool,

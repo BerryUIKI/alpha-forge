@@ -49,6 +49,8 @@ mod tests {
         assert_eq!(created.title, "Research Tesla");
         assert_eq!(created.description.as_deref(), Some("Analyze Q4 earnings"));
         assert_eq!(created.status, TaskStatus::Created);
+        assert!(created.output.is_none());
+        assert!(created.error.is_none());
 
         let fetched = repo
             .get(&created.id)
@@ -143,5 +145,79 @@ mod tests {
         let result = repo.update_status("missing", TaskStatus::Queued).await;
 
         assert!(matches!(result, Err(crate::error::AppError::NotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn test_complete_persists_output() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+
+        repo.complete(&created.id, Some(r#"{"summary":"ok"}"#))
+            .await
+            .expect("Failed to complete task");
+
+        let task = repo
+            .get(&created.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+
+        assert_eq!(task.status, TaskStatus::Completed);
+        assert_eq!(task.output.as_deref(), Some(r#"{"summary":"ok"}"#));
+        assert!(task.error.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_fail_persists_error() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+
+        repo.fail(&created.id, "provider unavailable")
+            .await
+            .expect("Failed to fail task");
+
+        let task = repo
+            .get(&created.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+
+        assert_eq!(task.status, TaskStatus::Failed);
+        assert_eq!(task.error.as_deref(), Some("provider unavailable"));
+        assert!(task.output.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_mark_cancelled() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+
+        repo.mark_cancelled(&created.id)
+            .await
+            .expect("Failed to cancel task");
+
+        let task = repo
+            .get(&created.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+
+        assert_eq!(task.status, TaskStatus::Cancelled);
+        assert!(task.error.is_none());
     }
 }
