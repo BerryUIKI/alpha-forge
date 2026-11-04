@@ -3,9 +3,10 @@
 
 import * as agentApi from "./agent";
 import * as artifactsApi from "./artifacts";
-import * as researchApi from "./research";
 import * as journalApi from "./journal";
 import * as portfolioApi from "./portfolio";
+import * as providerApi from "./provider";
+import * as researchApi from "./research";
 import * as settingsApi from "./settings";
 import * as workspaceApi from "./workspace";
 
@@ -15,6 +16,7 @@ export const desktopApi = {
   research: researchApi,
   journal: journalApi,
   portfolio: portfolioApi,
+  provider: providerApi,
   settings: settingsApi,
   workspace: workspaceApi,
 } as const;
