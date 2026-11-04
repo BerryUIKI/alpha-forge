@@ -220,4 +220,89 @@ mod tests {
         assert_eq!(task.status, TaskStatus::Cancelled);
         assert!(task.error.is_none());
     }
+
+    #[tokio::test]
+    async fn test_fail_running_tasks_marks_only_running_tasks() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let running = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create running task");
+        let queued = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create queued task");
+        repo.update_status(&running.id, TaskStatus::Running)
+            .await
+            .expect("Failed to mark task running");
+        repo.update_status(&queued.id, TaskStatus::Queued)
+            .await
+            .expect("Failed to queue task");
+
+        let ids = repo
+            .fail_running_tasks("interrupted")
+            .await
+            .expect("Failed to recover tasks");
+
+        assert_eq!(ids, vec![running.id.clone()]);
+
+        let failed = repo
+            .get(&running.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+        assert_eq!(failed.status, TaskStatus::Failed);
+        assert_eq!(failed.error.as_deref(), Some("interrupted"));
+
+        let untouched = repo
+            .get(&queued.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+        assert_eq!(untouched.status, TaskStatus::Queued);
+    }
+
+    #[tokio::test]
+    async fn test_requeue_clears_result() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+        repo.fail(&created.id, "boom")
+            .await
+            .expect("Failed to fail task");
+
+        repo.requeue(&created.id)
+            .await
+            .expect("Failed to requeue task");
+
+        let task = repo
+            .get(&created.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+        assert_eq!(task.status, TaskStatus::Queued);
+        assert!(task.error.is_none());
+        assert!(task.output.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_requeue_rejects_task_without_result() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+
+        let result = repo.requeue(&created.id).await;
+
+        assert!(matches!(result, Err(crate::error::AppError::Validation(_))));
+    }
 }
