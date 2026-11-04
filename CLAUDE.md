@@ -109,6 +109,7 @@ React component
 - Use TanStack Query for asynchronous/server state (query keys are centralized per feature, e.g. `WORKSPACE_KEYS` and `AGENT_KEYS`), local component state for UI behavior, and Zustand only for lightweight cross-page state.
 - Theme handling lives in `src/app/theme/` (`ThemeProvider`, `useTheme`). It uses a `.dark` class on `<html>`, persists the choice under `investment-os-theme`, and supports `light`, `dark`, and `system`.
 - Toast notifications live in `src/components/common/` (`ToastProvider`, `useToast`) and are available under the app-wide `Providers`; use them for user-visible action results and recoverable failures.
+- Provider settings live in `features/settings` (`ProviderSettings`, `useProviderStatus`). The Settings page collects the OpenAI API key and sends it straight to Rust; only `{ provider, configured, model }` is read back, so the key is never stored in React state beyond the input.
 - Every async view should handle loading, success, empty, error, partial, and offline states (see `AGENTS.md` §9.2).
 - `packages/ui` currently exports a shared `Badge` and `cn`; `packages/schemas`, `packages/shared-types`, `packages/config`, `packages/artifact-sdk`, and `packages/financial-components` are placeholders.
 
