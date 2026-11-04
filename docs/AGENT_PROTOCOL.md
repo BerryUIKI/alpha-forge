@@ -18,7 +18,7 @@ Created → Queued → Running → Waiting For Input → Completed
 |-------|---------|
 | **Created** | Task record exists, not yet queued for execution. |
 | **Queued** | Task is waiting for an available execution slot. |
-| **Running** | Task is actively executing — making API calls, processing data. |
+| **Running** | Task is scheduled or actively executing — waiting for a slot, making API calls, or processing data. |
 | **Waiting For Input** | Agent needs clarification or additional information from the user. |
 | **Completed** | Task finished successfully. Output is available. |
 | **Failed** | Task encountered an unrecoverable error. Error details are recorded. |
@@ -27,7 +27,7 @@ Created → Queued → Running → Waiting For Input → Completed
 ### Transitions
 
 - `Created → Queued`: Task is submitted for execution.
-- `Queued → Running`: An execution slot becomes available.
+- `Queued → Running`: The task is accepted for execution. It may wait for a free slot before the runtime is invoked.
 - `Running → Waiting For Input`: Agent needs the user to provide more context.
 - `Waiting For Input → Running`: User provides the requested input.
 - `Running → Completed`: Task produces valid structured output.
@@ -51,10 +51,16 @@ User submits task
 
 ### Concurrency
 
-- Maximum concurrent tasks: configurable, default 2.
-- Additional tasks are queued.
+- Maximum concurrent tasks: configurable, default 2 (`AgentService::with_max_concurrency`).
+- Additional tasks are scheduled immediately but wait for a slot, emitting a "Waiting for an execution slot..." progress event.
 - Each task has a configurable timeout (default 5 minutes).
 - Tasks track token and cost budgets.
+
+### Recovery and Retry
+
+- On startup, tasks left in `running` by a previous process are marked `failed` with an "interrupted by application restart" error and a matching `task_failed` event.
+- Failed and cancelled tasks can be requeued with `retry_agent_task`; retrying clears the previous output/error and records a `task_queued` event.
+- Transient provider failures (rate limits, 5xx, network errors) are retried up to 2 times with exponential backoff inside the provider client. Authentication and validation errors fail immediately.
 
 ### Cancellation
 

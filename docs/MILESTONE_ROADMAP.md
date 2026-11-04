@@ -182,7 +182,7 @@ Create the core intelligence engine of AlphaForge.
 - [x] Background execution (Tokio)
 - [x] Event streaming (Tauri events)
 - [x] Cancellation support
-- [ ] Retry handling
+- [x] Retry handling
 - [x] Timeout enforcement
 
 #### Context System

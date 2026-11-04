@@ -150,7 +150,7 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 |------------|--------|--------|
 | `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
-| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; workspace task panel with live timeline; OpenAI-backed runtime) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task`, `retry_agent_task` | agent | ✅ Active (background execution with concurrency limit and restart recovery, event streaming, cancellation/timeout, retry; workspace task panel with live timeline; OpenAI-backed runtime) |
 | `get_provider_status`, `set_provider_api_key`, `clear_provider_api_key` | provider | ✅ Active (OS keychain storage; status never returns the key) |
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
