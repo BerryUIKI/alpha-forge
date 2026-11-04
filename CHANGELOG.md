@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Architecture Decision Records (ADR) system
 - Agent development workflow documentation (AGENTS.md)
 - Product milestone roadmap
+- Global toast notifications for user actions and errors.
+- Light/dark/system theme switching with persistence and pre-render initialization.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useToast } from "@/components/common/useToast";
 import { useCreateWorkspace } from "@/features/workspace/hooks/useWorkspaces";
 
 interface CreateWorkspaceDialogProps {
@@ -14,6 +15,7 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const createMutation = useCreateWorkspace();
+  const { toast } = useToast();
 
   if (!isOpen) return null;
 
@@ -35,10 +37,21 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
       const workspace = await createMutation.mutateAsync(trimmedName);
       setName("");
       setError("");
+      toast({
+        title: "Workspace created",
+        description: `"${workspace.name}" is ready.`,
+        variant: "success",
+      });
       onSuccess?.({ id: workspace.id, name: workspace.name });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create workspace");
+      const message = err instanceof Error ? err.message : "Failed to create workspace";
+      setError(message);
+      toast({
+        title: "Workspace creation failed",
+        description: message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -47,10 +60,7 @@ export function CreateWorkspaceDialog({ isOpen, onClose, onSuccess }: CreateWork
       <div className="w-full max-w-md rounded-lg bg-card p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Create Workspace</h2>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 hover:bg-accent"
-          >
+          <button onClick={onClose} className="rounded-md p-1 hover:bg-accent">
             <X className="h-5 w-5" />
           </button>
         </div>

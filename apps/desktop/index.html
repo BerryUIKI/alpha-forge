@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Investment OS</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("investment-os-theme");
+          var systemDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var isSystem =
+            stored !== "light" && stored !== "dark";
+          var isDark = stored === "dark" || (isSystem && systemDark);
+          document.documentElement.classList.toggle("dark", isDark);
+          document.documentElement.style.setProperty(
+            "color-scheme",
+            isDark ? "dark" : "light"
+          );
+        } catch (error) {
+          // Theme initialization is best-effort; React applies it on mount.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
