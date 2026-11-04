@@ -69,3 +69,11 @@ pub async fn cancel_agent_task(
 ) -> Result<AgentTask, AppError> {
     state.agent_service.cancel_task(&task_id).await
 }
+
+#[tauri::command]
+pub async fn retry_agent_task(
+    task_id: String,
+    state: State<'_, AppState>,
+) -> Result<AgentTask, AppError> {
+    state.agent_service.retry_task(&task_id).await
+}

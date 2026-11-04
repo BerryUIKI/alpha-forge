@@ -2,6 +2,8 @@
 
 #[cfg(test)]
 mod tests {
+    use std::collections::VecDeque;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::{Arc, Mutex as StdMutex};
     use std::time::Duration;
 
@@ -85,7 +87,7 @@ mod tests {
 
     async fn setup_service(
         runtime: Arc<dyn AgentRuntime>,
-    ) -> (AgentService, Arc<RecordingPublisher>) {
+    ) -> (AgentService, Arc<RecordingPublisher>, AgentTaskRepository) {
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
             .connect(":memory:")
@@ -103,9 +105,9 @@ mod tests {
 
         let publisher = Arc::new(RecordingPublisher::default());
         let repo = AgentTaskRepository::new(pool);
-        let service = AgentService::new(repo, runtime, publisher.clone());
+        let service = AgentService::new(repo.clone(), runtime, publisher.clone());
 
-        (service, publisher)
+        (service, publisher, repo)
     }
 
     async fn create_queued_task(service: &AgentService) -> AgentTask {
@@ -151,7 +153,7 @@ mod tests {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(Some(
             r#"{"summary":"ok"}"#.to_string(),
         ))));
-        let (service, publisher) = setup_service(runtime).await;
+        let (service, publisher, _repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         let running = service
@@ -178,7 +180,7 @@ mod tests {
     #[tokio::test]
     async fn test_start_task_failure_persists_error() {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::failure("boom")));
-        let (service, publisher) = setup_service(runtime).await;
+        let (service, publisher, _repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         service
@@ -202,7 +204,7 @@ mod tests {
             wait_for_cancellation: true,
             delay: None,
         });
-        let (service, publisher) = setup_service(runtime).await;
+        let (service, publisher, _repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         service
@@ -265,7 +267,7 @@ mod tests {
     #[tokio::test]
     async fn test_start_requires_queued_state() {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(None)));
-        let (service, _) = setup_service(runtime).await;
+        let (service, _, _repo) = setup_service(runtime).await;
 
         let task = service
             .create_task(CreateAgentTaskInput {
@@ -277,6 +279,183 @@ mod tests {
             .expect("Failed to create task");
 
         let result = service.start_task(&task.id).await;
+        assert!(matches!(result, Err(AppError::Validation(_))));
+    }
+
+    struct ConcurrencyRuntime {
+        running: AtomicUsize,
+        max_running: AtomicUsize,
+        delay: Duration,
+    }
+
+    impl ConcurrencyRuntime {
+        fn new(delay: Duration) -> Self {
+            Self {
+                running: AtomicUsize::new(0),
+                max_running: AtomicUsize::new(0),
+                delay,
+            }
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl AgentRuntime for ConcurrencyRuntime {
+        async fn execute(
+            &self,
+            _task: AgentTask,
+            _progress: Arc<dyn ProgressReporter>,
+            _cancellation: CancellationToken,
+        ) -> Result<ExecutionResult, AppError> {
+            let current = self.running.fetch_add(1, Ordering::SeqCst) + 1;
+            self.max_running.fetch_max(current, Ordering::SeqCst);
+            tokio::time::sleep(self.delay).await;
+            self.running.fetch_sub(1, Ordering::SeqCst);
+            Ok(ExecutionResult::success(Some(
+                r#"{"summary":"ok"}"#.to_string(),
+            )))
+        }
+    }
+
+    struct SequencedRuntime {
+        results: StdMutex<VecDeque<ExecutionResult>>,
+    }
+
+    impl SequencedRuntime {
+        fn new(results: Vec<ExecutionResult>) -> Self {
+            Self {
+                results: StdMutex::new(VecDeque::from(results)),
+            }
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl AgentRuntime for SequencedRuntime {
+        async fn execute(
+            &self,
+            _task: AgentTask,
+            _progress: Arc<dyn ProgressReporter>,
+            _cancellation: CancellationToken,
+        ) -> Result<ExecutionResult, AppError> {
+            let result = self
+                .results
+                .lock()
+                .expect("results lock")
+                .pop_front()
+                .unwrap_or_else(|| ExecutionResult::success(None));
+            Ok(result)
+        }
+    }
+
+    #[tokio::test]
+    async fn test_concurrency_limit_queues_extra_tasks() {
+        let runtime = Arc::new(ConcurrencyRuntime::new(Duration::from_millis(30)));
+        let (service, _publisher, _repo) = setup_service(runtime.clone()).await;
+        let service = service.with_max_concurrency(1);
+
+        let mut task_ids = Vec::new();
+        for _ in 0..3 {
+            task_ids.push(create_queued_task(&service).await.id);
+        }
+
+        for task_id in &task_ids {
+            service
+                .start_task(task_id)
+                .await
+                .expect("Failed to start task");
+        }
+
+        for task_id in &task_ids {
+            wait_for_status(&service, task_id, TaskStatus::Completed).await;
+        }
+
+        assert_eq!(runtime.max_running.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn test_recover_interrupted_tasks_marks_running_as_failed() {
+        let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(None)));
+        let (service, publisher, repo) = setup_service(runtime).await;
+
+        let queued = create_queued_task(&service).await;
+        let interrupted = create_queued_task(&service).await;
+        repo.update_status(&interrupted.id, TaskStatus::Running)
+            .await
+            .expect("Failed to mark task running");
+
+        let recovered = service
+            .recover_interrupted_tasks()
+            .await
+            .expect("Failed to recover tasks");
+
+        assert_eq!(recovered, 1);
+
+        let task = service
+            .get_task(&interrupted.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+        assert_eq!(task.status, TaskStatus::Failed);
+        assert!(task
+            .error
+            .as_deref()
+            .unwrap_or_default()
+            .contains("restart"));
+
+        assert!(publisher.events().iter().any(|event| {
+            event.task_id == interrupted.id && event.event_type == TaskEventType::TaskFailed
+        }));
+
+        let untouched = service
+            .get_task(&queued.id)
+            .await
+            .expect("Failed to get task")
+            .expect("Task should exist");
+        assert_eq!(untouched.status, TaskStatus::Queued);
+    }
+
+    #[tokio::test]
+    async fn test_retry_requeues_failed_task_and_runs_again() {
+        let runtime = Arc::new(SequencedRuntime::new(vec![
+            ExecutionResult::failure("boom"),
+            ExecutionResult::success(Some(r#"{"summary":"ok"}"#.to_string())),
+        ]));
+        let (service, _publisher, _repo) = setup_service(runtime).await;
+
+        let task = create_queued_task(&service).await;
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
+        wait_for_status(&service, &task.id, TaskStatus::Failed).await;
+
+        let requeued = service.retry_task(&task.id).await.expect("Failed to retry");
+        assert_eq!(requeued.status, TaskStatus::Queued);
+        assert!(requeued.error.is_none());
+        assert!(requeued.output.is_none());
+
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to restart task");
+        let completed = wait_for_status(&service, &task.id, TaskStatus::Completed).await;
+        assert!(completed.output.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_retry_rejects_completed_task() {
+        let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(Some(
+            r#"{"summary":"ok"}"#.to_string(),
+        ))));
+        let (service, _, _repo) = setup_service(runtime).await;
+
+        let task = create_queued_task(&service).await;
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
+        wait_for_status(&service, &task.id, TaskStatus::Completed).await;
+
+        let result = service.retry_task(&task.id).await;
         assert!(matches!(result, Err(AppError::Validation(_))));
     }
 }

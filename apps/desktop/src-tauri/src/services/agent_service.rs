@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Semaphore};
 use tokio::time::timeout;
 
 use crate::agent::events::EventPublisher;
@@ -15,12 +15,18 @@ use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventTyp
 
 const DEFAULT_EXECUTION_TIMEOUT: Duration = Duration::from_secs(300);
 
+/// Default maximum number of agent tasks executing at the same time.
+pub const DEFAULT_MAX_CONCURRENT_TASKS: usize = 2;
+
+const INTERRUPTED_TASK_ERROR: &str = "Task interrupted by application restart";
+
 /// Service for managing agent tasks and running them in the background.
 pub struct AgentService {
     repo: AgentTaskRepository,
     runtime: Arc<dyn AgentRuntime>,
     publisher: Arc<dyn EventPublisher>,
     cancellations: Arc<Mutex<HashMap<String, CancellationToken>>>,
+    semaphore: Arc<Semaphore>,
     execution_timeout: Duration,
 }
 
@@ -36,6 +42,7 @@ impl AgentService {
             runtime,
             publisher,
             cancellations: Arc::new(Mutex::new(HashMap::new())),
+            semaphore: Arc::new(Semaphore::new(DEFAULT_MAX_CONCURRENT_TASKS)),
             execution_timeout: DEFAULT_EXECUTION_TIMEOUT,
         }
     }
@@ -43,6 +50,12 @@ impl AgentService {
     /// Overrides the execution timeout (primarily for tests).
     pub fn with_timeout(mut self, execution_timeout: Duration) -> Self {
         self.execution_timeout = execution_timeout;
+        self
+    }
+
+    /// Overrides the maximum number of concurrently executing tasks.
+    pub fn with_max_concurrency(mut self, max_concurrent: usize) -> Self {
+        self.semaphore = Arc::new(Semaphore::new(max_concurrent.max(1)));
         self
     }
 
@@ -159,6 +172,7 @@ impl AgentService {
         let repo = self.repo.clone();
         let publisher = Arc::clone(&self.publisher);
         let cancellations = Arc::clone(&self.cancellations);
+        let semaphore = Arc::clone(&self.semaphore);
         let timeout_duration = self.execution_timeout;
         let task_for_run = running.clone();
 
@@ -169,70 +183,70 @@ impl AgentService {
                 task_id: task_for_run.id.clone(),
             });
 
-            let outcome = timeout(
-                timeout_duration,
-                runtime.execute(task_for_run.clone(), reporter, cancellation),
-            )
-            .await;
+            // Wait for an execution slot. A task cancelled while waiting is
+            // finalized as cancelled without calling the runtime.
+            let permit = match semaphore.clone().try_acquire_owned() {
+                Ok(permit) => Some(permit),
+                Err(_) => {
+                    if let Err(error) = reporter
+                        .report("Waiting for an execution slot...".to_string())
+                        .await
+                    {
+                        finalize_task(
+                            &repo,
+                            &publisher,
+                            &task_for_run.id,
+                            FinalState::Failed(error.to_string()),
+                        )
+                        .await;
+                        cancellations.lock().await.remove(&task_for_run.id);
+                        return;
+                    }
 
-            let final_state = match outcome {
-                Ok(Ok(result)) if result.cancelled => FinalState::Cancelled,
-                Ok(Ok(result)) if result.success => FinalState::Completed(result.output),
-                Ok(Ok(result)) => FinalState::Failed(
-                    result
-                        .error
-                        .unwrap_or_else(|| "Agent task failed".to_string()),
-                ),
-                Ok(Err(error)) => FinalState::Failed(error.to_string()),
-                Err(_) => FinalState::Failed(format!(
-                    "Agent task timed out after {} ms",
-                    timeout_duration.as_millis()
-                )),
-            };
-
-            let (event_type, payload) = match &final_state {
-                FinalState::Completed(output) => (TaskEventType::TaskCompleted, output.clone()),
-                FinalState::Failed(error) => (TaskEventType::TaskFailed, Some(error.clone())),
-                FinalState::Cancelled => (TaskEventType::TaskCancelled, None),
-            };
-
-            let update = match &final_state {
-                FinalState::Completed(output) => {
-                    repo.complete(&task_for_run.id, output.as_deref()).await
-                }
-                FinalState::Failed(error) => repo.fail(&task_for_run.id, error).await,
-                FinalState::Cancelled => repo.mark_cancelled(&task_for_run.id).await,
-            };
-            if let Err(error) = update {
-                tracing::error!(
-                    ?error,
-                    task_id = %task_for_run.id,
-                    "failed to persist agent task result"
-                );
-            }
-
-            match repo
-                .create_event(&task_for_run.id, event_type, payload)
-                .await
-            {
-                Ok(event) => {
-                    if let Err(error) = publisher.publish(&event) {
-                        tracing::warn!(
-                            ?error,
-                            task_id = %task_for_run.id,
-                            "failed to publish final agent task event"
-                        );
+                    tokio::select! {
+                        permit = semaphore.acquire_owned() => permit.ok(),
+                        _ = cancellation.cancelled() => None,
                     }
                 }
-                Err(error) => {
-                    tracing::error!(
-                        ?error,
-                        task_id = %task_for_run.id,
-                        "failed to persist final agent task event"
-                    );
-                }
-            }
+            };
 
+            let final_state = match permit {
+                None => FinalState::Cancelled,
+                Some(_permit) => {
+                    if cancellation.is_cancelled() {
+                        FinalState::Cancelled
+                    } else {
+                        let outcome = timeout(
+                            timeout_duration,
+                            runtime.execute(
+                                task_for_run.clone(),
+                                Arc::clone(&reporter),
+                                cancellation,
+                            ),
+                        )
+                        .await;
+
+                        match outcome {
+                            Ok(Ok(result)) if result.cancelled => FinalState::Cancelled,
+                            Ok(Ok(result)) if result.success => {
+                                FinalState::Completed(result.output)
+                            }
+                            Ok(Ok(result)) => FinalState::Failed(
+                                result
+                                    .error
+                                    .unwrap_or_else(|| "Agent task failed".to_string()),
+                            ),
+                            Ok(Err(error)) => FinalState::Failed(error.to_string()),
+                            Err(_) => FinalState::Failed(format!(
+                                "Agent task timed out after {} ms",
+                                timeout_duration.as_millis()
+                            )),
+                        }
+                    }
+                }
+            };
+
+            finalize_task(&repo, &publisher, &task_for_run.id, final_state).await;
             cancellations.lock().await.remove(&task_for_run.id);
         });
 
@@ -322,6 +336,65 @@ impl AgentService {
             .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
     }
 
+    /// Marks tasks left running by a previous process as failed.
+    ///
+    /// Called at startup; returns the number of recovered tasks.
+    pub async fn recover_interrupted_tasks(&self) -> Result<usize, AppError> {
+        let task_ids = self.repo.fail_running_tasks(INTERRUPTED_TASK_ERROR).await?;
+
+        for task_id in &task_ids {
+            match self
+                .repo
+                .create_event(
+                    task_id,
+                    TaskEventType::TaskFailed,
+                    Some(INTERRUPTED_TASK_ERROR.to_string()),
+                )
+                .await
+            {
+                Ok(event) => self.publish(&event),
+                Err(error) => {
+                    tracing::error!(
+                        ?error,
+                        task_id = %task_id,
+                        "failed to record interrupted task event"
+                    );
+                }
+            }
+        }
+
+        Ok(task_ids.len())
+    }
+
+    /// Returns a failed or cancelled task to the queue.
+    pub async fn retry_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
+        let task = self
+            .repo
+            .get(task_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+
+        if !matches!(task.status, TaskStatus::Failed | TaskStatus::Cancelled) {
+            return Err(AppError::Validation(format!(
+                "Cannot retry task in '{}' state",
+                task.status
+            )));
+        }
+
+        self.repo.requeue(task_id).await?;
+
+        let event = self
+            .repo
+            .create_event(task_id, TaskEventType::TaskQueued, None)
+            .await?;
+        self.publish(&event);
+
+        self.repo
+            .get(task_id)
+            .await?
+            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
+    }
+
     /// Gets a task by ID.
     pub async fn get_task(&self, task_id: &str) -> Result<Option<AgentTask>, AppError> {
         self.repo.get(task_id).await
@@ -335,6 +408,52 @@ impl AgentService {
     /// Gets task events.
     pub async fn get_task_events(&self, task_id: &str) -> Result<Vec<AgentTaskEvent>, AppError> {
         self.repo.list_events(task_id).await
+    }
+}
+
+/// Persists the final task state and publishes the matching event.
+async fn finalize_task(
+    repo: &AgentTaskRepository,
+    publisher: &Arc<dyn EventPublisher>,
+    task_id: &str,
+    final_state: FinalState,
+) {
+    let (event_type, payload) = match &final_state {
+        FinalState::Completed(output) => (TaskEventType::TaskCompleted, output.clone()),
+        FinalState::Failed(error) => (TaskEventType::TaskFailed, Some(error.clone())),
+        FinalState::Cancelled => (TaskEventType::TaskCancelled, None),
+    };
+
+    let update = match &final_state {
+        FinalState::Completed(output) => repo.complete(task_id, output.as_deref()).await,
+        FinalState::Failed(error) => repo.fail(task_id, error).await,
+        FinalState::Cancelled => repo.mark_cancelled(task_id).await,
+    };
+    if let Err(error) = update {
+        tracing::error!(
+            ?error,
+            task_id = %task_id,
+            "failed to persist agent task result"
+        );
+    }
+
+    match repo.create_event(task_id, event_type, payload).await {
+        Ok(event) => {
+            if let Err(error) = publisher.publish(&event) {
+                tracing::warn!(
+                    ?error,
+                    task_id = %task_id,
+                    "failed to publish final agent task event"
+                );
+            }
+        }
+        Err(error) => {
+            tracing::error!(
+                ?error,
+                task_id = %task_id,
+                "failed to persist final agent task event"
+            );
+        }
     }
 }
 

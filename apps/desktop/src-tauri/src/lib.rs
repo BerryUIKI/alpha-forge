@@ -35,6 +35,13 @@ pub fn run() {
                 match app::bootstrap::init_database(&handle).await {
                     Ok(pool) => {
                         let state = AppState::new(pool, handle.clone());
+                        match state.agent_service.recover_interrupted_tasks().await {
+                            Ok(0) => {}
+                            Ok(count) => info!(count, "recovered interrupted agent tasks"),
+                            Err(e) => {
+                                tracing::error!(?e, "failed to recover interrupted agent tasks")
+                            }
+                        }
                         handle.manage(state);
                         info!("app state initialized");
                     }
@@ -66,6 +73,7 @@ pub fn run() {
             commands::agent::queue_agent_task,
             commands::agent::start_agent_task,
             commands::agent::cancel_agent_task,
+            commands::agent::retry_agent_task,
             // Provider commands
             commands::provider::get_provider_status,
             commands::provider::set_provider_api_key,

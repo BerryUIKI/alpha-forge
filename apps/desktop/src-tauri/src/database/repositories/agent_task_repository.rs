@@ -198,6 +198,54 @@ impl AgentTaskRepository {
         Ok(())
     }
 
+    /// Marks all running tasks as failed, returning their IDs.
+    ///
+    /// Used at startup to clean up tasks that were interrupted when the
+    /// previous process exited.
+    pub async fn fail_running_tasks(&self, error: &str) -> Result<Vec<String>, AppError> {
+        let ids = sqlx::query_scalar::<_, String>(
+            r#"
+            UPDATE agent_tasks
+            SET status = 'failed', output = NULL, error = ?, updated_at = ?
+            WHERE status = 'running'
+            RETURNING id
+            "#,
+        )
+        .bind(error)
+        .bind(Utc::now())
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to recover running agent tasks: {}", e)))?;
+
+        Ok(ids)
+    }
+
+    /// Returns a failed or cancelled task to the queue.
+    pub async fn requeue(&self, id: &str) -> Result<(), AppError> {
+        let rows_affected = sqlx::query(
+            r#"
+            UPDATE agent_tasks
+            SET status = 'queued', output = NULL, error = NULL, updated_at = ?
+            WHERE id = ? AND status IN ('failed', 'cancelled')
+            "#,
+        )
+        .bind(Utc::now())
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to requeue agent task: {}", e)))?
+        .rows_affected();
+
+        if rows_affected == 0 {
+            return Err(AppError::Validation(format!(
+                "Agent task '{}' cannot be retried in its current state",
+                id
+            )));
+        }
+
+        Ok(())
+    }
+
     /// Creates a task event.
     pub async fn create_event(
         &self,

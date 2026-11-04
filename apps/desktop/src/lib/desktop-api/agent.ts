@@ -103,3 +103,10 @@ export async function startAgentTask(taskId: string): Promise<AgentTask> {
 export async function cancelAgentTask(taskId: string): Promise<AgentTask> {
   return invoke("cancel_agent_task", { taskId });
 }
+
+/**
+ * Returns a failed or cancelled task to the queue.
+ */
+export async function retryAgentTask(taskId: string): Promise<AgentTask> {
+  return invoke("retry_agent_task", { taskId });
+}

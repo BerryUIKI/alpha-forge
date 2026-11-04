@@ -15,5 +15,6 @@ export {
   useQueueAgentTask,
   useStartAgentTask,
   useRunAgentTask,
+  useRetryAgentTask,
   useCancelAgentTask,
 } from "./hooks/useAgentTasks";

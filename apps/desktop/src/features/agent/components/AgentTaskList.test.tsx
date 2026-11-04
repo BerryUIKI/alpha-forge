@@ -157,4 +157,25 @@ describe("AgentTaskList", () => {
     expect(await screen.findByText("provider unavailable")).toBeInTheDocument();
     expect(screen.getByText("Failed")).toBeInTheDocument();
   });
+
+  it("retries a failed task", async () => {
+    mockCommands({
+      list_agent_tasks: () => [makeTask({ status: "failed", error: "boom" })],
+      retry_agent_task: () => makeTask({ status: "queued" }),
+      start_agent_task: () => makeTask({ status: "running" }),
+    });
+
+    renderList();
+
+    fireEvent.click(await screen.findByRole("button", { name: /retry/i }));
+
+    await waitFor(() => {
+      expect(invokedCommands()).toContain("retry_agent_task");
+      expect(invokedCommands()).toContain("start_agent_task");
+    });
+    expect(invokedCommands().indexOf("retry_agent_task")).toBeLessThan(
+      invokedCommands().indexOf("start_agent_task"),
+    );
+    expect(await screen.findByText("Task restarted")).toBeInTheDocument();
+  });
 });

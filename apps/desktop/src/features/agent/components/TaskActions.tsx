@@ -1,10 +1,10 @@
-// Task action buttons — start and cancel.
+// Task action buttons — start, cancel, and retry.
 
-import { Play, Square } from "lucide-react";
+import { Play, RotateCcw, Square } from "lucide-react";
 import { useToast } from "@/components/common/useToast";
 import { getErrorMessage } from "@/lib/errors";
 import type { AgentTask } from "@/lib/desktop-api/agent";
-import { useCancelAgentTask, useRunAgentTask } from "../hooks/useAgentTasks";
+import { useCancelAgentTask, useRetryAgentTask, useRunAgentTask } from "../hooks/useAgentTasks";
 
 interface TaskActionsProps {
   task: AgentTask;
@@ -13,14 +13,16 @@ interface TaskActionsProps {
 export function TaskActions({ task }: TaskActionsProps) {
   const { toast } = useToast();
   const runTask = useRunAgentTask();
+  const retryTask = useRetryAgentTask();
   const cancelTask = useCancelAgentTask();
 
   const canStart = task.status === "created" || task.status === "queued";
   const canCancel =
     task.status === "queued" || task.status === "running" || task.status === "waiting_for_input";
-  const isPending = runTask.isPending || cancelTask.isPending;
+  const canRetry = task.status === "failed" || task.status === "cancelled";
+  const isPending = runTask.isPending || retryTask.isPending || cancelTask.isPending;
 
-  if (!canStart && !canCancel) {
+  if (!canStart && !canCancel && !canRetry) {
     return null;
   }
 
@@ -57,6 +59,21 @@ export function TaskActions({ task }: TaskActionsProps) {
     });
   };
 
+  const handleRetry = () => {
+    retryTask.mutate(task.id, {
+      onSuccess: () => {
+        toast({ title: "Task restarted", variant: "success" });
+      },
+      onError: (error) => {
+        toast({
+          title: "Failed to retry task",
+          description: getErrorMessage(error),
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
   return (
     <div className="flex shrink-0 gap-2">
       {canStart && (
@@ -79,6 +96,17 @@ export function TaskActions({ task }: TaskActionsProps) {
         >
           <Square className="h-3 w-3" />
           Cancel
+        </button>
+      )}
+      {canRetry && (
+        <button
+          type="button"
+          onClick={handleRetry}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+        >
+          <RotateCcw className="h-3 w-3" />
+          Retry
         </button>
       )}
     </div>

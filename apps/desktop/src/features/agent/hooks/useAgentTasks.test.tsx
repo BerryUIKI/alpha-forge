@@ -4,7 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
-import { AGENT_KEYS, useAgentTaskEvents, useRunAgentTask } from "./useAgentTasks";
+import {
+  AGENT_KEYS,
+  useAgentTaskEvents,
+  useRetryAgentTask,
+  useRunAgentTask,
+} from "./useAgentTasks";
 
 vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn(),
@@ -88,5 +93,26 @@ describe("useRunAgentTask", () => {
     });
 
     expect(vi.mocked(invoke).mock.calls.map(([command]) => command)).toEqual(["start_agent_task"]);
+  });
+});
+
+describe("useRetryAgentTask", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("requeues then restarts a failed task", async () => {
+    vi.mocked(invoke).mockResolvedValue({});
+
+    const { result } = renderHook(() => useRetryAgentTask(), { wrapper: makeWrapper() });
+
+    await act(async () => {
+      await result.current.mutateAsync("task-1");
+    });
+
+    expect(vi.mocked(invoke).mock.calls.map(([command]) => command)).toEqual([
+      "retry_agent_task",
+      "start_agent_task",
+    ]);
   });
 });
