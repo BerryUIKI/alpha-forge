@@ -69,6 +69,13 @@ impl CancellationToken {
     pub fn is_cancelled(&self) -> bool {
         self.cancelled.load(Ordering::SeqCst)
     }
+
+    /// Resolves once the token has been cancelled.
+    pub async fn cancelled(&self) {
+        while !self.is_cancelled() {
+            sleep(Duration::from_millis(100)).await;
+        }
+    }
 }
 
 /// Callback used by runtimes to publish incremental progress.

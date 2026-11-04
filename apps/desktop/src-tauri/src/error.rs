@@ -16,6 +16,9 @@ pub enum AppError {
 
     #[error("timeout: {0}")]
     Timeout(String),
+
+    #[error("provider error: {0}")]
+    Provider(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -50,6 +53,11 @@ impl AppError {
             },
             AppError::Timeout(msg) => AppErrorResponse {
                 code: "TIMEOUT".into(),
+                message: msg.clone(),
+                recoverable: true,
+            },
+            AppError::Provider(msg) => AppErrorResponse {
+                code: "PROVIDER".into(),
                 message: msg.clone(),
                 recoverable: true,
             },
