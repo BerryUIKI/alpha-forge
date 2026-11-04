@@ -72,6 +72,7 @@ impl CancellationToken {
 }
 
 /// Callback used by runtimes to publish incremental progress.
+#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait ProgressReporter: Send + Sync {
     async fn report(&self, message: String) -> Result<(), AppError>;
