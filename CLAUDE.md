@@ -64,12 +64,22 @@ cargo test -p investment-os migrations
 
 `./scripts/check.sh` runs typecheck, lint, `cargo fmt --check`, and Clippy with `-D warnings`.
 
+CLI (shares the desktop database and service layer):
+
+```bash
+cargo run -p alphaforge-cli -- workspace list
+cargo run -p alphaforge-cli -- task list --workspace <id>
+cargo run -p alphaforge-cli -- --json task run <task-id>
+cargo run -p alphaforge-cli -- --db ./dev.db task show <task-id> --events
+```
+
 ## Repository layout
 
 ```text
 apps/desktop/src/                    React 19 frontend
 apps/desktop/src-tauri/src/          Rust backend (Tauri commands, services, repositories)
 apps/desktop/src-tauri/migrations/   SQL migrations (append-only)
+apps/cli/                            Rust CLI (`alphaforge`) sharing the desktop services
 apps/desktop/src-tauri/capabilities/ Tauri permission files
 crates/domain/                       Pure domain models (used by the backend and tests)
 crates/{agent-core,artifact-core,provider-core,shared}/   Mostly scaffolding/stubs
@@ -129,6 +139,12 @@ React component
 - Treat agent output as untrusted: validate it against a schema and render it with predefined React plugins. Never inject agent-generated HTML into the privileged main-window DOM.
 - Artifact windows receive only `core:default` (`capabilities/artifact-window.json`); the main window additionally gets opener, shell-open, and store permissions (`capabilities/main-window.json`).
 - The research, journal, portfolio, and artifact list commands (`commands/research.rs`, `journal.rs`, `portfolio.rs`, `artifacts.rs`) are stubs returning empty collections.
+
+### CLI and developer interfaces
+
+- `apps/cli` builds the `alphaforge` binary (`cargo run -p alphaforge-cli -- ...`). It opens the same SQLite database (or `--db <path>`) and reuses `services`/`repositories`; background events are discarded through a no-op `EventPublisher`.
+- `task run`, `task retry`, and `task cancel` poll until the task reaches a terminal state and stream `task_progress` payloads in text mode. The CLI deliberately does not run startup recovery, because the desktop app may be running concurrently.
+- The planned MCP server will wrap the same service layer; see `docs/MILESTONE_ROADMAP.md` (Developer Interfaces).
 
 ### Security boundaries
 

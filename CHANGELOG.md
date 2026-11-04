@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAI-backed agent runtime: structured research prompts, schema-validated JSON output, and typed provider errors.
 - Provider configuration commands with API keys stored in the OS keychain; status responses never expose the key.
 - Agent queue semantics: at most two concurrent tasks, startup recovery for interrupted tasks, manual retry for failed/cancelled tasks, and automatic retries with backoff for transient provider errors.
+- `alphaforge` CLI for workspaces and agent tasks, with human/JSON output, live progress, timeout, cancellation, and retry.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.

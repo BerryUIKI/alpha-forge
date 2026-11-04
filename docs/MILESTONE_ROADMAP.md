@@ -242,6 +242,54 @@ Result persisted in SQLite
 
 ---
 
+## Developer Interfaces (CLI + MCP) 🚧
+
+**Status**: In Progress — CLI first, MCP next
+
+### Goal
+
+Give humans and external AI clients a first-class way to drive the local research
+workspace without the desktop UI. Both interfaces use the same Rust service layer
+as the Tauri commands, so behavior stays consistent.
+
+### CLI (`alphaforge`)
+
+- [x] Workspace commands (`list`, `create`)
+- [x] Task commands (`list`, `create`, `show`, `run`, `cancel`, `retry`)
+- [x] `task run` waits for completion, streams progress, supports `--timeout` and Ctrl+C cancellation
+- [x] Human-readable and `--json` output; `--db` override for tests and alternate profiles
+- [ ] Provider status / key management commands
+
+### MCP server
+
+- [ ] Read-only MCP tools over stdio (list workspaces/tasks, get task output)
+- [ ] Explicit opt-in write tools (`create_task`, `run_task`)
+- [ ] Shared service bootstrap extracted from the CLI
+
+### Scheduling
+
+1. **CLI — now** (after M2 queue semantics). It validates headless access to the
+   database, credentials, and background execution.
+2. **MCP read-only server — after M3** (Artifact Intelligence), when research
+   documents, notes, and artifacts exist to expose.
+3. **MCP write tools — after M4** (Research Workspace), once the data model is stable.
+
+### Acceptance Criteria
+
+```text
+alphaforge workspace create "Macro"
+    ↓
+alphaforge task create --workspace <id> --title "Analyze CPI print"
+    ↓
+alphaforge task run <task-id>
+    ↓
+Progress streams to the terminal
+    ↓
+Output is printed and persisted in SQLite
+```
+
+---
+
 ## M3 — Artifact Intelligence System 📋
 
 **Status**: Planned
@@ -654,14 +702,14 @@ All three pillars must work together.
 ## Progress Tracking
 
 ### Current Phase
-**M2 — Agent Runtime** 🚧
+**M2 — Agent Runtime** 🚧 (context and tool systems remain)
 
-The M1.5 foundation (service/repository layers, workspace persistence, theme/toast, test setup) is in place. M2 now covers task lifecycle, background execution, event streaming, cancellation, timeout enforcement, and a workspace task panel in the UI. Provider integration, context, tools, and retry handling remain.
+The M1.5 foundation (service/repository layers, workspace persistence, theme/toast, test setup) is in place. M2 now covers task lifecycle, background execution with concurrency limits and restart recovery, event streaming, cancellation, timeout, retry, a workspace task panel, and the OpenAI provider with structured output. The developer interfaces (CLI first, MCP after M3) are the next slice.
 
 ### Next Milestones
-1. Integrate a real AI provider with Rust-side credential storage and structured-output validation
+1. Ship the `alphaforge` CLI (Developer Interfaces)
 2. Add context and tool systems for research workflows
-3. Define queue semantics: concurrency limits, restart recovery, and retry
+3. Add the read-only MCP server once research data exists (M3/M4)
 4. Expand shared UI components and IPC integration tests (M1.5 remainder)
 
 ### Long-term Vision
