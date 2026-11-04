@@ -121,8 +121,9 @@ React component
 
 ### Agent runtime and artifacts
 
-- Canonical task model: `crates/domain/src/task.rs` — `TaskStatus` is `created → queued → running → waiting_for_input → completed/failed/cancelled`, with typed `AgentTaskEvent`s. `commands/agent.rs` and `services/agent_service.rs` currently implement CRUD plus status transitions only.
-- `agent/runtime.rs` defines `AgentRuntime` and a simulated `LocalDemoRuntime`; it is not wired into commands/services yet. `agent/task.rs` is an older placeholder with a duplicate `TaskStatus` — use `domain::task`, not that type. `agent/events.rs` (Tauri event streaming) is a stub, so tasks are not actually executed in the background yet.
+- Canonical task model: `crates/domain/src/task.rs` — `TaskStatus` is `created → queued → running → waiting_for_input → completed/failed/cancelled`, with typed `AgentTaskEvent`s. `commands/agent.rs` exposes CRUD, queue, start, and cancel; `services/agent_service.rs` runs tasks in background Tokio tasks with a 300-second timeout, persists `output`/`error`, and publishes `task_started`/`task_progress`/`task_completed`/`task_failed`/`task_cancelled` events. Cancellation is cooperative via `CancellationToken`.
+- `agent/runtime.rs` defines `AgentRuntime`, `ProgressReporter`, and a simulated `LocalDemoRuntime`; `agent/events.rs` publishes `agent-task-event` through an injected `EventPublisher` (Tauri-backed in production). Real AI provider integration is still pending.
+- The frontend `useAgentTaskEvents` hook subscribes to `agent-task-event` and invalidates agent queries so task status and results update live.
 - Artifact and plugin code (`artifacts/*`, `plugins/*`, `documents/*`, `providers/*`, `security/*`) is placeholder scaffolding. The intended contracts are documented in `docs/ARTIFACT_SYSTEM.md`, `docs/PLUGIN_SPEC.md`, and the manifests in `plugins/*/manifest.json` (`id`, `name`, `version`, `entry`, `inputSchema`, `permissions`, `window`).
 - Treat agent output as untrusted: validate it against a schema and render it with predefined React plugins. Never inject agent-generated HTML into the privileged main-window DOM.
 - Artifact windows receive only `core:default` (`capabilities/artifact-window.json`); the main window additionally gets opener, shell-open, and store permissions (`capabilities/main-window.json`).

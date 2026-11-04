@@ -92,7 +92,7 @@ investment-os/
 │   │   ├── src/
 │   │   │   ├── app/              AppState, bootstrap
 │   │   │   ├── commands/         7 command modules (20 commands)
-│   │   │   ├── agent/            Agent runtime types (stubs)
+│   │   │   ├── agent/            Agent runtime, progress events, cancellation
 │   │   │   ├── database/         SQLx pool, migrations
 │   │   │   ├── security/         Credentials, sandbox, validation
 │   │   │   ├── windows/          Main + artifact window management
@@ -150,7 +150,7 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 |------------|--------|--------|
 | `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
-| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (task records and status transitions; runtime not wired) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task` | agent | ✅ Active (background execution, event streaming, cancellation/timeout; real AI provider pending) |
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |

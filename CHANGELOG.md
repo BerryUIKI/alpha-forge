@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Product milestone roadmap
 - Global toast notifications for user actions and errors.
 - Light/dark/system theme switching with persistence and pre-render initialization.
+- Agent tasks now execute in the background, persist output/error, and stream progress events to the frontend.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.
