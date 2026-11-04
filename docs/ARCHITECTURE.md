@@ -78,6 +78,7 @@
 ```
 investment-os/
 ├── apps/desktop/                 Tauri 2 desktop application
+├── apps/cli/                     `alphaforge` CLI (shares the desktop service layer)
 │   ├── src/                      React frontend
 │   │   ├── app/                  App entry, router, providers
 │   │   ├── pages/                6 route pages (Today hosts workspace + agent tasks, Settings hosts provider config; others placeholders)
@@ -143,6 +144,15 @@ React Component
 ```
 
 All IPC goes through the `src/lib/desktop-api/` layer. Components never call `invoke()` directly.
+
+## CLI
+
+`apps/cli` builds the `alphaforge` binary. It does not go through Tauri IPC; it
+constructs the same `services`/`repositories` directly against the app's SQLite
+file (`--db <path>` overrides the location). Task events are discarded with a
+no-op `EventPublisher`; `task run`, `task retry`, and `task cancel` poll for a
+terminal state and stream progress text. The CLI never runs startup recovery,
+since the desktop app may be open at the same time.
 
 ## Current IPC Commands
 
