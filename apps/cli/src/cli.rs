@@ -36,6 +36,16 @@ pub enum Command {
         #[command(subcommand)]
         command: TaskCommand,
     },
+    /// Manage the AI provider configuration.
+    Provider {
+        #[command(subcommand)]
+        command: ProviderCommand,
+    },
+    /// Inspect stored artifacts.
+    Artifact {
+        #[command(subcommand)]
+        command: ArtifactCommand,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -97,11 +107,34 @@ pub enum TaskCommand {
     },
 }
 
+#[derive(Debug, Subcommand)]
+pub enum ProviderCommand {
+    /// Show provider configuration status.
+    Status,
+    /// Save an API key in the OS keychain (prompted without echo).
+    SetKey,
+    /// Remove the stored API key.
+    ClearKey,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ArtifactCommand {
+    /// List stored artifacts.
+    List {
+        /// Filter by workspace ID.
+        #[arg(long)]
+        workspace: Option<String>,
+        /// Filter by task ID.
+        #[arg(long)]
+        task: Option<String>,
+    },
+}
+
 #[cfg(test)]
 mod tests {
     use clap::Parser;
 
-    use super::{Cli, Command, TaskCommand, WorkspaceCommand};
+    use super::{ArtifactCommand, Cli, Command, ProviderCommand, TaskCommand, WorkspaceCommand};
 
     #[test]
     fn test_parse_workspace_create() {
@@ -137,6 +170,36 @@ mod tests {
             } => {
                 assert_eq!(id, "task-1");
                 assert_eq!(timeout, Some(30));
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_provider_and_artifact_commands() {
+        let provider = Cli::parse_from(["alphaforge", "provider", "set-key"]);
+        assert!(matches!(
+            provider.command,
+            Command::Provider {
+                command: ProviderCommand::SetKey
+            }
+        ));
+
+        let artifacts = Cli::parse_from([
+            "alphaforge",
+            "artifact",
+            "list",
+            "--workspace",
+            "ws-1",
+            "--task",
+            "task-1",
+        ]);
+        match artifacts.command {
+            Command::Artifact {
+                command: ArtifactCommand::List { workspace, task },
+            } => {
+                assert_eq!(workspace.as_deref(), Some("ws-1"));
+                assert_eq!(task.as_deref(), Some("task-1"));
             }
             other => panic!("unexpected command: {other:?}"),
         }

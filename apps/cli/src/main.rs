@@ -39,5 +39,7 @@ async fn run(cli: Cli) -> Result<ExitCode> {
             commands::workspace::run(&services, command, format).await
         }
         Command::Task { command } => commands::task::run(&services, command, format).await,
+        Command::Provider { command } => commands::provider::run(&services, command, format),
+        Command::Artifact { command } => commands::artifact::run(&services, command, format).await,
     }
 }

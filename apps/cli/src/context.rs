@@ -26,6 +26,7 @@ use investment_os_lib::providers::ai::{AiClient, OpenAiClient, DEFAULT_OPENAI_MO
 use investment_os_lib::security::credentials::{CredentialStore, KeyringCredentialStore};
 use investment_os_lib::services::agent_service::AgentService;
 use investment_os_lib::services::artifact_service::ArtifactService;
+use investment_os_lib::services::provider_service::ProviderService;
 use investment_os_lib::services::workspace_service::WorkspaceService;
 
 /// Bundle identifier used by the desktop app; also the keychain service name.
@@ -37,6 +38,8 @@ const DB_FILE: &str = "investment_os.db";
 pub struct Services {
     pub workspaces: WorkspaceService,
     pub agent: Arc<AgentService>,
+    pub provider: ProviderService,
+    pub artifacts: ArtifactService,
 }
 
 impl Services {
@@ -64,8 +67,10 @@ impl Services {
     pub fn from_pool(pool: SqlitePool) -> Self {
         let credentials: Arc<dyn CredentialStore> =
             Arc::new(KeyringCredentialStore::new(APP_IDENTIFIER));
+        let model = DEFAULT_OPENAI_MODEL.to_string();
         let client: Arc<dyn AiClient> =
-            Arc::new(OpenAiClient::new(credentials, DEFAULT_OPENAI_MODEL));
+            Arc::new(OpenAiClient::new(Arc::clone(&credentials), model.clone()));
+        let provider = ProviderService::new(credentials, model);
 
         let tasks = AgentTaskRepository::new(pool.clone());
         let artifact_service = ArtifactService::new(ArtifactRepository::new(pool.clone()));
@@ -86,12 +91,14 @@ impl Services {
             tasks,
             Arc::new(OpenAiRuntime::new(client, context, tools)),
             Arc::new(NoopPublisher),
-            artifact_service,
+            artifact_service.clone(),
         );
 
         Self {
             workspaces: WorkspaceService::new(workspaces),
             agent: Arc::new(agent),
+            provider,
+            artifacts: artifact_service,
         }
     }
 }

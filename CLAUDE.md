@@ -71,6 +71,9 @@ cargo run -p alphaforge-cli -- workspace list
 cargo run -p alphaforge-cli -- task list --workspace <id>
 cargo run -p alphaforge-cli -- --json task run <task-id>
 cargo run -p alphaforge-cli -- --db ./dev.db task show <task-id> --events
+cargo run -p alphaforge-cli -- provider status
+cargo run -p alphaforge-cli -- provider set-key   # prompts without echo, stores in the OS keychain
+cargo run -p alphaforge-cli -- artifact list --workspace <id>
 ```
 
 ## Repository layout

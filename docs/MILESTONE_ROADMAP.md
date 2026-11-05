@@ -258,7 +258,8 @@ as the Tauri commands, so behavior stays consistent.
 - [x] Task commands (`list`, `create`, `show`, `run`, `cancel`, `retry`)
 - [x] `task run` waits for completion, streams progress, supports `--timeout` and Ctrl+C cancellation
 - [x] Human-readable and `--json` output; `--db` override for tests and alternate profiles
-- [ ] Provider status / key management commands
+- [x] Provider status / key management commands
+- [x] Artifact listing (`artifact list --workspace/--task`)
 
 ### MCP server
 
