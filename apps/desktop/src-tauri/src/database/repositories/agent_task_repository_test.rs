@@ -305,4 +305,41 @@ mod tests {
 
         assert!(matches!(result, Err(crate::error::AppError::Validation(_))));
     }
+
+    #[tokio::test]
+    async fn test_search_matches_title_and_description() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool);
+
+        let tesla = repo
+            .create(CreateAgentTaskInput {
+                workspace_id: "w1".to_string(),
+                title: "Analyze Tesla".to_string(),
+                description: Some("Analyze Q4 earnings".to_string()),
+            })
+            .await
+            .expect("Failed to create task");
+        repo.create(CreateAgentTaskInput {
+            workspace_id: "w1".to_string(),
+            title: "Analyze Nvidia".to_string(),
+            description: None,
+        })
+        .await
+        .expect("Failed to create task");
+
+        let results = repo
+            .search("w1", "Tesla", 10)
+            .await
+            .expect("Failed to search tasks");
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, tesla.id);
+
+        let by_description = repo
+            .search("w1", "Q4 earnings", 10)
+            .await
+            .expect("Failed to search tasks");
+        assert_eq!(by_description.len(), 1);
+        assert_eq!(by_description[0].id, tesla.id);
+    }
 }

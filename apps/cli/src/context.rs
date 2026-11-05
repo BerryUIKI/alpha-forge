@@ -10,8 +10,12 @@ use anyhow::{anyhow, Result};
 use sqlx::SqlitePool;
 
 use domain::task::AgentTaskEvent;
+use investment_os_lib::agent::context::WorkspaceContextProvider;
 use investment_os_lib::agent::events::EventPublisher;
 use investment_os_lib::agent::openai_runtime::OpenAiRuntime;
+use investment_os_lib::agent::tools::{
+    CalculatorTool, GetTaskOutputTool, ListTasksTool, SearchTasksTool, ToolRegistry,
+};
 use investment_os_lib::database::connection::create_pool;
 use investment_os_lib::database::migrations;
 use investment_os_lib::database::repositories::agent_task_repository::AgentTaskRepository;
@@ -61,14 +65,28 @@ impl Services {
         let client: Arc<dyn AiClient> =
             Arc::new(OpenAiClient::new(credentials, DEFAULT_OPENAI_MODEL));
 
+        let tasks = AgentTaskRepository::new(pool.clone());
+        let workspaces = WorkspaceRepository::new(pool);
+
+        let context = Arc::new(WorkspaceContextProvider::new(
+            workspaces.clone(),
+            tasks.clone(),
+        ));
+        let tools = ToolRegistry::new(vec![
+            Arc::new(ListTasksTool::new(tasks.clone())),
+            Arc::new(SearchTasksTool::new(tasks.clone())),
+            Arc::new(GetTaskOutputTool::new(tasks.clone())),
+            Arc::new(CalculatorTool::new()),
+        ]);
+
         let agent = AgentService::new(
-            AgentTaskRepository::new(pool.clone()),
-            Arc::new(OpenAiRuntime::new(client)),
+            tasks,
+            Arc::new(OpenAiRuntime::new(client, context, tools)),
             Arc::new(NoopPublisher),
         );
 
         Self {
-            workspaces: WorkspaceService::new(WorkspaceRepository::new(pool)),
+            workspaces: WorkspaceService::new(workspaces),
             agent: Arc::new(agent),
         }
     }

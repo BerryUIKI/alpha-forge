@@ -76,6 +76,35 @@ impl AgentTaskRepository {
         Ok(rows.into_iter().map(|r| r.into()).collect())
     }
 
+    /// Searches task titles and descriptions in a workspace.
+    pub async fn search(
+        &self,
+        workspace_id: &str,
+        query: &str,
+        limit: i64,
+    ) -> Result<Vec<AgentTask>, AppError> {
+        let pattern = format!("%{}%", query);
+
+        let rows = sqlx::query_as::<_, AgentTaskRow>(
+            r#"
+            SELECT id, workspace_id, title, description, status, output, error, created_at, updated_at
+            FROM agent_tasks
+            WHERE workspace_id = ? AND (title LIKE ? OR description LIKE ?)
+            ORDER BY created_at DESC, rowid DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(workspace_id)
+        .bind(&pattern)
+        .bind(&pattern)
+        .bind(limit)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to search agent tasks: {}", e)))?;
+
+        Ok(rows.into_iter().map(|r| r.into()).collect())
+    }
+
     /// Gets a task by ID.
     pub async fn get(&self, id: &str) -> Result<Option<AgentTask>, AppError> {
         let row = sqlx::query_as::<_, AgentTaskRow>(

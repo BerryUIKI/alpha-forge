@@ -5,4 +5,6 @@ pub mod runtime;
 pub mod tools;
 
 #[cfg(test)]
+mod context_test;
+#[cfg(test)]
 mod openai_runtime_test;

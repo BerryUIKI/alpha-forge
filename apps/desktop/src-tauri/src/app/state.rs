@@ -5,8 +5,12 @@ use std::sync::Arc;
 
 use sqlx::SqlitePool;
 
+use crate::agent::context::WorkspaceContextProvider;
 use crate::agent::events::TauriEventPublisher;
 use crate::agent::openai_runtime::OpenAiRuntime;
+use crate::agent::tools::{
+    CalculatorTool, GetTaskOutputTool, ListTasksTool, SearchTasksTool, ToolRegistry,
+};
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
@@ -40,13 +44,25 @@ impl AppState {
         let ai_client: Arc<dyn AiClient> =
             Arc::new(OpenAiClient::new(Arc::clone(&credentials), model.clone()));
 
+        // Context and tools read from the same repositories as the services.
+        let context = Arc::new(WorkspaceContextProvider::new(
+            workspace_repo.clone(),
+            agent_task_repo.clone(),
+        ));
+        let tools = ToolRegistry::new(vec![
+            Arc::new(ListTasksTool::new(agent_task_repo.clone())),
+            Arc::new(SearchTasksTool::new(agent_task_repo.clone())),
+            Arc::new(GetTaskOutputTool::new(agent_task_repo.clone())),
+            Arc::new(CalculatorTool::new()),
+        ]);
+
         // Create services
         let settings_service = SettingsService::new(settings_repo);
         let workspace_service = WorkspaceService::new(workspace_repo);
         let provider_service = ProviderService::new(Arc::clone(&credentials), model);
         let agent_service = AgentService::new(
             agent_task_repo,
-            Arc::new(OpenAiRuntime::new(ai_client)),
+            Arc::new(OpenAiRuntime::new(ai_client, context, tools)),
             Arc::new(TauriEventPublisher::new(app_handle)),
         );
 
