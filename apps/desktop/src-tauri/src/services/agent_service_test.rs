@@ -13,9 +13,12 @@ mod tests {
     use crate::agent::runtime::{
         AgentRuntime, CancellationToken, ExecutionResult, ProgressReporter,
     };
+    use crate::artifacts::schema::ArtifactDraft;
     use crate::database::repositories::agent_task_repository::AgentTaskRepository;
+    use crate::database::repositories::artifact_repository::ArtifactRepository;
     use crate::error::AppError;
     use crate::services::agent_service::AgentService;
+    use crate::services::artifact_service::ArtifactService;
     use domain::task::{
         AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventType, TaskStatus,
     };
@@ -87,7 +90,12 @@ mod tests {
 
     async fn setup_service(
         runtime: Arc<dyn AgentRuntime>,
-    ) -> (AgentService, Arc<RecordingPublisher>, AgentTaskRepository) {
+    ) -> (
+        AgentService,
+        Arc<RecordingPublisher>,
+        AgentTaskRepository,
+        ArtifactRepository,
+    ) {
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
             .connect(":memory:")
@@ -104,10 +112,16 @@ mod tests {
             .expect("Failed to insert workspace");
 
         let publisher = Arc::new(RecordingPublisher::default());
-        let repo = AgentTaskRepository::new(pool);
-        let service = AgentService::new(repo.clone(), runtime, publisher.clone());
+        let repo = AgentTaskRepository::new(pool.clone());
+        let artifact_repo = ArtifactRepository::new(pool);
+        let service = AgentService::new(
+            repo.clone(),
+            runtime,
+            publisher.clone(),
+            ArtifactService::new(artifact_repo.clone()),
+        );
 
-        (service, publisher, repo)
+        (service, publisher, repo, artifact_repo)
     }
 
     async fn create_queued_task(service: &AgentService) -> AgentTask {
@@ -153,7 +167,7 @@ mod tests {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(Some(
             r#"{"summary":"ok"}"#.to_string(),
         ))));
-        let (service, publisher, _repo) = setup_service(runtime).await;
+        let (service, publisher, _repo, _artifact_repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         let running = service
@@ -180,7 +194,7 @@ mod tests {
     #[tokio::test]
     async fn test_start_task_failure_persists_error() {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::failure("boom")));
-        let (service, publisher, _repo) = setup_service(runtime).await;
+        let (service, publisher, _repo, _artifact_repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         service
@@ -204,7 +218,7 @@ mod tests {
             wait_for_cancellation: true,
             delay: None,
         });
-        let (service, publisher, _repo) = setup_service(runtime).await;
+        let (service, publisher, _repo, _artifact_repo) = setup_service(runtime).await;
         let task = create_queued_task(&service).await;
 
         service
@@ -247,8 +261,14 @@ mod tests {
             .expect("Failed to insert workspace");
 
         let publisher = Arc::new(RecordingPublisher::default());
-        let service = AgentService::new(AgentTaskRepository::new(pool), runtime, publisher.clone())
-            .with_timeout(Duration::from_millis(20));
+        let artifact_repo = ArtifactRepository::new(pool.clone());
+        let service = AgentService::new(
+            AgentTaskRepository::new(pool),
+            runtime,
+            publisher.clone(),
+            ArtifactService::new(artifact_repo),
+        )
+        .with_timeout(Duration::from_millis(20));
 
         let task = create_queued_task(&service).await;
         service
@@ -267,7 +287,7 @@ mod tests {
     #[tokio::test]
     async fn test_start_requires_queued_state() {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(None)));
-        let (service, _, _repo) = setup_service(runtime).await;
+        let (service, _, _repo, _artifact_repo) = setup_service(runtime).await;
 
         let task = service
             .create_task(CreateAgentTaskInput {
@@ -349,7 +369,7 @@ mod tests {
     #[tokio::test]
     async fn test_concurrency_limit_queues_extra_tasks() {
         let runtime = Arc::new(ConcurrencyRuntime::new(Duration::from_millis(30)));
-        let (service, _publisher, _repo) = setup_service(runtime.clone()).await;
+        let (service, _publisher, _repo, _artifact_repo) = setup_service(runtime.clone()).await;
         let service = service.with_max_concurrency(1);
 
         let mut task_ids = Vec::new();
@@ -374,7 +394,7 @@ mod tests {
     #[tokio::test]
     async fn test_recover_interrupted_tasks_marks_running_as_failed() {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(None)));
-        let (service, publisher, repo) = setup_service(runtime).await;
+        let (service, publisher, repo, _artifact_repo) = setup_service(runtime).await;
 
         let queued = create_queued_task(&service).await;
         let interrupted = create_queued_task(&service).await;
@@ -419,7 +439,7 @@ mod tests {
             ExecutionResult::failure("boom"),
             ExecutionResult::success(Some(r#"{"summary":"ok"}"#.to_string())),
         ]));
-        let (service, _publisher, _repo) = setup_service(runtime).await;
+        let (service, _publisher, _repo, _artifact_repo) = setup_service(runtime).await;
 
         let task = create_queued_task(&service).await;
         service
@@ -446,7 +466,7 @@ mod tests {
         let runtime = Arc::new(FakeRuntime::immediate(ExecutionResult::success(Some(
             r#"{"summary":"ok"}"#.to_string(),
         ))));
-        let (service, _, _repo) = setup_service(runtime).await;
+        let (service, _, _repo, _artifact_repo) = setup_service(runtime).await;
 
         let task = create_queued_task(&service).await;
         service
@@ -457,5 +477,37 @@ mod tests {
 
         let result = service.retry_task(&task.id).await;
         assert!(matches!(result, Err(AppError::Validation(_))));
+    }
+
+    #[tokio::test]
+    async fn test_completed_task_persists_artifacts() {
+        let draft = ArtifactDraft {
+            artifact_type: "timeline".to_string(),
+            title: "Research timeline".to_string(),
+            data: r#"{"events":[{"date":"2026-01-01","title":"Start"}]}"#.to_string(),
+        };
+        let runtime = Arc::new(FakeRuntime::immediate(
+            ExecutionResult::success_with_artifacts(
+                Some(r#"{"summary":"ok"}"#.to_string()),
+                vec![draft],
+            ),
+        ));
+        let (service, _publisher, _repo, artifact_repo) = setup_service(runtime).await;
+
+        let task = create_queued_task(&service).await;
+        service
+            .start_task(&task.id)
+            .await
+            .expect("Failed to start task");
+        wait_for_status(&service, &task.id, TaskStatus::Completed).await;
+
+        let artifacts = artifact_repo
+            .list(Some("w1"), Some(&task.id))
+            .await
+            .expect("artifacts should list");
+
+        assert_eq!(artifacts.len(), 1);
+        assert_eq!(artifacts[0].title, "Research timeline");
+        assert_eq!(artifacts[0].task_id.as_deref(), Some(task.id.as_str()));
     }
 }

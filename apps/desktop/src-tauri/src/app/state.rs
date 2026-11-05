@@ -12,11 +12,13 @@ use crate::agent::tools::{
     CalculatorTool, GetTaskOutputTool, ListTasksTool, SearchTasksTool, ToolRegistry,
 };
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
+use crate::database::repositories::artifact_repository::ArtifactRepository;
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::providers::ai::{AiClient, OpenAiClient, DEFAULT_OPENAI_MODEL};
 use crate::security::credentials::{CredentialStore, KeyringCredentialStore};
 use crate::services::agent_service::AgentService;
+use crate::services::artifact_service::ArtifactService;
 use crate::services::provider_service::ProviderService;
 use crate::services::settings_service::SettingsService;
 use crate::services::workspace_service::WorkspaceService;
@@ -26,6 +28,7 @@ pub struct AppState {
     pub settings_service: SettingsService,
     pub workspace_service: WorkspaceService,
     pub provider_service: ProviderService,
+    pub artifact_service: ArtifactService,
     pub agent_service: AgentService,
 }
 
@@ -35,6 +38,7 @@ impl AppState {
         let settings_repo = SettingsRepository::new(db_pool.clone());
         let workspace_repo = WorkspaceRepository::new(db_pool.clone());
         let agent_task_repo = AgentTaskRepository::new(db_pool.clone());
+        let artifact_repo = ArtifactRepository::new(db_pool.clone());
 
         // Provider credentials live in the OS keychain, never in the database.
         let credentials: Arc<dyn CredentialStore> = Arc::new(KeyringCredentialStore::new(
@@ -60,10 +64,12 @@ impl AppState {
         let settings_service = SettingsService::new(settings_repo);
         let workspace_service = WorkspaceService::new(workspace_repo);
         let provider_service = ProviderService::new(Arc::clone(&credentials), model);
+        let artifact_service = ArtifactService::new(artifact_repo);
         let agent_service = AgentService::new(
             agent_task_repo,
             Arc::new(OpenAiRuntime::new(ai_client, context, tools)),
             Arc::new(TauriEventPublisher::new(app_handle)),
+            artifact_service.clone(),
         );
 
         Self {
@@ -71,6 +77,7 @@ impl AppState {
             settings_service,
             workspace_service,
             provider_service,
+            artifact_service,
             agent_service,
         }
     }

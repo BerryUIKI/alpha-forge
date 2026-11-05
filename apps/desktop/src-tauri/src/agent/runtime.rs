@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use tokio::time::sleep;
 
+use crate::artifacts::schema::ArtifactDraft;
 use crate::error::AppError;
 use domain::task::AgentTask;
 
@@ -18,16 +19,23 @@ pub struct ExecutionResult {
     pub cancelled: bool,
     /// Optional structured output (JSON).
     pub output: Option<String>,
+    /// Validated artifacts to persist with the task result.
+    pub artifacts: Vec<ArtifactDraft>,
     /// Optional error message.
     pub error: Option<String>,
 }
 
 impl ExecutionResult {
     pub fn success(output: Option<String>) -> Self {
+        Self::success_with_artifacts(output, Vec::new())
+    }
+
+    pub fn success_with_artifacts(output: Option<String>, artifacts: Vec<ArtifactDraft>) -> Self {
         Self {
             success: true,
             cancelled: false,
             output,
+            artifacts,
             error: None,
         }
     }
@@ -37,6 +45,7 @@ impl ExecutionResult {
             success: false,
             cancelled: false,
             output: None,
+            artifacts: Vec::new(),
             error: Some(error.into()),
         }
     }
@@ -46,6 +55,7 @@ impl ExecutionResult {
             success: false,
             cancelled: true,
             output: None,
+            artifacts: Vec::new(),
             error: None,
         }
     }
