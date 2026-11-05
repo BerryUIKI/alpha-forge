@@ -21,4 +21,6 @@ export const desktopApi = {
   workspace: workspaceApi,
 } as const;
 
+export type { Artifact, ArtifactFilters, ArtifactStatus } from "./artifacts";
+
 export type DesktopApi = typeof desktopApi;

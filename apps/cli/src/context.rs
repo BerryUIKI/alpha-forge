@@ -19,11 +19,13 @@ use investment_os_lib::agent::tools::{
 use investment_os_lib::database::connection::create_pool;
 use investment_os_lib::database::migrations;
 use investment_os_lib::database::repositories::agent_task_repository::AgentTaskRepository;
+use investment_os_lib::database::repositories::artifact_repository::ArtifactRepository;
 use investment_os_lib::database::repositories::workspace_repository::WorkspaceRepository;
 use investment_os_lib::error::AppError;
 use investment_os_lib::providers::ai::{AiClient, OpenAiClient, DEFAULT_OPENAI_MODEL};
 use investment_os_lib::security::credentials::{CredentialStore, KeyringCredentialStore};
 use investment_os_lib::services::agent_service::AgentService;
+use investment_os_lib::services::artifact_service::ArtifactService;
 use investment_os_lib::services::workspace_service::WorkspaceService;
 
 /// Bundle identifier used by the desktop app; also the keychain service name.
@@ -66,6 +68,7 @@ impl Services {
             Arc::new(OpenAiClient::new(credentials, DEFAULT_OPENAI_MODEL));
 
         let tasks = AgentTaskRepository::new(pool.clone());
+        let artifact_service = ArtifactService::new(ArtifactRepository::new(pool.clone()));
         let workspaces = WorkspaceRepository::new(pool);
 
         let context = Arc::new(WorkspaceContextProvider::new(
@@ -83,6 +86,7 @@ impl Services {
             tasks,
             Arc::new(OpenAiRuntime::new(client, context, tools)),
             Arc::new(NoopPublisher),
+            artifact_service,
         );
 
         Self {

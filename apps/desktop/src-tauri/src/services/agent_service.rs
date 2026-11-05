@@ -9,8 +9,10 @@ use tokio::time::timeout;
 
 use crate::agent::events::EventPublisher;
 use crate::agent::runtime::{AgentRuntime, CancellationToken, ProgressReporter};
+use crate::artifacts::schema::ArtifactDraft;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
+use crate::services::artifact_service::ArtifactService;
 use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventType, TaskStatus};
 
 const DEFAULT_EXECUTION_TIMEOUT: Duration = Duration::from_secs(300);
@@ -25,6 +27,7 @@ pub struct AgentService {
     repo: AgentTaskRepository,
     runtime: Arc<dyn AgentRuntime>,
     publisher: Arc<dyn EventPublisher>,
+    artifacts: ArtifactService,
     cancellations: Arc<Mutex<HashMap<String, CancellationToken>>>,
     semaphore: Arc<Semaphore>,
     execution_timeout: Duration,
@@ -36,11 +39,13 @@ impl AgentService {
         repo: AgentTaskRepository,
         runtime: Arc<dyn AgentRuntime>,
         publisher: Arc<dyn EventPublisher>,
+        artifacts: ArtifactService,
     ) -> Self {
         Self {
             repo,
             runtime,
             publisher,
+            artifacts,
             cancellations: Arc::new(Mutex::new(HashMap::new())),
             semaphore: Arc::new(Semaphore::new(DEFAULT_MAX_CONCURRENT_TASKS)),
             execution_timeout: DEFAULT_EXECUTION_TIMEOUT,
@@ -171,6 +176,7 @@ impl AgentService {
         let runtime = Arc::clone(&self.runtime);
         let repo = self.repo.clone();
         let publisher = Arc::clone(&self.publisher);
+        let artifact_service = self.artifacts.clone();
         let cancellations = Arc::clone(&self.cancellations);
         let semaphore = Arc::clone(&self.semaphore);
         let timeout_duration = self.execution_timeout;
@@ -195,6 +201,8 @@ impl AgentService {
                         finalize_task(
                             &repo,
                             &publisher,
+                            &artifact_service,
+                            &task_for_run.workspace_id,
                             &task_for_run.id,
                             FinalState::Failed(error.to_string()),
                         )
@@ -229,7 +237,7 @@ impl AgentService {
                         match outcome {
                             Ok(Ok(result)) if result.cancelled => FinalState::Cancelled,
                             Ok(Ok(result)) if result.success => {
-                                FinalState::Completed(result.output)
+                                FinalState::Completed(result.output, result.artifacts)
                             }
                             Ok(Ok(result)) => FinalState::Failed(
                                 result
@@ -246,7 +254,15 @@ impl AgentService {
                 }
             };
 
-            finalize_task(&repo, &publisher, &task_for_run.id, final_state).await;
+            finalize_task(
+                &repo,
+                &publisher,
+                &artifact_service,
+                &task_for_run.workspace_id,
+                &task_for_run.id,
+                final_state,
+            )
+            .await;
             cancellations.lock().await.remove(&task_for_run.id);
         });
 
@@ -415,17 +431,34 @@ impl AgentService {
 async fn finalize_task(
     repo: &AgentTaskRepository,
     publisher: &Arc<dyn EventPublisher>,
+    artifacts: &ArtifactService,
+    workspace_id: &str,
     task_id: &str,
     final_state: FinalState,
 ) {
     let (event_type, payload) = match &final_state {
-        FinalState::Completed(output) => (TaskEventType::TaskCompleted, output.clone()),
+        FinalState::Completed(output, _) => (TaskEventType::TaskCompleted, output.clone()),
         FinalState::Failed(error) => (TaskEventType::TaskFailed, Some(error.clone())),
         FinalState::Cancelled => (TaskEventType::TaskCancelled, None),
     };
 
+    if let FinalState::Completed(_, drafts) = &final_state {
+        if !drafts.is_empty() {
+            if let Err(error) = artifacts
+                .persist_task_artifacts(workspace_id, task_id, drafts)
+                .await
+            {
+                tracing::error!(
+                    ?error,
+                    task_id = %task_id,
+                    "failed to persist task artifacts"
+                );
+            }
+        }
+    }
+
     let update = match &final_state {
-        FinalState::Completed(output) => repo.complete(task_id, output.as_deref()).await,
+        FinalState::Completed(output, _) => repo.complete(task_id, output.as_deref()).await,
         FinalState::Failed(error) => repo.fail(task_id, error).await,
         FinalState::Cancelled => repo.mark_cancelled(task_id).await,
     };
@@ -486,7 +519,7 @@ impl ProgressReporter for TaskProgressReporter {
 
 /// Final outcome of a background execution.
 enum FinalState {
-    Completed(Option<String>),
+    Completed(Option<String>, Vec<ArtifactDraft>),
     Failed(String),
     Cancelled,
 }

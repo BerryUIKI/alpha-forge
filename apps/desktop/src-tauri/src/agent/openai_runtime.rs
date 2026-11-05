@@ -11,6 +11,7 @@ use serde_json::json;
 use crate::agent::context::{TaskContext, TaskContextProvider};
 use crate::agent::runtime::{AgentRuntime, CancellationToken, ExecutionResult, ProgressReporter};
 use crate::agent::tools::ToolRegistry;
+use crate::artifacts::schema::{validate_draft, ArtifactDraft, RawArtifactDraft};
 use crate::error::AppError;
 use crate::providers::ai::{AiClient, ChatMessage, ChatRequest, Completion};
 use domain::task::AgentTask;
@@ -27,6 +28,10 @@ When you have enough information, return a single JSON object with exactly these
 - "key_points": an array of supporting observations.
 - "risks": an array of risks, caveats, or counter-evidence.
 - "open_questions": an array of points that still need verification.
+- "artifacts": optional array of up to 2 visual artifacts. Only include one when it genuinely helps. Each item must be one of:
+  {"type":"comparison-table","title":"...","data":{"columns":[{"key":"unique-key","label":"..."}],"rows":[{"label":"...","values":{"unique-key":"value or number"}}]}}
+  {"type":"timeline","title":"...","data":{"events":[{"date":"YYYY-MM-DD","title":"...","description":"..."}]}}
+Do not use any other artifact type.
 Do not wrap the JSON in markdown fences."#;
 
 /// Structured research output produced by the runtime.
@@ -39,6 +44,33 @@ pub struct ResearchOutput {
     pub risks: Vec<String>,
     #[serde(default)]
     pub open_questions: Vec<String>,
+    #[serde(default)]
+    pub artifacts: Vec<RawArtifactDraft>,
+}
+
+/// The subset of research output stored on the task; artifacts live separately.
+#[derive(Debug, Serialize)]
+struct StoredResearchOutput<'a> {
+    summary: &'a str,
+    key_points: &'a [String],
+    risks: &'a [String],
+    open_questions: &'a [String],
+}
+
+/// Validates artifact drafts, dropping invalid ones instead of failing the task.
+fn validated_artifacts(output: &ResearchOutput) -> Vec<ArtifactDraft> {
+    output
+        .artifacts
+        .iter()
+        .take(3)
+        .filter_map(|raw| match validate_draft(raw) {
+            Ok(draft) => Some(draft),
+            Err(error) => {
+                tracing::warn!(?error, "dropping invalid artifact draft");
+                None
+            }
+        })
+        .collect()
 }
 
 /// Validates the provider response against the research schema.
@@ -150,10 +182,20 @@ impl AgentRuntime for OpenAiRuntime {
                     }
 
                     let parsed = parse_research_output(&content)?;
-                    let output = serde_json::to_string(&parsed).map_err(|error| {
+                    let artifacts = validated_artifacts(&parsed);
+                    let stored = StoredResearchOutput {
+                        summary: &parsed.summary,
+                        key_points: &parsed.key_points,
+                        risks: &parsed.risks,
+                        open_questions: &parsed.open_questions,
+                    };
+                    let output = serde_json::to_string(&stored).map_err(|error| {
                         AppError::Internal(format!("failed to serialize research output: {error}"))
                     })?;
-                    return Ok(ExecutionResult::success(Some(output)));
+                    return Ok(ExecutionResult::success_with_artifacts(
+                        Some(output),
+                        artifacts,
+                    ));
                 }
                 Completion::ToolCalls(calls) => {
                     messages.push(ChatMessage::assistant_tool_calls(calls.clone()));

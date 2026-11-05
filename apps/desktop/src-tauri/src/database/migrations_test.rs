@@ -104,6 +104,7 @@ mod tests {
                 "initial".to_string(),
                 "agent_tasks_enhancement".to_string(),
                 "agent_tasks_align".to_string(),
+                "artifacts_align".to_string(),
             ]
         );
     }
@@ -122,7 +123,7 @@ mod tests {
                 .await
                 .expect("Failed to count migrations");
 
-        assert_eq!(count, 3);
+        assert_eq!(count, 4);
     }
 
     #[tokio::test]
@@ -162,5 +163,20 @@ mod tests {
         .expect("Failed to inspect agent_tasks schema");
 
         assert_eq!(not_null, 0);
+    }
+
+    #[tokio::test]
+    async fn test_artifacts_table_has_presentation_columns() {
+        let pool = setup_test_db().await;
+
+        let columns: Vec<(String,)> =
+            sqlx::query_as("SELECT name FROM pragma_table_info('artifacts')")
+                .fetch_all(&pool)
+                .await
+                .expect("Failed to query table info");
+
+        assert!(columns.iter().any(|(name,)| name == "title"));
+        assert!(columns.iter().any(|(name,)| name == "workspace_id"));
+        assert!(columns.iter().any(|(name,)| name == "artifact_type"));
     }
 }

@@ -186,6 +186,59 @@ mod tests {
     const VALID_OUTPUT: &str =
         r#"{"summary":"Demand is mixed","key_points":["a"],"risks":["b"],"open_questions":["c"]}"#;
 
+    const OUTPUT_WITH_ARTIFACT: &str = r#"{"summary":"Summary","artifacts":[{"type":"timeline","title":"Timeline","data":{"events":[{"date":"2026-01-01","title":"Start"}]}}]}"#;
+
+    const OUTPUT_WITH_INVALID_ARTIFACT: &str =
+        r#"{"summary":"Summary","artifacts":[{"type":"pie-chart","title":"Pie","data":{}}]}"#;
+
+    #[tokio::test]
+    async fn test_execute_collects_valid_artifact_drafts() {
+        let runtime = runtime(
+            Arc::new(FakeClient::content(OUTPUT_WITH_ARTIFACT)),
+            Vec::new(),
+        );
+
+        let result = runtime
+            .execute(
+                make_task(None),
+                Arc::new(RecordingProgress::default()),
+                CancellationToken::new(),
+            )
+            .await
+            .expect("execution should succeed");
+
+        assert!(result.success);
+        assert_eq!(result.artifacts.len(), 1);
+        assert_eq!(result.artifacts[0].artifact_type, "timeline");
+        assert!(result.artifacts[0].data.contains("\"Start\""));
+
+        let stored: Value =
+            serde_json::from_str(result.output.as_deref().expect("output should exist"))
+                .expect("stored output should be JSON");
+        assert_eq!(stored["summary"], "Summary");
+        assert!(stored.get("artifacts").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_execute_drops_invalid_artifact_drafts() {
+        let runtime = runtime(
+            Arc::new(FakeClient::content(OUTPUT_WITH_INVALID_ARTIFACT)),
+            Vec::new(),
+        );
+
+        let result = runtime
+            .execute(
+                make_task(None),
+                Arc::new(RecordingProgress::default()),
+                CancellationToken::new(),
+            )
+            .await
+            .expect("execution should succeed");
+
+        assert!(result.success);
+        assert!(result.artifacts.is_empty());
+    }
+
     #[tokio::test]
     async fn test_execute_returns_validated_output() {
         let client = Arc::new(FakeClient::content(VALID_OUTPUT));
