@@ -186,15 +186,15 @@ Create the core intelligence engine of AlphaForge.
 - [x] Timeout enforcement
 
 #### Context System
-- [ ] Workspace context
-- [ ] Conversation context
-- [ ] Research context
+- [x] Workspace context
+- [x] Conversation context (recent completed task summaries)
+- [ ] Research context (after M4, when documents exist)
 
 #### Tool System
-- [ ] Document tools
-- [ ] Search tools
-- [ ] Data tools
-- [ ] Calculation tools
+- [ ] Document tools (after M4, when documents exist)
+- [x] Search tools
+- [x] Data tools
+- [x] Calculation tools
 
 #### Provider Integration
 - [x] OpenAI API integration
