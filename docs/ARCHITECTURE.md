@@ -151,8 +151,10 @@ All IPC goes through the `src/lib/desktop-api/` layer. Components never call `in
 constructs the same `services`/`repositories` directly against the app's SQLite
 file (`--db <path>` overrides the location). Task events are discarded with a
 no-op `EventPublisher`; `task run`, `task retry`, and `task cancel` poll for a
-terminal state and stream progress text. The CLI never runs startup recovery,
-since the desktop app may be open at the same time.
+terminal state and stream progress text. `provider status|set-key|clear-key`
+manage the keychain entry (set-key prompts without echo), and `artifact list`
+inspects persisted artifacts. The CLI never runs startup recovery, since the
+desktop app may be open at the same time.
 
 ## Current IPC Commands
 

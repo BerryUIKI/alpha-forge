@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Provider configuration commands with API keys stored in the OS keychain; status responses never expose the key.
 - Agent queue semantics: at most two concurrent tasks, startup recovery for interrupted tasks, manual retry for failed/cancelled tasks, and automatic retries with backoff for transient provider errors.
 - `alphaforge` CLI for workspaces and agent tasks, with human/JSON output, live progress, timeout, cancellation, and retry.
+- CLI provider status/set-key/clear-key commands (hidden input, OS keychain) and artifact listing.
 - Agent context and tools: workspace and recent-task context in prompts, an OpenAI tool-calling loop (max 4 rounds), and read-only tools for listing/searching tasks, reading task output, and arithmetic.
 - Agent artifacts: validated comparison-table and timeline outputs are generated with tasks, persisted in SQLite, and rendered on the Artifacts page with predefined React components.
 
