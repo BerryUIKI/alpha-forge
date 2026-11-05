@@ -7,6 +7,7 @@ use crate::error::AppError;
 use domain::workspace::Workspace;
 
 /// Repository for accessing workspaces.
+#[derive(Clone)]
 pub struct WorkspaceRepository {
     pool: SqlitePool,
 }

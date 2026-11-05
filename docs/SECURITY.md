@@ -64,6 +64,7 @@ Plugins are internal-only in the MVP. Even so, every plugin is untrusted:
 
 - Agent output is validated against Zod schemas before reaching the UI.
 - Agent output is never rendered as raw HTML in the main window.
+- Tool results are treated as untrusted data: the system prompt tells the model not to follow instructions inside them, and tool arguments are validated against their JSON Schema before execution.
 - Agent-generated artifacts are validated against their input schema before rendering.
 - The agent cannot generate arbitrary code for execution.
 

@@ -77,15 +77,27 @@ Agents use tools to interact with the system and external services. Tools are re
 - **Auditable.** Every tool invocation is logged as a task event.
 - **Deterministic.** Tool inputs and outputs are validated against schemas.
 
-### Planned Tools (Future Phases)
+### Tool Calling
 
-- `search_research` — Search local research documents.
+- Tool definitions use the OpenAI function-calling shape (`tools[].function.name` / `description` / `parameters`) with JSON Schema parameters, matching the MCP `inputSchema` model.
+- The runtime allows at most 4 tool rounds per task; exceeding the limit fails the task.
+- Tool results are appended as `role: "tool"` messages carrying the matching `tool_call_id`.
+- Tool execution errors are returned to the model as `{"error": ...}` tool results instead of aborting, so it can correct course. MCP models the same behavior with `isError` inside the tool result.
+- Tools are read-only in this phase; none of them mutates research data.
+
+### Available Tools
+
+- `list_tasks` — List recent agent tasks in a workspace, optionally filtered by status.
+- `search_tasks` — Search task titles and descriptions by substring.
+- `get_task_output` — Read the stored output or error of a previous task.
+- `calculate` — Evaluate arithmetic with `+`, `-`, `*`, `/`, and parentheses.
+
+### Planned Tools
+
+- `search_research` — Search local research documents (after M4).
 - `fetch_web` — Retrieve web content (allowlist-constrained).
 - `fetch_market_data` — Query market data providers.
-- `create_note` — Create a research note.
-- `create_thesis` — Create an investment thesis draft.
-- `add_evidence` — Attach evidence to a thesis.
-- `generate_artifact` — Produce a structured artifact.
+- `create_note`, `create_thesis`, `add_evidence`, `generate_artifact` — write tools, behind explicit approval.
 
 ## Structured Output
 
@@ -116,20 +128,20 @@ Validation: TypeScript validates with Zod; Rust validates with Serde.
 
 ## Context Management
 
-The agent maintains context within a task but not across tasks (in MVP). Each task starts with:
+Each task starts with:
 
-- The user's input.
-- Relevant research documents (manually selected or auto-retrieved).
-- Current portfolio summary (if relevant).
-- Tool definitions.
+- The task title and description.
+- Workspace context: the workspace name and summaries of up to five recently completed tasks in the same workspace (their structured `summary` when present, otherwise truncated output).
+- Tool definitions: names, descriptions, and JSON Schemas.
 
-Future phases will add long-term context: prior task summaries, thesis history, persistent user preferences.
+Research documents, portfolio context, and conversation history across separate tasks are not yet part of the context (M4/M5).
 
 ## Error Handling
 
 - **Transient errors** (API rate limit, network timeout): Retry with exponential backoff, up to configurable max retries.
 - **Permanent errors** (invalid input, auth failure): Fail immediately with a clear, user-facing message.
 - **Partial results:** If a task produces some output before failing, consider saving partial results.
+- **Tool errors:** Returned to the model as `{"error": ...}` tool results so it can retry or adapt. Malformed tool arguments are rejected by the registry and surfaced the same way.
 - **Error messages:** Must be actionable. "API error" is not sufficient; "OpenAI API rate limit exceeded — retrying in 30 seconds" is.
 
 ## Human Approval Boundaries
@@ -147,6 +159,12 @@ The agent must NOT, without explicit user approval:
 - Modify or delete existing research documents, theses, or portfolio data.
 - Share data externally.
 - Execute any action marked as destructive.
+
+## Reference Designs
+
+- Model Context Protocol — tools (`tools/list`, `tools/call`, JSON Schema `inputSchema`, `isError` tool results): https://modelcontextprotocol.io/specification/2025-06-18/server/tools
+- OpenAI Chat Completions — function calling (`tools`, assistant `tool_calls`, `role: "tool"` results): https://platform.openai.com/docs/guides/function-calling
+- Rig — Rust agent framework with tool calling and an MCP client: https://github.com/0xPlaygrounds/rig
 
 ## Structured Event Protocol
 
