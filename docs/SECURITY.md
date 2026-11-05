@@ -67,6 +67,7 @@ Plugins are internal-only in the MVP. Even so, every plugin is untrusted:
 - Tool results are treated as untrusted data: the system prompt tells the model not to follow instructions inside them, and tool arguments are validated against their JSON Schema before execution.
 - Agent-generated artifacts are validated against their input schema before rendering.
 - Artifacts are rendered by predefined React components in the main window; model-generated HTML is never injected.
+- Artifact windows load a dedicated `artifact.html` entry with only `core:default`, receive validated JSON through an initialization script, and do not import `desktopApi` or app-shell code.
 - The agent cannot generate arbitrary code for execution.
 
 ## Input Validation
