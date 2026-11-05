@@ -9,4 +9,4 @@ export type {
   ParsedArtifactData,
   TimelineData,
 } from "./components/parseArtifactData";
-export { ARTIFACT_KEYS, useArtifacts } from "./hooks/useArtifacts";
+export { ARTIFACT_KEYS, useArtifacts, useOpenArtifactWindow } from "./hooks/useArtifacts";

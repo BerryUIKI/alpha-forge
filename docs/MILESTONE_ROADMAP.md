@@ -303,8 +303,8 @@ Enable Agents to create interactive research experiences.
 #### Artifact Runtime
 - [x] Structured output schema (comparison-table, timeline)
 - [x] Renderer system (predefined React components in the main window)
-- [ ] Temporary window creation
-- [ ] Permission isolation
+- [x] Temporary window creation (dedicated `artifact.html` WebView)
+- [x] Permission isolation (only `core:default`; dedicated entry with no privileged imports)
 
 #### Built-in Artifacts
 - [x] Comparison table
@@ -313,8 +313,8 @@ Enable Agents to create interactive research experiences.
 - [ ] Valuation model
 - [ ] Risk dashboard
 
-Artifacts currently render inside the main window with predefined components;
-separate artifact WebViews and the plugin runtime remain future work.
+Artifacts render in the main window and can open in a dedicated minimal-permission
+WebView. The plugin runtime and remaining built-in artifact types remain future work.
 
 ### Artifact Flow
 ```text

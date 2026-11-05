@@ -17,3 +17,18 @@ pub async fn list_artifacts(
         .list(workspace_id.as_deref(), task_id.as_deref())
         .await
 }
+
+#[tauri::command]
+pub async fn open_artifact_window(
+    artifact_id: String,
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), AppError> {
+    let artifact = state
+        .artifact_service
+        .get(&artifact_id)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Artifact '{}' not found", artifact_id)))?;
+
+    crate::windows::artifact_window::open_artifact_window(&app, &artifact)
+}

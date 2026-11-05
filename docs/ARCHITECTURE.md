@@ -167,7 +167,7 @@ desktop app may be open at the same time.
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
-| `list_artifacts` (optional `workspace_id` / `task_id` filters) | artifacts | ✅ Active (SQLite; comparison-table and timeline renderers) |
+| `list_artifacts` (optional `workspace_id` / `task_id` filters), `open_artifact_window` | artifacts | ✅ Active (SQLite; comparison-table and timeline renderers; dedicated minimal-permission WebView) |
 
 ## Database
 
@@ -180,6 +180,7 @@ desktop app may be open at the same time.
 ## Security
 
 - API keys: stored in the OS keychain (`security/credentials.rs`, `keyring` crate); status is exposed to React, the key is never returned
+- Artifact windows: dedicated `artifact.html` entry with only `core:default`; validated JSON is injected through an initialization script and parsed with `JSON.parse`
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
 - Input validation: Will use Zod (TS) + manual validation (Rust)

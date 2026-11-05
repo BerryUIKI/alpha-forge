@@ -42,6 +42,11 @@ impl ArtifactService {
         Ok(artifacts)
     }
 
+    /// Gets an artifact by ID.
+    pub async fn get(&self, id: &str) -> Result<Option<Artifact>, AppError> {
+        self.repo.get(id).await
+    }
+
     /// Lists artifacts, optionally filtered by workspace and task.
     pub async fn list(
         &self,

@@ -31,14 +31,15 @@ User submits task
 
 ## Current Implementation (MVP)
 
-The first slice renders artifacts inside the main window rather than a separate WebView:
+The MVP supports main-window rendering and dedicated artifact windows:
 
 - The agent may include an `artifacts` array in its final structured output; each entry has `type`, `title`, and `data`.
 - `artifacts/schema.rs` validates `comparison-table` and `timeline` payloads; invalid artifacts are discarded before persistence.
 - `ArtifactService` stores validated artifacts and `list_artifacts` exposes them with workspace/task filters.
 - `features/artifacts` renders the payloads with predefined React components. No model-generated HTML is used.
+- `open_artifact_window` opens a dedicated WebView (`artifact.html`) with only `core:default`. The payload is injected by an initialization script as a JSON string parsed with `JSON.parse`; the artifact entry does not import `desktopApi` or the app shell.
 
-Separate artifact windows, the plugin SDK, and the remaining artifact types are still future work.
+Residual risk: Tauri application commands are not ACL-gated per window, so isolation relies on the artifact entry containing no privileged code paths and on the minimal capability set. The plugin SDK and the remaining artifact types are still future work.
 
 ## Lifecycle
 

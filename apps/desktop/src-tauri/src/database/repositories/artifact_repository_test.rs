@@ -66,6 +66,30 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_get_artifact() {
+        let repo = setup_repo().await;
+
+        let created = repo
+            .create(Some("t1"), Some("w1"), "timeline", "Timeline", "{}")
+            .await
+            .expect("artifact should be created");
+
+        let fetched = repo
+            .get(&created.id)
+            .await
+            .expect("artifact should load")
+            .expect("artifact should exist");
+        assert_eq!(fetched.title, "Timeline");
+        assert_eq!(fetched.artifact_type, "timeline");
+
+        assert!(repo
+            .get("missing")
+            .await
+            .expect("lookup should succeed")
+            .is_none());
+    }
+
+    #[tokio::test]
     async fn test_list_returns_all_when_filters_are_none() {
         let repo = setup_repo().await;
 

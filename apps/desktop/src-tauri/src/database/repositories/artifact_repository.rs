@@ -61,6 +61,24 @@ impl ArtifactRepository {
         })
     }
 
+    /// Gets an artifact by ID.
+    pub async fn get(&self, id: &str) -> Result<Option<Artifact>, AppError> {
+        let row = sqlx::query_as::<_, ArtifactRow>(
+            r#"
+            SELECT id, task_id, workspace_id, artifact_type, title, input AS data,
+                   status, created_at, updated_at
+            FROM artifacts
+            WHERE id = ?
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to get artifact: {}", e)))?;
+
+        Ok(row.map(|row| row.into()))
+    }
+
     /// Lists artifacts, optionally filtered by workspace and task.
     pub async fn list(
         &self,

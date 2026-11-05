@@ -1,11 +1,12 @@
 // Tests for the Artifacts page.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@testing-library/jest-dom";
 import { invoke } from "@tauri-apps/api/core";
 
+import { ToastProvider } from "@/components/common/ToastProvider";
 import { ArtifactsPage } from "./ArtifactsPage";
 import type { Artifact } from "@/lib/desktop-api";
 
@@ -38,7 +39,9 @@ function renderPage() {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <ArtifactsPage />
+      <ToastProvider>
+        <ArtifactsPage />
+      </ToastProvider>
     </QueryClientProvider>,
   );
 }
@@ -93,5 +96,28 @@ describe("ArtifactsPage", () => {
     renderPage();
 
     expect(await screen.findByText("Failed to load artifacts")).toBeInTheDocument();
+  });
+
+  it("opens an artifact window", async () => {
+    vi.mocked(invoke).mockImplementation(((command: string) => {
+      if (command === "list_artifacts") {
+        return Promise.resolve([comparisonArtifact]);
+      }
+      if (command === "open_artifact_window") {
+        return Promise.resolve(null);
+      }
+      return Promise.reject(new Error(`Unexpected command: ${command}`));
+    }) as unknown as typeof invoke);
+
+    renderPage();
+
+    fireEvent.click(await screen.findByText("Tesla vs Nvidia"));
+    fireEvent.click(await screen.findByRole("button", { name: /open in window/i }));
+
+    await waitFor(() => {
+      expect(vi.mocked(invoke)).toHaveBeenCalledWith("open_artifact_window", {
+        artifactId: "artifact-1",
+      });
+    });
   });
 });

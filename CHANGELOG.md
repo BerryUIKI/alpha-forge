@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI provider status/set-key/clear-key commands (hidden input, OS keychain) and artifact listing.
 - Agent context and tools: workspace and recent-task context in prompts, an OpenAI tool-calling loop (max 4 rounds), and read-only tools for listing/searching tasks, reading task output, and arithmetic.
 - Agent artifacts: validated comparison-table and timeline outputs are generated with tasks, persisted in SQLite, and rendered on the Artifacts page with predefined React components.
+- Artifact windows: validated artifacts can open in a dedicated minimal-permission WebView (`core:default`) with the payload injected as parsed JSON.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.
