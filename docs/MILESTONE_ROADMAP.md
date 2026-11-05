@@ -300,17 +300,20 @@ Enable Agents to create interactive research experiences.
 ### Deliverables
 
 #### Artifact Runtime
-- [ ] Structured output schema
-- [ ] Renderer system
+- [x] Structured output schema (comparison-table, timeline)
+- [x] Renderer system (predefined React components in the main window)
 - [ ] Temporary window creation
 - [ ] Permission isolation
 
 #### Built-in Artifacts
-- [ ] Comparison table
-- [ ] Timeline
+- [x] Comparison table
+- [x] Timeline
 - [ ] Industry map
 - [ ] Valuation model
 - [ ] Risk dashboard
+
+Artifacts currently render inside the main window with predefined components;
+separate artifact WebViews and the plugin runtime remain future work.
 
 ### Artifact Flow
 ```text

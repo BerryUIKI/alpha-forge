@@ -29,6 +29,17 @@ User submits task
             → User interacts, then closes or persists
 ```
 
+## Current Implementation (MVP)
+
+The first slice renders artifacts inside the main window rather than a separate WebView:
+
+- The agent may include an `artifacts` array in its final structured output; each entry has `type`, `title`, and `data`.
+- `artifacts/schema.rs` validates `comparison-table` and `timeline` payloads; invalid artifacts are discarded before persistence.
+- `ArtifactService` stores validated artifacts and `list_artifacts` exposes them with workspace/task filters.
+- `features/artifacts` renders the payloads with predefined React components. No model-generated HTML is used.
+
+Separate artifact windows, the plugin SDK, and the remaining artifact types are still future work.
+
 ## Lifecycle
 
 ```text

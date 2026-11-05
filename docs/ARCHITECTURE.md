@@ -165,7 +165,7 @@ since the desktop app may be open at the same time.
 | `list_research_documents` | research | Stub — returns [] |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
-| `list_artifacts` | artifacts | Stub — returns [] |
+| `list_artifacts` (optional `workspace_id` / `task_id` filters) | artifacts | ✅ Active (SQLite; comparison-table and timeline renderers) |
 
 ## Database
 
