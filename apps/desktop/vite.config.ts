@@ -20,5 +20,11 @@ export default defineConfig({
     target: "esnext",
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     sourcemap: !!process.env.TAURI_DEBUG,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        artifact: path.resolve(__dirname, "artifact.html"),
+      },
+    },
   },
 });

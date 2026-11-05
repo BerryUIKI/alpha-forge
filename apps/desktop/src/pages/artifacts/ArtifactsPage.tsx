@@ -5,11 +5,20 @@ import { Boxes } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
-import { ArtifactDetail, ArtifactList, useArtifacts } from "@/features/artifacts";
+import { useToast } from "@/components/common/useToast";
+import {
+  ArtifactDetail,
+  ArtifactList,
+  useArtifacts,
+  useOpenArtifactWindow,
+} from "@/features/artifacts";
+import { getErrorMessage } from "@/lib/errors";
 import type { Artifact } from "@/lib/desktop-api";
 
 export function ArtifactsPage() {
+  const { toast } = useToast();
   const { data: artifacts, isLoading, error, refetch } = useArtifacts();
+  const openArtifact = useOpenArtifactWindow();
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
 
   const selectedArtifact =
@@ -54,6 +63,17 @@ export function ArtifactsPage() {
               artifact={selectedArtifact}
               onClose={() => {
                 setSelectedArtifactId(null);
+              }}
+              onOpen={() => {
+                openArtifact.mutate(selectedArtifact.id, {
+                  onError: (error) => {
+                    toast({
+                      title: "Failed to open artifact window",
+                      description: getErrorMessage(error),
+                      variant: "destructive",
+                    });
+                  },
+                });
               }}
             />
           )}

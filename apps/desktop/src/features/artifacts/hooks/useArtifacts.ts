@@ -1,6 +1,6 @@
 // Hooks for artifacts.
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { desktopApi, type ArtifactFilters } from "@/lib/desktop-api";
 
 export const ARTIFACT_KEYS = {
@@ -16,5 +16,14 @@ export function useArtifacts(filters: ArtifactFilters = {}) {
   return useQuery({
     queryKey: ARTIFACT_KEYS.list(filters),
     queryFn: () => desktopApi.artifacts.listArtifacts(filters),
+  });
+}
+
+/**
+ * Hook to open an artifact in its own window.
+ */
+export function useOpenArtifactWindow() {
+  return useMutation({
+    mutationFn: (artifactId: string) => desktopApi.artifacts.openArtifactWindow(artifactId),
   });
 }

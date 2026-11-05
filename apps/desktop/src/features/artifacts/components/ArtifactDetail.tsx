@@ -1,6 +1,6 @@
 // Artifact detail with a predefined renderer.
 
-import { X } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 import { Badge } from "@investment-os/ui";
 import type { Artifact } from "@/lib/desktop-api/artifacts";
 import { ArtifactRenderer } from "./ArtifactRenderer";
@@ -9,9 +9,10 @@ import { artifactTypeLabel } from "./artifactLabels";
 interface ArtifactDetailProps {
   artifact: Artifact;
   onClose?: () => void;
+  onOpen?: () => void;
 }
 
-export function ArtifactDetail({ artifact, onClose }: ArtifactDetailProps) {
+export function ArtifactDetail({ artifact, onClose, onOpen }: ArtifactDetailProps) {
   return (
     <div className="rounded-lg border border-border bg-card">
       <div className="flex items-start justify-between gap-3 border-b border-border p-4">
@@ -24,16 +25,28 @@ export function ArtifactDetail({ artifact, onClose }: ArtifactDetailProps) {
             </span>
           </div>
         </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close artifact detail"
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {onOpen && (
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex items-center gap-1 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Open in window
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close artifact detail"
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       <div className="p-4">
         <ArtifactRenderer artifact={artifact} />

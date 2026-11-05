@@ -34,3 +34,10 @@ export async function listArtifacts(filters: ArtifactFilters = {}): Promise<Arti
     taskId: filters.taskId ?? null,
   });
 }
+
+/**
+ * Opens an artifact in its own minimal-permission window.
+ */
+export async function openArtifactWindow(artifactId: string): Promise<void> {
+  return invoke("open_artifact_window", { artifactId });
+}
