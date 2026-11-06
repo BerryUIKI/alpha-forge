@@ -14,6 +14,7 @@
 pub mod agent_service;
 pub mod artifact_service;
 pub mod provider_service;
+pub mod research_service;
 pub mod settings_service;
 pub mod system_service;
 pub mod workspace_service;
@@ -22,5 +23,7 @@ pub mod workspace_service;
 mod agent_service_test;
 #[cfg(test)]
 mod provider_service_test;
+#[cfg(test)]
+mod research_service_test;
 #[cfg(test)]
 mod workspace_service_test;

@@ -80,6 +80,10 @@ pub fn run() {
             commands::provider::clear_provider_api_key,
             // Research commands
             commands::research::list_research_documents,
+            commands::research::create_research_document,
+            commands::research::get_research_document,
+            commands::research::update_research_document,
+            commands::research::delete_research_document,
             // Journal commands
             commands::journal::list_theses,
             // Portfolio commands
