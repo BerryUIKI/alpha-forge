@@ -2,6 +2,7 @@
 
 use crate::database::repositories::settings_repository::SettingsRepository;
 use crate::error::AppError;
+use crate::text::non_empty_text;
 
 /// Service for managing application settings.
 pub struct SettingsService {
@@ -16,24 +17,14 @@ impl SettingsService {
 
     /// Gets a setting value by key.
     pub async fn get(&self, key: &str) -> Result<Option<String>, AppError> {
-        // Validate key is not empty
-        if key.trim().is_empty() {
-            return Err(AppError::Validation(
-                "Setting key cannot be empty".to_string(),
-            ));
-        }
+        let key = non_empty_text(key, "Setting key")?;
 
-        self.repo.get(key).await
+        self.repo.get(&key).await
     }
 
     /// Sets a setting value by key.
     pub async fn set(&self, key: &str, value: &str) -> Result<(), AppError> {
-        // Validate key is not empty
-        if key.trim().is_empty() {
-            return Err(AppError::Validation(
-                "Setting key cannot be empty".to_string(),
-            ));
-        }
+        let key = non_empty_text(key, "Setting key")?;
 
         // Validate value length (reasonable limit)
         if value.len() > 10000 {
@@ -42,17 +33,13 @@ impl SettingsService {
             ));
         }
 
-        self.repo.set(key, value).await
+        self.repo.set(&key, value).await
     }
 
     /// Deletes a setting by key.
     pub async fn delete(&self, key: &str) -> Result<(), AppError> {
-        if key.trim().is_empty() {
-            return Err(AppError::Validation(
-                "Setting key cannot be empty".to_string(),
-            ));
-        }
+        let key = non_empty_text(key, "Setting key")?;
 
-        self.repo.delete(key).await
+        self.repo.delete(&key).await
     }
 }

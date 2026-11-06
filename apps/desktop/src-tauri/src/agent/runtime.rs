@@ -12,17 +12,16 @@ use domain::task::AgentTask;
 
 /// Result of agent execution.
 #[derive(Debug, Clone)]
-pub struct ExecutionResult {
-    /// Whether execution completed successfully.
-    pub success: bool,
-    /// Whether the task was cancelled cooperatively.
-    pub cancelled: bool,
-    /// Optional structured output (JSON).
-    pub output: Option<String>,
-    /// Validated artifacts to persist with the task result.
-    pub artifacts: Vec<ArtifactDraft>,
-    /// Optional error message.
-    pub error: Option<String>,
+pub enum ExecutionResult {
+    /// Execution finished and produced an optional structured output.
+    Completed {
+        output: Option<String>,
+        artifacts: Vec<ArtifactDraft>,
+    },
+    /// Execution failed with a user-facing error.
+    Failed { error: String },
+    /// Execution was cancelled cooperatively.
+    Cancelled,
 }
 
 impl ExecutionResult {
@@ -31,33 +30,17 @@ impl ExecutionResult {
     }
 
     pub fn success_with_artifacts(output: Option<String>, artifacts: Vec<ArtifactDraft>) -> Self {
-        Self {
-            success: true,
-            cancelled: false,
-            output,
-            artifacts,
-            error: None,
-        }
+        Self::Completed { output, artifacts }
     }
 
     pub fn failure(error: impl Into<String>) -> Self {
-        Self {
-            success: false,
-            cancelled: false,
-            output: None,
-            artifacts: Vec::new(),
-            error: Some(error.into()),
+        Self::Failed {
+            error: error.into(),
         }
     }
 
     pub fn cancelled() -> Self {
-        Self {
-            success: false,
-            cancelled: true,
-            output: None,
-            artifacts: Vec::new(),
-            error: None,
-        }
+        Self::Cancelled
     }
 }
 
@@ -89,18 +72,12 @@ impl CancellationToken {
 }
 
 /// Callback used by runtimes to publish incremental progress.
-#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait ProgressReporter: Send + Sync {
     async fn report(&self, message: String) -> Result<(), AppError>;
 }
 
 /// Trait for agent runtime implementations.
-///
-/// `async_trait` adds `#[must_use]` to the boxed future; newer Clippy versions
-/// flag that as redundant because the future returns `Result`, which is already
-/// `#[must_use]`.
-#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AgentRuntime: Send + Sync {
     /// Execute an agent task.
@@ -166,24 +143,34 @@ mod tests {
     #[test]
     fn test_execution_result_success() {
         let result = ExecutionResult::success(Some("test".to_string()));
-        assert!(result.success);
-        assert!(!result.cancelled);
-        assert_eq!(result.output.as_deref(), Some("test"));
+
+        match result {
+            ExecutionResult::Completed { output, artifacts } => {
+                assert_eq!(output.as_deref(), Some("test"));
+                assert!(artifacts.is_empty());
+            }
+            other => panic!("expected completed result, got {other:?}"),
+        }
     }
 
     #[test]
     fn test_execution_result_failure() {
         let result = ExecutionResult::failure("Something went wrong");
-        assert!(!result.success);
-        assert!(!result.cancelled);
-        assert_eq!(result.error.as_deref(), Some("Something went wrong"));
+
+        match result {
+            ExecutionResult::Failed { error } => {
+                assert_eq!(error, "Something went wrong");
+            }
+            other => panic!("expected failed result, got {other:?}"),
+        }
     }
 
     #[test]
     fn test_execution_result_cancelled() {
-        let result = ExecutionResult::cancelled();
-        assert!(!result.success);
-        assert!(result.cancelled);
+        assert!(matches!(
+            ExecutionResult::cancelled(),
+            ExecutionResult::Cancelled
+        ));
     }
 
     #[test]

@@ -13,7 +13,9 @@ mod tests {
         ContextDocument, ContextTask, EmptyContextProvider, TaskContext, TaskContextProvider,
     };
     use crate::agent::openai_runtime::{parse_research_output, OpenAiRuntime, ResearchOutput};
-    use crate::agent::runtime::{AgentRuntime, CancellationToken, ProgressReporter};
+    use crate::agent::runtime::{
+        AgentRuntime, CancellationToken, ExecutionResult, ProgressReporter,
+    };
     use crate::agent::tools::{AgentTool, ToolRegistry};
     use crate::error::AppError;
     use crate::providers::ai::{
@@ -211,9 +213,11 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        let stored: Value =
-            serde_json::from_str(result.output.as_deref().expect("output should exist"))
-                .expect("stored output should be JSON");
+        let ExecutionResult::Completed { output, .. } = result else {
+            panic!("expected completed result");
+        };
+        let stored: Value = serde_json::from_str(output.as_deref().expect("output should exist"))
+            .expect("stored output should be JSON");
 
         assert_eq!(stored["citations"][0]["kind"], "document");
         assert_eq!(stored["citations"][0]["id"], "doc-1");
@@ -237,9 +241,11 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        let stored: Value =
-            serde_json::from_str(result.output.as_deref().expect("output should exist"))
-                .expect("stored output should be JSON");
+        let ExecutionResult::Completed { output, .. } = result else {
+            panic!("expected completed result");
+        };
+        let stored: Value = serde_json::from_str(output.as_deref().expect("output should exist"))
+            .expect("stored output should be JSON");
 
         let citations = stored["citations"].as_array().expect("citations array");
         assert_eq!(citations.len(), 1);
@@ -262,14 +268,16 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        assert!(result.success);
-        assert_eq!(result.artifacts.len(), 1);
-        assert_eq!(result.artifacts[0].artifact_type, "timeline");
-        assert!(result.artifacts[0].data.contains("\"Start\""));
+        let ExecutionResult::Completed { output, artifacts } = result else {
+            panic!("expected completed result");
+        };
 
-        let stored: Value =
-            serde_json::from_str(result.output.as_deref().expect("output should exist"))
-                .expect("stored output should be JSON");
+        assert_eq!(artifacts.len(), 1);
+        assert_eq!(artifacts[0].artifact_type, "timeline");
+        assert!(artifacts[0].data.contains("\"Start\""));
+
+        let stored: Value = serde_json::from_str(output.as_deref().expect("output should exist"))
+            .expect("stored output should be JSON");
         assert_eq!(stored["summary"], "Summary");
         assert!(stored.get("artifacts").is_none());
     }
@@ -290,8 +298,10 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        assert!(result.success);
-        assert!(result.artifacts.is_empty());
+        let ExecutionResult::Completed { artifacts, .. } = result else {
+            panic!("expected completed result");
+        };
+        assert!(artifacts.is_empty());
     }
 
     #[tokio::test]
@@ -309,9 +319,11 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        assert!(result.success);
+        let ExecutionResult::Completed { output, .. } = result else {
+            panic!("expected completed result");
+        };
         let output: ResearchOutput =
-            serde_json::from_str(result.output.as_deref().expect("output should exist"))
+            serde_json::from_str(output.as_deref().expect("output should exist"))
                 .expect("output should be JSON");
         assert_eq!(output.summary, "Demand is mixed");
         assert_eq!(output.key_points, vec!["a"]);
@@ -387,7 +399,7 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        assert!(result.success);
+        assert!(matches!(result, ExecutionResult::Completed { .. }));
         assert!(progress
             .messages()
             .iter()
@@ -435,7 +447,7 @@ mod tests {
             .await
             .expect("execution should succeed");
 
-        assert!(result.success);
+        assert!(matches!(result, ExecutionResult::Completed { .. }));
 
         let requests = client.requests();
         match &requests[1].messages[3] {
@@ -539,7 +551,7 @@ mod tests {
             .await
             .expect("cancelled execution should not error");
 
-        assert!(result.cancelled);
+        assert!(matches!(result, ExecutionResult::Cancelled));
         assert!(client.requests().is_empty());
     }
 
@@ -565,7 +577,7 @@ mod tests {
             .await
             .expect("cancelled execution should not error");
 
-        assert!(result.cancelled);
+        assert!(matches!(result, ExecutionResult::Cancelled));
         assert!(started.elapsed() < Duration::from_secs(2));
     }
 

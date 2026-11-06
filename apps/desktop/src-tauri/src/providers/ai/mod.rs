@@ -114,7 +114,6 @@ pub enum Completion {
 }
 
 /// Minimal interface the agent runtime needs from an AI provider.
-#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AiClient: Send + Sync {
     /// Sends the request and returns the model's next step.
@@ -134,7 +133,7 @@ impl OpenAiClient {
         let http = reqwest::Client::builder()
             .timeout(REQUEST_TIMEOUT)
             .build()
-            .unwrap_or_default();
+            .expect("failed to build the OpenAI HTTP client");
 
         Self {
             http,

@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::AppError;
+use crate::text::{required_text, truncate};
 
 pub const COMPARISON_TABLE: &str = "comparison-table";
 pub const TIMELINE: &str = "timeline";
@@ -158,36 +159,10 @@ fn validate_timeline(data: Value) -> Result<TimelineInput, AppError> {
             .as_deref()
             .map(str::trim)
             .filter(|description| !description.is_empty())
-            .map(|description| truncate_text(description, MAX_TEXT_CHARS));
+            .map(|description| truncate(description, MAX_TEXT_CHARS));
     }
 
     Ok(input)
-}
-
-fn required_text(value: &str, field: &str, max_chars: usize) -> Result<String, AppError> {
-    let trimmed = value.trim();
-
-    if trimmed.is_empty() {
-        return Err(AppError::Validation(format!("{} cannot be empty", field)));
-    }
-    if trimmed.chars().count() > max_chars {
-        return Err(AppError::Validation(format!(
-            "{} cannot exceed {} characters",
-            field, max_chars
-        )));
-    }
-
-    Ok(trimmed.to_string())
-}
-
-fn truncate_text(value: &str, max_chars: usize) -> String {
-    if value.chars().count() <= max_chars {
-        return value.to_string();
-    }
-
-    let mut truncated: String = value.chars().take(max_chars.saturating_sub(1)).collect();
-    truncated.push('…');
-    truncated
 }
 
 #[cfg(test)]

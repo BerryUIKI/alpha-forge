@@ -30,5 +30,5 @@ pub struct CreateWorkspaceInput {
 /// Input for updating an existing workspace.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateWorkspaceInput {
-    pub name: Option<String>,
+    pub name: String,
 }

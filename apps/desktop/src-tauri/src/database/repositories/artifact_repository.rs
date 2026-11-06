@@ -17,6 +17,12 @@ impl ArtifactRepository {
         Self { pool }
     }
 
+    /// Exposes the pool to sibling test modules.
+    #[cfg(test)]
+    pub(crate) fn pool(&self) -> &SqlitePool {
+        &self.pool
+    }
+
     /// Stores a validated artifact and marks it completed.
     pub async fn create(
         &self,
@@ -76,7 +82,7 @@ impl ArtifactRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to get artifact: {}", e)))?;
 
-        Ok(row.map(|row| row.into()))
+        row.map(Artifact::try_from).transpose()
     }
 
     /// Lists artifacts, optionally filtered by workspace and task.
@@ -103,7 +109,7 @@ impl ArtifactRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list artifacts: {}", e)))?;
 
-        Ok(rows.into_iter().map(|row| row.into()).collect())
+        rows.into_iter().map(Artifact::try_from).collect()
     }
 }
 
@@ -121,16 +127,15 @@ struct ArtifactRow {
     updated_at: DateTime<Utc>,
 }
 
-impl From<ArtifactRow> for Artifact {
-    fn from(row: ArtifactRow) -> Self {
-        let status = match row.status.as_str() {
-            "generating" => ArtifactStatus::Generating,
-            "completed" => ArtifactStatus::Completed,
-            "failed" => ArtifactStatus::Failed,
-            _ => ArtifactStatus::Pending,
-        };
+impl TryFrom<ArtifactRow> for Artifact {
+    type Error = AppError;
 
-        Artifact {
+    fn try_from(row: ArtifactRow) -> Result<Self, Self::Error> {
+        let status = ArtifactStatus::from_db(&row.status).ok_or_else(|| {
+            AppError::Internal(format!("unknown artifact status '{}'", row.status))
+        })?;
+
+        Ok(Artifact {
             id: row.id,
             task_id: row.task_id,
             workspace_id: row.workspace_id,
@@ -140,6 +145,6 @@ impl From<ArtifactRow> for Artifact {
             status,
             created_at: row.created_at,
             updated_at: row.updated_at,
-        }
+        })
     }
 }

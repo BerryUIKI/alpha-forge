@@ -8,14 +8,15 @@ use tokio::sync::{Mutex, Semaphore};
 use tokio::time::timeout;
 
 use crate::agent::events::EventPublisher;
-use crate::agent::runtime::{AgentRuntime, CancellationToken, ProgressReporter};
-use crate::artifacts::schema::ArtifactDraft;
+use crate::agent::runtime::{AgentRuntime, CancellationToken, ExecutionResult, ProgressReporter};
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
 use crate::services::artifact_service::ArtifactService;
+use crate::text::required_text;
 use domain::task::{AgentTask, AgentTaskEvent, CreateAgentTaskInput, TaskEventType, TaskStatus};
 
 const DEFAULT_EXECUTION_TIMEOUT: Duration = Duration::from_secs(300);
+const MAX_TITLE_CHARS: usize = 200;
 
 /// Default maximum number of agent tasks executing at the same time.
 pub const DEFAULT_MAX_CONCURRENT_TASKS: usize = 2;
@@ -74,43 +75,51 @@ impl AgentService {
         }
     }
 
+    async fn load_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
+        self.repo
+            .get(task_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))
+    }
+
+    async fn record_event(
+        &self,
+        task_id: &str,
+        event_type: TaskEventType,
+        payload: Option<String>,
+    ) -> Result<(), AppError> {
+        let event = self.repo.create_event(task_id, event_type, payload).await?;
+        self.publish(&event);
+        Ok(())
+    }
+
     /// Creates a new agent task.
     pub async fn create_task(&self, input: CreateAgentTaskInput) -> Result<AgentTask, AppError> {
-        // Validate input
-        if input.title.trim().is_empty() {
-            return Err(AppError::Validation(
-                "Task title cannot be empty".to_string(),
-            ));
-        }
+        let CreateAgentTaskInput {
+            workspace_id,
+            title,
+            description,
+        } = input;
+        let title = required_text(&title, "Task title", MAX_TITLE_CHARS)?;
 
-        if input.title.len() > 200 {
-            return Err(AppError::Validation(
-                "Task title cannot exceed 200 characters".to_string(),
-            ));
-        }
-
-        // Create task via repository
-        let task = self.repo.create(input).await?;
-
-        // The repository records a TaskCreated event; forward the latest one.
-        if let Ok(events) = self.repo.list_events(&task.id).await {
-            if let Some(event) = events.last() {
-                self.publish(event);
-            }
-        }
+        let task = self
+            .repo
+            .create(CreateAgentTaskInput {
+                workspace_id,
+                title,
+                description,
+            })
+            .await?;
+        self.record_event(&task.id, TaskEventType::TaskCreated, None)
+            .await?;
 
         Ok(task)
     }
 
     /// Queues a task for execution.
     pub async fn queue_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
-        let task = self
-            .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+        let task = self.load_task(task_id).await?;
 
-        // Validate state transition
         if task.status != TaskStatus::Created {
             return Err(AppError::Validation(format!(
                 "Cannot queue task in '{}' state",
@@ -118,32 +127,17 @@ impl AgentService {
             )));
         }
 
-        // Update status
-        self.repo.update_status(task_id, TaskStatus::Queued).await?;
-
-        // Create event
-        let event = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskQueued, None)
+        let task = self.repo.update_status(task_id, TaskStatus::Queued).await?;
+        self.record_event(task_id, TaskEventType::TaskQueued, None)
             .await?;
-        self.publish(&event);
 
-        // Fetch updated task
-        self.repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
+        Ok(task)
     }
 
     /// Starts task execution in the background.
     pub async fn start_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
-        let task = self
-            .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+        let task = self.load_task(task_id).await?;
 
-        // Validate state transition
         if task.status != TaskStatus::Queued {
             return Err(AppError::Validation(format!(
                 "Cannot start task in '{}' state",
@@ -151,21 +145,12 @@ impl AgentService {
             )));
         }
 
-        self.repo
-            .update_status(task_id, TaskStatus::Running)
-            .await?;
-
-        let started = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskStarted, None)
-            .await?;
-        self.publish(&started);
-
         let running = self
             .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))?;
+            .update_status(task_id, TaskStatus::Running)
+            .await?;
+        self.record_event(task_id, TaskEventType::TaskStarted, None)
+            .await?;
 
         let cancellation = CancellationToken::new();
         self.cancellations
@@ -204,7 +189,7 @@ impl AgentService {
                             &artifact_service,
                             &task_for_run.workspace_id,
                             &task_for_run.id,
-                            FinalState::Failed(error.to_string()),
+                            ExecutionResult::failure(error.to_string()),
                         )
                         .await;
                         cancellations.lock().await.remove(&task_for_run.id);
@@ -218,13 +203,13 @@ impl AgentService {
                 }
             };
 
-            let final_state = match permit {
-                None => FinalState::Cancelled,
+            let outcome = match permit {
+                None => ExecutionResult::cancelled(),
                 Some(_permit) => {
                     if cancellation.is_cancelled() {
-                        FinalState::Cancelled
+                        ExecutionResult::cancelled()
                     } else {
-                        let outcome = timeout(
+                        match timeout(
                             timeout_duration,
                             runtime.execute(
                                 task_for_run.clone(),
@@ -232,20 +217,11 @@ impl AgentService {
                                 cancellation,
                             ),
                         )
-                        .await;
-
-                        match outcome {
-                            Ok(Ok(result)) if result.cancelled => FinalState::Cancelled,
-                            Ok(Ok(result)) if result.success => {
-                                FinalState::Completed(result.output, result.artifacts)
-                            }
-                            Ok(Ok(result)) => FinalState::Failed(
-                                result
-                                    .error
-                                    .unwrap_or_else(|| "Agent task failed".to_string()),
-                            ),
-                            Ok(Err(error)) => FinalState::Failed(error.to_string()),
-                            Err(_) => FinalState::Failed(format!(
+                        .await
+                        {
+                            Ok(Ok(result)) => result,
+                            Ok(Err(error)) => ExecutionResult::failure(error.to_string()),
+                            Err(_) => ExecutionResult::failure(format!(
                                 "Agent task timed out after {} ms",
                                 timeout_duration.as_millis()
                             )),
@@ -260,7 +236,7 @@ impl AgentService {
                 &artifact_service,
                 &task_for_run.workspace_id,
                 &task_for_run.id,
-                final_state,
+                outcome,
             )
             .await;
             cancellations.lock().await.remove(&task_for_run.id);
@@ -271,11 +247,7 @@ impl AgentService {
 
     /// Completes a task.
     pub async fn complete_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
-        let task = self
-            .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+        let task = self.load_task(task_id).await?;
 
         if task.status != TaskStatus::Running && task.status != TaskStatus::WaitingForInput {
             return Err(AppError::Validation(format!(
@@ -284,43 +256,16 @@ impl AgentService {
             )));
         }
 
-        self.repo.complete(task_id, None).await?;
-
-        let event = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskCompleted, None)
+        let task = self.repo.complete(task_id, None).await?;
+        self.record_event(task_id, TaskEventType::TaskCompleted, None)
             .await?;
-        self.publish(&event);
 
-        self.repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
-    }
-
-    /// Fails a task with an error message.
-    pub async fn fail_task(&self, task_id: &str, error: String) -> Result<AgentTask, AppError> {
-        self.repo.fail(task_id, &error).await?;
-
-        let event = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskFailed, Some(error))
-            .await?;
-        self.publish(&event);
-
-        self.repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
+        Ok(task)
     }
 
     /// Cancels a task. Running tasks are cancelled cooperatively.
     pub async fn cancel_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
-        let task = self
-            .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+        let task = self.load_task(task_id).await?;
 
         if !task.status.is_cancellable() {
             return Err(AppError::Validation(format!(
@@ -338,18 +283,11 @@ impl AgentService {
             }
         }
 
-        self.repo.mark_cancelled(task_id).await?;
-
-        let event = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskCancelled, None)
+        let task = self.repo.mark_cancelled(task_id).await?;
+        self.record_event(task_id, TaskEventType::TaskCancelled, None)
             .await?;
-        self.publish(&event);
 
-        self.repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
+        Ok(task)
     }
 
     /// Marks tasks left running by a previous process as failed.
@@ -359,23 +297,19 @@ impl AgentService {
         let task_ids = self.repo.fail_running_tasks(INTERRUPTED_TASK_ERROR).await?;
 
         for task_id in &task_ids {
-            match self
-                .repo
-                .create_event(
+            if let Err(error) = self
+                .record_event(
                     task_id,
                     TaskEventType::TaskFailed,
                     Some(INTERRUPTED_TASK_ERROR.to_string()),
                 )
                 .await
             {
-                Ok(event) => self.publish(&event),
-                Err(error) => {
-                    tracing::error!(
-                        ?error,
-                        task_id = %task_id,
-                        "failed to record interrupted task event"
-                    );
-                }
+                tracing::error!(
+                    ?error,
+                    task_id = %task_id,
+                    "failed to record interrupted task event"
+                );
             }
         }
 
@@ -384,11 +318,7 @@ impl AgentService {
 
     /// Returns a failed or cancelled task to the queue.
     pub async fn retry_task(&self, task_id: &str) -> Result<AgentTask, AppError> {
-        let task = self
-            .repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::NotFound(format!("Task '{}' not found", task_id)))?;
+        let task = self.load_task(task_id).await?;
 
         if !matches!(task.status, TaskStatus::Failed | TaskStatus::Cancelled) {
             return Err(AppError::Validation(format!(
@@ -397,18 +327,11 @@ impl AgentService {
             )));
         }
 
-        self.repo.requeue(task_id).await?;
-
-        let event = self
-            .repo
-            .create_event(task_id, TaskEventType::TaskQueued, None)
+        let task = self.repo.requeue(task_id).await?;
+        self.record_event(task_id, TaskEventType::TaskQueued, None)
             .await?;
-        self.publish(&event);
 
-        self.repo
-            .get(task_id)
-            .await?
-            .ok_or_else(|| AppError::Internal("Task disappeared after update".to_string()))
+        Ok(task)
     }
 
     /// Gets a task by ID.
@@ -434,15 +357,18 @@ async fn finalize_task(
     artifacts: &ArtifactService,
     workspace_id: &str,
     task_id: &str,
-    final_state: FinalState,
+    outcome: ExecutionResult,
 ) {
-    let (event_type, payload) = match &final_state {
-        FinalState::Completed(output, _) => (TaskEventType::TaskCompleted, output.clone()),
-        FinalState::Failed(error) => (TaskEventType::TaskFailed, Some(error.clone())),
-        FinalState::Cancelled => (TaskEventType::TaskCancelled, None),
+    let (event_type, payload) = match &outcome {
+        ExecutionResult::Completed { output, .. } => (TaskEventType::TaskCompleted, output.clone()),
+        ExecutionResult::Failed { error } => (TaskEventType::TaskFailed, Some(error.clone())),
+        ExecutionResult::Cancelled => (TaskEventType::TaskCancelled, None),
     };
 
-    if let FinalState::Completed(_, drafts) = &final_state {
+    if let ExecutionResult::Completed {
+        artifacts: drafts, ..
+    } = &outcome
+    {
         if !drafts.is_empty() {
             if let Err(error) = artifacts
                 .persist_task_artifacts(workspace_id, task_id, drafts)
@@ -457,10 +383,12 @@ async fn finalize_task(
         }
     }
 
-    let update = match &final_state {
-        FinalState::Completed(output, _) => repo.complete(task_id, output.as_deref()).await,
-        FinalState::Failed(error) => repo.fail(task_id, error).await,
-        FinalState::Cancelled => repo.mark_cancelled(task_id).await,
+    let update = match &outcome {
+        ExecutionResult::Completed { output, .. } => {
+            repo.complete(task_id, output.as_deref()).await
+        }
+        ExecutionResult::Failed { error } => repo.fail(task_id, error).await,
+        ExecutionResult::Cancelled => repo.mark_cancelled(task_id).await,
     };
     if let Err(error) = update {
         tracing::error!(
@@ -515,11 +443,4 @@ impl ProgressReporter for TaskProgressReporter {
 
         Ok(())
     }
-}
-
-/// Final outcome of a background execution.
-enum FinalState {
-    Completed(Option<String>, Vec<ArtifactDraft>),
-    Failed(String),
-    Cancelled,
 }

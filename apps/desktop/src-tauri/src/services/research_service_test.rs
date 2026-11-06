@@ -2,8 +2,6 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
     use crate::error::AppError;
     use crate::services::research_service::ResearchService;
@@ -13,22 +11,9 @@ mod tests {
     };
 
     async fn setup_service() -> ResearchService {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        ResearchService::new(ResearchDocumentRepository::new(pool))
+        ResearchService::new(ResearchDocumentRepository::new(
+            crate::test_support::test_pool_with_workspace().await,
+        ))
     }
 
     fn create_input(title: &str, content: Option<&str>) -> CreateResearchDocumentInput {

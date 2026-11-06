@@ -18,11 +18,10 @@ impl AgentTaskRepository {
         Self { pool }
     }
 
-    /// Creates a new agent task.
+    /// Creates a new agent task. The service records the `TaskCreated` event.
     pub async fn create(&self, input: CreateAgentTaskInput) -> Result<AgentTask, AppError> {
         let id = uuid::Uuid::new_v4().to_string();
         let now = Utc::now();
-        let status_str = "created";
 
         sqlx::query(
             r#"
@@ -34,16 +33,12 @@ impl AgentTaskRepository {
         .bind(&input.workspace_id)
         .bind(&input.title)
         .bind(&input.description)
-        .bind(status_str)
+        .bind(TaskStatus::Created.as_str())
         .bind(now)
         .bind(now)
         .execute(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to create agent task: {}", e)))?;
-
-        // Create initial event
-        self.create_event(&id, TaskEventType::TaskCreated, None)
-            .await?;
 
         Ok(AgentTask {
             id,
@@ -73,7 +68,7 @@ impl AgentTaskRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list agent tasks: {}", e)))?;
 
-        Ok(rows.into_iter().map(|r| r.into()).collect())
+        rows.into_iter().map(AgentTask::try_from).collect()
     }
 
     /// Searches task titles and descriptions in a workspace.
@@ -102,7 +97,7 @@ impl AgentTaskRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to search agent tasks: {}", e)))?;
 
-        Ok(rows.into_iter().map(|r| r.into()).collect())
+        rows.into_iter().map(AgentTask::try_from).collect()
     }
 
     /// Gets a task by ID.
@@ -119,112 +114,93 @@ impl AgentTaskRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to get agent task: {}", e)))?;
 
-        Ok(row.map(|r| r.into()))
+        row.map(AgentTask::try_from).transpose()
     }
 
-    /// Updates task status.
-    pub async fn update_status(&self, id: &str, status: TaskStatus) -> Result<(), AppError> {
-        let status_str = match status {
-            TaskStatus::Created => "created",
-            TaskStatus::Queued => "queued",
-            TaskStatus::Running => "running",
-            TaskStatus::WaitingForInput => "waiting_for_input",
-            TaskStatus::Completed => "completed",
-            TaskStatus::Failed => "failed",
-            TaskStatus::Cancelled => "cancelled",
-        };
-
-        let rows_affected = sqlx::query(
+    /// Updates task status and returns the updated task.
+    pub async fn update_status(&self, id: &str, status: TaskStatus) -> Result<AgentTask, AppError> {
+        let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
             UPDATE agent_tasks
             SET status = ?, updated_at = ?
             WHERE id = ?
+            RETURNING id, workspace_id, title, description, status, output, error, created_at, updated_at
             "#,
         )
-        .bind(status_str)
+        .bind(status.as_str())
         .bind(Utc::now())
         .bind(id)
-        .execute(&self.pool)
+        .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to update task status: {}", e)))?
-        .rows_affected();
+        .ok_or_else(|| AppError::NotFound(format!("Agent task '{}' not found", id)))?;
 
-        if rows_affected == 0 {
-            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
-        }
-
-        Ok(())
+        AgentTask::try_from(row)
     }
 
-    /// Marks a task as completed and stores its structured output.
-    pub async fn complete(&self, id: &str, output: Option<&str>) -> Result<(), AppError> {
-        let rows_affected = sqlx::query(
+    /// Marks a task as completed and returns it.
+    pub async fn complete(&self, id: &str, output: Option<&str>) -> Result<AgentTask, AppError> {
+        let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
             UPDATE agent_tasks
-            SET status = 'completed', output = ?, error = NULL, updated_at = ?
+            SET status = ?, output = ?, error = NULL, updated_at = ?
             WHERE id = ?
+            RETURNING id, workspace_id, title, description, status, output, error, created_at, updated_at
             "#,
         )
+        .bind(TaskStatus::Completed.as_str())
         .bind(output)
         .bind(Utc::now())
         .bind(id)
-        .execute(&self.pool)
+        .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to complete agent task: {}", e)))?
-        .rows_affected();
+        .ok_or_else(|| AppError::NotFound(format!("Agent task '{}' not found", id)))?;
 
-        if rows_affected == 0 {
-            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
-        }
-
-        Ok(())
+        AgentTask::try_from(row)
     }
 
-    /// Marks a task as failed and stores the error message.
-    pub async fn fail(&self, id: &str, error: &str) -> Result<(), AppError> {
-        let rows_affected = sqlx::query(
+    /// Marks a task as failed and returns it.
+    pub async fn fail(&self, id: &str, error: &str) -> Result<AgentTask, AppError> {
+        let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
             UPDATE agent_tasks
-            SET status = 'failed', output = NULL, error = ?, updated_at = ?
+            SET status = ?, output = NULL, error = ?, updated_at = ?
             WHERE id = ?
+            RETURNING id, workspace_id, title, description, status, output, error, created_at, updated_at
             "#,
         )
+        .bind(TaskStatus::Failed.as_str())
         .bind(error)
         .bind(Utc::now())
         .bind(id)
-        .execute(&self.pool)
+        .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to fail agent task: {}", e)))?
-        .rows_affected();
+        .ok_or_else(|| AppError::NotFound(format!("Agent task '{}' not found", id)))?;
 
-        if rows_affected == 0 {
-            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
-        }
-
-        Ok(())
+        AgentTask::try_from(row)
     }
 
-    /// Marks a running task as cancelled.
-    pub async fn mark_cancelled(&self, id: &str) -> Result<(), AppError> {
-        let rows_affected = sqlx::query(
+    /// Marks a running task as cancelled and returns it.
+    pub async fn mark_cancelled(&self, id: &str) -> Result<AgentTask, AppError> {
+        let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
             UPDATE agent_tasks
-            SET status = 'cancelled', error = NULL, updated_at = ?
+            SET status = ?, error = NULL, updated_at = ?
             WHERE id = ?
+            RETURNING id, workspace_id, title, description, status, output, error, created_at, updated_at
             "#,
         )
+        .bind(TaskStatus::Cancelled.as_str())
         .bind(Utc::now())
         .bind(id)
-        .execute(&self.pool)
+        .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to cancel agent task: {}", e)))?
-        .rows_affected();
+        .ok_or_else(|| AppError::NotFound(format!("Agent task '{}' not found", id)))?;
 
-        if rows_affected == 0 {
-            return Err(AppError::NotFound(format!("Agent task '{}' not found", id)));
-        }
-
-        Ok(())
+        AgentTask::try_from(row)
     }
 
     /// Marks all running tasks as failed, returning their IDs.
@@ -235,13 +211,15 @@ impl AgentTaskRepository {
         let ids = sqlx::query_scalar::<_, String>(
             r#"
             UPDATE agent_tasks
-            SET status = 'failed', output = NULL, error = ?, updated_at = ?
-            WHERE status = 'running'
+            SET status = ?, output = NULL, error = ?, updated_at = ?
+            WHERE status = ?
             RETURNING id
             "#,
         )
+        .bind(TaskStatus::Failed.as_str())
         .bind(error)
         .bind(Utc::now())
+        .bind(TaskStatus::Running.as_str())
         .fetch_all(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to recover running agent tasks: {}", e)))?;
@@ -250,29 +228,31 @@ impl AgentTaskRepository {
     }
 
     /// Returns a failed or cancelled task to the queue.
-    pub async fn requeue(&self, id: &str) -> Result<(), AppError> {
-        let rows_affected = sqlx::query(
+    pub async fn requeue(&self, id: &str) -> Result<AgentTask, AppError> {
+        let row = sqlx::query_as::<_, AgentTaskRow>(
             r#"
             UPDATE agent_tasks
-            SET status = 'queued', output = NULL, error = NULL, updated_at = ?
-            WHERE id = ? AND status IN ('failed', 'cancelled')
+            SET status = ?, output = NULL, error = NULL, updated_at = ?
+            WHERE id = ? AND status IN (?, ?)
+            RETURNING id, workspace_id, title, description, status, output, error, created_at, updated_at
             "#,
         )
+        .bind(TaskStatus::Queued.as_str())
         .bind(Utc::now())
         .bind(id)
-        .execute(&self.pool)
+        .bind(TaskStatus::Failed.as_str())
+        .bind(TaskStatus::Cancelled.as_str())
+        .fetch_optional(&self.pool)
         .await
         .map_err(|e| AppError::Internal(format!("Failed to requeue agent task: {}", e)))?
-        .rows_affected();
-
-        if rows_affected == 0 {
-            return Err(AppError::Validation(format!(
+        .ok_or_else(|| {
+            AppError::Validation(format!(
                 "Agent task '{}' cannot be retried in its current state",
                 id
-            )));
-        }
+            ))
+        })?;
 
-        Ok(())
+        AgentTask::try_from(row)
     }
 
     /// Creates a task event.
@@ -284,16 +264,6 @@ impl AgentTaskRepository {
     ) -> Result<AgentTaskEvent, AppError> {
         let id = uuid::Uuid::new_v4().to_string();
         let now = Utc::now();
-        let event_type_str = match event_type {
-            TaskEventType::TaskCreated => "task_created",
-            TaskEventType::TaskQueued => "task_queued",
-            TaskEventType::TaskStarted => "task_started",
-            TaskEventType::TaskProgress => "task_progress",
-            TaskEventType::TaskWaitingForInput => "task_waiting_for_input",
-            TaskEventType::TaskCompleted => "task_completed",
-            TaskEventType::TaskFailed => "task_failed",
-            TaskEventType::TaskCancelled => "task_cancelled",
-        };
 
         sqlx::query(
             r#"
@@ -303,7 +273,7 @@ impl AgentTaskRepository {
         )
         .bind(&id)
         .bind(task_id)
-        .bind(event_type_str)
+        .bind(event_type.as_str())
         .bind(&payload)
         .bind(now)
         .execute(&self.pool)
@@ -334,7 +304,7 @@ impl AgentTaskRepository {
         .await
         .map_err(|e| AppError::Internal(format!("Failed to list task events: {}", e)))?;
 
-        Ok(rows.into_iter().map(|r| r.into()).collect())
+        rows.into_iter().map(AgentTaskEvent::try_from).collect()
     }
 }
 
@@ -352,20 +322,15 @@ struct AgentTaskRow {
     updated_at: DateTime<Utc>,
 }
 
-impl From<AgentTaskRow> for AgentTask {
-    fn from(row: AgentTaskRow) -> Self {
-        let status = match row.status.as_str() {
-            "created" => TaskStatus::Created,
-            "queued" => TaskStatus::Queued,
-            "running" => TaskStatus::Running,
-            "waiting_for_input" => TaskStatus::WaitingForInput,
-            "completed" => TaskStatus::Completed,
-            "failed" => TaskStatus::Failed,
-            "cancelled" => TaskStatus::Cancelled,
-            _ => TaskStatus::Created,
-        };
+impl TryFrom<AgentTaskRow> for AgentTask {
+    type Error = AppError;
 
-        AgentTask {
+    fn try_from(row: AgentTaskRow) -> Result<Self, Self::Error> {
+        let status = TaskStatus::from_db(&row.status).ok_or_else(|| {
+            AppError::Internal(format!("unknown agent task status '{}'", row.status))
+        })?;
+
+        Ok(AgentTask {
             id: row.id,
             workspace_id: row.workspace_id,
             title: row.title,
@@ -375,7 +340,7 @@ impl From<AgentTaskRow> for AgentTask {
             error: row.error,
             created_at: row.created_at,
             updated_at: row.updated_at,
-        }
+        })
     }
 }
 
@@ -389,26 +354,23 @@ struct AgentTaskEventRow {
     created_at: DateTime<Utc>,
 }
 
-impl From<AgentTaskEventRow> for AgentTaskEvent {
-    fn from(row: AgentTaskEventRow) -> Self {
-        let event_type = match row.event_type.as_str() {
-            "task_created" => TaskEventType::TaskCreated,
-            "task_queued" => TaskEventType::TaskQueued,
-            "task_started" => TaskEventType::TaskStarted,
-            "task_progress" => TaskEventType::TaskProgress,
-            "task_waiting_for_input" => TaskEventType::TaskWaitingForInput,
-            "task_completed" => TaskEventType::TaskCompleted,
-            "task_failed" => TaskEventType::TaskFailed,
-            "task_cancelled" => TaskEventType::TaskCancelled,
-            _ => TaskEventType::TaskCreated,
-        };
+impl TryFrom<AgentTaskEventRow> for AgentTaskEvent {
+    type Error = AppError;
 
-        AgentTaskEvent {
+    fn try_from(row: AgentTaskEventRow) -> Result<Self, Self::Error> {
+        let event_type = TaskEventType::from_db(&row.event_type).ok_or_else(|| {
+            AppError::Internal(format!(
+                "unknown agent task event type '{}'",
+                row.event_type
+            ))
+        })?;
+
+        Ok(AgentTaskEvent {
             id: row.id,
             task_id: row.task_id,
             event_type,
             payload: row.payload,
             created_at: row.created_at,
-        }
+        })
     }
 }

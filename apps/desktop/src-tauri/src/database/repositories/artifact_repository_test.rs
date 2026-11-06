@@ -2,26 +2,11 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use super::super::artifact_repository::ArtifactRepository;
     use domain::artifact::ArtifactStatus;
 
     async fn setup_repo() -> ArtifactRepository {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
+        let pool = crate::test_support::test_pool_with_workspace().await;
 
         sqlx::query(
             "INSERT INTO agent_tasks (id, workspace_id, title, status, created_at, updated_at)
@@ -123,5 +108,22 @@ mod tests {
 
         assert_eq!(artifacts.len(), 1);
         assert_eq!(artifacts[0].title, "Workspace artifact");
+    }
+
+    #[tokio::test]
+    async fn test_unknown_status_returns_internal_error() {
+        let repo = setup_repo().await;
+
+        sqlx::query(
+            "INSERT INTO artifacts (id, artifact_type, title, input, status)
+             VALUES ('a1', 'timeline', 'Timeline', '{}', 'mystery')",
+        )
+        .execute(repo.pool())
+        .await
+        .expect("Failed to insert artifact");
+
+        let result = repo.get("a1").await;
+
+        assert!(matches!(result, Err(crate::error::AppError::Internal(_))));
     }
 }

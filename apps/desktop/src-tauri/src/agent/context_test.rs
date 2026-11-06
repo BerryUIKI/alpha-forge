@@ -3,7 +3,6 @@
 #[cfg(test)]
 mod tests {
     use chrono::Utc;
-    use sqlx::sqlite::SqlitePoolOptions;
 
     use crate::agent::context::{
         EmptyContextProvider, TaskContextProvider, WorkspaceContextProvider,
@@ -21,20 +20,8 @@ mod tests {
         AgentTaskRepository,
         ResearchDocumentRepository,
     ) {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Alpha Research')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
+        let pool = crate::test_support::test_pool().await;
+        crate::test_support::insert_workspace(&pool, "w1", "Alpha Research").await;
 
         let tasks = AgentTaskRepository::new(pool.clone());
         let research = ResearchDocumentRepository::new(pool.clone());

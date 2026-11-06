@@ -21,7 +21,6 @@ use crate::error::AppError;
 use crate::providers::ai::ToolSpec;
 
 /// A capability the agent can invoke during a task.
-#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait AgentTool: Send + Sync {
     fn name(&self) -> &'static str;

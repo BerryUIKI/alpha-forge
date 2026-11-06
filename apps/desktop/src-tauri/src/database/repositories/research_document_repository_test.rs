@@ -2,30 +2,13 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use super::super::research_document_repository::{
         NewResearchDocument, ResearchDocumentRepository,
     };
     use domain::research::{ResearchDocument, ResearchDocumentFormat, ResearchDocumentKind};
 
     async fn setup_repo() -> ResearchDocumentRepository {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        ResearchDocumentRepository::new(pool)
+        ResearchDocumentRepository::new(crate::test_support::test_pool_with_workspace().await)
     }
 
     async fn create(
