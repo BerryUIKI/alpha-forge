@@ -108,6 +108,25 @@ describe("AgentTaskDetail", () => {
     expect(screen.getAllByText("provider unavailable").length).toBeGreaterThanOrEqual(1);
   });
 
+  it("renders citations from the stored output", async () => {
+    mockCommands({
+      get_agent_task: () =>
+        makeTask({
+          output: JSON.stringify({
+            summary: "ok",
+            citations: [{ kind: "document", id: "doc-1", title: "Tesla memo" }],
+          }),
+        }),
+      get_task_events: () => [makeEvent()],
+    });
+
+    renderDetail();
+
+    expect(await screen.findByText("Citations")).toBeInTheDocument();
+    expect(screen.getByText("Tesla memo")).toBeInTheDocument();
+    expect(screen.getByText("doc-1")).toBeInTheDocument();
+  });
+
   it("closes the detail when the close button is clicked", async () => {
     const onClose = vi.fn();
     mockCommands({

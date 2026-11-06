@@ -1,6 +1,7 @@
 // Research document editor.
 
 import { useState } from "react";
+import { Badge } from "@investment-os/ui";
 import { useToast } from "@/components/common/useToast";
 import { getErrorMessage } from "@/lib/errors";
 import type { ResearchDocument } from "@/lib/desktop-api";
@@ -9,6 +10,8 @@ import {
   useDeleteResearchDocument,
   useUpdateResearchDocument,
 } from "../hooks/useResearchDocuments";
+import { MarkdownPreview } from "./MarkdownPreview";
+import { researchKindLabel } from "./researchLabels";
 
 interface ResearchDocumentEditorProps {
   mode: "create" | "edit";
@@ -36,6 +39,7 @@ export function ResearchDocumentEditor({
   const [content, setContent] = useState(document?.content ?? "");
   const [error, setError] = useState("");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [view, setView] = useState<"edit" | "preview">("edit");
 
   const isSaving = createDocument.isPending || updateDocument.isPending;
 
@@ -99,9 +103,12 @@ export function ResearchDocumentEditor({
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {mode === "create" ? "New document" : "Edit document"}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">
+            {mode === "create" ? "New document" : "Edit document"}
+          </h3>
+          <Badge variant="outline">{researchKindLabel(document?.kind ?? "note")}</Badge>
+        </div>
         {onCancel && (
           <button
             type="button"
@@ -132,19 +139,51 @@ export function ResearchDocumentEditor({
         </div>
 
         <div className="mb-4">
-          <label htmlFor="document-content" className="mb-2 block text-sm font-medium">
-            Content
-          </label>
-          <textarea
-            id="document-content"
-            value={content}
-            onChange={(event) => {
-              setContent(event.target.value);
-            }}
-            placeholder="Notes, findings, and source excerpts..."
-            rows={12}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
+          <div className="mb-2 flex items-center justify-between">
+            <label htmlFor="document-content" className="block text-sm font-medium">
+              Content
+            </label>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => setView("edit")}
+                aria-pressed={view === "edit"}
+                className={`rounded-md px-2 py-1 text-xs font-medium ${
+                  view === "edit" ? "bg-accent" : "text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("preview")}
+                aria-pressed={view === "preview"}
+                className={`rounded-md px-2 py-1 text-xs font-medium ${
+                  view === "preview" ? "bg-accent" : "text-muted-foreground hover:bg-accent"
+                }`}
+              >
+                Preview
+              </button>
+            </div>
+          </div>
+          {view === "edit" ? (
+            <textarea
+              id="document-content"
+              value={content}
+              onChange={(event) => {
+                setContent(event.target.value);
+              }}
+              placeholder="Notes, findings, and source excerpts..."
+              rows={12}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          ) : (document?.format ?? "markdown") === "text" ? (
+            <pre className="whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-sm">
+              {content}
+            </pre>
+          ) : (
+            <MarkdownPreview content={content} />
+          )}
         </div>
 
         {error && <p className="mb-4 text-sm text-destructive">{error}</p>}

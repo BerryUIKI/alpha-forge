@@ -2,11 +2,18 @@
 
 import { invoke } from "@tauri-apps/api/core";
 
+export type ResearchDocumentKind = "note" | "web" | "pdf" | "agent";
+export type ResearchDocumentFormat = "markdown" | "text";
+
 export interface ResearchDocument {
   id: string;
   workspace_id: string;
   title: string;
   content: string | null;
+  kind: ResearchDocumentKind;
+  format: ResearchDocumentFormat;
+  summary: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -45,4 +52,11 @@ export async function updateResearchDocument(
 
 export async function deleteResearchDocument(id: string): Promise<void> {
   return invoke("delete_research_document", { id });
+}
+
+/**
+ * Permanently deletes an archived document and its sources/notes.
+ */
+export async function purgeResearchDocument(id: string): Promise<void> {
+  return invoke("purge_research_document", { id });
 }

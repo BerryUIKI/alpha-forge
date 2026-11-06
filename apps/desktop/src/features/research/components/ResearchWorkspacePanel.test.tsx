@@ -22,6 +22,10 @@ function makeDocument(overrides: Partial<ResearchDocument> = {}): ResearchDocume
     workspace_id: "ws-1",
     title: "Tesla notes",
     content: "Strong demand",
+    kind: "note",
+    format: "markdown",
+    summary: null,
+    archived_at: null,
     created_at: timestamp,
     updated_at: timestamp,
     ...overrides,
@@ -41,6 +45,10 @@ function mockApi() {
           workspace_id: "ws-1",
           title: args?.title as string,
           content: (args?.content as string | null) ?? null,
+          kind: "note",
+          format: "markdown",
+          summary: null,
+          archived_at: null,
           created_at: timestamp,
           updated_at: timestamp,
         };
@@ -148,6 +156,21 @@ describe("ResearchWorkspacePanel", () => {
       });
     });
     expect(await screen.findByText("Document created")).toBeInTheDocument();
+  });
+
+  it("previews Markdown content", async () => {
+    documents = [
+      makeDocument({ content: "# Findings\n\n- Strong demand\n\n<script>alert(1)</script>" }),
+    ];
+    mockApi();
+    renderPanel();
+
+    fireEvent.click(await screen.findByText("Tesla notes"));
+    fireEvent.click(await screen.findByRole("button", { name: "Preview" }));
+
+    expect(await screen.findByRole("heading", { name: "Findings" })).toBeInTheDocument();
+    expect(screen.getByText("Strong demand")).toBeInTheDocument();
+    expect(screen.queryByText("alert(1)")).not.toBeInTheDocument();
   });
 
   it("deletes a document after confirmation", async () => {

@@ -2,6 +2,7 @@
 
 import { cn } from "@investment-os/ui";
 import type { ResearchDocument } from "@/lib/desktop-api";
+import { researchKindLabel } from "./researchLabels";
 
 interface ResearchDocumentListProps {
   documents: ResearchDocument[];
@@ -32,7 +33,8 @@ export function ResearchDocumentList({
           >
             <h3 className="truncate font-semibold">{document.title}</h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Updated {new Date(document.updated_at).toLocaleDateString()}
+              {researchKindLabel(document.kind)} · Updated{" "}
+              {new Date(document.updated_at).toLocaleDateString()}
             </p>
           </button>
         );

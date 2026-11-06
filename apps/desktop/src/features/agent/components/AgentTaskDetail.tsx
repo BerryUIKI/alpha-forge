@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorState } from "@/components/common/ErrorState";
+import { Badge } from "@investment-os/ui";
 import type { AgentTaskEvent, TaskEventType } from "@/lib/desktop-api/agent";
 import { useAgentTask, useTaskEvents } from "../hooks/useAgentTasks";
+import { parseCitations } from "./citations";
 import { TaskStatusBadge } from "./TaskStatusBadge";
 
 const eventLabels: Record<TaskEventType, string> = {
@@ -104,6 +106,8 @@ export function AgentTaskDetail({ taskId, onClose }: AgentTaskDetailProps) {
     );
   }
 
+  const citations = parseCitations(task.output);
+
   return (
     <div className="rounded-lg border border-border bg-card">
       <div className="flex items-start justify-between gap-3 border-b border-border p-4">
@@ -183,6 +187,26 @@ export function AgentTaskDetail({ taskId, onClose }: AgentTaskDetailProps) {
             <pre className="max-h-80 overflow-auto rounded-md bg-muted p-3 text-xs">
               {formatOutput(task.output)}
             </pre>
+          </section>
+        )}
+
+        {citations.length > 0 && (
+          <section>
+            <h4 className="mb-2 text-sm font-semibold">Citations</h4>
+            <ul className="space-y-1">
+              {citations.map((citation) => (
+                <li
+                  key={`${citation.kind}-${citation.id}`}
+                  className="flex flex-wrap items-center gap-2 text-sm"
+                >
+                  <Badge variant="outline">
+                    {citation.kind === "document" ? "Document" : "Task"}
+                  </Badge>
+                  <span>{citation.title}</span>
+                  <code className="text-xs text-muted-foreground">{citation.id}</code>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 
