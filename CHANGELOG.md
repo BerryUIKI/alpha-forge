@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Agent artifacts: validated comparison-table and timeline outputs are generated with tasks, persisted in SQLite, and rendered on the Artifacts page with predefined React components.
 - Artifact windows: validated artifacts can open in a dedicated minimal-permission WebView (`core:default`) with the payload injected as parsed JSON.
 - Research documents: workspace-scoped CRUD with a Research page for selecting a workspace and creating, editing, and deleting documents.
+- Research document format standard: Markdown bodies, `kind`/`format`/`summary` metadata, sanitized preview, soft archive, and explicit purge.
+- Agent memory: recent research-document summaries in context, `search_research` / `get_research_document` tools, and validated citations shown in the task detail.
 
 ### Fixed
 - Root `pnpm typecheck` now uses the pnpm workspace instead of a non-existent npm workspace.

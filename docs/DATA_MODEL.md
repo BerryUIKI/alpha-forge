@@ -24,6 +24,14 @@ Conceptual entities and their relationships. The database schema implements thes
 
 **Lifecycle.** Created by user upload or agent generation. Edited over time. Can be archived or deleted.
 
+**Format conventions.**
+
+- The document body is Markdown (CommonMark + GFM) by default; `format` may also be `text`.
+- Raw HTML is never rendered. Markdown is sanitized, and links display as text rather than navigating the app window.
+- Metadata: `kind` (`note`, `web`, `pdf`, `agent`), `format`, `summary` (agent-facing, up to 1,000 characters), `archived_at`.
+- Sources are immutable provenance rows. Deleting a document archives it (`archived_at`); purging is explicit and removes the document plus its sources and notes.
+- Archived documents are excluded from workspace lists, search, and agent context.
+
 ---
 
 ### Source

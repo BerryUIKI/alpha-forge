@@ -162,9 +162,9 @@ desktop app may be open at the same time.
 |------------|--------|--------|
 | `health_check`, `get_app_info`, `get_setting`, `set_setting` | settings | ✅ Active |
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
-| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task`, `retry_agent_task` | agent | ✅ Active (background execution with concurrency limit and restart recovery, event streaming, cancellation/timeout, retry; workspace context and read-only local tools with an OpenAI tool-calling loop; workspace task panel with live timeline) |
+| `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task`, `retry_agent_task` | agent | ✅ Active (background execution with concurrency limit and restart recovery, event streaming, cancellation/timeout, retry; workspace + research document context, read-only local research/task tools with an OpenAI tool-calling loop, citations; workspace task panel with live timeline) |
 | `get_provider_status`, `set_provider_api_key`, `clear_provider_api_key` | provider | ✅ Active (OS keychain storage; status never returns the key) |
-| `list_research_documents`, `create_research_document`, `get_research_document`, `update_research_document`, `delete_research_document` | research | ✅ Active (SQLite; workspace-scoped documents) |
+| `list_research_documents`, `create_research_document`, `get_research_document`, `update_research_document`, `delete_research_document`, `purge_research_document` | research | ✅ Active (SQLite; Markdown documents with kind/format/summary metadata, soft archive, explicit purge) |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
 | `list_artifacts` (optional `workspace_id` / `task_id` filters), `open_artifact_window` | artifacts | ✅ Active (SQLite; comparison-table and timeline renderers; dedicated minimal-permission WebView) |
@@ -180,6 +180,7 @@ desktop app may be open at the same time.
 ## Security
 
 - API keys: stored in the OS keychain (`security/credentials.rs`, `keyring` crate); status is exposed to React, the key is never returned
+- Research documents: Markdown is sanitized before rendering (`react-markdown` + `rehype-sanitize`, raw HTML skipped); links render as text and never navigate the privileged window
 - Artifact windows: dedicated `artifact.html` entry with only `core:default`; validated JSON is injected through an initialization script and parsed with `JSON.parse`
 - Artifact windows: Minimal permissions (`capabilities/artifact-window.json`)
 - Main window: Controlled permissions (`capabilities/main-window.json`)
