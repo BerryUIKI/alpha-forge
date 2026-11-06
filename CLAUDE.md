@@ -143,7 +143,7 @@ React component
 - The plugin runtime and the remaining built-in artifact types are still scaffolding. Rendering never injects model-generated HTML; treat artifact payloads as untrusted data even after Rust validation. The intended contracts are documented in `docs/ARTIFACT_SYSTEM.md`, `docs/PLUGIN_SPEC.md`, and the manifests in `plugins/*/manifest.json` (`id`, `name`, `version`, `entry`, `inputSchema`, `permissions`, `window`).
 - Treat agent output as untrusted: validate it against a schema and render it with predefined React plugins. Never inject agent-generated HTML into the privileged main-window DOM.
 - Artifact windows receive only `core:default` (`capabilities/artifact-window.json`); the main window additionally gets opener, shell-open, and store permissions (`capabilities/main-window.json`).
-- The research, journal, portfolio, and artifact list commands (`commands/research.rs`, `journal.rs`, `portfolio.rs`, `artifacts.rs`) are stubs returning empty collections.
+- `commands/research.rs` and `services/research_service.rs` provide workspace-scoped research document CRUD (`list_research_documents`, `create_research_document`, `get_research_document`, `update_research_document`, `delete_research_document`), and `features/research` powers the Research page (workspace selection, list, editor, delete confirmation). Sources, notes, PDF parsing, and semantic search are not implemented yet; `journal.rs` and `portfolio.rs` remain stubs.
 
 ### CLI and developer interfaces
 

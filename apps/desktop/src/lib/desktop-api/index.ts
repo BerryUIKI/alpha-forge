@@ -22,5 +22,6 @@ export const desktopApi = {
 } as const;
 
 export type { Artifact, ArtifactFilters, ArtifactStatus } from "./artifacts";
+export type { ResearchDocument } from "./research";
 
 export type DesktopApi = typeof desktopApi;

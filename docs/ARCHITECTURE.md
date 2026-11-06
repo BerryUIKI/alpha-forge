@@ -164,7 +164,7 @@ desktop app may be open at the same time.
 | `create_workspace`, `list_workspaces`, `get_workspace`, `update_workspace`, `delete_workspace` | workspace | ✅ Active (SQLite) |
 | `create_agent_task`, `get_agent_task`, `list_agent_tasks`, `get_task_events`, `queue_agent_task`, `start_agent_task`, `cancel_agent_task`, `retry_agent_task` | agent | ✅ Active (background execution with concurrency limit and restart recovery, event streaming, cancellation/timeout, retry; workspace context and read-only local tools with an OpenAI tool-calling loop; workspace task panel with live timeline) |
 | `get_provider_status`, `set_provider_api_key`, `clear_provider_api_key` | provider | ✅ Active (OS keychain storage; status never returns the key) |
-| `list_research_documents` | research | Stub — returns [] |
+| `list_research_documents`, `create_research_document`, `get_research_document`, `update_research_document`, `delete_research_document` | research | ✅ Active (SQLite; workspace-scoped documents) |
 | `list_theses` | journal | Stub — returns [] |
 | `list_portfolio_accounts` | portfolio | Stub — returns [] |
 | `list_artifacts` (optional `workspace_id` / `task_id` filters), `open_artifact_window` | artifacts | ✅ Active (SQLite; comparison-table and timeline renderers; dedicated minimal-permission WebView) |

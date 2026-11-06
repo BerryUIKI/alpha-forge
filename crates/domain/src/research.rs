@@ -21,3 +21,18 @@ pub struct ResearchSource {
     pub title: Option<String>,
     pub retrieved_at: Option<DateTime<Utc>>,
 }
+
+/// Input for creating a research document.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateResearchDocumentInput {
+    pub workspace_id: String,
+    pub title: String,
+    pub content: Option<String>,
+}
+
+/// Input for updating a research document.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateResearchDocumentInput {
+    pub title: String,
+    pub content: Option<String>,
+}

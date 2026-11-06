@@ -364,8 +364,8 @@ Turn AlphaForge into a complete AI research environment.
 ### Deliverables
 
 #### Research Projects
-- [ ] Project CRUD operations
-- [ ] Document management
+- [x] Project CRUD operations (workspaces)
+- [x] Document management (manual documents; upload/PDF parsing pending)
 - [ ] Source management
 - [ ] Notes system
 - [ ] Report generation

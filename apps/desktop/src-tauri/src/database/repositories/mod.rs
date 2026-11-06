@@ -12,6 +12,7 @@
 
 pub mod agent_task_repository;
 pub mod artifact_repository;
+pub mod research_document_repository;
 pub mod settings_repository;
 pub mod workspace_repository;
 
@@ -19,5 +20,7 @@ pub mod workspace_repository;
 mod agent_task_repository_test;
 #[cfg(test)]
 mod artifact_repository_test;
+#[cfg(test)]
+mod research_document_repository_test;
 #[cfg(test)]
 mod workspace_repository_test;
