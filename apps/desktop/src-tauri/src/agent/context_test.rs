@@ -232,6 +232,6 @@ mod tests {
         assert!(context.workspace_name.is_none());
         assert!(context.recent_tasks.is_empty());
         assert!(context.research_documents.is_empty());
-        assert_eq!(context.render().as_deref(), Some("Workspace ID: current"));
+        assert_eq!(context.render().as_deref(), Some("Workspace ID: w1"));
     }
 }
