@@ -29,6 +29,9 @@ pub async fn create_research_document(
             workspace_id,
             title,
             content,
+            kind: None,
+            format: None,
+            summary: None,
         })
         .await
 }
@@ -60,4 +63,12 @@ pub async fn delete_research_document(
     state: State<'_, AppState>,
 ) -> Result<(), AppError> {
     state.research_service.delete(&id).await
+}
+
+#[tauri::command]
+pub async fn purge_research_document(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<(), AppError> {
+    state.research_service.purge(&id).await
 }
