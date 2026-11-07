@@ -5,6 +5,7 @@ use serde::Serialize;
 
 use domain::task::{AgentTask, AgentTaskEvent, TaskEventType};
 use domain::workspace::Workspace;
+use investment_os_lib::text::truncate;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputFormat {
@@ -133,35 +134,12 @@ pub fn render_events(events: &[AgentTaskEvent]) -> String {
         output.push_str(&format!(
             "{}  {:<24}  {}\n",
             event.created_at.to_rfc3339(),
-            event_name(&event.event_type),
+            event.event_type.as_str(),
             detail
         ));
     }
 
     output.trim_end().to_string()
-}
-
-fn event_name(event_type: &TaskEventType) -> &'static str {
-    match event_type {
-        TaskEventType::TaskCreated => "task_created",
-        TaskEventType::TaskQueued => "task_queued",
-        TaskEventType::TaskStarted => "task_started",
-        TaskEventType::TaskProgress => "task_progress",
-        TaskEventType::TaskWaitingForInput => "task_waiting_for_input",
-        TaskEventType::TaskCompleted => "task_completed",
-        TaskEventType::TaskFailed => "task_failed",
-        TaskEventType::TaskCancelled => "task_cancelled",
-    }
-}
-
-fn truncate(value: &str, max_chars: usize) -> String {
-    if value.chars().count() <= max_chars {
-        return value.to_string();
-    }
-
-    let mut truncated: String = value.chars().take(max_chars.saturating_sub(1)).collect();
-    truncated.push('…');
-    truncated
 }
 
 #[cfg(test)]

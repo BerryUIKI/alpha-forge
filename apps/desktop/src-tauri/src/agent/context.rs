@@ -10,6 +10,7 @@ use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::error::AppError;
+use crate::text::truncate;
 use domain::task::{AgentTask, TaskStatus};
 
 const MAX_RECENT_TASKS: usize = 5;
@@ -83,7 +84,6 @@ impl TaskContext {
 }
 
 /// Builds the context for a task.
-#[allow(unknown_lints, clippy::double_must_use)]
 #[async_trait::async_trait]
 pub trait TaskContextProvider: Send + Sync {
     async fn build(&self, task: &AgentTask) -> Result<TaskContext, AppError>;
@@ -197,14 +197,4 @@ fn summarize_document(content: Option<&str>) -> String {
         .filter(|content| !content.is_empty())
         .map(|content| truncate(content, MAX_SUMMARY_CHARS))
         .unwrap_or_default()
-}
-
-fn truncate(value: &str, max_chars: usize) -> String {
-    if value.chars().count() <= max_chars {
-        return value.to_string();
-    }
-
-    let mut truncated: String = value.chars().take(max_chars.saturating_sub(1)).collect();
-    truncated.push('…');
-    truncated
 }

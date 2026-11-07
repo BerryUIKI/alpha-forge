@@ -2,29 +2,13 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
 
     use crate::database::repositories::agent_task_repository::AgentTaskRepository;
     use domain::task::{CreateAgentTaskInput, TaskEventType, TaskStatus};
 
     async fn setup_test_db() -> SqlitePool {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        pool
+        crate::test_support::test_pool_with_workspace().await
     }
 
     fn create_input() -> CreateAgentTaskInput {
@@ -131,10 +115,34 @@ mod tests {
             .await
             .expect("Failed to list events");
 
-        assert_eq!(events.len(), 3); // task_created + two explicit events
-        assert_eq!(events[0].event_type, TaskEventType::TaskCreated);
-        assert_eq!(events[1].event_type, TaskEventType::TaskQueued);
-        assert_eq!(events[2].event_type, TaskEventType::TaskProgress);
+        // The repository records only the events the caller asks for; the
+        // service is responsible for the initial TaskCreated event.
+        assert_eq!(events.len(), 2);
+        assert_eq!(events[0].event_type, TaskEventType::TaskQueued);
+        assert_eq!(events[1].event_type, TaskEventType::TaskProgress);
+    }
+
+    #[tokio::test]
+    async fn test_unknown_event_type_returns_internal_error() {
+        let pool = setup_test_db().await;
+        let repo = AgentTaskRepository::new(pool.clone());
+        let created = repo
+            .create(create_input())
+            .await
+            .expect("Failed to create task");
+
+        sqlx::query(
+            "INSERT INTO agent_task_events (id, task_id, event_type, created_at)
+             VALUES ('e1', ?, 'mystery', datetime('now'))",
+        )
+        .bind(&created.id)
+        .execute(&pool)
+        .await
+        .expect("Failed to insert event");
+
+        let result = repo.list_events(&created.id).await;
+
+        assert!(matches!(result, Err(crate::error::AppError::Internal(_))));
     }
 
     #[tokio::test]

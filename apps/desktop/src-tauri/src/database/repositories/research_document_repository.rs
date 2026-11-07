@@ -187,8 +187,11 @@ impl ResearchDocumentRepository {
             .await
             .map_err(|e| AppError::Internal(format!("Failed to start transaction: {}", e)))?;
 
-        for table in ["research_sources", "research_notes"] {
-            sqlx::query(&format!("DELETE FROM {} WHERE document_id = ?", table))
+        for statement in [
+            "DELETE FROM research_sources WHERE document_id = ?",
+            "DELETE FROM research_notes WHERE document_id = ?",
+        ] {
+            sqlx::query(statement)
                 .bind(id)
                 .execute(&mut *transaction)
                 .await
@@ -204,17 +207,17 @@ impl ResearchDocumentRepository {
             .map_err(|e| AppError::Internal(format!("Failed to purge research document: {}", e)))?
             .rows_affected();
 
-        transaction
-            .commit()
-            .await
-            .map_err(|e| AppError::Internal(format!("Failed to commit purge: {}", e)))?;
-
         if rows_affected == 0 {
             return Err(AppError::NotFound(format!(
                 "Research document '{}' not found",
                 id
             )));
         }
+
+        transaction
+            .commit()
+            .await
+            .map_err(|e| AppError::Internal(format!("Failed to commit purge: {}", e)))?;
 
         Ok(())
     }

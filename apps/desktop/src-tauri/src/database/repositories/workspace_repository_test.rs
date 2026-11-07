@@ -2,24 +2,12 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
 
     use crate::database::repositories::workspace_repository::WorkspaceRepository;
 
     async fn setup_test_db() -> SqlitePool {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        // Run all migrations through the real runner
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        pool
+        crate::test_support::test_pool().await
     }
 
     #[tokio::test]

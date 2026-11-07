@@ -44,6 +44,17 @@ impl ArtifactStatus {
             ArtifactStatus::Failed => "failed",
         }
     }
+
+    /// Parses a persisted status; `None` for an unknown value.
+    pub fn from_db(value: &str) -> Option<Self> {
+        match value {
+            "pending" => Some(ArtifactStatus::Pending),
+            "generating" => Some(ArtifactStatus::Generating),
+            "completed" => Some(ArtifactStatus::Completed),
+            "failed" => Some(ArtifactStatus::Failed),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for ArtifactStatus {

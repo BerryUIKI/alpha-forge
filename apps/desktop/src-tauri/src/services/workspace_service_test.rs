@@ -2,27 +2,15 @@
 
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
 
     use crate::database::repositories::workspace_repository::WorkspaceRepository;
     use crate::error::AppError;
     use crate::services::workspace_service::WorkspaceService;
-    use domain::workspace::CreateWorkspaceInput;
+    use domain::workspace::{CreateWorkspaceInput, UpdateWorkspaceInput};
 
     async fn setup_test_db() -> SqlitePool {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        // Run all migrations through the real runner
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        pool
+        crate::test_support::test_pool().await
     }
 
     fn create_service(pool: SqlitePool) -> WorkspaceService {
@@ -95,6 +83,31 @@ mod tests {
             AppError::Validation(msg) => assert!(msg.contains("200 characters")),
             _ => panic!("Expected validation error"),
         }
+    }
+
+    #[tokio::test]
+    async fn test_update_workspace_trims_name() {
+        let pool = setup_test_db().await;
+        let service = create_service(pool);
+
+        let created = service
+            .create(CreateWorkspaceInput {
+                name: "Original".to_string(),
+            })
+            .await
+            .expect("Failed to create workspace");
+
+        let updated = service
+            .update(
+                &created.id,
+                UpdateWorkspaceInput {
+                    name: "  Renamed  ".to_string(),
+                },
+            )
+            .await
+            .expect("Failed to update workspace");
+
+        assert_eq!(updated.name, "Renamed");
     }
 
     #[tokio::test]

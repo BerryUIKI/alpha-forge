@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 use crate::agent::tools::AgentTool;
 use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::error::AppError;
+use crate::text::{non_empty_text, truncate_with_notice};
 
 const DEFAULT_SEARCH_LIMIT: i64 = 5;
 const MAX_SEARCH_LIMIT: i64 = 10;
@@ -70,8 +71,8 @@ impl AgentTool for SearchResearchTool {
             AppError::Validation(format!("invalid search_research arguments: {error}"))
         })?;
 
-        let workspace_id = require_text(&args.workspace_id, "workspace id")?;
-        let query = require_text(&args.query, "search query")?;
+        let workspace_id = non_empty_text(&args.workspace_id, "workspace id")?;
+        let query = non_empty_text(&args.query, "search query")?;
         let limit = args
             .limit
             .unwrap_or(DEFAULT_SEARCH_LIMIT)
@@ -85,7 +86,7 @@ impl AgentTool for SearchResearchTool {
                     "id": document.id,
                     "title": document.title,
                     "kind": document.kind.as_str(),
-                    "excerpt": document.content.as_deref().map(|content| truncate(content, MAX_EXCERPT_CHARS)),
+                    "excerpt": document.content.as_deref().map(|content| truncate_with_notice(content, MAX_EXCERPT_CHARS)),
                 })
             })
             .collect::<Vec<_>>();
@@ -140,7 +141,7 @@ impl AgentTool for GetResearchDocumentTool {
             AppError::Validation(format!("invalid get_research_document arguments: {error}"))
         })?;
 
-        let document_id = require_text(&args.document_id, "document id")?;
+        let document_id = non_empty_text(&args.document_id, "document id")?;
         let document = self.repo.get(&document_id).await?.ok_or_else(|| {
             AppError::NotFound(format!("Research document '{}' not found", document_id))
         })?;
@@ -151,56 +152,21 @@ impl AgentTool for GetResearchDocumentTool {
             "kind": document.kind.as_str(),
             "format": document.format.as_str(),
             "summary": document.summary,
-            "content": document.content.as_deref().map(|content| truncate(content, MAX_DOCUMENT_CHARS)),
+            "content": document.content.as_deref().map(|content| truncate_with_notice(content, MAX_DOCUMENT_CHARS)),
             "updated_at": document.updated_at.to_rfc3339(),
         }))
     }
 }
 
-fn require_text(value: &str, field: &str) -> Result<String, AppError> {
-    let trimmed = value.trim();
-
-    if trimmed.is_empty() {
-        return Err(AppError::Validation(format!("{} cannot be empty", field)));
-    }
-
-    Ok(trimmed.to_string())
-}
-
-fn truncate(value: &str, max_chars: usize) -> String {
-    if value.chars().count() <= max_chars {
-        return value.to_string();
-    }
-
-    let truncated: String = value.chars().take(max_chars).collect();
-    format!("{truncated}… (truncated)")
-}
-
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use super::*;
     use crate::database::repositories::research_document_repository::NewResearchDocument;
     use domain::research::{ResearchDocumentFormat, ResearchDocumentKind};
 
     async fn setup_repo() -> ResearchDocumentRepository {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        let repo = ResearchDocumentRepository::new(pool);
+        let repo =
+            ResearchDocumentRepository::new(crate::test_support::test_pool_with_workspace().await);
         repo.create(NewResearchDocument {
             id: "d1",
             workspace_id: "w1",

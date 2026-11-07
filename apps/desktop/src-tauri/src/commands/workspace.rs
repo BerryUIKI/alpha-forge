@@ -34,7 +34,7 @@ pub async fn update_workspace(
     name: String,
     state: State<'_, AppState>,
 ) -> Result<Workspace, AppError> {
-    let input = UpdateWorkspaceInput { name: Some(name) };
+    let input = UpdateWorkspaceInput { name };
     state.workspace_service.update(&id, input).await
 }
 

@@ -7,8 +7,6 @@ mod tests {
     use std::sync::{Arc, Mutex as StdMutex};
     use std::time::Duration;
 
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use crate::agent::events::EventPublisher;
     use crate::agent::runtime::{
         AgentRuntime, CancellationToken, ExecutionResult, ProgressReporter,
@@ -96,30 +94,37 @@ mod tests {
         AgentTaskRepository,
         ArtifactRepository,
     ) {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
+        setup_service_with(runtime, None, None).await
+    }
 
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
+    async fn setup_service_with(
+        runtime: Arc<dyn AgentRuntime>,
+        timeout: Option<Duration>,
+        max_concurrency: Option<usize>,
+    ) -> (
+        AgentService,
+        Arc<RecordingPublisher>,
+        AgentTaskRepository,
+        ArtifactRepository,
+    ) {
+        let pool = crate::test_support::test_pool_with_workspace().await;
 
         let publisher = Arc::new(RecordingPublisher::default());
         let repo = AgentTaskRepository::new(pool.clone());
         let artifact_repo = ArtifactRepository::new(pool);
-        let service = AgentService::new(
+        let mut service = AgentService::new(
             repo.clone(),
             runtime,
             publisher.clone(),
             ArtifactService::new(artifact_repo.clone()),
         );
+
+        if let Some(timeout) = timeout {
+            service = service.with_timeout(timeout);
+        }
+        if let Some(max_concurrency) = max_concurrency {
+            service = service.with_max_concurrency(max_concurrency);
+        }
 
         (service, publisher, repo, artifact_repo)
     }
@@ -180,6 +185,9 @@ mod tests {
         assert_eq!(completed.output.as_deref(), Some(r#"{"summary":"ok"}"#));
 
         let events = publisher.events();
+        assert!(events
+            .iter()
+            .any(|event| event.event_type == TaskEventType::TaskCreated));
         assert!(events
             .iter()
             .any(|event| event.event_type == TaskEventType::TaskStarted));
@@ -247,28 +255,8 @@ mod tests {
             wait_for_cancellation: false,
             delay: Some(Duration::from_secs(1)),
         });
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        let publisher = Arc::new(RecordingPublisher::default());
-        let artifact_repo = ArtifactRepository::new(pool.clone());
-        let service = AgentService::new(
-            AgentTaskRepository::new(pool),
-            runtime,
-            publisher.clone(),
-            ArtifactService::new(artifact_repo),
-        )
-        .with_timeout(Duration::from_millis(20));
+        let (service, _publisher, _repo, _artifact_repo) =
+            setup_service_with(runtime, Some(Duration::from_millis(20)), None).await;
 
         let task = create_queued_task(&service).await;
         service
@@ -369,8 +357,8 @@ mod tests {
     #[tokio::test]
     async fn test_concurrency_limit_queues_extra_tasks() {
         let runtime = Arc::new(ConcurrencyRuntime::new(Duration::from_millis(30)));
-        let (service, _publisher, _repo, _artifact_repo) = setup_service(runtime.clone()).await;
-        let service = service.with_max_concurrency(1);
+        let (service, _publisher, _repo, _artifact_repo) =
+            setup_service_with(runtime.clone(), None, Some(1)).await;
 
         let mut task_ids = Vec::new();
         for _ in 0..3 {

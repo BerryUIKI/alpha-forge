@@ -1,3 +1,7 @@
+// `async_trait` adds `#[must_use]` to boxed futures; newer Clippy versions
+// flag that as redundant. Allow it once for every async trait in the crate.
+#![allow(unknown_lints, clippy::double_must_use)]
+
 pub mod agent;
 pub mod app;
 pub mod artifacts;
@@ -11,7 +15,11 @@ pub mod providers;
 pub mod security;
 pub mod services;
 pub mod telemetry;
+pub mod text;
 pub mod windows;
+
+#[cfg(test)]
+mod test_support;
 
 use app::state::AppState;
 use tauri::Manager;

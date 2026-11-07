@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 use crate::agent::tools::AgentTool;
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
+use crate::text::truncate_with_notice;
 use domain::task::AgentTask;
 
 const MAX_LISTED_TASKS: usize = 20;
@@ -72,7 +73,7 @@ impl AgentTool for ListTasksTool {
             .filter(|task| {
                 args.status
                     .as_deref()
-                    .is_none_or(|status| task.status.to_string() == status)
+                    .is_none_or(|status| task.status.as_str() == status)
             })
             .take(MAX_LISTED_TASKS)
             .map(|task| task_summary(&task))
@@ -208,8 +209,8 @@ impl AgentTool for GetTaskOutputTool {
         Ok(json!({
             "id": task.id,
             "title": task.title,
-            "status": task.status.to_string(),
-            "output": task.output.as_deref().map(truncate_output),
+            "status": task.status.as_str(),
+            "output": task.output.as_deref().map(|output| truncate_with_notice(output, MAX_TOOL_OUTPUT_CHARS)),
             "error": task.error,
         }))
     }
@@ -219,44 +220,18 @@ fn task_summary(task: &AgentTask) -> Value {
     json!({
         "id": task.id,
         "title": task.title,
-        "status": task.status.to_string(),
+        "status": task.status.as_str(),
         "created_at": task.created_at.to_rfc3339(),
     })
 }
 
-fn truncate_output(output: &str) -> String {
-    if output.chars().count() <= MAX_TOOL_OUTPUT_CHARS {
-        return output.to_string();
-    }
-
-    let truncated: String = output.chars().take(MAX_TOOL_OUTPUT_CHARS).collect();
-    format!("{truncated}… (truncated)")
-}
-
 #[cfg(test)]
 mod tests {
-    use sqlx::sqlite::SqlitePoolOptions;
-
     use super::*;
     use domain::task::{CreateAgentTaskInput, TaskStatus};
 
     async fn setup_repo() -> AgentTaskRepository {
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect(":memory:")
-            .await
-            .expect("Failed to create test database");
-
-        crate::database::migrations::run(&pool)
-            .await
-            .expect("Failed to run migrations");
-
-        sqlx::query("INSERT INTO workspaces (id, name) VALUES ('w1', 'Workspace')")
-            .execute(&pool)
-            .await
-            .expect("Failed to insert workspace");
-
-        AgentTaskRepository::new(pool)
+        AgentTaskRepository::new(crate::test_support::test_pool_with_workspace().await)
     }
 
     async fn create_task(repo: &AgentTaskRepository, title: &str) -> domain::task::AgentTask {
