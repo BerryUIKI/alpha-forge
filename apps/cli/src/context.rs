@@ -14,12 +14,14 @@ use investment_os_lib::agent::context::WorkspaceContextProvider;
 use investment_os_lib::agent::events::EventPublisher;
 use investment_os_lib::agent::openai_runtime::OpenAiRuntime;
 use investment_os_lib::agent::tools::{
-    CalculatorTool, GetTaskOutputTool, ListTasksTool, SearchTasksTool, ToolRegistry,
+    CalculatorTool, GetResearchDocumentTool, GetTaskOutputTool, ListTasksTool, SearchResearchTool,
+    SearchTasksTool, ToolRegistry,
 };
 use investment_os_lib::database::connection::create_pool;
 use investment_os_lib::database::migrations;
 use investment_os_lib::database::repositories::agent_task_repository::AgentTaskRepository;
 use investment_os_lib::database::repositories::artifact_repository::ArtifactRepository;
+use investment_os_lib::database::repositories::research_document_repository::ResearchDocumentRepository;
 use investment_os_lib::database::repositories::workspace_repository::WorkspaceRepository;
 use investment_os_lib::error::AppError;
 use investment_os_lib::providers::ai::{AiClient, OpenAiClient, DEFAULT_OPENAI_MODEL};
@@ -73,17 +75,21 @@ impl Services {
         let provider = ProviderService::new(credentials, model);
 
         let tasks = AgentTaskRepository::new(pool.clone());
+        let research = ResearchDocumentRepository::new(pool.clone());
         let artifact_service = ArtifactService::new(ArtifactRepository::new(pool.clone()));
         let workspaces = WorkspaceRepository::new(pool);
 
         let context = Arc::new(WorkspaceContextProvider::new(
             workspaces.clone(),
             tasks.clone(),
+            research.clone(),
         ));
         let tools = ToolRegistry::new(vec![
             Arc::new(ListTasksTool::new(tasks.clone())),
             Arc::new(SearchTasksTool::new(tasks.clone())),
             Arc::new(GetTaskOutputTool::new(tasks.clone())),
+            Arc::new(SearchResearchTool::new(research.clone())),
+            Arc::new(GetResearchDocumentTool::new(research.clone())),
             Arc::new(CalculatorTool::new()),
         ]);
 

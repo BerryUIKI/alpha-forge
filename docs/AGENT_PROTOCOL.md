@@ -90,6 +90,8 @@ Agents use tools to interact with the system and external services. Tools are re
 - `list_tasks` — List recent agent tasks in a workspace, optionally filtered by status.
 - `search_tasks` — Search task titles and descriptions by substring.
 - `get_task_output` — Read the stored output or error of a previous task.
+- `search_research` — Search research documents in a workspace; returns ids, titles, and excerpts.
+- `get_research_document` — Read a document's title, summary, and content by id.
 - `calculate` — Evaluate arithmetic with `+`, `-`, `*`, `/`, and parentheses.
 
 ### Planned Tools
@@ -120,7 +122,11 @@ Example research output schema:
   "companies": ["string (ticker)"],
   "themes": ["string"],
   "portfolioImpact": ["string"],
-  "confidence": "number (0-100)"
+  "confidence": "number (0-100)",
+  "citations": [
+    { "kind": "document", "id": "doc-1", "title": "Tesla Q4" },
+    { "kind": "task", "id": "task-1", "title": "Earlier analysis" }
+  ]
 }
 ```
 
@@ -131,10 +137,16 @@ Validation: TypeScript validates with Zod; Rust validates with Serde.
 Each task starts with:
 
 - The task title and description.
-- Workspace context: the workspace name and summaries of up to five recently completed tasks in the same workspace (their structured `summary` when present, otherwise truncated output).
+- The workspace ID (so tools can query it) and name.
+- Up to five active research documents: the document `summary` when present, otherwise the first 400 characters of content.
+- Up to five recently completed tasks in the workspace: the structured `summary` when present, otherwise truncated output.
 - Tool definitions: names, descriptions, and JSON Schemas.
 
-Research documents, portfolio context, and conversation history across separate tasks are not yet part of the context (M4/M5).
+Injected summaries are capped at roughly 4,000 characters (five documents and
+five tasks at up to 400 characters each; structural labels add a small
+overhead). See [AGENT_MEMORY.md](AGENT_MEMORY.md) for the full memory standard,
+retrieval tools, citation rules, and write policy. Portfolio context and
+semantic retrieval are future work.
 
 ## Error Handling
 

@@ -10,7 +10,7 @@ mod tests {
     use serde_json::{json, Value};
 
     use crate::agent::context::{
-        ContextTask, EmptyContextProvider, TaskContext, TaskContextProvider,
+        ContextDocument, ContextTask, EmptyContextProvider, TaskContext, TaskContextProvider,
     };
     use crate::agent::openai_runtime::{parse_research_output, OpenAiRuntime, ResearchOutput};
     use crate::agent::runtime::{AgentRuntime, CancellationToken, ProgressReporter};
@@ -191,6 +191,61 @@ mod tests {
     const OUTPUT_WITH_INVALID_ARTIFACT: &str =
         r#"{"summary":"Summary","artifacts":[{"type":"pie-chart","title":"Pie","data":{}}]}"#;
 
+    const OUTPUT_WITH_CITATIONS: &str = r#"{"summary":"Summary","citations":[{"kind":"document","id":"doc-1","title":"Tesla memo"},{"kind":"task","id":"task-1","title":"Earlier analysis"}]}"#;
+
+    const OUTPUT_WITH_INVALID_CITATION: &str = r#"{"summary":"Summary","citations":[{"kind":"document","id":"   ","title":"Bad"},{"kind":"task","id":"task-1","title":"Ok"}]}"#;
+
+    #[tokio::test]
+    async fn test_execute_stores_citations() {
+        let runtime = runtime(
+            Arc::new(FakeClient::content(OUTPUT_WITH_CITATIONS)),
+            Vec::new(),
+        );
+
+        let result = runtime
+            .execute(
+                make_task(None),
+                Arc::new(RecordingProgress::default()),
+                CancellationToken::new(),
+            )
+            .await
+            .expect("execution should succeed");
+
+        let stored: Value =
+            serde_json::from_str(result.output.as_deref().expect("output should exist"))
+                .expect("stored output should be JSON");
+
+        assert_eq!(stored["citations"][0]["kind"], "document");
+        assert_eq!(stored["citations"][0]["id"], "doc-1");
+        assert_eq!(stored["citations"][1]["kind"], "task");
+        assert_eq!(stored["citations"][1]["title"], "Earlier analysis");
+    }
+
+    #[tokio::test]
+    async fn test_execute_drops_invalid_citations() {
+        let runtime = runtime(
+            Arc::new(FakeClient::content(OUTPUT_WITH_INVALID_CITATION)),
+            Vec::new(),
+        );
+
+        let result = runtime
+            .execute(
+                make_task(None),
+                Arc::new(RecordingProgress::default()),
+                CancellationToken::new(),
+            )
+            .await
+            .expect("execution should succeed");
+
+        let stored: Value =
+            serde_json::from_str(result.output.as_deref().expect("output should exist"))
+                .expect("stored output should be JSON");
+
+        let citations = stored["citations"].as_array().expect("citations array");
+        assert_eq!(citations.len(), 1);
+        assert_eq!(citations[0]["id"], "task-1");
+    }
+
     #[tokio::test]
     async fn test_execute_collects_valid_artifact_drafts() {
         let runtime = runtime(
@@ -290,6 +345,10 @@ mod tests {
                 status: TaskStatus::Completed,
                 summary: Some("Strong demand".to_string()),
             }],
+            research_documents: vec![ContextDocument {
+                title: "Tesla memo".to_string(),
+                summary: "Margins improving".to_string(),
+            }],
         });
         let runtime =
             OpenAiRuntime::new(client.clone(), Arc::new(context), ToolRegistry::default());
@@ -308,7 +367,9 @@ mod tests {
             ChatMessage::User { content } => content.clone(),
             other => panic!("expected user message, got {other:?}"),
         };
+        assert!(user_prompt.contains("Workspace ID: ws-1"));
         assert!(user_prompt.contains("Workspace: Alpha Research"));
+        assert!(user_prompt.contains("Tesla memo — Margins improving"));
         assert!(user_prompt.contains("Tesla Q4 — Strong demand"));
     }
 

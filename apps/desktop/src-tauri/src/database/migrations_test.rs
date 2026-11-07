@@ -105,6 +105,7 @@ mod tests {
                 "agent_tasks_enhancement".to_string(),
                 "agent_tasks_align".to_string(),
                 "artifacts_align".to_string(),
+                "research_documents_metadata".to_string(),
             ]
         );
     }
@@ -123,7 +124,7 @@ mod tests {
                 .await
                 .expect("Failed to count migrations");
 
-        assert_eq!(count, 4);
+        assert_eq!(count, 5);
     }
 
     #[tokio::test]
@@ -178,5 +179,21 @@ mod tests {
         assert!(columns.iter().any(|(name,)| name == "title"));
         assert!(columns.iter().any(|(name,)| name == "workspace_id"));
         assert!(columns.iter().any(|(name,)| name == "artifact_type"));
+    }
+
+    #[tokio::test]
+    async fn test_research_documents_have_metadata_columns() {
+        let pool = setup_test_db().await;
+
+        let columns: Vec<(String,)> =
+            sqlx::query_as("SELECT name FROM pragma_table_info('research_documents')")
+                .fetch_all(&pool)
+                .await
+                .expect("Failed to query table info");
+
+        assert!(columns.iter().any(|(name,)| name == "kind"));
+        assert!(columns.iter().any(|(name,)| name == "format"));
+        assert!(columns.iter().any(|(name,)| name == "summary"));
+        assert!(columns.iter().any(|(name,)| name == "archived_at"));
     }
 }

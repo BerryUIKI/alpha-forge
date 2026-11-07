@@ -188,10 +188,10 @@ Create the core intelligence engine of AlphaForge.
 #### Context System
 - [x] Workspace context
 - [x] Conversation context (recent completed task summaries)
-- [ ] Research context (after M4, when documents exist)
+- [x] Research context (recent document summaries; see `docs/AGENT_MEMORY.md`)
 
 #### Tool System
-- [ ] Document tools (after M4, when documents exist)
+- [x] Document tools (`search_research`, `get_research_document`)
 - [x] Search tools
 - [x] Data tools
 - [x] Calculation tools
@@ -365,7 +365,7 @@ Turn AlphaForge into a complete AI research environment.
 
 #### Research Projects
 - [x] Project CRUD operations (workspaces)
-- [x] Document management (manual documents; upload/PDF parsing pending)
+- [x] Document management (Markdown bodies, kind/format/summary metadata, soft archive; upload/PDF parsing pending)
 - [ ] Source management
 - [ ] Notes system
 - [ ] Report generation

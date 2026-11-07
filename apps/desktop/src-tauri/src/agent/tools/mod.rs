@@ -7,9 +7,11 @@
 
 mod calculator;
 mod local;
+mod research;
 
 pub use calculator::CalculatorTool;
 pub use local::{GetTaskOutputTool, ListTasksTool, SearchTasksTool};
+pub use research::{GetResearchDocumentTool, SearchResearchTool};
 
 use std::sync::Arc;
 

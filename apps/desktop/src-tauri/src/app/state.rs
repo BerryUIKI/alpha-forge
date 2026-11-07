@@ -9,7 +9,8 @@ use crate::agent::context::WorkspaceContextProvider;
 use crate::agent::events::TauriEventPublisher;
 use crate::agent::openai_runtime::OpenAiRuntime;
 use crate::agent::tools::{
-    CalculatorTool, GetTaskOutputTool, ListTasksTool, SearchTasksTool, ToolRegistry,
+    CalculatorTool, GetResearchDocumentTool, GetTaskOutputTool, ListTasksTool, SearchResearchTool,
+    SearchTasksTool, ToolRegistry,
 };
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::database::repositories::artifact_repository::ArtifactRepository;
@@ -56,11 +57,14 @@ impl AppState {
         let context = Arc::new(WorkspaceContextProvider::new(
             workspace_repo.clone(),
             agent_task_repo.clone(),
+            research_repo.clone(),
         ));
         let tools = ToolRegistry::new(vec![
             Arc::new(ListTasksTool::new(agent_task_repo.clone())),
             Arc::new(SearchTasksTool::new(agent_task_repo.clone())),
             Arc::new(GetTaskOutputTool::new(agent_task_repo.clone())),
+            Arc::new(SearchResearchTool::new(research_repo.clone())),
+            Arc::new(GetResearchDocumentTool::new(research_repo.clone())),
             Arc::new(CalculatorTool::new()),
         ]);
 
@@ -69,7 +73,7 @@ impl AppState {
         let workspace_service = WorkspaceService::new(workspace_repo);
         let provider_service = ProviderService::new(Arc::clone(&credentials), model);
         let artifact_service = ArtifactService::new(artifact_repo);
-        let research_service = ResearchService::new(research_repo);
+        let research_service = ResearchService::new(research_repo.clone());
         let agent_service = AgentService::new(
             agent_task_repo,
             Arc::new(OpenAiRuntime::new(ai_client, context, tools)),

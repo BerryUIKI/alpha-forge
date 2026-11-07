@@ -17,6 +17,8 @@ use crate::providers::ai::{AiClient, ChatMessage, ChatRequest, Completion};
 use domain::task::AgentTask;
 
 const MAX_TOOL_ROUNDS: usize = 4;
+const MAX_CITATIONS: usize = 20;
+const MAX_CITATION_TITLE_CHARS: usize = 200;
 
 const SYSTEM_PROMPT: &str = r#"You are a research assistant inside Investment OS, a local-first investment research workspace.
 Research the request using your general knowledge and the provided tools when they help.
@@ -31,6 +33,7 @@ When you have enough information, return a single JSON object with exactly these
 - "artifacts": optional array of up to 2 visual artifacts. Only include one when it genuinely helps. Each item must be one of:
   {"type":"comparison-table","title":"...","data":{"columns":[{"key":"unique-key","label":"..."}],"rows":[{"label":"...","values":{"unique-key":"value or number"}}]}}
   {"type":"timeline","title":"...","data":{"events":[{"date":"YYYY-MM-DD","title":"...","description":"..."}]}}
+- "citations": optional array of workspace evidence used, each {"kind":"document"|"task","id":"...","title":"..."}. Use ids from the context or tool results; do not invent ids.
 Do not use any other artifact type.
 Do not wrap the JSON in markdown fences."#;
 
@@ -46,6 +49,23 @@ pub struct ResearchOutput {
     pub open_questions: Vec<String>,
     #[serde(default)]
     pub artifacts: Vec<RawArtifactDraft>,
+    #[serde(default)]
+    pub citations: Vec<Citation>,
+}
+
+/// Workspace evidence referenced by the research output.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Citation {
+    pub kind: CitationKind,
+    pub id: String,
+    pub title: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CitationKind {
+    Document,
+    Task,
 }
 
 /// The subset of research output stored on the task; artifacts live separately.
@@ -55,6 +75,7 @@ struct StoredResearchOutput<'a> {
     key_points: &'a [String],
     risks: &'a [String],
     open_questions: &'a [String],
+    citations: &'a [Citation],
 }
 
 /// Validates artifact drafts, dropping invalid ones instead of failing the task.
@@ -69,6 +90,41 @@ fn validated_artifacts(output: &ResearchOutput) -> Vec<ArtifactDraft> {
                 tracing::warn!(?error, "dropping invalid artifact draft");
                 None
             }
+        })
+        .collect()
+}
+
+/// Normalizes citations and drops entries without an id or title.
+fn validated_citations(output: &ResearchOutput) -> Vec<Citation> {
+    output
+        .citations
+        .iter()
+        .take(MAX_CITATIONS)
+        .filter_map(|citation| {
+            let id = citation.id.trim();
+            let title = citation.title.trim();
+
+            if id.is_empty() || title.is_empty() {
+                tracing::warn!("dropping invalid citation");
+                return None;
+            }
+
+            let title = if title.chars().count() > MAX_CITATION_TITLE_CHARS {
+                let mut truncated: String = title
+                    .chars()
+                    .take(MAX_CITATION_TITLE_CHARS.saturating_sub(1))
+                    .collect();
+                truncated.push('…');
+                truncated
+            } else {
+                title.to_string()
+            };
+
+            Some(Citation {
+                kind: citation.kind,
+                id: id.to_string(),
+                title,
+            })
         })
         .collect()
 }
@@ -183,11 +239,13 @@ impl AgentRuntime for OpenAiRuntime {
 
                     let parsed = parse_research_output(&content)?;
                     let artifacts = validated_artifacts(&parsed);
+                    let citations = validated_citations(&parsed);
                     let stored = StoredResearchOutput {
                         summary: &parsed.summary,
                         key_points: &parsed.key_points,
                         risks: &parsed.risks,
                         open_questions: &parsed.open_questions,
+                        citations: &citations,
                     };
                     let output = serde_json::to_string(&stored).map_err(|error| {
                         AppError::Internal(format!("failed to serialize research output: {error}"))

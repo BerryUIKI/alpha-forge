@@ -2,15 +2,19 @@
 
 use uuid::Uuid;
 
-use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
+use crate::database::repositories::research_document_repository::{
+    NewResearchDocument, ResearchDocumentRepository,
+};
 use crate::error::AppError;
 use domain::research::{
-    CreateResearchDocumentInput, ResearchDocument, UpdateResearchDocumentInput,
+    CreateResearchDocumentInput, ResearchDocument, ResearchDocumentFormat, ResearchDocumentKind,
+    UpdateResearchDocumentInput,
 };
 
 const MAX_WORKSPACE_ID_CHARS: usize = 100;
 const MAX_TITLE_CHARS: usize = 200;
 const MAX_CONTENT_CHARS: usize = 1_000_000;
+const MAX_SUMMARY_CHARS: usize = 1_000;
 const MAX_SEARCH_RESULTS: i64 = 50;
 
 /// Service for managing research documents.
@@ -32,10 +36,21 @@ impl ResearchService {
             required_text(&input.workspace_id, "workspace id", MAX_WORKSPACE_ID_CHARS)?;
         let title = required_text(&input.title, "document title", MAX_TITLE_CHARS)?;
         let content = normalize_content(input.content)?;
+        let summary = normalize_summary(input.summary)?;
+        let kind = input.kind.unwrap_or(ResearchDocumentKind::Note);
+        let format = input.format.unwrap_or(ResearchDocumentFormat::Markdown);
         let id = Uuid::new_v4().to_string();
 
         self.repo
-            .create(&id, &workspace_id, &title, content.as_deref())
+            .create(NewResearchDocument {
+                id: &id,
+                workspace_id: &workspace_id,
+                title: &title,
+                content: content.as_deref(),
+                kind,
+                format,
+                summary: summary.as_deref(),
+            })
             .await
     }
 
@@ -65,10 +80,27 @@ impl ResearchService {
         self.repo.update(&id, &title, content.as_deref()).await
     }
 
-    /// Deletes a document.
+    /// Archives a document (soft delete).
     pub async fn delete(&self, id: &str) -> Result<(), AppError> {
         let id = required_text(id, "document id", MAX_WORKSPACE_ID_CHARS)?;
-        self.repo.delete(&id).await
+        self.repo.archive(&id).await
+    }
+
+    /// Permanently deletes an archived document and its sources/notes.
+    pub async fn purge(&self, id: &str) -> Result<(), AppError> {
+        let id = required_text(id, "document id", MAX_WORKSPACE_ID_CHARS)?;
+        let document =
+            self.repo.get(&id).await?.ok_or_else(|| {
+                AppError::NotFound(format!("Research document '{}' not found", id))
+            })?;
+
+        if document.archived_at.is_none() {
+            return Err(AppError::Validation(
+                "Archive the document before purging it".to_string(),
+            ));
+        }
+
+        self.repo.purge(&id).await
     }
 
     /// Searches documents in a workspace.
@@ -118,4 +150,22 @@ fn normalize_content(content: Option<String>) -> Result<Option<String>, AppError
     }
 
     Ok(content)
+}
+
+fn normalize_summary(summary: Option<String>) -> Result<Option<String>, AppError> {
+    let summary = summary
+        .as_deref()
+        .map(str::trim)
+        .filter(|summary| !summary.is_empty())
+        .map(str::to_string);
+
+    if let Some(summary) = &summary {
+        if summary.chars().count() > MAX_SUMMARY_CHARS {
+            return Err(AppError::Validation(
+                "document summary is too long".to_string(),
+            ));
+        }
+    }
+
+    Ok(summary)
 }

@@ -7,11 +7,13 @@
 use serde::Serialize;
 
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
+use crate::database::repositories::research_document_repository::ResearchDocumentRepository;
 use crate::database::repositories::workspace_repository::WorkspaceRepository;
 use crate::error::AppError;
 use domain::task::{AgentTask, TaskStatus};
 
 const MAX_RECENT_TASKS: usize = 5;
+const MAX_RESEARCH_DOCUMENTS: usize = 5;
 const MAX_SUMMARY_CHARS: usize = 400;
 
 /// Workspace context handed to the agent for one task.
@@ -20,6 +22,7 @@ pub struct TaskContext {
     pub workspace_id: String,
     pub workspace_name: Option<String>,
     pub recent_tasks: Vec<ContextTask>,
+    pub research_documents: Vec<ContextDocument>,
 }
 
 /// A completed task summarized for the prompt.
@@ -30,13 +33,35 @@ pub struct ContextTask {
     pub summary: Option<String>,
 }
 
+/// A research document summarized for the prompt.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ContextDocument {
+    pub title: String,
+    pub summary: String,
+}
+
 impl TaskContext {
     /// Renders the context for the user prompt; returns `None` when empty.
     pub fn render(&self) -> Option<String> {
         let mut lines = Vec::new();
 
+        if !self.workspace_id.trim().is_empty() {
+            lines.push(format!("Workspace ID: {}", self.workspace_id));
+        }
+
         if let Some(name) = &self.workspace_name {
             lines.push(format!("Workspace: {name}"));
+        }
+
+        if !self.research_documents.is_empty() {
+            lines.push("Research documents in this workspace:".to_string());
+            for document in &self.research_documents {
+                if document.summary.is_empty() {
+                    lines.push(format!("- {}", document.title));
+                } else {
+                    lines.push(format!("- {} — {}", document.title, document.summary));
+                }
+            }
         }
 
         if !self.recent_tasks.is_empty() {
@@ -64,16 +89,25 @@ pub trait TaskContextProvider: Send + Sync {
     async fn build(&self, task: &AgentTask) -> Result<TaskContext, AppError>;
 }
 
-/// Context provider backed by the workspace and agent task repositories.
+/// Context provider backed by the workspace, task, and research repositories.
 #[derive(Clone)]
 pub struct WorkspaceContextProvider {
     workspaces: WorkspaceRepository,
     tasks: AgentTaskRepository,
+    research: ResearchDocumentRepository,
 }
 
 impl WorkspaceContextProvider {
-    pub fn new(workspaces: WorkspaceRepository, tasks: AgentTaskRepository) -> Self {
-        Self { workspaces, tasks }
+    pub fn new(
+        workspaces: WorkspaceRepository,
+        tasks: AgentTaskRepository,
+        research: ResearchDocumentRepository,
+    ) -> Self {
+        Self {
+            workspaces,
+            tasks,
+            research,
+        }
     }
 }
 
@@ -85,6 +119,18 @@ impl TaskContextProvider for WorkspaceContextProvider {
             .get(&task.workspace_id)
             .await?
             .map(|workspace| workspace.name);
+
+        let research_documents = self
+            .research
+            .list_by_workspace(&task.workspace_id)
+            .await?
+            .into_iter()
+            .take(MAX_RESEARCH_DOCUMENTS)
+            .map(|document| ContextDocument {
+                title: document.title,
+                summary: summarize_document(document.content.as_deref()),
+            })
+            .collect();
 
         let recent_tasks = self
             .tasks
@@ -109,6 +155,7 @@ impl TaskContextProvider for WorkspaceContextProvider {
             workspace_id: task.workspace_id.clone(),
             workspace_name,
             recent_tasks,
+            research_documents,
         })
     }
 }
@@ -124,6 +171,7 @@ impl TaskContextProvider for EmptyContextProvider {
             workspace_id: task.workspace_id.clone(),
             workspace_name: None,
             recent_tasks: Vec::new(),
+            research_documents: Vec::new(),
         })
     }
 }
@@ -141,6 +189,14 @@ fn summarize_output(output: &str, max_chars: usize) -> String {
         .unwrap_or_else(|| output.to_string());
 
     truncate(&summary, max_chars)
+}
+
+fn summarize_document(content: Option<&str>) -> String {
+    content
+        .map(str::trim)
+        .filter(|content| !content.is_empty())
+        .map(|content| truncate(content, MAX_SUMMARY_CHARS))
+        .unwrap_or_default()
 }
 
 fn truncate(value: &str, max_chars: usize) -> String {
