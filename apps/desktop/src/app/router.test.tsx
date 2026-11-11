@@ -62,7 +62,7 @@ function renderWithRouter(initialEntry: string = "/") {
       <LocaleProvider>
         <RouterProvider router={router} />
       </LocaleProvider>
-    </QueryClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -130,7 +130,7 @@ describe("Router - GUI Layout Structure", () => {
   it("renders dashboard page with tab bar", () => {
     renderWithRouter("/");
     // The dashboard shows tabs
-    expect(screen.getByRole("button", { name: /overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /overview/i })).toBeInTheDocument();
   });
 
   it("renders main content area", () => {

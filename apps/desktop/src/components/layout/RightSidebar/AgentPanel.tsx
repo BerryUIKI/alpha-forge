@@ -114,7 +114,7 @@ function AgentInput({ onSend }: { onSend: (text: string) => void }) {
 
 export function AgentPanel() {
   const { t } = useLocale();
-  const { isReady, initError } = useAppReady();
+  const { isReady, initError, listenerError, isStalled } = useAppReady();
   const { isLoading: workspacesLoading, error: workspacesError } = useWorkspaces();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -205,21 +205,44 @@ export function AgentPanel() {
     );
   };
 
+  // S1: App initialization failed — check terminal errors before loading.
+  if (initError) {
+    return (
+      <div className="p-4">
+        <ErrorState message={t("appInitFailed")} onRetry={() => window.location.reload()} />
+      </div>
+    );
+  }
+
+  // Readiness listeners could not be registered and no ready event arrived.
+  if (listenerError && !isReady) {
+    return (
+      <div className="p-4">
+        <ErrorState
+          message={t("appReadinessUnavailable")}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
   // S1: App not ready yet (AppState still initializing)
   if (!isReady) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <LoadingSpinner className="mb-4" />
-        <p className="text-sm text-muted-foreground">{t("appInitializing")}</p>
-      </div>
-    );
-  }
-
-  // S1: App initialization failed
-  if (initError) {
-    return (
-      <div className="p-4">
-        <ErrorState message={t("appInitFailed")} onRetry={() => window.location.reload()} />
+        <p className="text-sm text-muted-foreground">
+          {isStalled ? t("appInitializationSlow") : t("appInitializing")}
+        </p>
+        {isStalled && (
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-3 rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
+          >
+            {t("retry")}
+          </button>
+        )}
       </div>
     );
   }
@@ -233,7 +256,10 @@ export function AgentPanel() {
   if (workspacesError) {
     return (
       <div className="p-4">
-        <ErrorState message={t("failedToLoadWorkspaces")} onRetry={() => window.location.reload()} />
+        <ErrorState
+          message={t("failedToLoadWorkspaces")}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -244,9 +270,7 @@ export function AgentPanel() {
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <Bot className="h-12 w-12 text-muted-foreground" />
         <h3 className="mt-4 text-lg font-semibold">{t("noWorkspace")}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("createWorkspaceFirstUseAgent")}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("createWorkspaceFirstUseAgent")}</p>
       </div>
     );
   }
@@ -269,7 +293,11 @@ export function AgentPanel() {
             {selectedTaskProgress.map((pm) => (
               <ConversationItem
                 key={pm.id}
-                message={{ id: pm.id, role: "info", text: `${t("taskProgressPrefix")}: ${pm.message}` }}
+                message={{
+                  id: pm.id,
+                  role: "info",
+                  text: `${t("taskProgressPrefix")}: ${pm.message}`,
+                }}
               />
             ))}
           </div>
@@ -322,7 +350,11 @@ export function AgentPanel() {
                 <TaskStatusBadge status={selectedTask.status} />
               </div>
               <button
-                onClick={() => { startTask.reset(); cancelTask.reset(); setSelectedTaskId(null); }}
+                onClick={() => {
+                  startTask.reset();
+                  cancelTask.reset();
+                  setSelectedTaskId(null);
+                }}
                 className="ml-2 rounded-md p-1 hover:bg-accent"
               >
                 <X className="h-3 w-3" />
@@ -332,9 +364,15 @@ export function AgentPanel() {
               <p className="mb-2 text-xs text-muted-foreground">{selectedTask.description}</p>
             )}
             {startTask.isError && (
-              <div className="mb-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive" role="alert">
+              <div
+                className="mb-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive"
+                role="alert"
+              >
                 <p>
-                  {typeof startTask.error === "object" && startTask.error !== null && "queued" in startTask.error && startTask.error.queued === true
+                  {typeof startTask.error === "object" &&
+                  startTask.error !== null &&
+                  "queued" in startTask.error &&
+                  startTask.error.queued === true
                     ? t("taskStartFailed")
                     : t("taskQueueFailed")}
                 </p>
@@ -343,7 +381,10 @@ export function AgentPanel() {
 
             {/* S1: Failure context — show why the task failed */}
             {selectedTask.status === "failed" && failureReason && (
-              <div className="mb-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive" role="alert">
+              <div
+                className="mb-2 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive"
+                role="alert"
+              >
                 <p className="mb-0.5 font-semibold">{t("taskFailureReason")}</p>
                 <p>{failureReason}</p>
               </div>
@@ -363,12 +404,20 @@ export function AgentPanel() {
             <div className="flex gap-2">
               {(selectedTask.status === "created" || selectedTask.status === "queued") && (
                 <button
-                  onClick={() => { const s = selectedTask.status; if (s === "created" || s === "queued") startTask.mutate({ taskId: selectedTask.id, status: s }); }}
+                  onClick={() => {
+                    const s = selectedTask.status;
+                    if (s === "created" || s === "queued")
+                      startTask.mutate({ taskId: selectedTask.id, status: s });
+                  }}
                   disabled={startTask.isPending}
                   className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   <Play className="h-3 w-3" />
-                  {startTask.isPending ? t("startingTask") : selectedTask.status === "queued" ? t("retryStartTask") : t("startTask")}
+                  {startTask.isPending
+                    ? t("startingTask")
+                    : selectedTask.status === "queued"
+                      ? t("retryStartTask")
+                      : t("startTask")}
                 </button>
               )}
               {selectedTask.status === "running" && (

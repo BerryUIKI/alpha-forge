@@ -2,9 +2,16 @@
 
 use tauri::State;
 
+use crate::app::readiness::{AppReadiness, AppReadinessSnapshot};
 use crate::app::state::AppState;
 use crate::error::AppError;
 use crate::services::system_service::SystemInfo;
+
+/// Reports startup readiness without requiring `AppState` to exist yet.
+#[tauri::command]
+pub fn get_app_status(readiness: State<'_, AppReadiness>) -> AppReadinessSnapshot {
+    readiness.snapshot()
+}
 
 /// Gets system information.
 #[tauri::command]

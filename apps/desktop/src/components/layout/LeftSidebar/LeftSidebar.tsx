@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import type { LeftSidebarProps, NavGroup as NavGroupType } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AccountMenu } from "./AccountMenu";
-import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
+import { agentStatusLabelKey, useAgentGlobalStatusDisplay } from "@/hooks/useAgentStatus";
 
 export function LeftSidebar({
   state: externalState,
@@ -43,16 +43,14 @@ export function LeftSidebar({
   maxWidth = DEFAULT_SIDEBAR_WIDTHS.left.max,
 }: LeftSidebarProps) {
   const { t } = useLocale();
-  const { data: agentStatus = "idle" } = useAgentGlobalStatus();
+  const { status: agentStatus } = useAgentGlobalStatusDisplay();
 
   // Navigation configuration aligned with AlphaForge product loop
   const NAV_GROUPS: NavGroupType[] = [
     {
       id: "cockpit",
       label: t("navCockpit"),
-      items: [
-        { id: "dashboard", label: t("navDashboard"), icon: LayoutDashboard, route: "/" },
-      ],
+      items: [{ id: "dashboard", label: t("navDashboard"), icon: LayoutDashboard, route: "/" }],
     },
     {
       id: "pipeline",
@@ -77,12 +75,7 @@ export function LeftSidebar({
   ];
 
   // Use sidebar state hook for persistence
-  const {
-    width,
-    setWidth,
-    isExpanded,
-    setState,
-  } = useSidebarState({
+  const { width, setWidth, isExpanded, setState } = useSidebarState({
     storageKey: "left-sidebar",
     defaultState: externalState || "expanded",
     defaultWidth,
@@ -94,8 +87,8 @@ export function LeftSidebar({
     if (externalState) setState(externalState);
   }, [externalState, setState]);
 
-  // Use resize hook for drag-to-resize
-  const { isResizing, startResize } = useResize({
+  // Use resize hook for drag-to-resize and keyboard resizing
+  const { isResizing, startResize, handleKeyDown } = useResize({
     initialWidth: width,
     minWidth,
     maxWidth,
@@ -132,15 +125,7 @@ export function LeftSidebar({
         <div className="space-y-1.5 border-t border-border p-2">
           <div
             className="flex items-center justify-center py-1"
-            title={
-              agentStatus === "running"
-                ? t("statusRunning")
-                : agentStatus === "unconfigured"
-                  ? t("statusUnconfigured")
-                  : agentStatus === "error"
-                    ? t("statusError")
-                    : t("statusIdle")
-            }
+            title={t(agentStatusLabelKey(agentStatus))}
           >
             <span className="relative flex h-2 w-2">
               {agentStatus === "running" && (
@@ -150,8 +135,10 @@ export function LeftSidebar({
                 className={cn(
                   "relative inline-flex rounded-full h-2 w-2",
                   agentStatus === "running" && "bg-blue-500",
-                  agentStatus === "unconfigured" && "bg-yellow-500",
-                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "unconfigured" && "bg-amber-500",
+                  agentStatus === "error" && "bg-destructive",
+                  agentStatus === "checking" && "bg-muted-foreground/50",
+                  agentStatus === "unavailable" && "bg-destructive",
                   agentStatus === "idle" && "bg-gray-400",
                 )}
               ></span>
@@ -168,6 +155,7 @@ export function LeftSidebar({
   // Expanded state with resize handle
   return (
     <aside
+      id="left-sidebar"
       className={cn(
         "relative flex h-full flex-col border-r border-border bg-card transition-[width] duration-300 ease-in-out",
         isResizing && "select-none",
@@ -208,37 +196,41 @@ export function LeftSidebar({
                 className={cn(
                   "relative inline-flex rounded-full h-2 w-2",
                   agentStatus === "running" && "bg-blue-500",
-                  agentStatus === "unconfigured" && "bg-yellow-500",
-                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "unconfigured" && "bg-amber-500",
+                  agentStatus === "error" && "bg-destructive",
+                  agentStatus === "checking" && "bg-muted-foreground/50",
+                  agentStatus === "unavailable" && "bg-destructive",
                   agentStatus === "idle" && "bg-gray-400",
                 )}
               ></span>
             </span>
             <span className="truncate text-[11px] font-medium text-foreground">
-              {agentStatus === "running"
-                ? t("statusRunning")
-                : agentStatus === "unconfigured"
-                  ? t("statusUnconfigured")
-                  : agentStatus === "error"
-                    ? t("statusError")
-                    : t("statusIdle")}
+              {t(agentStatusLabelKey(agentStatus))}
             </span>
           </div>
         </div>
 
         <div className="flex items-center justify-between px-0.5">
-          <span className="text-xs text-muted-foreground truncate font-medium">AlphaForge Desk</span>
+          <span className="text-xs text-muted-foreground truncate font-medium">
+            AlphaForge Desk
+          </span>
           <AccountMenu collapsed={false} />
         </div>
       </div>
 
-      {/* Drag-to-resize handle */}
+      {/* Drag-to-resize / keyboard-resize handle */}
       <div
-        className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors group"
+        className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none transition-colors group"
         onMouseDown={startResize}
+        onKeyDown={handleKeyDown}
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={t("resizeLeftSidebar")}
+        aria-controls="left-sidebar"
+        aria-valuenow={Math.round(width)}
+        aria-valuemin={minWidth}
+        aria-valuemax={maxWidth}
+        aria-valuetext={`${Math.round(width)}px`}
         tabIndex={0}
       >
         <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">

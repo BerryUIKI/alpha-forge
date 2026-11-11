@@ -17,12 +17,7 @@ import { desktopApi } from "@/lib/desktop-api";
 import { useActiveWorkspaceId } from "@/features/workspace/hooks/useActiveWorkspace.context";
 
 export type SearchSectionId =
-  | "projects"
-  | "documents"
-  | "reports"
-  | "theses"
-  | "knowledge"
-  | "artifacts";
+  "projects" | "documents" | "reports" | "theses" | "knowledge" | "artifacts";
 
 /** A single searchable entity with its navigation target. */
 export interface SearchEntry {
@@ -45,20 +40,30 @@ function textOf(value: unknown): string {
 }
 
 /**
+ * Maximum number of results rendered per section. Retrieval stays bounded on
+ * the display side; a future Rust-side search command can add pagination.
+ */
+export const MAX_RESULTS_PER_SECTION = 20;
+
+/**
  * Aggregates and filters every searchable entity for the active workspace.
+ *
+ * `enabled` gates all search-only queries: a closed palette performs no
+ * workspace-wide loading.
  *
  * The active workspace comes from the global active-workspace context
  * (ADR-0008); search-result links keep the `?workspace=` parameter as a
  * deep-link entry point. Passing `query` is cheap: filtering happens on the
  * in-memory query cache, not the backend.
  */
-export function useGlobalSearch(query: string) {
+export function useGlobalSearch(query: string, enabled = true) {
   const workspaceId = useActiveWorkspaceId();
+  const active = enabled && Boolean(workspaceId);
 
   const projects = useQuery({
     queryKey: ["research", "projects", workspaceId],
     queryFn: () => desktopApi.research.listResearchProjects(workspaceId),
-    enabled: Boolean(workspaceId),
+    enabled: active,
   });
 
   const projectIds = (projects.data ?? []).map((project) => project.id);
@@ -67,7 +72,7 @@ export function useGlobalSearch(query: string) {
     queries: projectIds.map((projectId) => ({
       queryKey: ["research", "documents", projectId],
       queryFn: () => desktopApi.research.listResearchDocuments(projectId),
-      enabled: Boolean(workspaceId),
+      enabled: active,
     })),
   });
 
@@ -75,31 +80,34 @@ export function useGlobalSearch(query: string) {
     queries: projectIds.map((projectId) => ({
       queryKey: ["research", "reports", projectId],
       queryFn: () => desktopApi.research.listResearchReports(projectId),
-      enabled: Boolean(workspaceId),
+      enabled: active,
     })),
   });
 
   const theses = useQuery({
     queryKey: ["theses", "list", workspaceId],
     queryFn: () => desktopApi.thesis.listTheses(workspaceId),
-    enabled: Boolean(workspaceId),
+    enabled: active,
   });
 
   const knowledge = useQuery({
     queryKey: ["knowledge-graph", "entities", workspaceId],
     queryFn: () => desktopApi.knowledgeGraph.listKnowledgeEntities(workspaceId),
-    enabled: Boolean(workspaceId),
+    enabled: active,
   });
 
   const artifacts = useQuery({
     queryKey: ["artifacts", "workspace", workspaceId],
     queryFn: () => desktopApi.artifacts.listArtifacts(workspaceId),
-    enabled: Boolean(workspaceId),
+    enabled: active,
   });
 
-  const sections = useMemo<SearchSection[]>(() => {
+  const searchResult = useMemo<{
+    sections: SearchSection[];
+    totalMatches: number;
+  }>(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle || !workspaceId) return [];
+    if (!needle || !workspaceId) return { sections: [], totalMatches: 0 };
 
     const match = (...fields: Array<string | null | undefined>) =>
       fields.some((field) => field != null && field.toLowerCase().includes(needle));
@@ -122,7 +130,7 @@ export function useGlobalSearch(query: string) {
         id: document.id,
         title: document.title,
         subtitle: document.projectId,
-        to: `/research?workspace=${workspaceId}&project=${document.projectId}`,
+        to: `/research?workspace=${workspaceId}&project=${document.projectId}&document=${document.id}`,
       }));
 
     const reportEntries: SearchEntry[] = reports
@@ -133,7 +141,7 @@ export function useGlobalSearch(query: string) {
         id: report.id,
         title: report.title,
         subtitle: report.projectId,
-        to: `/research?workspace=${workspaceId}&project=${report.projectId}`,
+        to: `/research?workspace=${workspaceId}&project=${report.projectId}&report=${report.id}`,
       }));
 
     const thesisEntries: SearchEntry[] = (theses.data ?? [])
@@ -143,7 +151,7 @@ export function useGlobalSearch(query: string) {
         id: thesis.id,
         title: thesis.title,
         subtitle: thesis.status,
-        to: "/journal",
+        to: `/theses?thesis=${thesis.id}`,
       }));
 
     const knowledgeEntries: SearchEntry[] = (knowledge.data ?? [])
@@ -153,7 +161,7 @@ export function useGlobalSearch(query: string) {
         id: entity.id,
         title: entity.name,
         subtitle: entity.entityType,
-        to: "/knowledge",
+        to: `/knowledge?entity=${entity.id}`,
       }));
 
     const artifactEntries: SearchEntry[] = (artifacts.data ?? [])
@@ -181,7 +189,16 @@ export function useGlobalSearch(query: string) {
       { id: "knowledge", entries: knowledgeEntries },
       { id: "artifacts", entries: artifactEntries },
     ];
-    return allSections.filter((section) => section.entries.length > 0);
+
+    const totalMatches = allSections.reduce((sum, section) => sum + section.entries.length, 0);
+    const sections = allSections
+      .map((section) => ({
+        ...section,
+        entries: section.entries.slice(0, MAX_RESULTS_PER_SECTION),
+      }))
+      .filter((section) => section.entries.length > 0);
+
+    return { sections, totalMatches };
   }, [
     query,
     workspaceId,
@@ -193,6 +210,7 @@ export function useGlobalSearch(query: string) {
     artifacts.data,
   ]);
 
+  const { sections, totalMatches } = searchResult;
   const total = sections.reduce((sum, section) => sum + section.entries.length, 0);
 
   const isLoading =
@@ -203,5 +221,34 @@ export function useGlobalSearch(query: string) {
     documents.some((result) => result.isLoading) ||
     reports.some((result) => result.isLoading);
 
-  return { workspaceId, isLoading, sections, total };
+  const failedSources: SearchSectionId[] = [];
+  if (projects.isError) failedSources.push("projects");
+  if (documents.some((result) => result.isError)) failedSources.push("documents");
+  if (reports.some((result) => result.isError)) failedSources.push("reports");
+  if (theses.isError) failedSources.push("theses");
+  if (knowledge.isError) failedSources.push("knowledge");
+  if (artifacts.isError) failedSources.push("artifacts");
+
+  const refetch = async () => {
+    await Promise.all([
+      projects.refetch(),
+      theses.refetch(),
+      knowledge.refetch(),
+      artifacts.refetch(),
+      ...documents.map((result) => result.refetch()),
+      ...reports.map((result) => result.refetch()),
+    ]);
+  };
+
+  return {
+    workspaceId,
+    isLoading,
+    sections,
+    total,
+    totalMatches,
+    truncated: totalMatches > total,
+    hasError: failedSources.length > 0,
+    failedSources,
+    refetch,
+  };
 }

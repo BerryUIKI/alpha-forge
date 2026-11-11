@@ -8,7 +8,10 @@
 use std::sync::Arc;
 
 use chrono::NaiveDate;
-use domain::financial::{DailyAccountValuation, PerformancePoint, PerformanceSummary};
+use domain::financial::{
+    ConsolidatedPerformance, ConsolidatedPerformancePoint, DailyAccountValuation, PerformancePoint,
+    PerformanceSummary,
+};
 use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use rust_decimal::Decimal;
 
@@ -117,6 +120,224 @@ impl PerformanceService {
         })
     }
 
+    /// Compute consolidated performance for several accounts that share one
+    /// base currency.
+    ///
+    /// The series is built from portfolio-level base-currency valuations:
+    /// each date sums the last known value of every covered account
+    /// (forward-filled), and external flows are summed per date. Returns,
+    /// XIRR, and TWR are therefore computed on portfolio cash flows rather
+    /// than by averaging per-account metrics.
+    pub async fn compute_consolidated(
+        &self,
+        account_ids: &[String],
+        start_date: NaiveDate,
+        end_date: NaiveDate,
+        requested_base_currency: Option<&str>,
+    ) -> Result<ConsolidatedPerformance, AppError> {
+        let mut loaded: Vec<Vec<DailyAccountValuation>> = Vec::with_capacity(account_ids.len());
+        for account_id in account_ids {
+            self.account_repo
+                .get(account_id)
+                .await?
+                .ok_or_else(|| AppError::NotFound(format!("account {account_id} not found")))?;
+            loaded.push(self.valuation_repo.list_by_account(account_id).await?);
+        }
+
+        // One explicit base currency: an explicit request wins, otherwise the
+        // first known valuation currency. Accounts in other currencies are
+        // skipped and reported instead of being silently summed.
+        let base_currency = requested_base_currency
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(|value| value.to_ascii_uppercase())
+            .or_else(|| {
+                loaded
+                    .iter()
+                    .flat_map(|series| series.iter())
+                    .map(|valuation| valuation.base_currency.clone())
+                    .find(|currency| !currency.is_empty())
+            })
+            .unwrap_or_default();
+
+        let mut included: Vec<&[DailyAccountValuation]> = Vec::new();
+        let mut skipped_accounts = 0usize;
+        for series in &loaded {
+            match series.first() {
+                Some(valuation) if valuation.base_currency != base_currency => {
+                    skipped_accounts += 1;
+                }
+                _ => included.push(series.as_slice()),
+            }
+        }
+
+        let mut dates: Vec<NaiveDate> = included
+            .iter()
+            .flat_map(|series| series.iter())
+            .filter(|valuation| {
+                valuation.valuation_date >= start_date && valuation.valuation_date <= end_date
+            })
+            .map(|valuation| valuation.valuation_date)
+            .collect();
+        dates.sort_unstable();
+        dates.dedup();
+
+        if dates.len() < 2 {
+            return Ok(ConsolidatedPerformance {
+                base_currency,
+                points: Vec::new(),
+                total_return_pct: None,
+                xirr_pct: None,
+                twr_pct: None,
+                start_value: Decimal::ZERO,
+                end_value: Decimal::ZERO,
+                net_contribution: Decimal::ZERO,
+                total_gain: Decimal::ZERO,
+                account_count: included.len(),
+                covered_account_count: 0,
+                skipped_accounts,
+                data_quality: "insufficient_data".to_string(),
+            });
+        }
+
+        let mut cursors = vec![0usize; included.len()];
+        let mut points: Vec<ConsolidatedPerformancePoint> = Vec::with_capacity(dates.len());
+        let first_portfolio_date = dates[0];
+
+        for date in &dates {
+            let mut total_value_base = Decimal::ZERO;
+            let mut net_contribution_base = Decimal::ZERO;
+            let mut covered_accounts = 0usize;
+
+            for (index, series) in included.iter().enumerate() {
+                let cursor = &mut cursors[index];
+                while *cursor + 1 < series.len() && series[*cursor + 1].valuation_date <= *date {
+                    *cursor += 1;
+                }
+
+                let Some(valuation) = series.get(*cursor) else {
+                    continue;
+                };
+                if valuation.valuation_date > *date {
+                    continue;
+                }
+
+                total_value_base += valuation.total_value_base;
+                covered_accounts += 1;
+
+                // Flows on this date. An account whose series begins after the
+                // portfolio start enters with its market value as an external
+                // inflow, so its arrival cannot masquerade as investment return.
+                let mut account_flow = if valuation.valuation_date == *date {
+                    valuation.net_contribution_base
+                } else {
+                    Decimal::ZERO
+                };
+                let enters_here = series
+                    .first()
+                    .map(|first| {
+                        first.valuation_date > first_portfolio_date && first.valuation_date == *date
+                    })
+                    .unwrap_or(false);
+                if enters_here && account_flow.is_zero() {
+                    account_flow = valuation.total_value_base;
+                }
+                net_contribution_base += account_flow;
+            }
+
+            points.push(ConsolidatedPerformancePoint {
+                date: *date,
+                total_value_base,
+                net_contribution_base,
+                covered_accounts,
+                total_accounts: included.len(),
+            });
+        }
+
+        let total_accounts = included.len();
+        let start_value = points
+            .first()
+            .map(|point| point.total_value_base)
+            .unwrap_or_default();
+        let end_value = points
+            .last()
+            .map(|point| point.total_value_base)
+            .unwrap_or_default();
+        let net_contribution: Decimal =
+            points.iter().map(|point| point.net_contribution_base).sum();
+        let total_gain = end_value - start_value - net_contribution;
+
+        let total_return_pct = if start_value.is_zero() {
+            None
+        } else {
+            Some((total_gain * Decimal::ONE_HUNDRED) / start_value)
+        };
+
+        let first_date = dates[0];
+        let last_date = *dates.last().expect("dates is non-empty");
+        let mut cash_flows: Vec<(f64, f64)> = points
+            .iter()
+            .filter(|point| !point.net_contribution_base.is_zero())
+            .map(|point| {
+                let days = (point.date - first_date).num_days() as f64;
+                (days, -point.net_contribution_base.to_f64().unwrap_or(0.0))
+            })
+            .collect();
+        let terminal_days = (last_date - first_date).num_days() as f64;
+        let terminal_value = end_value.to_f64().unwrap_or(0.0);
+        cash_flows.push((terminal_days, terminal_value));
+        let xirr_pct = solve_xirr(&cash_flows);
+
+        let mut chain_factor = Decimal::ONE;
+        for window in points.windows(2) {
+            let previous = &window[0];
+            let current = &window[1];
+            if previous.total_value_base.is_zero() {
+                continue;
+            }
+            let sub_return = (current.total_value_base
+                - previous.total_value_base
+                - current.net_contribution_base)
+                / previous.total_value_base;
+            chain_factor *= Decimal::ONE + sub_return;
+        }
+        let twr_pct = Some((chain_factor - Decimal::ONE) * Decimal::ONE_HUNDRED);
+
+        let covered_account_count = included
+            .iter()
+            .filter(|series| {
+                series
+                    .iter()
+                    .any(|valuation| valuation.valuation_date <= end_date)
+            })
+            .count();
+
+        let partial_coverage = covered_account_count < total_accounts
+            || points
+                .iter()
+                .any(|point| point.covered_accounts < point.total_accounts);
+
+        Ok(ConsolidatedPerformance {
+            base_currency,
+            points,
+            total_return_pct,
+            xirr_pct,
+            twr_pct,
+            start_value,
+            end_value,
+            net_contribution,
+            total_gain,
+            account_count: total_accounts,
+            covered_account_count,
+            skipped_accounts,
+            data_quality: if partial_coverage {
+                "partial".to_string()
+            } else {
+                "complete".to_string()
+            },
+        })
+    }
+
     /// Get the performance time-series (daily points) for an account.
     pub async fn get_time_series(
         &self,
@@ -189,78 +410,22 @@ impl PerformanceService {
 
         // Build cash flows: each valuation is a flow of net_contribution,
         // the final valuation also includes total_value as a positive flow.
-        #[derive(Clone, Copy)]
-        struct CashFlow {
-            days: f64,
-            amount: f64,
-        }
+        let mut cash_flows: Vec<(f64, f64)> = Vec::new();
 
-        let mut cash_flows: Vec<CashFlow> = Vec::new();
-
-        for v in series.iter() {
-            let days = (v.valuation_date - first_date).num_days() as f64;
-            let net_flow = v.net_contribution.to_f64().unwrap_or(0.0);
+        for valuation in series.iter() {
+            let days = (valuation.valuation_date - first_date).num_days() as f64;
+            let net_flow = valuation.net_contribution.to_f64().unwrap_or(0.0);
             if net_flow != 0.0 {
-                cash_flows.push(CashFlow {
-                    days,
-                    amount: -net_flow,
-                });
+                cash_flows.push((days, -net_flow));
             }
         }
 
         // Add terminal value as positive flow
         let terminal_days = (last.valuation_date - first_date).num_days() as f64;
         let terminal_value = last.total_value.to_f64().unwrap_or(0.0);
-        cash_flows.push(CashFlow {
-            days: terminal_days,
-            amount: terminal_value,
-        });
+        cash_flows.push((terminal_days, terminal_value));
 
-        if cash_flows.len() < 2 {
-            return None;
-        }
-
-        // Newton's method to solve for rate
-        let mut rate: f64 = 0.1; // initial guess (10%)
-        let max_iterations = 100;
-        let tolerance = 1e-10;
-
-        for _ in 0..max_iterations {
-            let mut f = 0.0;
-            let mut f_prime = 0.0;
-
-            for cf in &cash_flows {
-                let t = cf.days / 365.0;
-                let factor = (1.0 + rate).powf(t);
-                f += cf.amount / factor;
-                f_prime += -cf.amount * t / (factor * (1.0 + rate));
-            }
-
-            if f.abs() < tolerance {
-                break;
-            }
-
-            if f_prime.abs() < 1e-15 {
-                break; // avoid division by zero
-            }
-
-            let new_rate = rate - f / f_prime;
-
-            if !new_rate.is_finite() || new_rate < -0.9999 {
-                // XIRR failed to converge
-                return None;
-            }
-
-            rate = new_rate;
-        }
-
-        // Convert to percentage
-        let xirr_pct = rate * 100.0;
-        if !xirr_pct.is_finite() {
-            return None;
-        }
-
-        Decimal::from_f64(xirr_pct)
+        solve_xirr(&cash_flows)
     }
 
     /// Calculate time-weighted return by chaining daily sub-period returns.
@@ -291,4 +456,54 @@ impl PerformanceService {
         let twr = (chain_factor - Decimal::ONE) * Decimal::ONE_HUNDRED;
         Some(twr)
     }
+}
+
+/// Solve XIRR with Newton's method over `(days, amount)` cash flows.
+///
+/// Flows are expressed in one currency; `days` are offsets from the first
+/// flow's date. Returns percentage points (`5` = 5%).
+fn solve_xirr(cash_flows: &[(f64, f64)]) -> Option<Decimal> {
+    if cash_flows.len() < 2 {
+        return None;
+    }
+
+    let mut rate: f64 = 0.1; // initial guess (10%)
+    let max_iterations = 100;
+    let tolerance = 1e-10;
+
+    for _ in 0..max_iterations {
+        let mut f = 0.0;
+        let mut f_prime = 0.0;
+
+        for (days, amount) in cash_flows {
+            let t = days / 365.0;
+            let factor = (1.0 + rate).powf(t);
+            f += amount / factor;
+            f_prime += -amount * t / (factor * (1.0 + rate));
+        }
+
+        if f.abs() < tolerance {
+            break;
+        }
+
+        if f_prime.abs() < 1e-15 {
+            break; // avoid division by zero
+        }
+
+        let new_rate = rate - f / f_prime;
+
+        if !new_rate.is_finite() || new_rate < -0.9999 {
+            // XIRR failed to converge
+            return None;
+        }
+
+        rate = new_rate;
+    }
+
+    let xirr_pct = rate * 100.0;
+    if !xirr_pct.is_finite() {
+        return None;
+    }
+
+    Decimal::from_f64(xirr_pct)
 }

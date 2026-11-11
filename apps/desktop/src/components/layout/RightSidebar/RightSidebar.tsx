@@ -12,7 +12,7 @@
  * - 100% standard pure i18n
  */
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { ChevronRight, GripVertical, Sparkles } from "lucide-react";
 import { cn, isMacPlatform } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/useLocale";
@@ -20,7 +20,7 @@ import type { RightSidebarProps } from "../types";
 import { DEFAULT_SIDEBAR_WIDTHS } from "../types";
 import { AgentPanel } from "./AgentPanel";
 import { useSidebarState, useResize } from "@/hooks/layout";
-import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
+import { useAgentGlobalStatusDisplay } from "@/hooks/useAgentStatus";
 
 export function RightSidebar({
   state: externalState,
@@ -31,15 +31,10 @@ export function RightSidebar({
 }: RightSidebarProps) {
   const { t } = useLocale();
   const isMac = isMacPlatform();
-  const { data: agentStatus = "idle" } = useAgentGlobalStatus();
+  const { status: agentStatus } = useAgentGlobalStatusDisplay();
 
   // Use sidebar state hook for persistence
-  const {
-    width,
-    toggleState,
-    setWidth,
-    isExpanded,
-  } = useSidebarState({
+  const { width, toggleState, setState, setWidth, isExpanded } = useSidebarState({
     storageKey: "right-sidebar",
     defaultState: externalState || "collapsed",
     defaultWidth,
@@ -47,8 +42,14 @@ export function RightSidebar({
     maxWidth,
   });
 
-  // Use resize hook for drag-to-resize
-  const { isResizing, startResize } = useResize({
+  // The layout owns the drawer state; mirror later external changes so the
+  // header toggle and the drawer's own controls never disagree.
+  useEffect(() => {
+    if (externalState) setState(externalState);
+  }, [externalState, setState]);
+
+  // Use resize hook for drag-to-resize and keyboard resizing
+  const { isResizing, startResize, handleKeyDown } = useResize({
     initialWidth: width,
     minWidth,
     maxWidth,
@@ -57,8 +58,9 @@ export function RightSidebar({
   });
 
   const handleToggle = useCallback(() => {
+    const nextState = isExpanded ? "collapsed" : "expanded";
     toggleState();
-    onStateChange?.(isExpanded ? "collapsed" : "expanded");
+    onStateChange?.(nextState);
   }, [toggleState, isExpanded, onStateChange]);
 
   if (!isExpanded) {
@@ -97,8 +99,10 @@ export function RightSidebar({
                 className={cn(
                   "relative inline-flex rounded-full h-2 w-2",
                   agentStatus === "running" && "bg-blue-500",
-                  agentStatus === "unconfigured" && "bg-yellow-500",
-                  agentStatus === "error" && "bg-red-500",
+                  agentStatus === "unconfigured" && "bg-amber-500",
+                  agentStatus === "error" && "bg-destructive",
+                  agentStatus === "checking" && "bg-muted-foreground/50",
+                  agentStatus === "unavailable" && "bg-destructive",
                   agentStatus === "idle" && "bg-gray-400",
                 )}
               ></span>
@@ -112,6 +116,7 @@ export function RightSidebar({
   // Expanded state with resize handle
   return (
     <aside
+      id="right-sidebar"
       className={cn(
         "relative flex h-full flex-col border-l border-border bg-card transition-[width] duration-300 ease-in-out",
         isResizing && "select-none",
@@ -130,8 +135,10 @@ export function RightSidebar({
               className={cn(
                 "relative inline-flex rounded-full h-2 w-2",
                 agentStatus === "running" && "bg-blue-500",
-                agentStatus === "unconfigured" && "bg-yellow-500",
-                agentStatus === "error" && "bg-red-500",
+                agentStatus === "unconfigured" && "bg-amber-500",
+                agentStatus === "error" && "bg-destructive",
+                agentStatus === "checking" && "bg-muted-foreground/50",
+                agentStatus === "unavailable" && "bg-destructive",
                 agentStatus === "idle" && "bg-gray-400",
               )}
             ></span>
@@ -151,13 +158,19 @@ export function RightSidebar({
       {/* Agent Panel Content */}
       <AgentPanel />
 
-      {/* Drag-to-resize handle */}
+      {/* Drag-to-resize / keyboard-resize handle */}
       <div
-        className="absolute left-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors group"
+        className="absolute left-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 focus-visible:bg-primary/40 focus-visible:outline-none transition-colors group"
         onMouseDown={startResize}
+        onKeyDown={handleKeyDown}
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label={t("resizeRightSidebar")}
+        aria-controls="right-sidebar"
+        aria-valuenow={Math.round(width)}
+        aria-valuemin={minWidth}
+        aria-valuemax={maxWidth}
+        aria-valuetext={`${Math.round(width)}px`}
         tabIndex={0}
       >
         <div className="absolute left-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">

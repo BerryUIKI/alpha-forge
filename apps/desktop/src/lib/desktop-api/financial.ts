@@ -27,12 +27,7 @@ import type {
 
 // ── Enums ───────────────────────────────────────────────────────────────────
 
-export const AccountTypeSchema = z.enum([
-  "securities",
-  "cash",
-  "credit_card",
-  "cryptocurrency",
-]);
+export const AccountTypeSchema = z.enum(["securities", "cash", "credit_card", "cryptocurrency"]);
 export type AccountType = z.infer<typeof AccountTypeSchema>;
 
 export const TrackingModeSchema = z.enum(["not_set", "transactions", "holdings"]);
@@ -54,13 +49,7 @@ export type AssetKind = z.infer<typeof AssetKindSchema>;
 export const QuoteModeSchema = z.enum(["market", "manual"]);
 export type QuoteMode = z.infer<typeof QuoteModeSchema>;
 
-export const InstrumentTypeSchema = z.enum([
-  "equity",
-  "crypto",
-  "fx",
-  "option",
-  "metal",
-]);
+export const InstrumentTypeSchema = z.enum(["equity", "crypto", "fx", "option", "metal"]);
 export type InstrumentType = z.infer<typeof InstrumentTypeSchema>;
 
 export const ActivityTypeSchema = z.enum([
@@ -345,6 +334,13 @@ export const PerformancePointSchema = z.object({
 });
 export type PerformancePoint = z.infer<typeof PerformancePointSchema>;
 
+/**
+ * Performance summary contract.
+ *
+ * Percentage fields (`total_return_pct`, `xirr_pct`, `twr_pct`) are denominated
+ * in percentage points: `"5"` means 5%. The Rust service already multiplies
+ * ratios by 100, so consumers must not scale these values again.
+ */
 export const PerformanceSummarySchema = z.object({
   account_id: z.string(),
   start_date: z.string(),
@@ -473,9 +469,7 @@ export const AssetTaxonomyAssignmentSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 });
-export type AssetTaxonomyAssignment = z.infer<
-  typeof AssetTaxonomyAssignmentSchema
->;
+export type AssetTaxonomyAssignment = z.infer<typeof AssetTaxonomyAssignmentSchema>;
 
 export const AllocationTargetSchema = z.object({
   id: z.string(),
@@ -507,9 +501,7 @@ export const AllocationTargetWeightSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 });
-export type AllocationTargetWeight = z.infer<
-  typeof AllocationTargetWeightSchema
->;
+export type AllocationTargetWeight = z.infer<typeof AllocationTargetWeightSchema>;
 
 export const AllocationTargetConstraintSchema = z.object({
   id: z.string(),
@@ -523,17 +515,12 @@ export const AllocationTargetConstraintSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
 });
-export type AllocationTargetConstraint = z.infer<
-  typeof AllocationTargetConstraintSchema
->;
+export type AllocationTargetConstraint = z.infer<typeof AllocationTargetConstraintSchema>;
 
 // ── Holdings ────────────────────────────────────────────────────────────────
 
 /** Get current holdings for a single account. */
-export async function getHoldings(
-  accountId: string,
-  asOfDate: string,
-): Promise<HoldingsSummary> {
+export async function getHoldings(accountId: string, asOfDate: string): Promise<HoldingsSummary> {
   const res = await invoke("get_holdings", {
     accountId,
     asOfDate,
@@ -542,9 +529,7 @@ export async function getHoldings(
 }
 
 /** Get holdings for all non-archived accounts. */
-export async function getAllHoldings(
-  asOfDate: string,
-): Promise<HoldingsSummary[]> {
+export async function getAllHoldings(asOfDate: string): Promise<HoldingsSummary[]> {
   const res = await invoke("get_all_holdings", { asOfDate });
   return z.array(HoldingsSummarySchema).parse(res);
 }
@@ -562,18 +547,13 @@ export async function recordSell(
 }
 
 /** Get open lots for an account + asset combination. */
-export async function getOpenLots(
-  accountId: string,
-  assetId: string,
-): Promise<Lot[]> {
+export async function getOpenLots(accountId: string, assetId: string): Promise<Lot[]> {
   const res = await invoke("get_open_lots", { accountId, assetId });
   return z.array(LotSchema).parse(res);
 }
 
 /** Get all open lots for an account. */
-export async function getOpenLotsForAccount(
-  accountId: string,
-): Promise<Lot[]> {
+export async function getOpenLotsForAccount(accountId: string): Promise<Lot[]> {
   const res = await invoke("get_open_lots_for_account", { accountId });
   return z.array(LotSchema).parse(res);
 }
@@ -599,17 +579,13 @@ export async function getValuation(
 }
 
 /** Get the full valuation series for an account. */
-export async function getValuationSeries(
-  accountId: string,
-): Promise<DailyAccountValuation[]> {
+export async function getValuationSeries(accountId: string): Promise<DailyAccountValuation[]> {
   const res = await invoke("get_valuation_series", { accountId });
   return z.array(DailyAccountValuationSchema).parse(res);
 }
 
 /** Calculate and persist valuations for all active accounts on a date. */
-export async function calculateAllValuations(
-  date: string,
-): Promise<DailyAccountValuation[]> {
+export async function calculateAllValuations(date: string): Promise<DailyAccountValuation[]> {
   const res = await invoke("calculate_all_valuations", { date });
   return z.array(DailyAccountValuationSchema).parse(res);
 }
@@ -631,11 +607,58 @@ export async function computePerformanceSummary(
 }
 
 /** Get the performance time-series for an account. */
-export async function getPerformanceTimeSeries(
-  accountId: string,
-): Promise<PerformancePoint[]> {
+export async function getPerformanceTimeSeries(accountId: string): Promise<PerformancePoint[]> {
   const res = await invoke("get_performance_time_series", { accountId });
   return z.array(PerformancePointSchema).parse(res);
+}
+
+/**
+ * Consolidated performance contract.
+ *
+ * Percentages are percentage points (`"5"` = 5%). `data_quality` is
+ * `complete`, `partial`, or `insufficient_data`; `skipped_accounts` counts
+ * requested accounts excluded because their base currency differs.
+ */
+export const ConsolidatedPerformancePointSchema = z.object({
+  date: z.string(),
+  total_value_base: z.string(),
+  net_contribution_base: z.string(),
+  covered_accounts: z.number(),
+  total_accounts: z.number(),
+});
+
+export const ConsolidatedPerformanceSchema = z.object({
+  base_currency: z.string(),
+  points: z.array(ConsolidatedPerformancePointSchema),
+  total_return_pct: z.string().nullable(),
+  xirr_pct: z.string().nullable(),
+  twr_pct: z.string().nullable(),
+  start_value: z.string(),
+  end_value: z.string(),
+  net_contribution: z.string(),
+  total_gain: z.string(),
+  account_count: z.number(),
+  covered_account_count: z.number(),
+  skipped_accounts: z.number(),
+  data_quality: z.string(),
+});
+
+export type ConsolidatedPerformance = z.infer<typeof ConsolidatedPerformanceSchema>;
+
+/** Compute portfolio-level performance across accounts in one base currency. */
+export async function computeConsolidatedPerformance(
+  accountIds: string[],
+  startDate: string,
+  endDate: string,
+  baseCurrency?: string,
+): Promise<ConsolidatedPerformance> {
+  const res = await invoke("compute_consolidated_performance", {
+    accountIds,
+    startDate,
+    endDate,
+    baseCurrency: baseCurrency ?? null,
+  });
+  return ConsolidatedPerformanceSchema.parse(res);
 }
 
 // ── Allocation ──────────────────────────────────────────────────────────────
@@ -681,17 +704,13 @@ export async function createSnapshot(
 }
 
 /** Get a snapshot by ID. */
-export async function getSnapshot(
-  id: string,
-): Promise<HoldingSnapshot | null> {
+export async function getSnapshot(id: string): Promise<HoldingSnapshot | null> {
   const res = await invoke("get_snapshot", { id });
   return res ? HoldingSnapshotSchema.parse(res) : null;
 }
 
 /** List snapshots for an account. */
-export async function listSnapshots(
-  accountId: string,
-): Promise<HoldingSnapshot[]> {
+export async function listSnapshots(accountId: string): Promise<HoldingSnapshot[]> {
   const res = await invoke("list_snapshots", { accountId });
   return z.array(HoldingSnapshotSchema).parse(res);
 }
@@ -717,9 +736,7 @@ export async function computeNetWorth(
 
 // ── Platform CRUD (Phase 3.5) ──────────────────────────────────────────────
 
-export async function createPlatform(
-  input: CreatePlatformInput,
-): Promise<Platform> {
+export async function createPlatform(input: CreatePlatformInput): Promise<Platform> {
   const res = await invoke("create_platform", { input });
   return PlatformSchema.parse(res);
 }
@@ -736,16 +753,12 @@ export async function getPlatform(id: string): Promise<Platform | null> {
 
 // ── Financial Account CRUD (Phase 3.5) ─────────────────────────────────────
 
-export async function createFinancialAccount(
-  input: CreateAccountInput,
-): Promise<FinancialAccount> {
+export async function createFinancialAccount(input: CreateAccountInput): Promise<FinancialAccount> {
   const res = await invoke("create_financial_account", { input });
   return FinancialAccountSchema.parse(res);
 }
 
-export async function listFinancialAccounts(
-  workspaceId: string,
-): Promise<FinancialAccount[]> {
+export async function listFinancialAccounts(workspaceId: string): Promise<FinancialAccount[]> {
   const res = await invoke("list_financial_accounts", { workspaceId });
   return z.array(FinancialAccountSchema).parse(res);
 }
@@ -755,9 +768,7 @@ export async function listAllFinancialAccounts(): Promise<FinancialAccount[]> {
   return z.array(FinancialAccountSchema).parse(res);
 }
 
-export async function getFinancialAccount(
-  id: string,
-): Promise<FinancialAccount | null> {
+export async function getFinancialAccount(id: string): Promise<FinancialAccount | null> {
   const res = await invoke("get_financial_account", { id });
   return res ? FinancialAccountSchema.parse(res) : null;
 }
@@ -778,9 +789,7 @@ export async function getAsset(id: string): Promise<Asset | null> {
   return res ? AssetSchema.parse(res) : null;
 }
 
-export async function findAssetByInstrumentKey(
-  key: string,
-): Promise<Asset | null> {
+export async function findAssetByInstrumentKey(key: string): Promise<Asset | null> {
   const res = await invoke("find_asset_by_instrument_key", { key });
   return res ? AssetSchema.parse(res) : null;
 }
@@ -823,9 +832,7 @@ export async function refreshAllActiveQuotes(): Promise<Quote[]> {
 
 // ── Activity CRUD (Phase 3.5) ──────────────────────────────────────────────
 
-export async function createActivity(
-  input: CreateActivityInput,
-): Promise<Activity> {
+export async function createActivity(input: CreateActivityInput): Promise<Activity> {
   const res = await invoke("create_activity", { input });
   return ActivitySchema.parse(res);
 }
@@ -835,25 +842,19 @@ export async function getActivity(id: string): Promise<Activity | null> {
   return res ? ActivitySchema.parse(res) : null;
 }
 
-export async function listActivitiesByAccount(
-  accountId: string,
-): Promise<Activity[]> {
+export async function listActivitiesByAccount(accountId: string): Promise<Activity[]> {
   const res = await invoke("list_activities_by_account", { accountId });
   return z.array(ActivitySchema).parse(res);
 }
 
-export async function listActivitiesByAsset(
-  assetId: string,
-): Promise<Activity[]> {
+export async function listActivitiesByAsset(assetId: string): Promise<Activity[]> {
   const res = await invoke("list_activities_by_asset", { assetId });
   return z.array(ActivitySchema).parse(res);
 }
 
 // ── Import Run CRUD (Phase 3.5) ────────────────────────────────────
 
-export async function createImportRun(
-  input: CreateImportRunInput,
-): Promise<ImportRun> {
+export async function createImportRun(input: CreateImportRunInput): Promise<ImportRun> {
   const res = await invoke("create_import_run", { input });
   return ImportRunSchema.parse(res);
 }
@@ -876,6 +877,43 @@ export async function importActivitiesCsv(
   return ImportRunSchema.parse(res);
 }
 
+/** Read-only CSV import preview: what would be applied, skipped, or rejected. */
+export const ImportPreviewRowSchema = z.object({
+  row_number: z.number(),
+  activity_date: z.string(),
+  activity_type: z.string(),
+  symbol: z.string().nullable(),
+  quantity: z.string().nullable(),
+  amount: z.string().nullable(),
+  outcome: z.enum(["new", "duplicate", "invalid"]),
+  message: z.string().nullable(),
+});
+
+export const ImportPreviewSchema = z.object({
+  format: z.string(),
+  total_rows: z.number(),
+  new_count: z.number(),
+  duplicate_count: z.number(),
+  invalid_count: z.number(),
+  rows: z.array(ImportPreviewRowSchema),
+});
+
+export type ImportPreviewRow = z.infer<typeof ImportPreviewRowSchema>;
+export type ImportPreview = z.infer<typeof ImportPreviewSchema>;
+
+export async function previewActivitiesCsv(
+  accountId: string,
+  format: "GENERIC" | "IBKR",
+  csvText: string,
+): Promise<ImportPreview> {
+  const res = await invoke("preview_activities_csv", {
+    accountId,
+    format,
+    csvText,
+  });
+  return ImportPreviewSchema.parse(res);
+}
+
 // ── Lot CRUD (Phase 3.5) ───────────────────────────────────────────────────
 
 export async function createLot(input: CreateLotInput): Promise<Lot> {
@@ -890,32 +928,23 @@ export async function getLot(id: string): Promise<Lot | null> {
 
 // ── Valuation CRUD (Phase 3.5) ─────────────────────────────────────────────
 
-export async function upsertValuation(
-  input: UpsertValuationInput,
-): Promise<DailyAccountValuation> {
+export async function upsertValuation(input: UpsertValuationInput): Promise<DailyAccountValuation> {
   const res = await invoke("upsert_valuation", { input });
   return DailyAccountValuationSchema.parse(res);
 }
 
-export async function listValuationsByAccount(
-  accountId: string,
-): Promise<DailyAccountValuation[]> {
+export async function listValuationsByAccount(accountId: string): Promise<DailyAccountValuation[]> {
   const res = await invoke("list_valuations_by_account", { accountId });
   return z.array(DailyAccountValuationSchema).parse(res);
 }
 
-export async function deleteValuationForDate(
-  accountId: string,
-  date: string,
-): Promise<void> {
+export async function deleteValuationForDate(accountId: string, date: string): Promise<void> {
   await invoke("delete_valuation_for_date", { accountId, date });
 }
 
 // ── Taxonomy CRUD (Phase 3.5) ──────────────────────────────────────────────
 
-export async function createTaxonomy(
-  input: CreateTaxonomyInput,
-): Promise<Taxonomy> {
+export async function createTaxonomy(input: CreateTaxonomyInput): Promise<Taxonomy> {
   const res = await invoke("create_taxonomy", { input });
   return TaxonomySchema.parse(res);
 }
@@ -937,9 +966,7 @@ export async function createTaxonomyCategory(
   return TaxonomyCategorySchema.parse(res);
 }
 
-export async function listTaxonomyCategories(
-  taxonomyId: string,
-): Promise<TaxonomyCategory[]> {
+export async function listTaxonomyCategories(taxonomyId: string): Promise<TaxonomyCategory[]> {
   const res = await invoke("list_taxonomy_categories", { taxonomyId });
   return z.array(TaxonomyCategorySchema).parse(res);
 }
@@ -951,9 +978,7 @@ export async function assignAssetToTaxonomyCategory(
   return AssetTaxonomyAssignmentSchema.parse(res);
 }
 
-export async function listAssignmentsForAsset(
-  assetId: string,
-): Promise<AssetTaxonomyAssignment[]> {
+export async function listAssignmentsForAsset(assetId: string): Promise<AssetTaxonomyAssignment[]> {
   const res = await invoke("list_assignments_for_asset", { assetId });
   return z.array(AssetTaxonomyAssignmentSchema).parse(res);
 }
@@ -978,16 +1003,12 @@ export async function createAllocationTarget(
   return AllocationTargetSchema.parse(res);
 }
 
-export async function getAllocationTarget(
-  id: string,
-): Promise<AllocationTarget | null> {
+export async function getAllocationTarget(id: string): Promise<AllocationTarget | null> {
   const res = await invoke("get_allocation_target", { id });
   return res ? AllocationTargetSchema.parse(res) : null;
 }
 
-export async function listAllocationTargets(
-  includeArchived: boolean,
-): Promise<AllocationTarget[]> {
+export async function listAllocationTargets(includeArchived: boolean): Promise<AllocationTarget[]> {
   const res = await invoke("list_allocation_targets", { includeArchived });
   return z.array(AllocationTargetSchema).parse(res);
 }
@@ -1003,9 +1024,7 @@ export async function addAllocationWeight(
   return AllocationTargetWeightSchema.parse(res);
 }
 
-export async function listAllocationWeights(
-  targetId: string,
-): Promise<AllocationTargetWeight[]> {
+export async function listAllocationWeights(targetId: string): Promise<AllocationTargetWeight[]> {
   const res = await invoke("list_allocation_weights", { targetId });
   return z.array(AllocationTargetWeightSchema).parse(res);
 }

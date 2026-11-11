@@ -7,7 +7,8 @@
  * @version GUI-M1+
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
@@ -43,6 +44,8 @@ export function KnowledgePage() {
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState<KnowledgeEntityType>("company");
   const [newDesc, setNewDesc] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedEntityId = searchParams.get("entity") || "";
 
   const entities = useQuery({
     queryKey: knowledgeGraphKeys.entities(workspaceId),
@@ -50,9 +53,31 @@ export function KnowledgePage() {
     enabled: !!workspaceId,
   });
 
+  const requestedEntity = entities.data?.find((entity) => entity.id === requestedEntityId);
+  const entityMissing = Boolean(requestedEntityId) && entities.isSuccess && !requestedEntity;
+
+  // Reveal the exact entity linked from global search.
+  useEffect(() => {
+    if (!requestedEntity) return;
+    document
+      .getElementById(`knowledge-entity-${requestedEntity.id}`)
+      ?.scrollIntoView?.({ block: "nearest" });
+  }, [requestedEntity]);
+
+  const clearEntityFilter = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("entity");
+    setSearchParams(next, { replace: true });
+  };
+
   const createEntity = useMutation({
     mutationFn: () =>
-      desktopApi.knowledgeGraph.createKnowledgeEntity(workspaceId, newType, newName, newDesc || undefined),
+      desktopApi.knowledgeGraph.createKnowledgeEntity(
+        workspaceId,
+        newType,
+        newName,
+        newDesc || undefined,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: knowledgeGraphKeys.entities(workspaceId) });
       setShowCreate(false);
@@ -92,6 +117,23 @@ export function KnowledgePage() {
         </button>
       </div>
 
+      {/* Missing deep-link target */}
+      {entityMissing && (
+        <div
+          role="alert"
+          className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400"
+        >
+          <span>{t("knowledgeEntityNotFound")}</span>
+          <button
+            type="button"
+            onClick={clearEntityFilter}
+            className="rounded border border-amber-500/30 px-2 py-0.5 font-medium hover:bg-amber-500/10"
+          >
+            {t("clearFilter")}
+          </button>
+        </div>
+      )}
+
       {/* Create form */}
       {showCreate && (
         <div className="mb-6 rounded-lg border bg-card p-4">
@@ -103,7 +145,9 @@ export function KnowledgePage() {
           </div>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityName")}</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                {t("entityName")}
+              </label>
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -112,19 +156,25 @@ export function KnowledgePage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityType")}</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                {t("entityType")}
+              </label>
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value as KnowledgeEntityType)}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               >
                 {ENTITY_TYPES.map((t) => (
-                  <option key={t} value={t}>{professionalTerms.label(t, ENTITY_TYPE_LABELS[t])}</option>
+                  <option key={t} value={t}>
+                    {professionalTerms.label(t, ENTITY_TYPE_LABELS[t])}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("entityDescription")}</label>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                {t("entityDescription")}
+              </label>
               <textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
@@ -167,16 +217,29 @@ export function KnowledgePage() {
           {entities.data.map((entity) => (
             <div
               key={entity.id}
-              className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
+              id={`knowledge-entity-${entity.id}`}
+              aria-current={requestedEntityId === entity.id ? "true" : undefined}
+              className={
+                requestedEntityId === entity.id
+                  ? "rounded-lg border border-border bg-card p-4 ring-2 ring-primary/50 transition-colors"
+                  : "rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
+              }
             >
               <div className="mb-2 flex items-center gap-2">
-                <span className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase ${ENTITY_TYPE_COLORS[entity.entityType]}`}>
-                  {professionalTerms.label(entity.entityType, ENTITY_TYPE_LABELS[entity.entityType])}
+                <span
+                  className={`rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase ${ENTITY_TYPE_COLORS[entity.entityType]}`}
+                >
+                  {professionalTerms.label(
+                    entity.entityType,
+                    ENTITY_TYPE_LABELS[entity.entityType],
+                  )}
                 </span>
               </div>
               <h3 className="font-semibold">{entity.name}</h3>
               {entity.description && (
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{entity.description}</p>
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                  {entity.description}
+                </p>
               )}
               <p className="mt-2 text-[10px] text-muted-foreground/60">
                 {t("entityAdded")} {entity.createdAt.slice(0, 10)}

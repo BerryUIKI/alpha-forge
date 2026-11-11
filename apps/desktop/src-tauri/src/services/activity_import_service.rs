@@ -36,6 +36,102 @@ pub struct ImportRunSummary {
     pub errors: Vec<String>,
 }
 
+/// A parsed row presented before import, without persisting anything.
+#[derive(Debug, Clone, Serialize)]
+pub struct ImportPreviewRow {
+    pub row_number: usize,
+    pub activity_date: String,
+    pub activity_type: String,
+    pub symbol: Option<String>,
+    pub quantity: Option<String>,
+    pub amount: Option<String>,
+    /// `new`, `duplicate`, or `invalid`.
+    pub outcome: String,
+    pub message: Option<String>,
+}
+
+/// Read-only preview of a CSV statement.
+#[derive(Debug, Clone, Serialize)]
+pub struct ImportPreview {
+    pub format: String,
+    pub total_rows: usize,
+    pub new_count: usize,
+    pub duplicate_count: usize,
+    pub invalid_count: usize,
+    pub rows: Vec<ImportPreviewRow>,
+}
+
+/// Stable identity for a parsed row within one account + source system.
+fn row_signature(item: &ParsedActivityRow) -> String {
+    format!(
+        "{}:{}:{}:{}:{}:{}:{}",
+        item.activity_date,
+        item.activity_type,
+        item.symbol.as_deref().unwrap_or(""),
+        item.quantity.unwrap_or(Decimal::ZERO),
+        item.unit_price.unwrap_or(Decimal::ZERO),
+        item.amount.unwrap_or(Decimal::ZERO),
+        item.currency
+    )
+}
+
+fn row_idempotency_key(
+    source_system: &str,
+    account_id: &str,
+    item: &ParsedActivityRow,
+    occurrence: usize,
+) -> String {
+    let hash_input = format!("{}:{}:{}", source_system, row_signature(item), occurrence);
+    let hash = format!("{:x}", Sha256::digest(hash_input.as_bytes()));
+    format!("csv:{}:{}:{}", account_id, item.activity_date, &hash[..16])
+}
+
+/// Chronological order with buys before sells on the same day so FIFO
+/// inventory exists when sells are applied.
+fn sort_parsed_items(items: &mut [ParsedActivityRow]) {
+    items.sort_by(|a, b| {
+        let date_cmp = a.activity_date.cmp(&b.activity_date);
+        if date_cmp != std::cmp::Ordering::Equal {
+            return date_cmp;
+        }
+        let priority_a = match a.activity_type {
+            ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
+            _ => 1,
+        };
+        let priority_b = match b.activity_type {
+            ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
+            _ => 1,
+        };
+        priority_a.cmp(&priority_b)
+    });
+}
+
+/// Preview-time validation mirroring the activity service's hard requirements.
+fn parsed_row_validation_error(item: &ParsedActivityRow) -> Option<String> {
+    if !matches!(
+        item.activity_type,
+        ActivityType::Buy | ActivityType::Sell | ActivityType::Split
+    ) {
+        return None;
+    }
+
+    if item.symbol.is_none() {
+        return Some("symbol is required for this activity type".to_string());
+    }
+    if matches!(item.activity_type, ActivityType::Buy | ActivityType::Sell)
+        && item.quantity.unwrap_or(Decimal::ZERO) <= Decimal::ZERO
+    {
+        return Some("quantity must be positive".to_string());
+    }
+    if item.activity_type == ActivityType::Buy
+        && item.unit_price.unwrap_or(Decimal::ZERO) < Decimal::ZERO
+    {
+        return Some("unit price cannot be negative".to_string());
+    }
+
+    None
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImportFormat {
     GenericCsv,
@@ -164,21 +260,7 @@ impl ActivityImportService {
         }
 
         // Sort parsed items chronologically (and buys before sells on the same day to maintain FIFO lot inventory)
-        parsed_items.sort_by(|a, b| {
-            let date_cmp = a.activity_date.cmp(&b.activity_date);
-            if date_cmp != std::cmp::Ordering::Equal {
-                return date_cmp;
-            }
-            let priority_a = match a.activity_type {
-                ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
-                _ => 1,
-            };
-            let priority_b = match b.activity_type {
-                ActivityType::Buy | ActivityType::Deposit | ActivityType::TransferIn => 0,
-                _ => 1,
-            };
-            priority_a.cmp(&priority_b)
-        });
+        sort_parsed_items(&mut parsed_items);
 
         if parsed_items.len() > 10_000 {
             let err_msg = format!(
@@ -219,24 +301,10 @@ impl ActivityImportService {
                 tokio::task::yield_now().await;
             }
             // Compute deterministic row signature
-            let row_content = format!(
-                "{}:{}:{}:{}:{}:{}:{}",
-                item.activity_date,
-                item.activity_type,
-                item.symbol.as_deref().unwrap_or(""),
-                item.quantity.unwrap_or(Decimal::ZERO),
-                item.unit_price.unwrap_or(Decimal::ZERO),
-                item.amount.unwrap_or(Decimal::ZERO),
-                item.currency
-            );
-            let count = seen_occurrences.entry(row_content.clone()).or_insert(0);
+            let count = seen_occurrences.entry(row_signature(&item)).or_insert(0);
             let occurrence = *count;
             *count += 1;
-
-            let hash_input = format!("{}:{}:{}", source_system, row_content, occurrence);
-            let hash = format!("{:x}", Sha256::digest(hash_input.as_bytes()));
-            let idempotency_key =
-                format!("csv:{}:{}:{}", account_id, item.activity_date, &hash[..16]);
+            let idempotency_key = row_idempotency_key(source_system, account_id, &item, occurrence);
 
             // Deduplication: if activity with this key already exists in the ledger, skip without error
             match self
@@ -388,6 +456,96 @@ impl ActivityImportService {
         self.import_run_repo
             .finish(&import_run.id, status, summary_json, warnings, error_msg)
             .await
+    }
+
+    /// Parse a CSV statement and report what *would* happen, without writing
+    /// activities, lots, or import runs.
+    pub async fn preview_csv(
+        &self,
+        account_id: &str,
+        format_str: &str,
+        csv_text: &str,
+    ) -> Result<ImportPreview, AppError> {
+        let format = ImportFormat::parse(format_str)?;
+        self.account_repo
+            .get(account_id)
+            .await?
+            .ok_or_else(|| AppError::NotFound(format!("account {account_id} not found")))?;
+
+        let mut parsed_items = match &format {
+            ImportFormat::GenericCsv => self.parse_generic_csv(csv_text),
+            ImportFormat::IbkrCsv => self.parse_ibkr_csv(csv_text),
+        }?;
+
+        if parsed_items.is_empty() {
+            return Err(AppError::Validation(
+                "CSV contains no valid activity rows".to_string(),
+            ));
+        }
+        if parsed_items.len() > 10_000 {
+            return Err(AppError::Validation(format!(
+                "CSV statement exceeds maximum batch budget of 10,000 rows (found {})",
+                parsed_items.len()
+            )));
+        }
+
+        sort_parsed_items(&mut parsed_items);
+
+        let (label, source_system) = match format {
+            ImportFormat::GenericCsv => ("GENERIC", "GENERIC_CSV"),
+            ImportFormat::IbkrCsv => ("IBKR", "IBKR_CSV"),
+        };
+
+        let mut seen_occurrences: HashMap<String, usize> = HashMap::new();
+        let mut rows = Vec::with_capacity(parsed_items.len());
+        let mut new_count = 0usize;
+        let mut duplicate_count = 0usize;
+        let mut invalid_count = 0usize;
+
+        for (index, item) in parsed_items.into_iter().enumerate() {
+            let count = seen_occurrences.entry(row_signature(&item)).or_insert(0);
+            let occurrence = *count;
+            *count += 1;
+            let idempotency_key = row_idempotency_key(source_system, account_id, &item, occurrence);
+
+            let duplicate = self
+                .activity_repo
+                .find_by_idempotency_key(&idempotency_key)
+                .await?
+                .is_some();
+            let validation_error = parsed_row_validation_error(&item);
+
+            let (outcome, message) = if duplicate {
+                duplicate_count += 1;
+                ("duplicate", Some("already imported".to_string()))
+            } else if let Some(error) = validation_error {
+                invalid_count += 1;
+                ("invalid", Some(error))
+            } else {
+                new_count += 1;
+                ("new", None)
+            };
+
+            rows.push(ImportPreviewRow {
+                row_number: index + 1,
+                activity_date: item.activity_date.to_string(),
+                activity_type: item.activity_type.to_string(),
+                symbol: item.symbol,
+                quantity: item.quantity.map(|value| value.to_string()),
+                amount: item.amount.map(|value| value.to_string()),
+                outcome: outcome.to_string(),
+                message,
+            });
+        }
+
+        Ok(ImportPreview {
+            format: label.to_string(),
+            total_rows: rows.len(),
+            new_count,
+            duplicate_count,
+            invalid_count,
+            rows,
+        })
     }
 
     /// Parse generic broker CSV:

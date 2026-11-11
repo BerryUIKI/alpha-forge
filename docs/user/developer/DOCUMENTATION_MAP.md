@@ -9,30 +9,30 @@ set.
 
 ### User documentation (English, canonical)
 
-| Documentation file | Project page / module | Primary source code |
-|--------------------|----------------------|---------------------|
-| `docs/user/README.md` | Entry point / language switcher (no page) | — |
-| `docs/user/en/README.md` | Documentation index (no page) | — |
-| `docs/user/en/installation.md` | Developer setup / release build | `README.md` (Getting Started), `scripts/*.sh`, `rust-toolchain.toml`, `.node-version` |
-| `docs/user/en/configuration.md` | Settings page (all sections) | `apps/desktop/src/pages/settings/SettingsPage.tsx`, `apps/desktop/src/features/plugins/components/InternalPluginsPanel.tsx`, `apps/desktop/src/lib/i18n/locale.ts`, `.env.example` |
-| `docs/user/en/configuration.md` (Agent) | Agent configuration | `apps/desktop/src/features/agent/components/AgentConfigGuide.tsx`, `apps/desktop/src/lib/desktop-api/credentials.ts` |
-| `docs/user/en/daily-operations.md` (Workspaces) | Workspace switcher / active-workspace context | `apps/desktop/src/features/workspace/`, `apps/desktop/src/components/layout/TopBar/WorkspaceSwitcher.tsx` |
-| `docs/user/en/daily-operations.md` (Today) | Today dashboard | `apps/desktop/src/pages/today/TodayPage.tsx` + `tabs/` (Overview, Performance, Activity) |
-| `docs/user/en/daily-operations.md` (Research) | Research page | `apps/desktop/src/pages/research/ResearchPage.tsx` + `components/` |
-| `docs/user/en/daily-operations.md` (Theses/Journal) | Theses / Journal pages | `apps/desktop/src/pages/theses/ThesesPage.tsx`, `apps/desktop/src/pages/journal/JournalPage.tsx`, `apps/desktop/src/features/thesis/` |
-| `docs/user/en/daily-operations.md` (Portfolio) | Portfolio page | `apps/desktop/src/pages/portfolio/PortfolioPage.tsx`, `apps/desktop/src/features/portfolio/` |
-| `docs/user/en/daily-operations.md` (Knowledge) | Knowledge page | `apps/desktop/src/pages/knowledge/KnowledgePage.tsx`, `apps/desktop/src/lib/desktop-api/knowledge-graph.ts` |
-| `docs/user/en/daily-operations.md` (Options) | Options page | `apps/desktop/src/pages/options/OptionsPage.tsx`, `apps/desktop/src/features/options/`, `crates/option-core/` |
-| `docs/user/en/daily-operations.md` (Artifacts) | Artifacts page + artifact window | `apps/desktop/src/pages/artifacts/ArtifactsPage.tsx`, `apps/desktop/src/pages/artifacts/ArtifactWindowPage.tsx`, `apps/desktop/src/features/artifacts/`, `apps/desktop/src/features/plugins/components/CompanyComparisonArtifactForm.tsx` |
-| `docs/user/en/daily-operations.md` (Global Search) | Global search dialog | `apps/desktop/src/features/search/` |
-| `docs/user/en/daily-operations.md` (Agent Tasks) | Agent task list / creation | `apps/desktop/src/features/agent/`, `apps/desktop/src/hooks/useAgentStatus.ts`, `crates/agent-core/` |
-| `docs/user/en/troubleshooting.md` | All modules (error scenarios) | Cross-cutting: `apps/desktop/src/lib/errors/`, `apps/desktop/src/components/common/` (EmptyState, ErrorState, LoadingSpinner) |
-| `docs/user/en/faq.md` | All modules | Cross-cutting |
+| Documentation file                                   | Project page / module                         | Primary source code                                                                                                                                                                                                                       |
+| ---------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/user/README.md`                                | Entry point / language switcher (no page)     | —                                                                                                                                                                                                                                         |
+| `docs/user/en/README.md`                             | Documentation index (no page)                 | —                                                                                                                                                                                                                                         |
+| `docs/user/en/installation.md`                       | Developer setup / release build               | `README.md` (Getting Started), `scripts/*.sh`, `rust-toolchain.toml`, `.node-version`                                                                                                                                                     |
+| `docs/user/en/configuration.md`                      | Settings page (all sections)                  | `apps/desktop/src/pages/settings/SettingsPage.tsx`, `apps/desktop/src/features/plugins/components/InternalPluginsPanel.tsx`, `apps/desktop/src/lib/i18n/locale.ts`, `.env.example`                                                        |
+| `docs/user/en/configuration.md` (Agent)              | Agent configuration                           | `apps/desktop/src/features/agent/components/AgentConfigGuide.tsx`, `apps/desktop/src/lib/desktop-api/credentials.ts`                                                                                                                      |
+| `docs/user/en/daily-operations.md` (Workspaces)      | Workspace switcher / active-workspace context | `apps/desktop/src/features/workspace/`, `apps/desktop/src/components/layout/TopBar/WorkspaceSwitcher.tsx`                                                                                                                                 |
+| `docs/user/en/daily-operations.md` (Today)           | Today dashboard                               | `apps/desktop/src/pages/today/TodayPage.tsx` + `tabs/` (Overview, Performance, Activity)                                                                                                                                                  |
+| `docs/user/en/daily-operations.md` (Research)        | Research page                                 | `apps/desktop/src/pages/research/ResearchPage.tsx` + `components/`                                                                                                                                                                        |
+| `docs/user/en/daily-operations.md` (Theses, Journal) | Theses and Journal pages (separate views)     | `apps/desktop/src/pages/theses/ThesesPage.tsx`, `apps/desktop/src/pages/journal/JournalPage.tsx`, `apps/desktop/src/features/thesis/`                                                                                                     |
+| `docs/user/en/daily-operations.md` (Portfolio)       | Portfolio page                                | `apps/desktop/src/pages/portfolio/PortfolioPage.tsx`, `apps/desktop/src/features/portfolio/`                                                                                                                                              |
+| `docs/user/en/daily-operations.md` (Knowledge)       | Knowledge page                                | `apps/desktop/src/pages/knowledge/KnowledgePage.tsx`, `apps/desktop/src/lib/desktop-api/knowledge-graph.ts`                                                                                                                               |
+| `docs/user/en/daily-operations.md` (Options)         | Options page                                  | `apps/desktop/src/pages/options/OptionsPage.tsx`, `apps/desktop/src/features/options/`, `crates/option-core/`                                                                                                                             |
+| `docs/user/en/daily-operations.md` (Artifacts)       | Artifacts page + artifact window              | `apps/desktop/src/pages/artifacts/ArtifactsPage.tsx`, `apps/desktop/src/pages/artifacts/ArtifactWindowPage.tsx`, `apps/desktop/src/features/artifacts/`, `apps/desktop/src/features/plugins/components/CompanyComparisonArtifactForm.tsx` |
+| `docs/user/en/daily-operations.md` (Global Search)   | Global search dialog                          | `apps/desktop/src/features/search/`                                                                                                                                                                                                       |
+| `docs/user/en/daily-operations.md` (Agent Tasks)     | Agent task list / creation                    | `apps/desktop/src/features/agent/`, `apps/desktop/src/hooks/useAgentStatus.ts`, `crates/agent-core/`                                                                                                                                      |
+| `docs/user/en/troubleshooting.md`                    | All modules (error scenarios)                 | Cross-cutting: `apps/desktop/src/lib/errors/`, `apps/desktop/src/components/common/` (EmptyState, ErrorState, LoadingSpinner)                                                                                                             |
+| `docs/user/en/faq.md`                                | All modules                                   | Cross-cutting                                                                                                                                                                                                                             |
 
 ### Translations
 
-| Documentation file | Status |
-|-------------------|--------|
+| Documentation file       | Status                                                |
+| ------------------------ | ----------------------------------------------------- |
 | `docs/user/zh/README.md` | Placeholder — structure reserved, translation pending |
 
 ## 2. Linking Suggestions
@@ -68,14 +68,14 @@ truth.
 
 Update the affected documentation file in the **same change** as the code:
 
-| Code change | Docs to update |
-|-------------|----------------|
-| New/changed Settings option | `configuration.md` |
-| New/changed module or page | `daily-operations.md` + mapping table in this file |
-| New error scenario | `troubleshooting.md` |
-| New FAQ topic | `faq.md` |
-| New supported locale | New directory under `docs/user/` + language table in `docs/user/README.md` |
-| New prerequisite / build step | `installation.md` |
+| Code change                   | Docs to update                                                             |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| New/changed Settings option   | `configuration.md`                                                         |
+| New/changed module or page    | `daily-operations.md` + mapping table in this file                         |
+| New error scenario            | `troubleshooting.md`                                                       |
+| New FAQ topic                 | `faq.md`                                                                   |
+| New supported locale          | New directory under `docs/user/` + language table in `docs/user/README.md` |
+| New prerequisite / build step | `installation.md`                                                          |
 
 ### Review checklist
 

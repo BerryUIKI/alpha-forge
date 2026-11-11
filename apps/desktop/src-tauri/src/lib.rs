@@ -29,8 +29,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .manage(app::readiness::AppReadiness::default())
         .setup(|app| {
             let handle = app.handle().clone();
+            let readiness = app.state::<app::readiness::AppReadiness>().inner().clone();
 
             tauri::async_runtime::spawn(async move {
                 match app::bootstrap::init_database(&handle).await {
@@ -43,6 +45,7 @@ pub fn run() {
                                 );
                             }
                             handle.manage(state);
+                            readiness.mark_ready();
                             info!("app state initialized");
 
                             if let Err(e) = handle.emit("app:ready", ()) {
@@ -50,6 +53,7 @@ pub fn run() {
                             }
                         }
                         Err(error) => {
+                            readiness.mark_failed(error.code());
                             if let Err(e) = handle.emit("app:init-failed", error.code()) {
                                 tracing::error!("failed to emit app:init-failed event: {}", e);
                             }
@@ -60,6 +64,7 @@ pub fn run() {
                         }
                     },
                     Err(error) => {
+                        readiness.mark_failed(error.code());
                         if let Err(e) = handle.emit("app:init-failed", error.code()) {
                             tracing::error!("failed to emit app:init-failed event: {}", e);
                         }
@@ -75,6 +80,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             // System commands
+            commands::system::get_app_status,
             commands::system::get_system_info,
             commands::system::get_config_dir,
             commands::system::get_data_dir,
@@ -199,6 +205,7 @@ pub fn run() {
             commands::financial::calculate_all_valuations,
             commands::financial::compute_performance_summary,
             commands::financial::get_performance_time_series,
+            commands::financial::compute_consolidated_performance,
             commands::financial::get_allocation,
             commands::financial::check_allocation_constraints,
             commands::financial::create_snapshot,
@@ -230,6 +237,7 @@ pub fn run() {
             commands::financial_crud::list_activities_by_asset,
             commands::financial_crud::create_import_run,
             commands::financial_crud::list_import_runs,
+            commands::financial_crud::preview_activities_csv,
             commands::financial_crud::import_activities_csv,
             commands::financial_crud::create_lot,
             commands::financial_crud::get_lot,

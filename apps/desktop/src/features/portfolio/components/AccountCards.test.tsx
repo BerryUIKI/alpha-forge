@@ -24,6 +24,15 @@ vi.mock("@/lib/i18n/useLocale", () => ({
         noAccountsDescription: "Create an account to get started",
         netWorth: "Net Worth",
         totalValue: "Total Value",
+        totalLiabilities: "Total Liabilities",
+        valuationUnavailable: "Valuation unavailable",
+        valuationError: "Account valuations could not be loaded.",
+        valuationStale: "Showing cached valuations; the latest refresh failed.",
+        partialValuations: "{count} account(s) have no valuation data.",
+        netWorthAsOf: "As of {date}",
+        refreshing: "Refreshing…",
+        loading: "Loading…",
+        retry: "Retry",
       };
       return map[key] || key;
     },
@@ -69,30 +78,18 @@ describe("AccountCards", () => {
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
     const wrapper = createWrapper();
     const { container } = render(
-      <AccountCards
-        asOfDate="2026-08-18"
-        selectedAccountId=""
-        onSelectAccount={() => {}}
-      />,
+      <AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />,
       { wrapper },
     );
     expect(container).toBeTruthy();
   });
 
   it("shows loading spinner while fetching", () => {
-    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockReturnValue(
-      new Promise(() => {}),
-    );
-    vi.mocked(desktopApi.financial.computeNetWorth).mockReturnValue(
-      new Promise(() => {}),
-    );
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockReturnValue(new Promise(() => {}));
+    vi.mocked(desktopApi.financial.computeNetWorth).mockReturnValue(new Promise(() => {}));
     const wrapper = createWrapper();
     const { container } = render(
-      <AccountCards
-        asOfDate="2026-08-18"
-        selectedAccountId=""
-        onSelectAccount={() => {}}
-      />,
+      <AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />,
       { wrapper },
     );
     expect(container.querySelector(".animate-spin")).toBeTruthy();
@@ -104,14 +101,9 @@ describe("AccountCards", () => {
     );
     vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({} as any);
     const wrapper = createWrapper();
-    render(
-      <AccountCards
-        asOfDate="2026-08-18"
-        selectedAccountId=""
-        onSelectAccount={() => {}}
-      />,
-      { wrapper },
-    );
+    render(<AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />, {
+      wrapper,
+    });
     expect(await screen.findByText("Failed to load accounts")).toBeInTheDocument();
   });
 
@@ -127,11 +119,7 @@ describe("AccountCards", () => {
     } as any);
     const wrapper = createWrapper();
     const { container } = render(
-      <AccountCards
-        asOfDate="2026-08-18"
-        selectedAccountId=""
-        onSelectAccount={() => {}}
-      />,
+      <AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />,
       { wrapper },
     );
     expect(await screen.findByText("Brokerage")).toBeInTheDocument();
@@ -144,15 +132,47 @@ describe("AccountCards", () => {
     const onSelect = vi.fn();
     const wrapper = createWrapper();
     const { findByText } = render(
-      <AccountCards
-        asOfDate="2026-08-18"
-        selectedAccountId=""
-        onSelectAccount={onSelect}
-      />,
+      <AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={onSelect} />,
       { wrapper },
     );
     const card = await findByText("Brokerage");
     card.click();
     expect(onSelect).toHaveBeenCalledWith("acct-1");
+  });
+
+  it("shows unavailable valuation instead of zero when net worth fails", async () => {
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([account] as any);
+    vi.mocked(desktopApi.financial.computeNetWorth).mockRejectedValue(
+      new Error("valuation failed"),
+    );
+    const wrapper = createWrapper();
+    render(<AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />, {
+      wrapper,
+    });
+
+    // Account navigation remains available; only the balance is unknown.
+    expect(await screen.findByText("Brokerage")).toBeInTheDocument();
+    expect(await screen.findByText("Valuation unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Account valuations could not be loaded.")).toBeInTheDocument();
+    expect(screen.queryByText("$0.00")).not.toBeInTheDocument();
+  });
+
+  it("renders a genuine zero balance as zero", async () => {
+    vi.mocked(desktopApi.financial.listAllFinancialAccounts).mockResolvedValue([account] as any);
+    vi.mocked(desktopApi.financial.computeNetWorth).mockResolvedValue({
+      as_of_date: "2026-08-18",
+      base_currency: "USD",
+      net_worth: "0",
+      total_assets: "0",
+      total_liabilities: "0",
+      accounts: [{ account_id: "acct-1", total_value: "0", currency: "USD" }],
+    } as any);
+    const wrapper = createWrapper();
+    render(<AccountCards asOfDate="2026-08-18" selectedAccountId="" onSelectAccount={() => {}} />, {
+      wrapper,
+    });
+
+    expect((await screen.findAllByText(/\$0\.00/)).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Valuation unavailable")).not.toBeInTheDocument();
   });
 });

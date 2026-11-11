@@ -42,18 +42,18 @@ phases.
 
 ## 3. Decisions (already made — do not revisit without the user)
 
-| # | Decision | Rationale |
-|---|----------|-----------|
-| D1 | **Full monorepo merge.** Wealthfolio code is absorbed crate-by-crate into this repo. | Long-term maintainability of a single product. |
-| D2 | **Single SQLite database.** All tables (research + financial) in one DB file. | Fewer databases, simpler backups/sync, local-first. |
-| D3 | **ORM = SQLx.** Wealthfolio uses Diesel; we migrate all financial persistence to SQLx. | Matches this repo's existing ORM. No Diesel in this repo. |
-| D4 | **Domain model unification.** Financial domain (Account, Holding, Activity, Lot, Portfolio, Snapshot) and research domain (Thesis, Research, Artifact, KnowledgeGraph) remain separate modules in the same `crates/domain` crate, linked by foreign keys. | Keeps modules independent; avoids a god-model. |
-| D5 | **Data linking:** `InvestmentThesis.portfolio_asset_id: Option<String>` links a thesis to a canonical financial asset (user-optional). | One asset may appear in multiple accounts/lots, so the canonical asset is the stable research link. |
-| D6 | **Sidebar placement:** permanent **Portfolio (📊)** entry in the left sidebar (Workspace group). | User-approved mockup. Note (2026-08-16): implemented in the redesigned `LeftSidebar` nav groups (`NavItem`, route `/portfolio`). |
-| D7 | **Phased execution** so the app never freezes. | Development continuity. |
-| D8 | **Do NOT copy Wealthfolio's debt:** 3,264 unwrap/expect panic points, Diesel-specific repo layer, hardcoded prod URLs, addon runtime. | Debt resolution is a primary goal. |
-| D9 | **Historical integration phases allowed parallel agents** for independent workstreams (for example, migration and UI). The active M11 queue is strictly sequential. | Preserve the original delivery decision without overriding the current execution contract. |
-| D10 | **No autonomous trading.** The app tracks portfolios; it never executes trades or auto-decides investments. | Product constraint (AGENTS.md §15). |
+| #   | Decision                                                                                                                                                                                                                                                  | Rationale                                                                                                                        |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | **Full monorepo merge.** Wealthfolio code is absorbed crate-by-crate into this repo.                                                                                                                                                                      | Long-term maintainability of a single product.                                                                                   |
+| D2  | **Single SQLite database.** All tables (research + financial) in one DB file.                                                                                                                                                                             | Fewer databases, simpler backups/sync, local-first.                                                                              |
+| D3  | **ORM = SQLx.** Wealthfolio uses Diesel; we migrate all financial persistence to SQLx.                                                                                                                                                                    | Matches this repo's existing ORM. No Diesel in this repo.                                                                        |
+| D4  | **Domain model unification.** Financial domain (Account, Holding, Activity, Lot, Portfolio, Snapshot) and research domain (Thesis, Research, Artifact, KnowledgeGraph) remain separate modules in the same `crates/domain` crate, linked by foreign keys. | Keeps modules independent; avoids a god-model.                                                                                   |
+| D5  | **Data linking:** `InvestmentThesis.portfolio_asset_id: Option<String>` links a thesis to a canonical financial asset (user-optional).                                                                                                                    | One asset may appear in multiple accounts/lots, so the canonical asset is the stable research link.                              |
+| D6  | **Sidebar placement:** permanent **Portfolio (📊)** entry in the left sidebar (Workspace group).                                                                                                                                                          | User-approved mockup. Note (2026-08-16): implemented in the redesigned `LeftSidebar` nav groups (`NavItem`, route `/portfolio`). |
+| D7  | **Phased execution** so the app never freezes.                                                                                                                                                                                                            | Development continuity.                                                                                                          |
+| D8  | **Do NOT copy Wealthfolio's debt:** 3,264 unwrap/expect panic points, Diesel-specific repo layer, hardcoded prod URLs, addon runtime.                                                                                                                     | Debt resolution is a primary goal.                                                                                               |
+| D9  | **Historical integration phases allowed parallel agents** for independent workstreams (for example, migration and UI). The active M11 queue is strictly sequential.                                                                                       | Preserve the original delivery decision without overriding the current execution contract.                                       |
+| D10 | **No autonomous trading.** The app tracks portfolios; it never executes trades or auto-decides investments.                                                                                                                                               | Product constraint (AGENTS.md §15).                                                                                              |
 
 ---
 
@@ -113,7 +113,7 @@ Thin Tauri commands (14) wrapping the service — the existing pattern to follow
 - Desktop API client: `src/lib/desktop-api/portfolio.ts`.
 - Sidebar: redesigned `LeftSidebar` with `NavItem`/`NavGroup` navigation groups
   (Workspace: Dashboard, Research, Theses, Portfolio, Knowledge, Journal;
-   Tools: Options, Artifacts; Account: Settings). The old `FunctionalViewSelector`,
+  Tools: Options, Artifacts; Account: Settings). The old `FunctionalViewSelector`,
   `ToolsList`, `UserOperations` were removed in the GUI redesign (PRs #105–#111).
 - i18n catalogs exist for Portfolio (zh/en) — extend, don't fork.
 
@@ -140,7 +140,7 @@ crates/domain ◄─── (pure models, no I/O) ──── repositories (SQLx
   SQLx migrations; schema spec in `docs/wealthfolio-audit/04-data-structure-spec.md`).
 - **Business logic:** port Wealthfolio's `crates/core` portfolio services
   (performance, valuation, holdings, lots, allocation, snapshot, FIRE,
-  net-worth, income) onto SQLx repositories — *without* the unwrap/expect
+  net-worth, income) onto SQLx repositories — _without_ the unwrap/expect
   panic points; return typed errors (`AppError` / domain `Result`).
 - **Market data:** port `crates/market-data` (Fully-Reusable, zero internal
   deps) for quotes/price enrichment.
@@ -228,8 +228,10 @@ developed and tested without the main application.
       FIFO liquidation on sell), `CreateAccountDialog`, `AddAssetDialog`.
 - [x] Switch `AccountCards` and `ActivityList` to reactive financial hooks with TanStack Query.
 - [x] Extend i18n catalogs (full bilingual parity for English and Chinese).
-- [x] Live SEC EDGAR filing stream integrated with automated thesis sentiment mapping.
-- [x] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (512 passing tests), `cargo test` (347+ passing).
+- [x] SEC EDGAR filing retrieval with source provenance (accession, filing date, retrieval time,
+      source link). Thesis analysis is shown only when backed by a persisted thesis–asset link;
+      no synthetic sentiment mapping is applied.
+- [x] **Verify:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (595 passing tests), `cargo test` (362+ passing).
 
 ### Phase 4 — Data linkage: research ↔ portfolio (est. 2 weeks) ✅ DONE
 
@@ -268,23 +270,23 @@ be used as a forecast for M11.
 
 ## 8. Key risks & mitigations
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                                                                      | Mitigation                                                                                                            |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Diesel schema port is lossy (48 migrations, unusual types like `numeric`) | Use `04-data-structure-spec.md` as schema source of truth; verify with row-level tests; keep the write-actor pattern. |
-| Ported services carry panic-prone code | Phase 0 policy: typed errors only; clippy `-D warnings`; review gate. |
-| Frontend scope creep (charts, tables) | Reuse existing `packages/ui` + `financial-components` package; no `@wealthfolio/ui` import. |
-| DB migration conflicts with research tables | Append-only migrations; name financial migrations `0015_...` onward; never edit applied migrations. |
-| Thesis-holding link breaks existing thesis flow | `Option<String>` FK, nullable; UI defaults to "no link". |
-| Multiple collaborators collide on shared files | Assign one M11 task at a time and merge each focused PR into `dev` before the next task starts. |
+| Ported services carry panic-prone code                                    | Phase 0 policy: typed errors only; clippy `-D warnings`; review gate.                                                 |
+| Frontend scope creep (charts, tables)                                     | Reuse existing `packages/ui` + `financial-components` package; no `@wealthfolio/ui` import.                           |
+| DB migration conflicts with research tables                               | Append-only migrations; name financial migrations `0015_...` onward; never edit applied migrations.                   |
+| Thesis-holding link breaks existing thesis flow                           | `Option<String>` FK, nullable; UI defaults to "no link".                                                              |
+| Multiple collaborators collide on shared files                            | Assign one M11 task at a time and merge each focused PR into `dev` before the next task starts.                       |
 
 ### Historical agent file ownership
 
-| Agent | Owns |
-|-------|------|
-| A (storage) | `migrations/` financial tables, `database/repositories/` new repos |
-| B (core) | `crates/domain` financial module, `services/` financial services |
+| Agent        | Owns                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
+| A (storage)  | `migrations/` financial tables, `database/repositories/` new repos                |
+| B (core)     | `crates/domain` financial module, `services/` financial services                  |
 | C (frontend) | `src/features/portfolio/`, `src/pages/portfolio/`, i18n, `LeftSidebar` nav groups |
-| D (linkage) | `theses` migration + thesis service + portfolio review (after B) |
+| D (linkage)  | `theses` migration + thesis service + portfolio review (after B)                  |
 
 ---
 

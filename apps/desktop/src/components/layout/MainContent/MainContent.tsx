@@ -12,11 +12,9 @@ import { StatusBar } from "./StatusBar";
 
 export function MainContent({ children }: MainContentProps) {
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {/* Middle: Page Content (Outlet) */}
-      <div className="flex-1 overflow-auto">
-        {children}
-      </div>
+      <div className="min-w-0 flex-1 overflow-auto">{children}</div>
 
       {/* Bottom: Status Bar */}
       <StatusBar />

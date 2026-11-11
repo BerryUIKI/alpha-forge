@@ -48,14 +48,14 @@ Current state (verified 2026-08-19):
 Search is workspace-scoped. Given the active workspace and a query string,
 results are gathered from:
 
-| Section | Source | Matched fields | Navigates to |
-|---|---|---|---|
-| Projects | `list_research_projects` | title, description | `/research?workspace={w}&project={p}` |
-| Documents | `list_research_documents` per project | title, content | `/research?workspace={w}&project={p}` |
-| Reports | `list_research_reports` per project | title, content | `/research?workspace={w}&project={p}` |
-| Theses | `list_theses` | title, thesis | `/journal` |
-| Knowledge entities | `list_knowledge_entities` | name, description | `/knowledge` |
-| Artifacts | `list_artifacts` | artifact_type, input/output text | `/artifact/{id}/{type}` |
+| Section            | Source                                | Matched fields                   | Navigates to                                       |
+| ------------------ | ------------------------------------- | -------------------------------- | -------------------------------------------------- |
+| Projects           | `list_research_projects`              | title, description               | `/research?workspace={w}&project={p}`              |
+| Documents          | `list_research_documents` per project | title, content                   | `/research?workspace={w}&project={p}&document={d}` |
+| Reports            | `list_research_reports` per project   | title, content                   | `/research?workspace={w}&project={p}&report={r}`   |
+| Theses             | `list_theses`                         | title, thesis                    | `/theses?thesis={id}`                              |
+| Knowledge entities | `list_knowledge_entities`             | name, description                | `/knowledge?entity={id}`                           |
+| Artifacts          | `list_artifacts`                      | artifact_type, input/output text | `/artifact/{id}/{type}`                            |
 
 Notes:
 
@@ -67,10 +67,14 @@ Notes:
   second open of the palette is free.
 - The artifact window route `/artifact/{id}/{type}` already exists and is
   isolated from the main layout, so artifact results deep-link directly.
-- Deep-linking to an individual document, report, or thesis is deferred: the
-  target pages select those items with local component state, not URL
-  parameters. v1 navigates to the containing page. Follow-up work can add URL
-  parameters (see "Future work").
+- Document, report, thesis, and knowledge results deep-link to the exact
+  entity. Receiving pages validate the id against their loaded list, select or
+  highlight the record, and remove or explain a stale id instead of silently
+  landing on the containing page.
+- Search-only queries are gated by the palette's open state: a closed palette
+  performs no workspace-wide loading. Each section renders at most 20 matches
+  and reports when more were found; failed sources produce a partial-results
+  banner with retry rather than an empty result set.
 
 ### Matching
 
@@ -99,6 +103,9 @@ A `GlobalSearchDialog` command palette:
 - Contains a text input, grouped results with section headers and icons, and a
   "no results" state. `ArrowUp`/`ArrowDown` move the selection, `Enter`
   navigates, `Esc` closes.
+- Focus is trapped inside the palette while open and restored to the opening
+  control on close. The input is a combobox (`aria-activedescendant`), results
+  form a listbox, and background controls cannot receive keyboard focus.
 - Navigation uses `useNavigate` and closes the dialog on selection.
 
 ### New files
@@ -124,19 +131,19 @@ A `GlobalSearchDialog` command palette:
 
 ### i18n keys
 
-| Key | zh-CN | en |
-|---|---|---|
-| `globalSearchTitle` | 全局搜索 | Global Search |
+| Key                       | zh-CN                           | en                                             |
+| ------------------------- | ------------------------------- | ---------------------------------------------- |
+| `globalSearchTitle`       | 全局搜索                        | Global Search                                  |
 | `globalSearchPlaceholder` | 搜索项目、文档、论点、知识实体… | Search projects, documents, theses, knowledge… |
-| `searchSectionProjects` | 研究项目 | Projects |
-| `searchSectionDocuments` | 研究文档 | Documents |
-| `searchSectionReports` | 研究报告 | Reports |
-| `searchSectionTheses` | 投资论点 | Theses |
-| `searchSectionKnowledge` | 知识实体 | Knowledge |
-| `searchSectionArtifacts` | 研究产物 | Artifacts |
-| `searchNoResults` | 没有匹配结果 | No matching results |
-| `searchNoWorkspace` | 请先创建工作区后再搜索 | Create a workspace first to search |
-| `searchResultsFor` | “{query}”的结果 | Results for "{query}" |
+| `searchSectionProjects`   | 研究项目                        | Projects                                       |
+| `searchSectionDocuments`  | 研究文档                        | Documents                                      |
+| `searchSectionReports`    | 研究报告                        | Reports                                        |
+| `searchSectionTheses`     | 投资论点                        | Theses                                         |
+| `searchSectionKnowledge`  | 知识实体                        | Knowledge                                      |
+| `searchSectionArtifacts`  | 研究产物                        | Artifacts                                      |
+| `searchNoResults`         | 没有匹配结果                    | No matching results                            |
+| `searchNoWorkspace`       | 请先创建工作区后再搜索          | Create a workspace first to search             |
+| `searchResultsFor`        | “{query}”的结果                 | Results for "{query}"                          |
 
 ## Feature 2 — Agent Chat
 
@@ -165,8 +172,7 @@ The chat input becomes a quick task launcher:
 
 ```ts
 type ConversationMessage =
-  | { id: string; role: "user"; text: string }
-  | { id: string; role: "info"; text: string };
+  { id: string; role: "user"; text: string } | { id: string; role: "info"; text: string };
 ```
 
 Rendered above the create-task button and task list. The user bubble uses an
@@ -188,11 +194,11 @@ the current `info` styling.
 
 ### i18n keys
 
-| Key | zh-CN | en |
-|---|---|---|
-| `agentChatWelcome` | 在下方输入研究问题，将以研究任务的形式排队执行。 | Ask a research question below; it will be queued as a research task. |
-| `agentChatSendFailed` | 创建研究任务失败 | Failed to create the research task |
-| `agentChatNeedsConfig` | 请先完成 Agent 配置后再提问 | Configure the Agent before asking |
+| Key                    | zh-CN                                            | en                                                                   |
+| ---------------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| `agentChatWelcome`     | 在下方输入研究问题，将以研究任务的形式排队执行。 | Ask a research question below; it will be queued as a research task. |
+| `agentChatSendFailed`  | 创建研究任务失败                                 | Failed to create the research task                                   |
+| `agentChatNeedsConfig` | 请先完成 Agent 配置后再提问                      | Configure the Agent before asking                                    |
 
 ## Verification
 

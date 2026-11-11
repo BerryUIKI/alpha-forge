@@ -11,12 +11,7 @@ interface ThesisCardProps {
   onQuickTransition?: (thesis: InvestmentThesis, nextStatus: ThesisStatus) => void;
 }
 
-export function ThesisCard({
-  thesis,
-  isSelected,
-  onSelect,
-  onQuickTransition,
-}: ThesisCardProps) {
+export function ThesisCard({ thesis, isSelected, onSelect, onQuickTransition }: ThesisCardProps) {
   const { t } = useLocale();
   const evidenceQuery = useThesisEvidence(thesis.id);
   const activeAssetsQuery = useListActiveAssets();
@@ -39,9 +34,11 @@ export function ThesisCard({
 
   // Color gradient and label based on conviction score
   const convictionColor = useMemo(() => {
-    if (thesis.confidence >= 80) return "from-indigo-500 to-purple-500 text-purple-300";
-    if (thesis.confidence >= 50) return "from-amber-500 to-orange-500 text-amber-300";
-    return "from-slate-500 to-zinc-500 text-neutral-400";
+    if (thesis.confidence >= 80)
+      return "from-indigo-500 to-purple-500 text-purple-600 dark:text-purple-300";
+    if (thesis.confidence >= 50)
+      return "from-amber-500 to-orange-500 text-amber-700 dark:text-amber-300";
+    return "from-slate-500 to-zinc-500 text-muted-foreground";
   }, [thesis.confidence]);
 
   // Next logical status in pipeline
@@ -89,14 +86,14 @@ export function ThesisCard({
       className={`group relative flex flex-col justify-between rounded-xl border p-4 text-left transition-all cursor-pointer shadow-sm ${
         isSelected
           ? "border-primary/80 bg-primary/5 ring-1 ring-primary/40"
-          : "border-white/10 bg-black/20 hover:border-white/20 hover:bg-black/30"
+          : "border-border bg-card hover:border-border/80 hover:bg-accent/50"
       }`}
     >
       <div>
         {/* Card Header: Title and Status Badge */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-semibold text-white tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="text-sm font-semibold text-foreground tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
               {thesis.title}
             </h3>
             {linkedAsset && (
@@ -105,13 +102,13 @@ export function ThesisCard({
               </span>
             )}
           </div>
-          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-neutral-300 capitalize border border-white/5">
+          <span className="shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
             {statusLabel}
           </span>
         </div>
 
         {/* Thesis Statement Snippet */}
-        <p className="mt-1.5 text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
           {thesis.thesis}
         </p>
       </div>
@@ -119,12 +116,10 @@ export function ThesisCard({
       {/* Conviction Bar */}
       <div className="mt-3.5 space-y-1">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-neutral-400">{t("convictionLabel")}</span>
-          <span className={`font-mono font-semibold ${convictionColor}`}>
-            {thesis.confidence}%
-          </span>
+          <span className="text-muted-foreground">{t("convictionLabel")}</span>
+          <span className={`font-mono font-semibold ${convictionColor}`}>{thesis.confidence}%</span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
             className={`h-full rounded-full bg-gradient-to-r ${convictionColor}`}
             style={{ width: `${thesis.confidence}%` }}
@@ -133,12 +128,12 @@ export function ThesisCard({
       </div>
 
       {/* Evidence Counters & Footer */}
-      <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
         <div className="flex items-center gap-1.5 text-[10px]">
-          <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400 font-medium">
+          <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-400 font-medium">
             {evidenceCounts.supporting} pro
           </span>
-          <span className="rounded bg-rose-500/10 px-1.5 py-0.5 text-rose-400 font-medium">
+          <span className="rounded bg-rose-500/15 px-1.5 py-0.5 text-rose-700 dark:text-rose-400 font-medium">
             {evidenceCounts.contradicting} contra
           </span>
         </div>

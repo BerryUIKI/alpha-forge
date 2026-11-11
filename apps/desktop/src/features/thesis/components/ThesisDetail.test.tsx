@@ -48,9 +48,7 @@ function renderWithClient(ui: ReactNode) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
-  );
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
 const mockThesis: InvestmentThesis = {
@@ -84,9 +82,7 @@ describe("ThesisDetail & Agent Research Loop (Direction 3)", () => {
   });
 
   it("renders thesis details and the Agent research action banner", async () => {
-    renderWithClient(
-      <ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />,
-    );
+    renderWithClient(<ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />);
 
     expect(screen.getByText("NVIDIA Blackwell Ramp")).toBeInTheDocument();
     expect(screen.getByText("AI 证据搜集与论点证伪")).toBeInTheDocument();
@@ -105,9 +101,7 @@ describe("ThesisDetail & Agent Research Loop (Direction 3)", () => {
     vi.mocked(desktopApi.agent.queueAgentTask).mockResolvedValue({} as any);
     vi.mocked(desktopApi.agent.startAgentTask).mockResolvedValue({} as any);
 
-    renderWithClient(
-      <ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />,
-    );
+    renderWithClient(<ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />);
 
     const launchBtn = screen.getByText("启动 Agent 搜集证据");
     fireEvent.click(launchBtn);
@@ -122,8 +116,84 @@ describe("ThesisDetail & Agent Research Loop (Direction 3)", () => {
       expect(desktopApi.agent.startAgentTask).toHaveBeenCalledWith("task-99");
     });
 
+    expect(await screen.findByText("证据搜集任务已创建并启动")).toBeInTheDocument();
+  });
+
+  it("resets unsaved drafts when the selected thesis changes", async () => {
+    const { rerender } = renderWithClient(<ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />);
+
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    fireEvent.change(slider, { target: { value: "42" } });
+    expect(slider.value).toBe("42");
+
+    const otherThesis: InvestmentThesis = {
+      ...mockThesis,
+      id: "th-2",
+      title: "AMD Share Gains",
+      confidence: 30,
+    };
+
+    rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <ThesisDetail thesis={otherThesis} onDeleted={vi.fn()} />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("AMD Share Gains")).toBeInTheDocument();
+      expect((screen.getByRole("slider") as HTMLInputElement).value).toBe("30");
+    });
+    // The evidence draft belongs to the previous thesis and must not follow.
     expect(
-      await screen.findByText("证据搜集任务已创建并启动"),
-    ).toBeInTheDocument();
+      (screen.getByPlaceholderText("添加事实、数据点或论点...") as HTMLTextAreaElement).value,
+    ).toBe("");
+  });
+
+  it("requires confirmation before deleting a thesis", async () => {
+    const { container } = renderWithClient(
+      <ThesisDetail thesis={mockThesis} onDeleted={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByLabelText("删除论点"));
+
+    expect(desktopApi.thesis.deleteThesis).not.toHaveBeenCalled();
+    expect(await screen.findByText(/永久删除论点「NVIDIA Blackwell Ramp」/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
+    await waitFor(() =>
+      expect(screen.queryByText(/永久删除论点「NVIDIA Blackwell Ramp」/)).not.toBeInTheDocument(),
+    );
+    expect(desktopApi.thesis.deleteThesis).not.toHaveBeenCalled();
+    expect(container).toBeTruthy();
+  });
+
+  it("deletes only after confirmation and closes the record", async () => {
+    const onDeleted = vi.fn();
+    vi.mocked(desktopApi.thesis.deleteThesis).mockResolvedValue(undefined as any);
+
+    renderWithClient(<ThesisDetail thesis={mockThesis} onDeleted={onDeleted} />);
+
+    fireEvent.click(screen.getByLabelText("删除论点"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(desktopApi.thesis.deleteThesis).toHaveBeenCalledWith("th-1");
+      expect(onDeleted).toHaveBeenCalled();
+    });
+  });
+
+  it("keeps the thesis selected when deletion fails", async () => {
+    const onDeleted = vi.fn();
+    vi.mocked(desktopApi.thesis.deleteThesis).mockRejectedValue(new Error("delete failed"));
+
+    renderWithClient(<ThesisDetail thesis={mockThesis} onDeleted={onDeleted} />);
+
+    fireEvent.click(screen.getByLabelText("删除论点"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("delete failed")).toBeInTheDocument();
+    });
+    expect(onDeleted).not.toHaveBeenCalled();
   });
 });

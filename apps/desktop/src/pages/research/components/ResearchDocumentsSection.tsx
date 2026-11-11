@@ -9,10 +9,7 @@
 
 import { Trash2 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type {
-  ResearchDocument,
-  ResearchReport,
-} from "@/lib/desktop-api/research";
+import type { ResearchDocument, ResearchReport } from "@/lib/desktop-api/research";
 
 export type ReportType = "analysis" | "summary" | "thesis" | "recommendation";
 
@@ -38,6 +35,8 @@ interface ResearchDocumentsSectionProps {
   onReportTypeChange: (value: ReportType) => void;
   createReportPending: boolean;
   onCreateReport: () => void;
+  /** Report selected by a deep link; highlighted and scrolled into view. */
+  highlightedReportId?: string | null;
   deleteDocument: (id: string) => void;
   deleteReport: (id: string) => void;
 }
@@ -68,6 +67,7 @@ export function ResearchDocumentsSection({
   onReportTypeChange,
   createReportPending,
   onCreateReport,
+  highlightedReportId,
   deleteDocument,
   deleteReport,
 }: ResearchDocumentsSectionProps) {
@@ -180,31 +180,32 @@ export function ResearchDocumentsSection({
             <option value="analysis">{t("reportTypeAnalysis")}</option>
             <option value="summary">{t("reportTypeSummary")}</option>
             <option value="thesis">{t("reportTypeThesis")}</option>
-            <option value="recommendation">
-              {t("reportTypeRecommendation")}
-            </option>
+            <option value="recommendation">{t("reportTypeRecommendation")}</option>
           </select>
           <button
             className="ml-2 rounded border px-3 py-1"
-            disabled={
-              !reportTitle.trim() ||
-              !reportContent.trim() ||
-              createReportPending
-            }
+            disabled={!reportTitle.trim() || !reportContent.trim() || createReportPending}
           >
             {t("saveReport")}
           </button>
         </form>
         <ul className="space-y-2">
           {reports?.map((item) => (
-            <li key={item.id} className="rounded bg-muted p-2 text-sm">
+            <li
+              key={item.id}
+              id={`research-report-${item.id}`}
+              aria-current={highlightedReportId === item.id ? "true" : undefined}
+              className={
+                highlightedReportId === item.id
+                  ? "rounded bg-muted p-2 text-sm ring-2 ring-primary/50"
+                  : "rounded bg-muted p-2 text-sm"
+              }
+            >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium">
                     {item.title}{" "}
-                    <span className="font-normal text-muted-foreground">
-                      ({item.reportType})
-                    </span>
+                    <span className="font-normal text-muted-foreground">({item.reportType})</span>
                   </p>
                   <p>{item.content}</p>
                 </div>

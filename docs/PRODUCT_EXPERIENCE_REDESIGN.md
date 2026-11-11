@@ -53,12 +53,12 @@ Localization includes an **Enable professional terminology localization** option
 
 ### 3.1 Distinct Data States
 
-| State | Presentation | Actions |
-|---|---|---|
-| New installation or empty database | Clearly labeled demonstration data | Create portfolio, import data, open setup wizard |
-| Database unavailable or missing | Recovery view; never disguise a failure as demo data | Select backup, create database, open diagnostics |
-| Real data available | Real dashboard | Filter portfolio, account, period, and benchmark |
-| Partial data | Available charts plus data-gap notices | Complete quotes, exchange rates, or activity records |
+| State                              | Presentation                                         | Actions                                              |
+| ---------------------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| New installation or empty database | Clearly labeled demonstration data                   | Create portfolio, import data, open setup wizard     |
+| Database unavailable or missing    | Recovery view; never disguise a failure as demo data | Select backup, create database, open diagnostics     |
+| Real data available                | Real dashboard                                       | Filter portfolio, account, period, and benchmark     |
+| Partial data                       | Available charts plus data-gap notices               | Complete quotes, exchange rates, or activity records |
 
 Demo data should use a read-only frontend projection or in-memory fixture with `dataMode: "demo"`. It must never be written to the user database. Every demo card must carry a visible **Demo data** label so it cannot be mistaken for real assets.
 
@@ -108,6 +108,13 @@ Reframe Investment Journal as a **Decision and Review Journal**. Every entry sho
 - later outcomes, sources of variance, and lessons learned
 
 The journal offers timeline and calendar views plus thesis and asset filters. Agents may organize evidence and assist reviews, but the user must confirm every investment decision.
+
+> **Implementation status (2026-11):** The shipped Journal page is a
+> **derived activity timeline** over existing theses, research projects, and
+> Agent tasks. It does not persist separate journal entries, decisions, or
+> review records, and the Theses page remains the only thesis-management
+> surface. The Decision and Review Journal described above is planned, not
+> implemented; any persistence for it requires a separately approved scope.
 
 ## 5. Knowledge Workspace
 

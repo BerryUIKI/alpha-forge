@@ -10,8 +10,9 @@ use tauri::State;
 use crate::app::state::AppState;
 use crate::error::AppError;
 use domain::financial::{
-    AllocationBreakdown, DailyAccountValuation, FifoReductionResult, HoldingSnapshot,
-    HoldingsSummary, Lot, NetWorthSnapshot, PerformancePoint, PerformanceSummary, ScopeType,
+    AllocationBreakdown, ConsolidatedPerformance, DailyAccountValuation, FifoReductionResult,
+    HoldingSnapshot, HoldingsSummary, Lot, NetWorthSnapshot, PerformancePoint, PerformanceSummary,
+    ScopeType,
 };
 
 // ── Holdings ────────────────────────────────────────────────────────────────
@@ -165,6 +166,28 @@ pub async fn get_performance_time_series(
     state: State<'_, AppState>,
 ) -> Result<Vec<PerformancePoint>, AppError> {
     state.performance_service.get_time_series(&account_id).await
+}
+
+/// Compute consolidated performance for several accounts sharing one base
+/// currency. Returns portfolio-level points, returns, XIRR, and TWR with
+/// explicit coverage and currency metadata.
+#[tauri::command]
+pub async fn compute_consolidated_performance(
+    account_ids: Vec<String>,
+    start_date: String,
+    end_date: String,
+    base_currency: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<ConsolidatedPerformance, AppError> {
+    let start = NaiveDate::parse_from_str(&start_date, "%Y-%m-%d")
+        .map_err(|e| AppError::Validation(format!("invalid start_date '{start_date}': {e}")))?;
+    let end = NaiveDate::parse_from_str(&end_date, "%Y-%m-%d")
+        .map_err(|e| AppError::Validation(format!("invalid end_date '{end_date}': {e}")))?;
+
+    state
+        .performance_service
+        .compute_consolidated(&account_ids, start, end, base_currency.as_deref())
+        .await
 }
 
 // ── Allocation ──────────────────────────────────────────────────────────────

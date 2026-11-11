@@ -56,19 +56,19 @@ PerformanceTab (dashboard, /?tab=performance)
 
 ### 2.2 Specific Requirements
 
-| # | Requirement | Detail |
-|---|-------------|--------|
-| R1 | **Workspace-level aggregation** | The Performance tab must show the **whole workspace** portfolio value over time, not a single account. Since the backend time-series API is per-account (`get_performance_time_series(account_id)`), a new **dashboard-level hook** must fetch all accounts for the workspace, fetch each account's series in parallel (`Promise.all`), and merge by date (sum `total_value_base` per date). |
-| R2 | **Time period selector** | Keep 1W / 1M / 3M / 1Y selector. Filter the merged series by date range based on the selected period. If insufficient data, show a meaningful empty state ("No valuation data for this period"). |
-| R3 | **Loading / Error / Empty states** | Follow AGENTS.md §9.2: skeleton on load, retry on error, empty state when no accounts or no valuations exist. |
-| R4 | **Currency handling** | Use `total_value_base` (base currency) fields when available to consolidate mixed-currency accounts. Label the chart y-axis with the base currency. |
-| R5 | **Performance summary chips** | Above the chart, show `total_return_pct`, `xirr_pct`, `twr_pct` from `compute_performance_summary` per account (or the workspace aggregate if a workspace-level summary becomes available). |
-| R6 | **No duplicate fetching** | Reuse `financialKeys` query-key factory from `useFinancialData.ts`. Do not duplicate query keys across feature areas. |
-| R7 | **Gentle degradation** | If the workspace has zero accounts, show the empty state (reuse `EmptyState`), not an error. |
+| #   | Requirement                        | Detail                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | **Workspace-level aggregation**    | The Performance tab must show the **whole workspace** portfolio value over time. Consolidation now happens in Rust via `compute_consolidated_performance(account_ids, start_date, end_date, base_currency?)`: it builds a portfolio-level base-currency series from each account's last known valuation, treats an account's first appearance mid-period as an external inflow, and computes return/XIRR/TWR from portfolio cash flows. The hook only shapes points for the chart. |
+| R2  | **Time period selector**           | Keep 1W / 1M / 3M / 1Y selector. Filter the merged series by date range based on the selected period. If insufficient data, show a meaningful empty state ("No valuation data for this period").                                                                                                                                                                                                                                                                                   |
+| R3  | **Loading / Error / Empty states** | Follow AGENTS.md §9.2: skeleton on load, retry on error, empty state when no accounts or no valuations exist.                                                                                                                                                                                                                                                                                                                                                                      |
+| R4  | **Currency handling**              | Use `total_value_base` (base currency) fields to consolidate. All included accounts must share one base currency: the command accepts an optional base currency, otherwise uses the first known valuation currency, and reports `skipped_accounts` for accounts in a different currency. The chart labels use the currency returned by the backend; nothing is hardcoded to USD.                                                                                                   |
+| R5  | **Performance summary chips**      | Above the chart, show `total_return_pct`, `xirr_pct`, `twr_pct` from the consolidated response. These fields are **percentage points** (`"5"` = 5%) and are formatted directly. When `data_quality` is `partial` or `insufficient_data`, the tab shows explicit coverage copy instead of treating missing accounts as zero.                                                                                                                                                        |
+| R6  | **No duplicate fetching**          | Reuse `financialKeys` query-key factory from `useFinancialData.ts`. Do not duplicate query keys across feature areas.                                                                                                                                                                                                                                                                                                                                                              |
+| R7  | **Gentle degradation**             | If the workspace has zero accounts, show the empty state (reuse `EmptyState`), not an error.                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### 2.3 Out of Scope
 
-- Backend changes on the portfolio branch — the API already exists.
+- A live market-data feed for dashboard benchmark quotes.
 - The Portfolio page (`/portfolio`) itself — its own dashboard is being built
   on the portfolio branch and will use `useFinancialData` hooks directly.
 - Replacing the standalone `PortfolioDashboard` stub components
@@ -80,19 +80,19 @@ PerformanceTab (dashboard, /?tab=performance)
 
 ### Suggested files on `dev` (post-merge)
 
-| File | Action |
-|------|--------|
-| `apps/desktop/src/pages/today/hooks/useDashboardData.ts` | **Extend** with `usePortfolioPerformance(workspaceId)` or add a **new hook file** `usePortfolioPerformance.ts` |
-| `apps/desktop/src/pages/today/tabs/PerformanceTab.tsx` | Rewrite to render a recharts `LineChart` from the hook data |
-| `apps/desktop/src/pages/today/tabs/PerformanceTab.test.tsx` | **New test**: loading, empty (no accounts), error, data-renders states |
-| `docs/gui/GUI_E_ENHANCEMENTS.md` | Update the E2 "PerformanceTab placeholder" risk item to "resolved" |
+| File                                                        | Action                                                                                                         |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `apps/desktop/src/pages/today/hooks/useDashboardData.ts`    | **Extend** with `usePortfolioPerformance(workspaceId)` or add a **new hook file** `usePortfolioPerformance.ts` |
+| `apps/desktop/src/pages/today/tabs/PerformanceTab.tsx`      | Rewrite to render a recharts `LineChart` from the hook data                                                    |
+| `apps/desktop/src/pages/today/tabs/PerformanceTab.test.tsx` | **New test**: loading, empty (no accounts), error, data-renders states                                         |
+| `docs/gui/GUI_E_ENHANCEMENTS.md`                            | Update the E2 "PerformanceTab placeholder" risk item to "resolved"                                             |
 
 ### Suggested hook signature
 
 ```ts
 // apps/desktop/src/pages/today/hooks/usePortfolioPerformance.ts
 export interface PortfolioPerformancePoint {
-  date: string;            // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   total_value_base: number;
 }
 
@@ -120,11 +120,11 @@ export function usePortfolioPerformance(
 
 ## 4. Verification
 
-| Command | Expected |
-|---------|----------|
-| `pnpm typecheck` | Pass, zero errors |
-| `pnpm lint` | Pass |
-| `pnpm test` | Pass — includes new PerformanceTab tests |
+| Command          | Expected                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `pnpm typecheck` | Pass, zero errors                                                                                   |
+| `pnpm lint`      | Pass                                                                                                |
+| `pnpm test`      | Pass — includes new PerformanceTab tests                                                            |
 | `pnpm tauri dev` | Dashboard → Performance tab renders real chart when account+valuations exist; empty state otherwise |
 
 ---
@@ -153,4 +153,4 @@ official handoff requirement.
 
 ---
 
-*End of requirement*
+_End of requirement_

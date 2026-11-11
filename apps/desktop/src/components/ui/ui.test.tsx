@@ -81,24 +81,69 @@ describe("TabBar", () => {
     { id: "activity", label: "Activity" },
   ];
 
-  it("renders all tabs", () => {
-    render(<TabBar tabs={tabs} activeTab="overview" onTabChange={() => {}} />);
-    expect(screen.getByRole("button", { name: "Overview" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Performance" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();
+  it("renders a tablist with all tabs", () => {
+    render(<TabBar tabs={tabs} activeTab="overview" onTabChange={() => {}} label="Dashboard" />);
+    expect(screen.getByRole("tablist", { name: "Dashboard" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Performance" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Activity" })).toBeInTheDocument();
   });
 
-  it("marks active tab with aria-current", () => {
+  it("marks only the active tab as selected and in the tab order", () => {
     render(<TabBar tabs={tabs} activeTab="performance" onTabChange={() => {}} />);
-    const active = screen.getByRole("button", { name: "Performance" });
-    expect(active).toHaveAttribute("aria-current", "page");
+    const active = screen.getByRole("tab", { name: "Performance" });
+    expect(active).toHaveAttribute("aria-selected", "true");
+    expect(active).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("links each tab to its panel id", () => {
+    render(<TabBar tabs={tabs} activeTab="overview" onTabChange={() => {}} idPrefix="dashboard" />);
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute(
+      "aria-controls",
+      "dashboard-panel-overview",
+    );
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute(
+      "id",
+      "dashboard-tab-overview",
+    );
   });
 
   it("fires onTabChange on click", () => {
     const onTabChange = vi.fn();
     render(<TabBar tabs={tabs} activeTab="overview" onTabChange={onTabChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Activity" }));
     expect(onTabChange).toHaveBeenCalledWith("activity");
+  });
+
+  it("moves selection with ArrowRight, ArrowLeft, Home, and End", () => {
+    const onTabChange = vi.fn();
+    const { rerender } = render(
+      <TabBar tabs={tabs} activeTab="overview" onTabChange={onTabChange} />,
+    );
+
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
+    expect(onTabChange).toHaveBeenLastCalledWith("performance");
+
+    rerender(<TabBar tabs={tabs} activeTab="performance" onTabChange={onTabChange} />);
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
+    expect(onTabChange).toHaveBeenLastCalledWith("activity");
+
+    rerender(<TabBar tabs={tabs} activeTab="activity" onTabChange={onTabChange} />);
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowRight" });
+    expect(onTabChange).toHaveBeenLastCalledWith("overview");
+
+    rerender(<TabBar tabs={tabs} activeTab="overview" onTabChange={onTabChange} />);
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "ArrowLeft" });
+    expect(onTabChange).toHaveBeenLastCalledWith("activity");
+
+    rerender(<TabBar tabs={tabs} activeTab="overview" onTabChange={onTabChange} />);
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "End" });
+    expect(onTabChange).toHaveBeenLastCalledWith("activity");
+
+    fireEvent.keyDown(screen.getByRole("tablist"), { key: "Home" });
+    expect(onTabChange).toHaveBeenLastCalledWith("overview");
   });
 });
 

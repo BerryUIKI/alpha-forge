@@ -107,9 +107,7 @@ function wrapper({ children }: PropsWithChildren) {
 describe("useGlobalSearch", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.workspace.listWorkspaces.mockResolvedValue([
-      { id: "workspace-1", name: "Workspace" },
-    ]);
+    mocks.workspace.listWorkspaces.mockResolvedValue([{ id: "workspace-1", name: "Workspace" }]);
     mocks.research.listResearchProjects.mockResolvedValue(projects);
     mocks.research.listResearchDocuments.mockResolvedValue([]);
     mocks.research.listResearchReports.mockResolvedValue([]);
@@ -138,7 +136,7 @@ describe("useGlobalSearch", () => {
     });
   });
 
-  it("filters theses by thesis body and links to the journal page", async () => {
+  it("filters theses by thesis body and links to the exact thesis", async () => {
     const { result } = renderHook(() => useGlobalSearch("hyperscaler"), { wrapper });
 
     await waitFor(() => expect(result.current.total).toBeGreaterThan(0));
@@ -146,7 +144,7 @@ describe("useGlobalSearch", () => {
     expect(thesisSection?.entries).toHaveLength(1);
     expect(thesisSection?.entries[0]).toMatchObject({
       title: "GPU demand stays strong",
-      to: "/journal",
+      to: "/theses?thesis=thesis-1",
     });
   });
 
@@ -169,5 +167,18 @@ describe("useGlobalSearch", () => {
     const projectSection = result.current.sections.find((s) => s.id === "projects");
     expect(projectSection?.entries).toHaveLength(1);
     expect(projectSection?.entries[0]?.title).toBe("Semiconductors");
+  });
+
+  it("performs no search-only fetches while the palette is closed", async () => {
+    renderHook(() => useGlobalSearch("SEMICONDUCTORS", false), { wrapper });
+
+    // Workspace resolution is provided by the test harness; no search source
+    // may be queried while the palette is closed.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mocks.research.listResearchProjects).not.toHaveBeenCalled();
+    expect(mocks.thesis.listTheses).not.toHaveBeenCalled();
+    expect(mocks.knowledgeGraph.listKnowledgeEntities).not.toHaveBeenCalled();
+    expect(mocks.artifacts.listArtifacts).not.toHaveBeenCalled();
   });
 });

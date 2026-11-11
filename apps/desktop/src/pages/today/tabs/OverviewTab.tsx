@@ -7,32 +7,49 @@
  * @version GUI-E2
  */
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useDashboardSummary, useActiveWorkspaceId, useDashboardActivity } from "../hooks/useDashboardData";
+import {
+  useDashboardSummary,
+  useActiveWorkspaceId,
+  useDashboardActivity,
+} from "../hooks/useDashboardData";
 import { DashboardCard, StatCard } from "@/components/ui";
 import { ErrorState, EmptyState } from "@/components/common";
 import { HoldingsList } from "@/components/portfolio/HoldingsList";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
 import { SecFilingFeed } from "../components/SecFilingFeed";
+import { CreateWorkspaceDialog } from "@/features/workspace/components/CreateWorkspaceDialog";
+import { useActiveWorkspace } from "@/features/workspace/hooks/useActiveWorkspace.context";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage, translate } from "@/lib/i18n/locale";
 
 export function OverviewTab() {
   const { t, locale } = useLocale();
   const workspaceId = useActiveWorkspaceId();
-  const { data: summary, isLoading: summaryLoading, error: summaryError } = useDashboardSummary(workspaceId);
-  const { data: activity, isLoading: activityLoading, error: activityError } = useDashboardActivity(workspaceId);
+  const { setActiveWorkspace, workspaces } = useActiveWorkspace();
+  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    error: summaryError,
+  } = useDashboardSummary(workspaceId);
+  const {
+    data: activity,
+    isLoading: activityLoading,
+    error: activityError,
+  } = useDashboardActivity(workspaceId);
 
   // Loading state
   if (summaryLoading || activityLoading) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 @2xl:grid-cols-2">
           <div className="h-64 animate-pulse rounded-xl bg-muted" />
           <div className="h-64 animate-pulse rounded-xl bg-muted" />
         </div>
@@ -50,13 +67,14 @@ export function OverviewTab() {
     );
   }
 
-  // Empty state
+  // Empty state — a genuine first run, not a backend failure (handled above).
   const hasPortfolioAccounts = (summary?.holdings?.length ?? 0) > 0;
+  const hasWorkspace = workspaces.length > 0;
 
   if (!hasPortfolioAccounts && (summary?.activeTheses ?? 0) === 0) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
           <StatCard label={t("totalPortfolioValue")} value="—" />
           <StatCard label={t("activeTheses")} value="0" />
           <StatCard label={t("unrealizedPL")} value="—" />
@@ -64,6 +82,29 @@ export function OverviewTab() {
         <EmptyState
           title={t("noDataYet")}
           description={t("noDashboardDataDescription")}
+          action={
+            hasWorkspace ? (
+              <Link
+                to="/research"
+                className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                {t("startResearch")}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsCreateWorkspaceOpen(true)}
+                className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                {t("createWorkspace")}
+              </button>
+            )
+          }
+        />
+        <CreateWorkspaceDialog
+          isOpen={isCreateWorkspaceOpen}
+          onClose={() => setIsCreateWorkspaceOpen(false)}
+          onSuccess={(workspace) => setActiveWorkspace(workspace.id)}
         />
       </div>
     );
@@ -72,12 +113,13 @@ export function OverviewTab() {
   return (
     <div className="flex flex-col gap-6">
       {/* Stats Row */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-3">
         <StatCard
           label={t("totalPortfolioValue")}
-          value={summary?.portfolioValue
-            ? `$${summary.portfolioValue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`
-            : "—"
+          value={
+            summary?.portfolioValue
+              ? `$${summary.portfolioValue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`
+              : "—"
           }
           change={summary?.portfolioValue ? t("lastUpdatedFromPortfolio") : undefined}
           isPositive
@@ -85,14 +127,16 @@ export function OverviewTab() {
         <StatCard
           label={t("activeTheses")}
           value={String(summary?.activeTheses ?? 0)}
-          change={summary?.activeTheses
-            ? formatMessage(
-                summary.activeTheses !== 1
-                  ? translate(locale, "activeThesesCount")
-                  : translate(locale, "activeThesisCount"),
-                { count: String(summary.activeTheses) },
-              )
-            : undefined}
+          change={
+            summary?.activeTheses
+              ? formatMessage(
+                  summary.activeTheses !== 1
+                    ? translate(locale, "activeThesesCount")
+                    : translate(locale, "activeThesisCount"),
+                  { count: String(summary.activeTheses) },
+                )
+              : undefined
+          }
           isPositive
         />
         <StatCard
@@ -112,7 +156,7 @@ export function OverviewTab() {
       </div>
 
       {/* Holdings + Activity */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 @2xl:grid-cols-2">
         <DashboardCard
           title={t("topHoldings")}
           action={
@@ -129,9 +173,7 @@ export function OverviewTab() {
             {summary?.holdings && summary.holdings.length > 0 ? (
               <HoldingsList holdings={summary.holdings} />
             ) : (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                {t("noHoldingsYet")}
-              </p>
+              <p className="py-4 text-center text-sm text-muted-foreground">{t("noHoldingsYet")}</p>
             )}
           </div>
         </DashboardCard>

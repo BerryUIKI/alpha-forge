@@ -65,7 +65,7 @@ export function ConfirmDialog({
     >
       <div
         ref={containerRef}
-        className="w-full max-w-md rounded-xl border border-white/10 bg-[#1c1e28] p-6 shadow-2xl text-white animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl text-foreground animate-in zoom-in-95 duration-150"
       >
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
@@ -74,7 +74,10 @@ export function ConfirmDialog({
                 <AlertTriangle className="h-5 w-5" />
               </div>
             )}
-            <h2 id="confirm-dialog-title" className="text-base font-semibold leading-6 text-white">
+            <h2
+              id="confirm-dialog-title"
+              className="text-base font-semibold leading-6 text-foreground"
+            >
               {displayTitle}
             </h2>
           </div>
@@ -82,14 +85,17 @@ export function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={isConfirming}
-            className="rounded-lg p-1.5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <p id="confirm-dialog-description" className="text-sm text-neutral-300 leading-relaxed mb-6">
+        <p
+          id="confirm-dialog-description"
+          className="text-sm text-muted-foreground leading-relaxed mb-6"
+        >
           {message}
         </p>
 
@@ -98,7 +104,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={isConfirming}
-            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-neutral-300 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
+            className="rounded-lg border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50"
           >
             {displayCancelLabel}
           </button>

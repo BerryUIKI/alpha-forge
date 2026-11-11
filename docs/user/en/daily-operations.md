@@ -11,7 +11,8 @@ Modules are listed in the same order as the left navigation.
 - [Workspaces](#workspaces)
 - [Today (Dashboard)](#today-dashboard)
 - [Research](#research)
-- [Theses / Journal](#theses--journal)
+- [Theses](#theses)
+- [Journal](#journal)
 - [Portfolio](#portfolio)
 - [Knowledge](#knowledge)
 - [Options](#options)
@@ -36,11 +37,11 @@ options analysis, and artifacts are scoped to the **active workspace**.
 
 The **Today** page is your starting point, with three tabs:
 
-| Tab | Shows |
-|-----|-------|
-| **Overview** | Stat cards, top holdings, and recent activity |
-| **Performance** | Portfolio performance chart |
-| **Activity** | Full activity feed |
+| Tab             | Shows                                         |
+| --------------- | --------------------------------------------- |
+| **Overview**    | Stat cards, top holdings, and recent activity |
+| **Performance** | Portfolio performance chart                   |
+| **Activity**    | Full activity feed                            |
 
 The active tab is remembered across sessions and can be shared via the URL
 (`?tab=performance`).
@@ -55,6 +56,9 @@ The **Research** page manages research projects inside the active workspace.
 
 - **Create a project** to group documents, notes, sources, and reports around a
   theme (for example, a company or an industry).
+- The header's **New Research** action and the advertised `Cmd/Ctrl+N` shortcut
+  both open this page and focus the project-title field. Press `Esc` in that
+  field to discard the draft without saving.
 - The selected project can be deep-linked with `?project=<id>`.
 - All lists show loading, empty, and error states, so a project with no content
   yet is clearly distinguishable from a failed load.
@@ -68,6 +72,9 @@ Within a project you can:
 - **Sources** — record evidence with a title and URL, so claims stay traceable.
 - **Reports** — write structured reports (type: `analysis`, `summary`, `thesis`,
   or `recommendation`).
+- Individual documents and reports can be deep-linked with
+  `?project=<id>&document=<id>` and `?project=<id>&report=<id>`; the selected
+  document opens and the selected report is highlighted.
 
 ### Search inside research
 
@@ -79,10 +86,9 @@ Search supports two modes:
 
 ---
 
-## Theses / Journal
+## Theses
 
-**Theses** (also reachable as **Journal**) is the investment-thesis management
-interface.
+**Theses** (`/theses`) is the investment-thesis management interface.
 
 - **Create a thesis** for an investment idea.
 - **Track evidence** — attach supporting material so the thesis stays
@@ -92,8 +98,21 @@ interface.
 - **Knowledge graph** — the panel shows how the thesis connects to related
   entities.
 
-The core loop this module supports: *Information → Knowledge → Thesis →
-Decision → Validation → Review → Improvement*.
+The core loop this module supports: _Information → Knowledge → Thesis →
+Decision → Validation → Review → Improvement_.
+
+## Journal
+
+**Journal** (`/journal`) is a read-only chronological timeline derived from
+records you already created: theses, research projects, and Agent tasks. It does
+not create separate journal entries and does not store its own decisions or
+review records.
+
+- Filter the timeline by all entries, theses, research, or Agent tasks.
+- Open a linked entity from the timeline entry.
+
+A separate **Decision and Review Journal** (decision records, expectations,
+outcomes, lessons learned) is planned but not implemented.
 
 ---
 
@@ -111,17 +130,27 @@ The **Portfolio** page is a dashboard for tracking holdings:
 Keep the data current by adding activities as they happen — the dashboard,
 performance charts, and Today page all read from the same local data.
 
+- **Manual activity entry** is atomic: the activity and its FIFO lot or disposal
+  are written in one transaction. A failed validation (for example, selling
+  more than is held) leaves no partial record. Retrying the same submission is
+  idempotent and cannot duplicate an activity or lot.
+- **CSV import** supports Generic broker CSV and IBKR Activity Statements.
+  Select a statement and choose **Preview Statement** first: the preview lists
+  each row as new, duplicate, or invalid without writing anything. **Apply
+  import** then imports the new rows, skips duplicates on re-import, and shows a
+  terminal summary of applied, skipped, and rejected rows.
+
 ---
 
 ## Knowledge
 
 The **Knowledge** page maintains a knowledge graph of entities you track:
 
-| Entity type | Examples |
-|-------------|----------|
-| Company | A listed company |
-| Industry | A sector |
-| Technology | A technology/theme |
+| Entity type | Examples              |
+| ----------- | --------------------- |
+| Company     | A listed company      |
+| Industry    | A sector              |
+| Technology  | A technology/theme    |
 | Macro theme | A macroeconomic theme |
 
 Create entities and they become linkable anchors for theses and research.
@@ -161,15 +190,15 @@ workflows.
 
 ### Built-in artifact renderers
 
-| Renderer | Used by |
-|----------|---------|
-| Comparison Table | Company Comparison plugin |
-| Earnings Analyzer | Earnings Analyzer plugin |
-| Industry Map | Industry Map plugin |
-| Macro Dashboard | Macro Dashboard plugin |
-| Risk Dashboard | Portfolio Risk plugin |
-| Timeline | Timeline plugin |
-| Valuation Model | Valuation Model plugin |
+| Renderer          | Used by                   |
+| ----------------- | ------------------------- |
+| Comparison Table  | Company Comparison plugin |
+| Earnings Analyzer | Earnings Analyzer plugin  |
+| Industry Map      | Industry Map plugin       |
+| Macro Dashboard   | Macro Dashboard plugin    |
+| Risk Dashboard    | Portfolio Risk plugin     |
+| Timeline          | Timeline plugin           |
+| Valuation Model   | Valuation Model plugin    |
 
 Artifacts are scoped to the active workspace.
 

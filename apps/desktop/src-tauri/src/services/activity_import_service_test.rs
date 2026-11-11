@@ -335,4 +335,79 @@ mod tests {
         assert!(matches!(err, crate::error::AppError::Validation(_)));
         assert!(err.to_string().contains("exceeds maximum batch budget"));
     }
+
+    #[tokio::test]
+    async fn test_preview_reports_new_and_duplicate_rows_without_writing() {
+        let pool = setup_test_db().await;
+        let account_repo = Arc::new(AccountRepository::new(pool.clone()));
+        let asset_repo = Arc::new(AssetRepository::new(pool.clone()));
+        let activity_repo = Arc::new(ActivityRepository::new(pool.clone()));
+        let import_run_repo = Arc::new(ImportRunRepository::new(pool.clone()));
+        let lot_repo = Arc::new(LotRepository::new(pool.clone()));
+        let disposal_repo = Arc::new(LotDisposalRepository::new(pool.clone()));
+        let activity_service = Arc::new(ActivityService::new(
+            pool.clone(),
+            activity_repo.clone(),
+            account_repo.clone(),
+            asset_repo.clone(),
+            lot_repo.clone(),
+            disposal_repo.clone(),
+        ));
+        let service = ActivityImportService::new(
+            account_repo.clone(),
+            asset_repo,
+            activity_repo.clone(),
+            import_run_repo,
+            lot_repo,
+            activity_service,
+        );
+        let account = account_repo
+            .create(CreateAccountInput {
+                workspace_id: None,
+                name: "Preview Account".to_string(),
+                account_type: AccountType::Securities,
+                group_name: None,
+                currency: "USD".to_string(),
+                is_default: false,
+                platform_id: None,
+                account_number: None,
+                tracking_mode: TrackingMode::Transactions,
+            })
+            .await
+            .expect("create account");
+
+        let csv_data = "date,type,symbol,quantity,price,amount,fee,currency,notes\n\
+                        2026-08-01,BUY,NVDA,10,120.00,1200.00,1.50,USD,Initial purchase\n\
+                        2026-08-05,SELL,NVDA,5,130.00,650.00,1.00,USD,Partial take-profit";
+
+        let preview = service
+            .preview_csv(&account.id, "GENERIC", csv_data)
+            .await
+            .expect("preview should succeed");
+
+        assert_eq!(preview.total_rows, 2);
+        assert_eq!(preview.new_count, 2);
+        assert_eq!(preview.duplicate_count, 0);
+        assert_eq!(preview.invalid_count, 0);
+        assert!(preview.rows.iter().all(|row| row.outcome == "new"));
+
+        // Preview never writes activities.
+        assert!(activity_repo
+            .list_by_account(&account.id)
+            .await
+            .expect("list activities")
+            .is_empty());
+
+        service
+            .import_csv(&account.id, "GENERIC", csv_data)
+            .await
+            .expect("import should succeed");
+
+        let after = service
+            .preview_csv(&account.id, "GENERIC", csv_data)
+            .await
+            .expect("second preview should succeed");
+        assert_eq!(after.new_count, 0);
+        assert_eq!(after.duplicate_count, 2);
+    }
 }

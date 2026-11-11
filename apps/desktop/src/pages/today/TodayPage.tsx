@@ -6,12 +6,17 @@
  * - Performance: portfolio performance chart
  * - Activity: full activity feed
  *
+ * The tab bar and panels share one content gutter so the heading, tabs, and
+ * dashboard surfaces align on the same edge. Layout uses container queries so
+ * the dashboard adapts to the actual content width (sidebars included).
+ *
  * @version GUI-M3
  */
 
 import { useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { TabBar } from "@/components/ui";
+import { TabBar, getTabId, getTabPanelId } from "@/components/ui";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { PerformanceTab } from "./tabs/PerformanceTab";
 import { ActivityTab } from "./tabs/ActivityTab";
@@ -21,6 +26,7 @@ import { LayoutDashboard, TrendingUp, Activity } from "lucide-react";
 import { MarketPulseBar } from "./components/MarketPulseBar";
 
 const TAB_STORAGE_KEY = "dashboard-active-tab";
+const TAB_ID_PREFIX = "dashboard";
 
 export function TodayPage() {
   const { t } = useLocale();
@@ -50,11 +56,14 @@ export function TodayPage() {
       setActiveTab(tabId);
       localStorage.setItem(TAB_STORAGE_KEY, tabId);
       // Update URL params
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set("tab", tabId);
-        return next;
-      }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("tab", tabId);
+          return next;
+        },
+        { replace: true },
+      );
     },
     [setSearchParams],
   );
@@ -64,28 +73,45 @@ export function TodayPage() {
       {/* Market Pulse Bar on top of cockpit */}
       <MarketPulseBar />
 
-      <div className="flex flex-col gap-6 p-6">
+      <PageContainer>
         {/* Page Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("todayTitle")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("todayDescription")}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("todayDescription")}</p>
         </div>
-      </div>
 
-      {/* Tab Bar */}
-      <TabBar
-        tabs={DASHBOARD_TABS}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        className="w-fit"
-      />
+        {/* Tab Bar */}
+        <TabBar
+          tabs={DASHBOARD_TABS}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          className="w-fit"
+          idPrefix={TAB_ID_PREFIX}
+          label={t("todayTitle")}
+        />
 
-      {/* Tab Content */}
-      {activeTab === "overview" && <OverviewTab />}
-      {activeTab === "performance" && <PerformanceTab />}
-      {activeTab === "activity" && <ActivityTab />}
+        {/* Tab Panels — only the active panel mounts its content, but every
+            panel element exists so each tab's aria-controls resolves. */}
+        {DASHBOARD_TABS.map((tab) => (
+          <div
+            key={tab.id}
+            role="tabpanel"
+            id={getTabPanelId(TAB_ID_PREFIX, tab.id)}
+            aria-labelledby={getTabId(TAB_ID_PREFIX, tab.id)}
+            hidden={activeTab !== tab.id}
+            tabIndex={0}
+            className="outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            {activeTab === tab.id && (
+              <>
+                {tab.id === "overview" && <OverviewTab />}
+                {tab.id === "performance" && <PerformanceTab />}
+                {tab.id === "activity" && <ActivityTab />}
+              </>
+            )}
+          </div>
+        ))}
+      </PageContainer>
     </div>
   );
 }
