@@ -69,7 +69,7 @@ describe("UnifiedHeader", () => {
           onToggleRightSidebar={vi.fn()}
           onOpenSearch={vi.fn()}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Search tickers, theses, filings, or ask Agent…")).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("UnifiedHeader", () => {
     render(
       <MemoryRouter initialEntries={["/today"]}>
         <UnifiedHeader onOpenSearch={onOpenSearch} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const searchBtn = screen.getByLabelText("Search tickers, theses, filings, or ask Agent…");
@@ -91,12 +91,49 @@ describe("UnifiedHeader", () => {
     expect(onOpenSearch).toHaveBeenCalledTimes(1);
   });
 
+  it("opens the research creation intent from the header action", () => {
+    render(
+      <MemoryRouter initialEntries={["/today"]}>
+        <UnifiedHeader />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByLabelText("New Research"));
+    expect(mockNavigate).toHaveBeenCalledWith("/research?create=1");
+  });
+
+  it("opens the research creation intent from Cmd/Ctrl+N", () => {
+    render(
+      <MemoryRouter initialEntries={["/today"]}>
+        <UnifiedHeader />
+      </MemoryRouter>,
+    );
+
+    fireEvent.keyDown(window, { key: "n", ctrlKey: true });
+    expect(mockNavigate).toHaveBeenCalledWith("/research?create=1");
+  });
+
+  it("does not trigger Cmd/Ctrl+N while typing", () => {
+    render(
+      <MemoryRouter initialEntries={["/today"]}>
+        <>
+          <UnifiedHeader />
+          <input aria-label="note" />
+        </>
+      </MemoryRouter>,
+    );
+
+    const input = screen.getByLabelText("note");
+    fireEvent.keyDown(input, { key: "n", ctrlKey: true });
+    expect(mockNavigate).not.toHaveBeenCalledWith("/research?create=1");
+  });
+
   it("calls onToggleLeftSidebar when sidebar button is clicked", () => {
     const onToggleLeft = vi.fn();
     render(
       <MemoryRouter initialEntries={["/"]}>
         <UnifiedHeader isLeftSidebarExpanded={true} onToggleLeftSidebar={onToggleLeft} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const toggleBtn = screen.getByLabelText("Collapse sidebar");
@@ -109,23 +146,11 @@ describe("UnifiedHeader", () => {
     render(
       <MemoryRouter initialEntries={["/"]}>
         <UnifiedHeader isRightSidebarExpanded={false} onToggleRightSidebar={onToggleRight} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const toggleBtn = screen.getByLabelText("Open Agent panel");
     fireEvent.click(toggleBtn);
     expect(onToggleRight).toHaveBeenCalledTimes(1);
-  });
-
-  it("navigates to /research when New Research button is clicked", () => {
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <UnifiedHeader />
-      </MemoryRouter>
-    );
-
-    const newBtn = screen.getByLabelText("New Research");
-    fireEvent.click(newBtn);
-    expect(mockNavigate).toHaveBeenCalledWith("/research");
   });
 });

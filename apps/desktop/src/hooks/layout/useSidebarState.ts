@@ -54,15 +54,16 @@ export function useSidebarState({
   const [state, setStateInternal] = useState<SidebarState>(() => {
     if (typeof window === "undefined") return defaultState;
     const stored = localStorage.getItem(`${storageKey}:state`);
-    return (stored as SidebarState) || defaultState;
+    return stored === "expanded" || stored === "collapsed" ? stored : defaultState;
   });
 
   const [width, setWidthInternal] = useState<number>(() => {
     if (typeof window === "undefined") return defaultWidth;
     const stored = localStorage.getItem(`${storageKey}:width`);
-    const parsed = stored ? parseInt(stored, 10) : defaultWidth;
+    const parsed = stored === null ? Number.NaN : Number.parseInt(stored, 10);
+    const candidate = Number.isFinite(parsed) ? parsed : defaultWidth;
     // Ensure width is within constraints
-    return Math.max(minWidth, Math.min(maxWidth, parsed));
+    return Math.max(minWidth, Math.min(maxWidth, candidate));
   });
 
   // Persist state changes
@@ -86,10 +87,13 @@ export function useSidebarState({
   }, []);
 
   // Set width with constraints
-  const setWidth = useCallback((newWidth: number) => {
-    const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-    setWidthInternal(constrainedWidth);
-  }, [minWidth, maxWidth]);
+  const setWidth = useCallback(
+    (newWidth: number) => {
+      const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+      setWidthInternal(constrainedWidth);
+    },
+    [minWidth, maxWidth],
+  );
 
   // Reset to defaults
   const reset = useCallback(() => {

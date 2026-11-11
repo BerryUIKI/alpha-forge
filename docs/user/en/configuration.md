@@ -8,15 +8,21 @@ provider used by agent tasks, and the rest of the Settings page.
 Open **Settings** from the left navigation. Every configuration option lives on
 this single page.
 
-| Section | What it controls |
-|---------|------------------|
-| Language | UI language for the whole application |
-| Agent configuration | OpenAI API key used by agent tasks |
-| Internal plugins | Built-in analysis plugins and their inputs |
-| Database health | Integrity check of the local database |
-| Local backup | Export all data to a single backup file |
-| Updates | Check for a newer application version |
-| About & privacy | Links to the privacy notice and research disclaimer |
+- Selecting a section in the Settings navigation scrolls the content to that
+  section and marks only that section as current. Section hops replace history,
+  so the browser Back button does not walk through every section.
+- **Back to application** returns to the last non-Settings page you were on, in
+  one click; if no previous page is known it returns to the dashboard.
+
+| Section             | What it controls                                    |
+| ------------------- | --------------------------------------------------- |
+| Language            | UI language for the whole application               |
+| Agent configuration | OpenAI API key used by agent tasks                  |
+| Internal plugins    | Built-in analysis plugins and their inputs          |
+| Database health     | Integrity check of the local database               |
+| Local backup        | Export all data to a single backup file             |
+| Updates             | Check for a newer application version               |
+| About & privacy     | Links to the privacy notice and research disclaimer |
 
 ---
 
@@ -54,11 +60,11 @@ key overwrites the previous one; leaving the field empty keeps the existing key.
 
 The desktop app also reads the following variables from `.env` at build/run time:
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `VITE_OPENAI_API_KEY` | *(empty)* | API key |
+| Variable               | Default                     | Purpose                                               |
+| ---------------------- | --------------------------- | ----------------------------------------------------- |
+| `VITE_OPENAI_API_KEY`  | _(empty)_                   | API key                                               |
 | `VITE_OPENAI_BASE_URL` | `https://api.openai.com/v1` | API base URL (allows proxies or compatible endpoints) |
-| `VITE_OPENAI_MODEL` | `gpt-4o` | Model identifier |
+| `VITE_OPENAI_MODEL`    | `gpt-4o`                    | Model identifier                                      |
 
 Example:
 
@@ -88,15 +94,15 @@ See [Troubleshooting](troubleshooting.md#agent-connection-fails) for the fix.
 
 AlphaForge ships with built-in analysis plugins that produce visual artifacts:
 
-| Plugin | Purpose |
-|--------|---------|
-| Company Comparison | Compare companies side-by-side |
-| Earnings Analyzer | Analyze earnings results |
-| Industry Map | Visualize an industry landscape |
-| Macro Dashboard | Macroeconomic indicator dashboard |
-| Portfolio Risk | Portfolio risk analysis |
-| Timeline | Event/timeline visualization |
-| Valuation Model | Valuation scenario modeling |
+| Plugin             | Purpose                           |
+| ------------------ | --------------------------------- |
+| Company Comparison | Compare companies side-by-side    |
+| Earnings Analyzer  | Analyze earnings results          |
+| Industry Map       | Visualize an industry landscape   |
+| Macro Dashboard    | Macroeconomic indicator dashboard |
+| Portfolio Risk     | Portfolio risk analysis           |
+| Timeline           | Event/timeline visualization      |
+| Valuation Model    | Valuation scenario modeling       |
 
 In **Settings → Internal plugins** you can see the plugin list and, for each
 plugin, configure its inputs. See [Artifacts](daily-operations.md#artifacts) in

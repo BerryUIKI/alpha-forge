@@ -8,12 +8,15 @@ identifier = "main-commands"
 description = "Allow the main application window to use the registered application commands."
 # Keep this allowlist synchronized with the commands passed to generate_handler! in src/lib.rs.
 commands.allow = [
+  "get_app_status",
   "get_system_info",
   "get_config_dir",
   "get_data_dir",
   "check_database_health",
   "export_local_backup",
   "check_for_update",
+  "compute_consolidated_performance",
+  "preview_activities_csv",
   "health_check",
   "get_app_info",
   "get_setting",

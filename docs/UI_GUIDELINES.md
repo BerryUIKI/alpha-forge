@@ -13,13 +13,13 @@ AlphaForge is a **desktop-first professional tool**, not a consumer web app. The
 
 ## Design System
 
-| Layer | Technology |
-|-------|-----------|
-| CSS Framework | Tailwind CSS 4 |
-| Component Library | shadcn/ui (built on Radix UI) |
-| Icons | Lucide React |
-| Typography | Inter (sans-serif), JetBrains Mono (monospace) |
-| Theme | Light/dark via CSS custom properties (HSL) |
+| Layer             | Technology                                     |
+| ----------------- | ---------------------------------------------- |
+| CSS Framework     | Tailwind CSS 4                                 |
+| Component Library | shadcn/ui (built on Radix UI)                  |
+| Icons             | Lucide React                                   |
+| Typography        | Inter (sans-serif), JetBrains Mono (monospace) |
+| Theme             | Light/dark via CSS custom properties (HSL)     |
 
 ## Navigation
 
@@ -43,26 +43,26 @@ Navigation uses icon-only buttons with tooltips. The active route is highlighted
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+K` / `Cmd+K` | Command palette |
-| `Ctrl+,` / `Cmd+,` | Open Settings |
-| `Escape` | Close modal, overlay, or artifact window |
-| `Ctrl+Enter` | Submit current input |
+| Shortcut           | Action                                   |
+| ------------------ | ---------------------------------------- |
+| `Ctrl+K` / `Cmd+K` | Command palette                          |
+| `Ctrl+,` / `Cmd+,` | Open Settings                            |
+| `Escape`           | Close modal, overlay, or artifact window |
+| `Ctrl+Enter`       | Submit current input                     |
 
 ## Required UI States
 
 Every asynchronous component must handle all seven states:
 
-| State | Behavior |
-|-------|----------|
-| **Initial** | First visit, no data yet. Show a helpful prompt or empty state. |
-| **Loading** | Data is fetching. Show skeleton placeholders, not a blank screen. |
-| **Success** | Data is rendered — the happy path. |
-| **Empty** | Data loaded but nothing to show. Show "No items yet" with a create action. |
-| **Error** | Something went wrong. Show the error message and a retry button. |
+| State       | Behavior                                                                   |
+| ----------- | -------------------------------------------------------------------------- |
+| **Initial** | First visit, no data yet. Show a helpful prompt or empty state.            |
+| **Loading** | Data is fetching. Show skeleton placeholders, not a blank screen.          |
+| **Success** | Data is rendered — the happy path.                                         |
+| **Empty**   | Data loaded but nothing to show. Show "No items yet" with a create action. |
+| **Error**   | Something went wrong. Show the error message and a retry button.           |
 | **Partial** | Some data loaded, some failed. Show what we have, indicate what's missing. |
-| **Offline** | No network. Show a banner. Disable actions that require connectivity. |
+| **Offline** | No network. Show a banner. Disable actions that require connectivity.      |
 
 ## Empty States
 
@@ -77,6 +77,7 @@ Empty states are opportunities, not dead ends. Every empty state should include:
 Use skeleton screens for page-level loading, spinners for button-level loading. Never show a blank page while data loads.
 
 Skeleton patterns:
+
 - **List items:** Rectangles matching the item height and layout.
 - **Cards:** Rectangles matching card dimensions.
 - **Charts:** A rectangular placeholder with a subtle pulse animation.
@@ -92,6 +93,9 @@ Errors should be:
 ## Desktop-Specific Behavior
 
 - **Resizable panels.** Where content is split (e.g., document list + detail view), panels are draggable.
+- **Sidebar resizing.** Both sidebar separators are keyboard-operable: Arrow keys resize by 16px (48px with Shift), Home/End jump to the minimum/maximum, and `aria-valuenow`/`aria-valuemin`/`aria-valuemax` expose the current bounds.
+- **Content-width layout.** Pages use `PageContainer`, which is a CSS query container. Dashboard grids switch columns on the actual content width (`@2xl:` container variants), not the window width, so expanded sidebars at 900x600 stack cards instead of squeezing them.
+- **Sidebar control.** Sidebars are never auto-collapsed. The user's persisted state and width remain authoritative; the layout mirrors that state in the header and drawer controls.
 - **Context menus.** Right-click on items shows relevant actions (delete, rename, export).
 - **Focus states.** All interactive elements show visible focus rings for keyboard navigation.
 - **Platform conventions.** Use `Ctrl` on Windows/Linux, `Cmd` on macOS. Adapt shortcut labels.
@@ -120,5 +124,11 @@ Artifact windows:
 - **Currency:** Default to CNY (¥). Configurable per account.
 - **Percentages:** One decimal place for most metrics. Two for precision-sensitive values.
 - **Dates:** ISO 8601 in data; locale-appropriate in UI.
-- **Stock prices:** Increase = Red, Decrease = Green — Chinese market convention (opposite to Western markets).
+- **Stock prices:** Increase = Red, Decrease = Green — Chinese market convention (opposite to Western markets). The Colors setting (`app.theme.marketColors`) switches between the global and Chinese conventions; render gain/loss with the `market-positive` / `market-negative` tokens rather than fixed color literals.
 - **Timestamps:** Relative ("2 hours ago") with absolute on hover.
+
+## Motion and Accessibility
+
+- Use `prefers-reduced-motion` to suppress decorative pulses, spinners, and animated transitions. `src/styles/globals.css` applies a global rule that collapses animation and transition durations while keeping textual loading and status feedback visible.
+- Do not convey state by animation or color alone: pair indicators with text (for example, "Running", "Valuation unavailable").
+- Status indicators must reflect real signals. Unknown or loading states are shown explicitly and never default to a green success state.

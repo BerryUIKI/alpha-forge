@@ -2,15 +2,29 @@
  * StatusBar Component
  *
  * Bottom section of Main Content area.
- * Shows system status, sync time, agent status, and version.
+ * Shows database health, network connectivity, agent status, and version.
  *
- * @version GUI-M0
+ * Each indicator maps to its own signal:
+ * - Database readiness comes from `check_database_health`.
+ * - Connectivity comes from `navigator.onLine` and is labelled as such.
+ * - Agent readiness comes from the secure keychain probe.
+ * Unknown/loading and failed states are shown explicitly; none default to a
+ * green success state.
  */
 
-import { Wifi, WifiOff, Bot, Activity, Settings, AlertCircle, Database } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  Bot,
+  Activity,
+  Settings,
+  AlertCircle,
+  Database,
+  Loader2,
+} from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-import { useAgentGlobalStatus } from "@/hooks/useAgentStatus";
+import { useAgentGlobalStatusDisplay } from "@/hooks/useAgentStatus";
 import { useSystemHealth } from "@/hooks/useSystemHealth";
 
 // Version from package.json (would be injected at build time)
@@ -19,14 +33,18 @@ const APP_VERSION = "0.1.0";
 export function StatusBar() {
   const { t } = useLocale();
   const { isOnline } = useNetworkStatus();
-  const { data: agentStatus = "idle" } = useAgentGlobalStatus();
-  const { isHealthy: isDbHealthy } = useSystemHealth();
+  const { status: agentStatus } = useAgentGlobalStatusDisplay();
+  const {
+    isHealthy: isDbHealthy,
+    isLoading: isHealthLoading,
+    hasError: healthError,
+  } = useSystemHealth();
 
-  // Agent status config
+  // Agent status config — `checking` and `unavailable` are first-class states.
   const agentStatusConfig = {
     idle: {
-      color: "text-gray-500",
-      bgColor: "bg-gray-500",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted-foreground/50",
       label: t("statusIdle"),
       icon: Bot,
       animate: "",
@@ -39,16 +57,30 @@ export function StatusBar() {
       animate: "animate-pulse",
     },
     unconfigured: {
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-500",
+      color: "text-amber-500",
+      bgColor: "bg-amber-500",
       label: t("statusUnconfigured"),
       icon: Settings,
       animate: "",
     },
     error: {
-      color: "text-red-500",
-      bgColor: "bg-red-500",
+      color: "text-destructive",
+      bgColor: "bg-destructive",
       label: t("statusError"),
+      icon: AlertCircle,
+      animate: "",
+    },
+    checking: {
+      color: "text-muted-foreground",
+      bgColor: "bg-muted-foreground/50",
+      label: t("statusChecking"),
+      icon: Loader2,
+      animate: "",
+    },
+    unavailable: {
+      color: "text-destructive",
+      bgColor: "bg-destructive",
+      label: t("statusUnavailable"),
       icon: AlertCircle,
       animate: "",
     },
@@ -57,70 +89,92 @@ export function StatusBar() {
   const agentConfig = agentStatusConfig[agentStatus];
   const AgentIcon = agentConfig.icon;
 
-  const isSystemOperational = isOnline && isDbHealthy;
+  const systemState = !isOnline
+    ? "offline"
+    : isHealthLoading
+      ? "checking"
+      : healthError || !isDbHealthy
+        ? "degraded"
+        : "operational";
+
+  const systemLabel = {
+    offline: t("systemOffline"),
+    checking: t("systemChecking"),
+    degraded: t("systemDegraded"),
+    operational: t("systemOperational"),
+  }[systemState];
+
+  const systemDotClass = {
+    offline: "bg-amber-500",
+    checking: "bg-muted-foreground/50",
+    degraded: "bg-destructive",
+    operational: "bg-emerald-500",
+  }[systemState];
+
+  const dbLabel = isHealthLoading
+    ? t("dbChecking")
+    : isDbHealthy
+      ? t("dbHealthy")
+      : t("dbUnhealthy");
 
   return (
-    <div className="flex h-7 items-center justify-between border-t border-border bg-background px-6">
-      {/* Left: System status */}
-      <div className="flex items-center gap-3">
+    <div className="flex h-7 shrink-0 items-center justify-between gap-4 border-t border-border bg-background px-4 md:px-6">
+      {/* Left: backend status */}
+      <div className="flex min-w-0 items-center gap-3" aria-live="polite">
+        <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${systemDotClass}`} />
+        <span className="truncate text-xs text-muted-foreground">{systemLabel}</span>
+        <span className="text-xs text-muted-foreground/50">·</span>
         <div
-          className={`h-1.5 w-1.5 rounded-full ${
-            !isOnline
-              ? "bg-amber-500"
-              : isSystemOperational
-                ? "bg-emerald-500"
-                : "bg-rose-500"
-          }`}
-        />
-        <span className="text-[11px] text-muted-foreground/80">
-          {!isOnline
-            ? t("systemOffline")
-            : isSystemOperational
-              ? t("systemOperational")
-              : t("systemDegraded")}
-        </span>
-        <span className="text-[11px] text-muted-foreground/30">·</span>
-        <div
-          className="flex items-center gap-1 text-[11px] text-muted-foreground/60"
-          title={isDbHealthy ? t("dbHealthy") : t("dbUnhealthy")}
+          className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+          title={dbLabel}
         >
-          <Database className={`h-2.5 w-2.5 ${isDbHealthy ? "text-emerald-500" : "text-amber-500"}`} />
-          <span>{isDbHealthy ? t("dbHealthy") : t("dbUnhealthy")}</span>
+          <Database
+            className={`h-3 w-3 shrink-0 ${
+              isHealthLoading
+                ? "text-muted-foreground"
+                : isDbHealthy
+                  ? "text-emerald-500"
+                  : "text-destructive"
+            }`}
+          />
+          <span className="truncate">{dbLabel}</span>
         </div>
       </div>
 
-      {/* Right: Agent status + Version */}
-      <div className="flex items-center gap-3">
+      {/* Right: Agent status + connectivity + version */}
+      <div className="flex shrink-0 items-center gap-3">
         {/* Agent Status */}
-        <div
-          className="flex items-center gap-1.5"
-          title={`Agent: ${agentConfig.label}`}
-        >
-          <div className={`h-1.5 w-1.5 rounded-full ${agentConfig.bgColor} ${agentConfig.animate}`} />
-          <AgentIcon className={`h-3 w-3 ${agentConfig.color}`} />
-          <span className="text-[11px] text-muted-foreground/60">{agentConfig.label}</span>
+        <div className="flex min-w-0 items-center gap-1.5" title={`Agent: ${agentConfig.label}`}>
+          <div
+            className={`h-1.5 w-1.5 rounded-full ${agentConfig.bgColor} ${agentConfig.animate}`}
+          />
+          <AgentIcon className={`h-3 w-3 ${agentConfig.color}`} aria-hidden="true" />
+          <span className="truncate text-xs text-muted-foreground">{agentConfig.label}</span>
         </div>
 
         {/* Divider */}
-        <div className="h-3 w-px bg-border/60" />
+        <div className="h-3 w-px bg-border" />
 
-        {/* Network Status */}
+        {/* Connectivity — labelled as connectivity only */}
         <div
-          className="flex items-center gap-1"
-          title={isOnline ? "Online" : "Offline"}
+          className="flex items-center gap-1 text-xs text-muted-foreground"
+          title={isOnline ? t("networkOnline") : t("networkOffline")}
         >
           {isOnline ? (
-            <Wifi className="h-3 w-3 text-green-500" />
+            <Wifi className="h-3 w-3 text-emerald-500" aria-hidden="true" />
           ) : (
-            <WifiOff className="h-3 w-3 text-red-500" />
+            <WifiOff className="h-3 w-3 text-amber-500" aria-hidden="true" />
           )}
+          <span className="hidden sm:inline">
+            {isOnline ? t("networkOnline") : t("networkOffline")}
+          </span>
         </div>
 
         {/* Divider */}
-        <div className="h-3 w-px bg-border/60" />
+        <div className="h-3 w-px bg-border" />
 
         {/* Version */}
-        <span className="text-[11px] text-muted-foreground/40">v{APP_VERSION}</span>
+        <span className="text-xs text-muted-foreground/70">v{APP_VERSION}</span>
       </div>
     </div>
   );

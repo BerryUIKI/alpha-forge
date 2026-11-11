@@ -13,6 +13,7 @@ use tauri::State;
 
 use crate::app::state::AppState;
 use crate::error::AppError;
+use crate::services::activity_import_service::ImportPreview;
 use domain::financial::{
     Activity, AllocationTarget, AllocationTargetConstraint, AllocationTargetConstraintInput,
     AllocationTargetWeight, AllocationTargetWeightInput, Asset, AssetTaxonomyAssignment,
@@ -214,6 +215,19 @@ pub async fn list_import_runs(
     state: State<'_, AppState>,
 ) -> Result<Vec<ImportRun>, AppError> {
     state.import_run_repo.list_by_account(&account_id).await
+}
+
+#[tauri::command]
+pub async fn preview_activities_csv(
+    account_id: String,
+    format: String,
+    csv_text: String,
+    state: State<'_, AppState>,
+) -> Result<ImportPreview, AppError> {
+    state
+        .activity_import_service
+        .preview_csv(&account_id, &format, &csv_text)
+        .await
 }
 
 #[tauri::command]

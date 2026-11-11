@@ -11,8 +11,8 @@
  * @version GUI-M0
  */
 
-import { useState, useCallback } from "react";
-import { Outlet } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { LeftSidebar } from "./LeftSidebar";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
@@ -21,15 +21,30 @@ import { GlobalSearchDialog } from "@/features/search";
 import { OnboardingWizardModal } from "@/components/onboarding/OnboardingWizardModal";
 import { ActiveWorkspaceProvider } from "@/features/workspace/hooks";
 import { useSidebarShortcuts, useKeyboardShortcut } from "@/hooks/layout";
+import { rememberAppPath } from "@/lib/navigation/last-path";
 import type { SidebarState } from "./types";
 
 export function MainLayout() {
+  const location = useLocation();
   const [leftState, setLeftState] = useState<SidebarState>(() => {
     const stored = localStorage.getItem("left-sidebar:state");
     return stored === "collapsed" ? "collapsed" : "expanded";
   });
-  // Right sidebar state (Agent panel)
-  const [rightState, setRightState] = useState<SidebarState>("collapsed");
+  // Right sidebar state (Agent panel). The layout is the single owner so the
+  // header toggle, drawer controls, and shortcuts always agree.
+  const [rightState, setRightState] = useState<SidebarState>(() => {
+    const stored = localStorage.getItem("right-sidebar:state");
+    return stored === "expanded" ? "expanded" : "collapsed";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("right-sidebar:state", rightState);
+  }, [rightState]);
+
+  // Remember where the user was so Settings can return in one action.
+  useEffect(() => {
+    rememberAppPath(location.pathname + location.search);
+  }, [location.pathname, location.search]);
   // Global search palette state
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -38,7 +53,7 @@ export function MainLayout() {
   }, []);
 
   const toggleLeftSidebar = useCallback(() => {
-    setLeftState((previous) => previous === "expanded" ? "collapsed" : "expanded");
+    setLeftState((previous) => (previous === "expanded" ? "collapsed" : "expanded"));
   }, []);
 
   const toggleRightSidebar = useCallback(() => {
@@ -83,10 +98,7 @@ export function MainLayout() {
           </MainContent>
 
           {/* Right: Agent Panel */}
-          <RightSidebar
-            state={rightState}
-            onStateChange={handleRightStateChange}
-          />
+          <RightSidebar state={rightState} onStateChange={handleRightStateChange} />
         </div>
 
         {/* Global Search Palette */}

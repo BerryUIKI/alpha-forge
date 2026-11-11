@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -21,6 +22,7 @@ import { DashboardCard } from "@/components/ui";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { formatMessage } from "@/lib/i18n/locale";
 import {
   usePortfolioPerformance,
   type PortfolioPerformancePeriod,
@@ -29,23 +31,25 @@ import {
 const TIME_PERIODS: readonly PortfolioPerformancePeriod[] = ["1W", "1M", "3M", "1Y"];
 
 /** Format a value as currency for chart labels and tooltips. */
-function fmtUsd(value: number, withSymbol = true): string {
-  const formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
-  if (!withSymbol) return formatter.format(value);
-  return formatter.format(value);
+function fmtMoney(value: number, currency: string, withSymbol = true): string {
+  if (!withSymbol || !currency) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+  }
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+  }
 }
 
 export function PerformanceTab() {
   const { t } = useLocale();
-  const [selectedPeriod, setSelectedPeriod] =
-    useState<PortfolioPerformancePeriod>("1M");
-  const { data, isLoading, isError, refetch } = usePortfolioPerformance(
-    selectedPeriod,
-  );
+  const [selectedPeriod, setSelectedPeriod] = useState<PortfolioPerformancePeriod>("1M");
+  const { data, isLoading, isError, refetch } = usePortfolioPerformance(selectedPeriod);
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,10 +79,7 @@ export function PerformanceTab() {
 
         {/* R3 — error state with retry */}
         {isError && (
-          <ErrorState
-            message={t("failedToLoadPortfolioPerformance")}
-            onRetry={() => refetch()}
-          />
+          <ErrorState message={t("failedToLoadPortfolioPerformance")} onRetry={() => refetch()} />
         )}
 
         {/* R3/R7 — empty state (no accounts or no valuations in this period) */}
@@ -86,31 +87,62 @@ export function PerformanceTab() {
           <EmptyState
             title={t("noValuationDataForPeriod")}
             description={t("noValuationDataDescription")}
+            action={
+              <Link
+                to="/portfolio"
+                className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                {t("viewPortfolio")}
+              </Link>
+            }
           />
         )}
 
         {/* R1/R2 — render merged chart when data exists */}
         {!isLoading && !isError && data && data.points.length > 0 && (
           <div>
-            {/* R5 — performance summary chips */}
+            {/* R5 — performance summary chips. The backend reports percentage
+                points (5 = 5%), so format the value directly. */}
             <div className="mb-4 flex flex-wrap gap-3">
               <PerformanceChip
                 label={t("totalReturn")}
                 value={data.totalReturnPct}
-                format={(v) => `${(v * 100).toFixed(2)}%`}
+                format={(v) => `${v.toFixed(2)}%`}
               />
               <PerformanceChip
                 label={t("xirr")}
                 value={data.xirrPct}
-                format={(v) => `${(v * 100).toFixed(2)}%`}
+                format={(v) => `${v.toFixed(2)}%`}
               />
               <PerformanceChip
                 label={t("twr")}
                 value={data.twrPct}
-                format={(v) => `${(v * 100).toFixed(2)}%`}
+                format={(v) => `${v.toFixed(2)}%`}
               />
-              <PerformanceChip label={t("accounts")} value={data.accountCount} format={(v) => String(v)} />
+              <PerformanceChip
+                label={t("accounts")}
+                value={data.accountCount}
+                format={(v) => String(v)}
+              />
             </div>
+
+            {/* Explicit coverage/quality state — missing accounts never read as zero. */}
+            {data.dataQuality !== "complete" && (
+              <p role="status" className="mb-3 text-xs text-amber-700 dark:text-amber-400">
+                {data.dataQuality === "insufficient_data"
+                  ? t("coverageInsufficient")
+                  : formatMessage(t("coveragePartial"), {
+                      covered: String(data.coveredAccountCount),
+                      total: String(data.accountCount),
+                    })}
+                {data.skippedAccounts > 0 && (
+                  <>
+                    {" "}
+                    {formatMessage(t("skippedCurrencies"), { count: String(data.skippedAccounts) })}
+                  </>
+                )}
+              </p>
+            )}
 
             {/* R4 — base-currency line chart */}
             <div className="h-64">
@@ -126,7 +158,7 @@ export function PerformanceTab() {
                   <YAxis
                     tick={{ fontSize: 11 }}
                     stroke="hsl(var(--muted-foreground))"
-                    tickFormatter={(v: number) => fmtUsd(v, false)}
+                    tickFormatter={(v: number) => fmtMoney(v, data.currency, false)}
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
@@ -135,7 +167,9 @@ export function PerformanceTab() {
                       return (
                         <div className="rounded-md border bg-card px-3 py-2 text-xs shadow">
                           <div className="text-muted-foreground">{String(label)}</div>
-                          <div className="font-medium">{fmtUsd(Number(value))}</div>
+                          <div className="font-medium">
+                            {fmtMoney(Number(value), data.currency)}
+                          </div>
                         </div>
                       );
                     }}

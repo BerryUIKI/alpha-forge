@@ -12,13 +12,13 @@ export const LOCALE_SETTING_KEY = "app.locale";
 export function detectSystemLocale(): Locale {
   // Try to get the user's preferred language
   const browserLocales = navigator.languages ?? [navigator.language];
-  
+
   for (const browserLocale of browserLocales) {
     // Exact match (e.g., "zh-CN" -> "zh-CN")
     if (LOCALES.includes(browserLocale as Locale)) {
       return browserLocale as Locale;
     }
-    
+
     // Language-only match (e.g., "zh" -> "zh-CN", "en-US" -> "en")
     const parts = browserLocale.split("-");
     const languagePart = parts[0];
@@ -29,7 +29,7 @@ export function detectSystemLocale(): Locale {
       }
     }
   }
-  
+
   // Fallback to product default
   return DEFAULT_LOCALE;
 }
@@ -76,6 +76,8 @@ const messages = {
     closeAgentPanel: "收起智能体面板",
     collapseSidebar: "收起导航侧栏",
     expandSidebar: "展开导航侧栏",
+    resizeLeftSidebar: "调整导航侧栏宽度",
+    resizeRightSidebar: "调整 Agent 侧栏宽度",
     newResearch: "新建研报",
     marketOpenStatus: "美东交易中",
     windowMinimize: "最小化",
@@ -112,6 +114,8 @@ const messages = {
     optionalDescription: "可选描述",
     knowledgeEntitiesLoadFailed: "加载知识实体失败",
     knowledgeEmptyDescription: "添加公司、行业、技术和宏观主题，开始构建你的知识网络。",
+    knowledgeEntityNotFound: "链接的知识实体已不存在。",
+    clearFilter: "清除筛选",
     entityAdded: "添加于",
     settingsDescription: "本地优先控制、隐私信息和版本更新。",
     language: "语言",
@@ -184,6 +188,8 @@ const messages = {
     statusError: "错误",
     statusSyncing: "同步中",
     statusUnconfigured: "需要完成助手配置",
+    statusChecking: "检查中",
+    statusUnavailable: "不可用",
 
     // Quick Actions
     quickActions: "快捷操作",
@@ -248,6 +254,8 @@ const messages = {
     generatingArtifact: "正在启动产物窗口...",
     appInitializing: "初始化中...",
     appInitFailed: "应用初始化失败",
+    appInitializationSlow: "初始化时间超出预期。可以重试，或重启应用。",
+    appReadinessUnavailable: "无法确定应用初始化状态。请重新加载应用。",
     noWorkspace: "无工作区",
     createWorkspaceFirstUseAgent: "请先创建工作区再使用 Agent",
     askTheAgent: "向 Agent 提问…",
@@ -286,6 +294,7 @@ const messages = {
     unrealizedPL: "未实现盈亏",
     noDataYet: "暂无数据",
     noDashboardDataDescription: "创建工作区并开始研究以查看你的仪表板。",
+    startResearch: "开始研究",
     lastUpdatedFromPortfolio: "最近从投资组合更新",
     activeThesisCount: "{count} 个活跃论点",
     activeThesesCount: "{count} 个活跃论点",
@@ -296,11 +305,15 @@ const messages = {
     noRecentActivity: "暂无近期活动",
     noActivityDescription: "研究任务、项目和论点将显示在这里。",
     selectWorkspace: "选择工作区",
-    selectWorkspaceDescription: "选择一个工作区来查看和管理你的研究，或创建一个新的工作区开始使用。",
+    selectWorkspaceDescription:
+      "选择一个工作区来查看和管理你的研究，或创建一个新的工作区开始使用。",
     workspaceSelected: "已选择工作区。研究功能将在第二阶段推出。",
     changeWorkspace: "切换工作区",
     marketPulse: "大盘脉搏",
     dataSynced: "数据同步: {time}",
+    marketDemoBadge: "演示数据",
+    marketDemoNotice: "演示数据 · 暂无实时行情源",
+    marketRefreshUnavailable: "实时行情数据尚不可用",
     secAutomatedParsing: "SEC 自动解析",
     secFilingFeed: "SEC 财报与研报流",
     linkedThesis: "关联论点: {title}",
@@ -311,7 +324,14 @@ const messages = {
     secLoading: "正在获取最新 SEC 监管文件...",
     secLiveEdgar: "SEC EDGAR 实时源",
     secViewDocument: "查看 SEC 原文",
-    secNoFilings: "暂无相关 SEC 披露文件",
+    secUnavailable: "SEC EDGAR 不可用",
+    secNoAssets: "添加带有股票代码的资产后，即可跟踪其 SEC 文件。",
+    secErrorTitle: "SEC EDGAR 暂时不可用",
+    secErrorDescription: "无法获取监管文件，请稍后重试。",
+    secAnalysisUnavailable: "暂无已关联的论点分析",
+    secSource: "来源：SEC EDGAR",
+    secRetrievedAt: "获取时间：{time}",
+    secNoFilings: "未找到 {ticker} 的近期文件。",
     secGeneralTracking: "{ticker} 业务进展与资本分配跟踪",
     // Research
     researchTitle: "研究",
@@ -371,6 +391,8 @@ const messages = {
     searchSectionKnowledge: "知识实体",
     searchSectionArtifacts: "研究产物",
     searchNoResults: "没有匹配结果",
+    searchPartialError: "部分来源搜索失败，结果可能不完整。",
+    searchShowingFirst: "显示前 {shown} 条，共 {total} 条匹配",
     searchNoWorkspace: "请先创建工作区后再搜索",
     searchResultsFor: "“{query}”的结果",
     saveError: "无法保存研究项目。请检查必填字段后重试。",
@@ -452,9 +474,11 @@ const messages = {
     invalidHoldingInput: "请输入标的代码、非零数量，以及可选的数字成本基础。",
     unableToAddHolding: "无法添加持仓。",
     importTransactionHistory: "导入交易历史",
-    importDescription: "粘贴CSV格式，必须包含：symbol, transaction_type (buy/sell), quantity, price, executed_at (RFC 3339)。导入仅记录历史，从不发送交易。",
+    importDescription:
+      "粘贴CSV格式，必须包含：symbol, transaction_type (buy/sell), quantity, price, executed_at (RFC 3339)。导入仅记录历史，从不发送交易。",
     transactionCsvLabel: "交易CSV",
-    transactionCsvPlaceholder: "symbol,transaction_type,quantity,price,executed_at\nMSFT,buy,2,420,2026-08-01T00:00:00Z",
+    transactionCsvPlaceholder:
+      "symbol,transaction_type,quantity,price,executed_at\nMSFT,buy,2,420,2026-08-01T00:00:00Z",
     importingTransactions: "导入中…",
     importTransactions: "导入交易",
     unableToImportTransactions: "无法导入交易。",
@@ -462,18 +486,21 @@ const messages = {
     noTransactionsImported: "尚未导入交易历史。",
     failedToLoadTransactions: "加载交易失败。",
     costBasisAllocation: "成本基础配置",
-    allocationDescription: "敞口使用记录的成本基础，而非实时市场价格。没有成本基础的持仓在定价前贡献为零。",
+    allocationDescription:
+      "敞口使用记录的成本基础，而非实时市场价格。没有成本基础的持仓在定价前贡献为零。",
     noAllocationData: "添加带有成本基础的持仓以查看配置和集中度。",
     failedToCalculateAllocation: "计算配置失败。",
     recordedCost: "记录成本",
     concentrationReview: "集中度审查",
-    concentrationDescription: "基于规则的信号：在记录成本配置的10%为中等，25%为高。这不是投资建议。",
+    concentrationDescription:
+      "基于规则的信号：在记录成本配置的10%为中等，25%为高。这不是投资建议。",
     noConcentrationRisks: "当前没有持仓超过审查阈值。",
     failedToAnalyzeConcentration: "分析集中度失败。",
     severityModerate: "中等",
     severityHigh: "高",
     themeExposure: "主题敞口",
-    themeExposureDescription: "将持有的标的代码链接到现有知识实体。敞口仅基于您的显式链接和记录的成本基础。",
+    themeExposureDescription:
+      "将持有的标的代码链接到现有知识实体。敞口仅基于您的显式链接和记录的成本基础。",
     themeSymbolLabel: "主题标的代码",
     knowledgeEntityLabel: "知识实体",
     knowledgeEntityPlaceholder: "知识实体…",
@@ -482,7 +509,8 @@ const messages = {
     failedToLoadThemeExposure: "加载主题敞口失败。",
     unableToLinkTheme: "无法链接主题。",
     thesisAlignmentAndReview: "论点对齐和审查",
-    alignmentDescription: "仅当标的代码在工作区论点内容中出现时才匹配。审查结果仅供参考，不构成建议。",
+    alignmentDescription:
+      "仅当标的代码在工作区论点内容中出现时才匹配。审查结果仅供参考，不构成建议。",
     noAlignmentMatches: "当前持有的标的代码没有匹配工作区论点。",
     failedToCheckAlignment: "检查论点对齐失败。",
     reviewing: "审查中…",
@@ -494,6 +522,12 @@ const messages = {
     selectAnAccount: "选择账户",
     selectAnAccountDescription: "选择账户以审查和记录其持仓。",
     netWorth: "净资产",
+    valuationUnavailable: "估值不可用",
+    valuationError: "账户估值加载失败，余额暂不可用。",
+    valuationStale: "显示的是缓存估值，最新刷新失败。",
+    partialValuations: "{count} 个账户缺少估值数据。",
+    netWorthAsOf: "截至 {date}",
+    refreshing: "刷新中…",
     totalValue: "总价值",
     totalLiabilities: "总负债",
     recentActivity: "近期活动",
@@ -509,6 +543,10 @@ const messages = {
     noValuationDataDescription: "添加账户并记录活动以查看一段时间内的投资组合表现。",
     portfolioPerformance: "投资组合表现",
     failedToLoadPortfolioPerformance: "加载投资组合表现数据失败",
+    coveragePartial: "部分覆盖：{covered}/{total} 个账户有估值数据",
+    coverageInsufficient: "该周期内估值数据不足",
+    viewPortfolio: "查看投资组合",
+    skippedCurrencies: "{count} 个账户因基础币种不同未纳入。",
     totalReturn: "总回报",
     xirr: "XIRR",
     twr: "TWR",
@@ -689,6 +727,7 @@ const messages = {
     thesisUpdateFailed: "论点无法更新。",
     evidenceRequired: "证据文本为必填项。",
     deleteThesis: "删除论点",
+    deleteThesisConfirmMessage: "永久删除论点「{title}」及其证据与关联？此操作无法撤销。",
     confidence: "置信度",
     saveConfidence: "保存置信度",
     activateThesis: "激活论点",
@@ -721,7 +760,8 @@ const messages = {
     assetLinkedBadge: "关联标的",
     // Agent Research & Evidence Loop
     agentResearchLoopTitle: "AI 证据搜集与论点证伪",
-    agentResearchLoopDesc: "派遣 Agent 针对当前论点搜集多方支撑与反驳证据，或一键导入 Goose 影子分析提取的事实主张。",
+    agentResearchLoopDesc:
+      "派遣 Agent 针对当前论点搜集多方支撑与反驳证据，或一键导入 Goose 影子分析提取的事实主张。",
     launchAgentEvidenceTask: "启动 Agent 搜集证据",
     launchingAgentEvidenceTask: "正在启动证据搜集任务…",
     agentEvidenceTaskStarted: "证据搜集任务已创建并启动",
@@ -729,7 +769,8 @@ const messages = {
     evidenceHarvestSuccess: "已将 {count} 条证据沉淀至论点库",
     // Goose Shadow Analysis
     shadowAnalysis: "影子分析",
-    shadowAnalysisDescription: "使用 Goose 对工作区研究数据进行只读分析。结果将显示主张、证据和风险，不会做出任何更改。",
+    shadowAnalysisDescription:
+      "使用 Goose 对工作区研究数据进行只读分析。结果将显示主张、证据和风险，不会做出任何更改。",
     shadowAnalysisUnavailable: "影子分析不可用",
     shadowAnalysisWorkspaceRequired: "需要先选择一个工作区才能运行分析。",
     gooseBinaryNotFound: "未找到 Goose 二进制文件。",
@@ -921,7 +962,8 @@ const messages = {
     refreshingAllQuotes: "正在同步全市场报价…",
     refreshSingleQuote: "刷新行情",
     noActiveAssetsForQuotes: "暂无活跃资产标的",
-    noActiveAssetsForQuotesDesc: "在“投资组合”页面创建资产标的或导入交易记录后，即可在此看板监控行情。",
+    noActiveAssetsForQuotesDesc:
+      "在“投资组合”页面创建资产标的或导入交易记录后，即可在此看板监控行情。",
     goToPortfolio: "前往投资组合",
     latestQuote: "最新报价",
     quoteDay: "报价日期",
@@ -954,7 +996,8 @@ const messages = {
     chartModeOhlc: "OHLC 柱状线",
     // Taxonomy & Target Allocation
     taxonomyManagementTitle: "资产分类体系与配置目标",
-    taxonomyManagementDesc: "构建多维资产分类体系（资产大类、投资策略、风险属性）并设定配置目标与再平衡偏离容差（Drift Band）。",
+    taxonomyManagementDesc:
+      "构建多维资产分类体系（资产大类、投资策略、风险属性）并设定配置目标与再平衡偏离容差（Drift Band）。",
     taxonomiesLabel: "分类体系",
     taxonomyCategoriesLabel: "分类节点",
     allocationTargetsLabel: "目标配置策略",
@@ -972,35 +1015,41 @@ const messages = {
     withinDriftStatus: "偏离可控",
     outOfDriftStatus: "超出容差",
     noTaxonomiesYet: "暂无自定义资产分类",
-    noTaxonomiesDesc: "创建多维分类体系（如：资产类别、地理区域、行业风格）以监控投资组合权重分配。",
+    noTaxonomiesDesc:
+      "创建多维分类体系（如：资产类别、地理区域、行业风格）以监控投资组合权重分配。",
     noAllocationTargetsYet: "暂无配置目标策略",
-    noAllocationTargetsDesc: "设定组合在不同分类下的目标持仓比例（如：权益 60% / 债券 40%），系统将自动监控再平衡偏离风险。",
+    noAllocationTargetsDesc:
+      "设定组合在不同分类下的目标持仓比例（如：权益 60% / 债券 40%），系统将自动监控再平衡偏离风险。",
     rebalanceActionRecommended: "建议再平衡调整",
     rebalanceWithinLimits: "配置处于设定容差范围内",
     // Demo Data & Onboarding Wizard
     demoDataSectionTitle: "模拟演示数据管理",
-    demoDataSectionDesc: "一键载入成熟专业的半导体与云 AI 投资研究模拟数据（含工作区、论点、持仓流水、30天历史行情与分类目标），快速体验全功能流程。",
+    demoDataSectionDesc:
+      "一键载入成熟专业的半导体与云 AI 投资研究模拟数据（含工作区、论点、持仓流水、30天历史行情与分类目标），快速体验全功能流程。",
     loadDemoDataBtn: "载入全套演示数据",
     loadingDemoDataBtn: "正在构建模拟数据…",
     demoDataLoadedSuccess: "演示数据已成功载入！已自动切换至“{name}”工作区。",
     demoDataLoadedError: "载入演示数据失败，请查看控制台日志。",
     onboardingTitle: "欢迎使用 AlphaForge 智能投研工作台",
-    onboardingDesc: "监测到当前系统处于全新状态。您可以选择一键载入精选实战演示样本，或快速创建您的第一个工作区以开始个性化投研。",
+    onboardingDesc:
+      "监测到当前系统处于全新状态。您可以选择一键载入精选实战演示样本，或快速创建您的第一个工作区以开始个性化投研。",
     onboardingLoadDemoOption: "一键载入精选样本（推荐）",
-    onboardingLoadDemoDesc: "包含 AI 芯片与半导体实战论点、350股NVDA等持仓流水、30天K线走势及核心再平衡策略。",
+    onboardingLoadDemoDesc:
+      "包含 AI 芯片与半导体实战论点、350股NVDA等持仓流水、30天K线走势及核心再平衡策略。",
     onboardingCustomOption: "从空白开始创建",
     onboardingCustomDesc: "手动创建您的第一个专属研究工作区，完全自主录入资产与研究论点。",
     onboardingStartFreshBtn: "创建并进入工作区",
     onboardingWorkspaceNamePlaceholder: "输入您的投资工作区名称（如：美股核心科技）",
     // Status Bar & System Health
-    systemOperational: "系统运行正常",
+    systemOperational: "后端运行正常",
     systemDegraded: "数据库状态异常",
     systemChecking: "正在检查系统状态…",
     systemOffline: "已离线",
     dbHealthy: "数据库已就绪",
     dbUnhealthy: "数据库异常",
+    dbChecking: "正在检查数据库",
   },
-  "en": {
+  en: {
     today: "Today",
     research: "Research",
     journal: "Journal",
@@ -1014,13 +1063,15 @@ const messages = {
     navTheses: "Theses",
     navJournal: "Journal",
     journalTitle: "Investment & Decision Journal",
-    journalDescription: "Chronological timeline of thesis evolution, validation milestones, and key research activities.",
+    journalDescription:
+      "Chronological timeline of thesis evolution, validation milestones, and key research activities.",
     journalFilterAll: "All Entries",
     journalFilterTheses: "Theses & Decisions",
     journalFilterResearch: "Research Projects",
     journalFilterTasks: "Agent Tasks",
     journalNoEntries: "No journal entries yet",
-    journalNoEntriesDescription: "As you create theses and launch research projects in this workspace, chronological history will appear here.",
+    journalNoEntriesDescription:
+      "As you create theses and launch research projects in this workspace, chronological history will appear here.",
     journalConfidence: "Confidence",
     journalOutcome: "Validation Outcome",
     navPortfolio: "Portfolio",
@@ -1041,6 +1092,8 @@ const messages = {
     closeAgentPanel: "Close Agent panel",
     collapseSidebar: "Collapse sidebar",
     expandSidebar: "Expand sidebar",
+    resizeLeftSidebar: "Resize navigation sidebar",
+    resizeRightSidebar: "Resize Agent sidebar",
     newResearch: "New Research",
     marketOpenStatus: "US Market Open",
     windowMinimize: "Minimize",
@@ -1065,10 +1118,12 @@ const messages = {
     marketColorsChina: "Red gains, green losses (China)",
     accentColor: "Accent color",
     professionalTerminology: "Professional terminology localization",
-    professionalTerminologyDescription: "Choose whether domain terms are translated and override the default wording.",
+    professionalTerminologyDescription:
+      "Choose whether domain terms are translated and override the default wording.",
     enableProfessionalTerminology: "Enable professional terminology translation",
     editTerminology: "Edit terminology",
-    apiUsageNotCollecting: "The unified provider usage ledger is not connected yet; token and cost data will not be estimated or fabricated.",
+    apiUsageNotCollecting:
+      "The unified provider usage ledger is not connected yet; token and cost data will not be estimated or fabricated.",
     knowledgeAddEntity: "Add entity",
     newKnowledgeEntity: "New knowledge entity",
     entityType: "Type",
@@ -1076,7 +1131,10 @@ const messages = {
     entityNamePlaceholder: "e.g. NVIDIA",
     optionalDescription: "Optional description",
     knowledgeEntitiesLoadFailed: "Failed to load knowledge entities",
-    knowledgeEmptyDescription: "Add companies, industries, technologies, and macro themes to start building your knowledge network.",
+    knowledgeEmptyDescription:
+      "Add companies, industries, technologies, and macro themes to start building your knowledge network.",
+    knowledgeEntityNotFound: "The linked knowledge entity is no longer available.",
+    clearFilter: "Clear filter",
     entityAdded: "Added",
     settingsDescription: "Local-first controls, privacy information, and release updates.",
     language: "Language",
@@ -1152,6 +1210,8 @@ const messages = {
     statusError: "Error",
     statusSyncing: "Syncing",
     statusUnconfigured: "Agent Configuration Required",
+    statusChecking: "Checking",
+    statusUnavailable: "Unavailable",
 
     // Quick Actions
     quickActions: "Quick Actions",
@@ -1164,7 +1224,8 @@ const messages = {
     agentConfigSaved: "Agent configuration saved",
     agentConfigError: "Save failed",
     agentNeedsConfig: "Complete Agent Configuration",
-    agentNotConfiguredDesc: "To create research tasks with Agent, you need to configure the API key and model parameters first.",
+    agentNotConfiguredDesc:
+      "To create research tasks with Agent, you need to configure the API key and model parameters first.",
     configStepsTitle: "Configuration Steps:",
     agentConnectionFailed: "Agent Connection Failed",
     agentConnectionErrorDesc: "Agent cannot connect to the AI service. Possible reasons:",
@@ -1216,6 +1277,10 @@ const messages = {
     generatingArtifact: "Launching Artifact Window...",
     appInitializing: "Initializing...",
     appInitFailed: "Application failed to initialize",
+    appInitializationSlow:
+      "Initialization is taking longer than expected. Retry or restart the application.",
+    appReadinessUnavailable:
+      "Application readiness could not be determined. Reload the application.",
     noWorkspace: "No Workspace",
     createWorkspaceFirstUseAgent: "Create a workspace first to use the Agent",
     askTheAgent: "Ask the agent...",
@@ -1254,6 +1319,7 @@ const messages = {
     unrealizedPL: "Unrealized P&L",
     noDataYet: "No data yet",
     noDashboardDataDescription: "Create a workspace and start researching to see your dashboard.",
+    startResearch: "Start researching",
     lastUpdatedFromPortfolio: "Last updated from portfolio",
     activeThesisCount: "{count} active thesis",
     activeThesesCount: "{count} active theses",
@@ -1270,6 +1336,9 @@ const messages = {
     changeWorkspace: "Change workspace",
     marketPulse: "Market Pulse",
     dataSynced: "Synced: {time}",
+    marketDemoBadge: "Demo data",
+    marketDemoNotice: "Demo data · live market feed unavailable",
+    marketRefreshUnavailable: "Live market data is not available yet",
     secAutomatedParsing: "Automated SEC Parsing",
     secFilingFeed: "SEC Filing & Research Stream",
     linkedThesis: "Linked Thesis: {title}",
@@ -1280,7 +1349,14 @@ const messages = {
     secLoading: "Ingesting live SEC filings...",
     secLiveEdgar: "Live SEC EDGAR",
     secViewDocument: "Open SEC Filing",
-    secNoFilings: "No SEC filings found for this asset",
+    secUnavailable: "SEC EDGAR unavailable",
+    secNoAssets: "Add an asset with a ticker to follow its SEC filings.",
+    secErrorTitle: "SEC EDGAR is unavailable",
+    secErrorDescription: "Filings could not be retrieved. Try again.",
+    secAnalysisUnavailable: "No linked thesis analysis",
+    secSource: "Source: SEC EDGAR",
+    secRetrievedAt: "Retrieved {time}",
+    secNoFilings: "No recent filings found for {ticker}.",
     secGeneralTracking: "{ticker} Capital Allocation & Operations Tracking",
     // Research
     researchTitle: "Research",
@@ -1301,7 +1377,8 @@ const messages = {
     importing: "Importing…",
     webPageUrl: "Web page URL",
     webPageUrlPlaceholder: "https://example.com/research",
-    importHint: "PDFs use the native picker; web pages are fetched in Rust from validated public HTTPS URLs.",
+    importHint:
+      "PDFs use the native picker; web pages are fetched in Rust from validated public HTTPS URLs.",
     reports: "Reports",
     reportTitle: "Report title",
     reportContent: "Report findings",
@@ -1328,7 +1405,8 @@ const messages = {
     searchModeLexical: "Exact terms",
     searchModeSemantic: "Related terms",
     search: "Search",
-    searchHint: "Related terms use a local, explainable investment vocabulary; they are not AI-generated recommendations.",
+    searchHint:
+      "Related terms use a local, explainable investment vocabulary; they are not AI-generated recommendations.",
     searchScore: "Score",
     // Global search
     globalSearchTitle: "Global Search",
@@ -1340,8 +1418,10 @@ const messages = {
     searchSectionKnowledge: "Knowledge",
     searchSectionArtifacts: "Artifacts",
     searchNoResults: "No matching results",
+    searchPartialError: "Some sources could not be searched; results may be incomplete.",
+    searchShowingFirst: "Showing {shown} of {total} matches",
     searchNoWorkspace: "Create a workspace first to search",
-    searchResultsFor: "Results for \"{query}\"",
+    searchResultsFor: 'Results for "{query}"',
     saveError: "Unable to save the research item. Check the required fields and try again.",
     archiveProject: "Archive",
     completeProject: "Complete",
@@ -1350,11 +1430,13 @@ const messages = {
     deleteReport: "Delete report",
     // Journal/Thesis
     thesisManagement: "Thesis Management",
-    thesisManagementDescription: "Track investment theses, record evidence, and monitor confidence changes.",
+    thesisManagementDescription:
+      "Track investment theses, record evidence, and monitor confidence changes.",
     investmentTheses: "Investment theses",
     thesisDescription: "Make your reasoning explicit, track evidence, and validate outcomes.",
     createWorkspaceFirst: "Create a workspace first",
-    createWorkspaceFirstDescription: "Theses are stored in a workspace so their evidence remains organized.",
+    createWorkspaceFirstDescription:
+      "Theses are stored in a workspace so their evidence remains organized.",
     selectThesis: "Select a thesis",
     selectThesisDescription: "Choose a thesis to review its confidence, lifecycle, and evidence.",
     thesisFailedToLoadWorkspaces: "Failed to load workspaces.",
@@ -1390,7 +1472,8 @@ const messages = {
     confidenceScore: "{score}% Conviction",
     // Portfolio
     portfolioTitle: "Portfolio",
-    portfolioDescription: "Track holdings for review and risk analysis. This workspace never executes trades.",
+    portfolioDescription:
+      "Track holdings for review and risk analysis. This workspace never executes trades.",
     workspaceLabel: "Workspace",
     newAccount: "New account",
     newAccountDescription: "Add a source of holdings for tracking only.",
@@ -1421,9 +1504,11 @@ const messages = {
     invalidHoldingInput: "Enter a symbol, a non-zero quantity, and an optional numeric cost basis.",
     unableToAddHolding: "Unable to add the holding.",
     importTransactionHistory: "Import transaction history",
-    importDescription: "Paste CSV with exactly: symbol, transaction_type (buy/sell), quantity, price, executed_at (RFC 3339). Importing records history only; it never sends a trade.",
+    importDescription:
+      "Paste CSV with exactly: symbol, transaction_type (buy/sell), quantity, price, executed_at (RFC 3339). Importing records history only; it never sends a trade.",
     transactionCsvLabel: "Transaction CSV",
-    transactionCsvPlaceholder: "symbol,transaction_type,quantity,price,executed_at\nMSFT,buy,2,420,2026-08-01T00:00:00Z",
+    transactionCsvPlaceholder:
+      "symbol,transaction_type,quantity,price,executed_at\nMSFT,buy,2,420,2026-08-01T00:00:00Z",
     importingTransactions: "Importing…",
     importTransactions: "Import transactions",
     unableToImportTransactions: "Unable to import transactions.",
@@ -1431,18 +1516,21 @@ const messages = {
     noTransactionsImported: "No transaction history has been imported.",
     failedToLoadTransactions: "Failed to load transactions.",
     costBasisAllocation: "Cost-basis allocation",
-    allocationDescription: "Exposure uses recorded cost basis, not live market prices. Positions without a cost basis contribute zero until priced.",
+    allocationDescription:
+      "Exposure uses recorded cost basis, not live market prices. Positions without a cost basis contribute zero until priced.",
     noAllocationData: "Add holdings with a cost basis to see allocation and concentration.",
     failedToCalculateAllocation: "Failed to calculate allocation.",
     recordedCost: "Recorded cost",
     concentrationReview: "Concentration review",
-    concentrationDescription: "A rules-based signal: moderate at 10% and high at 25% of recorded cost allocation. It is not investment advice.",
+    concentrationDescription:
+      "A rules-based signal: moderate at 10% and high at 25% of recorded cost allocation. It is not investment advice.",
     noConcentrationRisks: "No positions currently exceed the review thresholds.",
     failedToAnalyzeConcentration: "Failed to analyze concentration.",
     severityModerate: "moderate",
     severityHigh: "high",
     themeExposure: "Theme exposure",
-    themeExposureDescription: "Link a held symbol to an existing knowledge entity. Exposure is based only on your explicit links and recorded cost basis.",
+    themeExposureDescription:
+      "Link a held symbol to an existing knowledge entity. Exposure is based only on your explicit links and recorded cost basis.",
     themeSymbolLabel: "Theme symbol",
     knowledgeEntityLabel: "Knowledge entity",
     knowledgeEntityPlaceholder: "Knowledge entity…",
@@ -1451,7 +1539,8 @@ const messages = {
     failedToLoadThemeExposure: "Failed to load theme exposure.",
     unableToLinkTheme: "Unable to link theme.",
     thesisAlignmentAndReview: "Thesis alignment and review",
-    alignmentDescription: "Matches symbols only when their ticker appears in workspace thesis content. Review results are informational, not recommendations.",
+    alignmentDescription:
+      "Matches symbols only when their ticker appears in workspace thesis content. Review results are informational, not recommendations.",
     noAlignmentMatches: "No held symbols currently match a workspace thesis.",
     failedToCheckAlignment: "Failed to check thesis alignment.",
     reviewing: "Reviewing…",
@@ -1463,10 +1552,17 @@ const messages = {
     selectAnAccount: "Select an account",
     selectAnAccountDescription: "Choose an account to review and record its holdings.",
     netWorth: "Net Worth",
+    valuationUnavailable: "Valuation unavailable",
+    valuationError: "Account valuations could not be loaded.",
+    valuationStale: "Showing cached valuations; the latest refresh failed.",
+    partialValuations: "{count} account(s) have no valuation data.",
+    netWorthAsOf: "As of {date}",
+    refreshing: "Refreshing…",
     totalValue: "Total Value",
     totalLiabilities: "Total Liabilities",
     recentActivity: "Recent Activity",
-    noRecentActivityDescription: "Record activities or import transaction history to see recent activity.",
+    noRecentActivityDescription:
+      "Record activities or import transaction history to see recent activity.",
     allocation: "Allocation",
     marketValue: "Mkt Value",
     gainLoss: "Gain/Loss",
@@ -1475,9 +1571,14 @@ const messages = {
     accountValue: "Account Value Over Time",
     noValuationData: "No valuation data",
     noValuationDataForPeriod: "No valuation data for this period",
-    noValuationDataDescription: "Add accounts and record activities to see your portfolio performance over time.",
+    noValuationDataDescription:
+      "Add accounts and record activities to see your portfolio performance over time.",
     portfolioPerformance: "Portfolio Performance",
     failedToLoadPortfolioPerformance: "Failed to load portfolio performance data",
+    coveragePartial: "Partial coverage: {covered} of {total} accounts have valuation data",
+    coverageInsufficient: "Not enough valuation data in this period",
+    viewPortfolio: "View portfolio",
+    skippedCurrencies: "{count} account(s) excluded due to a different base currency.",
     totalReturn: "Total Return",
     xirr: "XIRR",
     twr: "TWR",
@@ -1574,7 +1675,8 @@ const messages = {
     trackingModeNotSet: "Not set",
     // Artifacts
     artifactsTitle: "Artifacts",
-    artifactsDescription: "View and manage interactive research visualizations generated by the Agent.",
+    artifactsDescription:
+      "View and manage interactive research visualizations generated by the Agent.",
     createCompanyComparison: "Create company comparison",
     createCompanyComparisonDescription:
       "Enter two unique tickers and one recorded metric. AlphaForge stores the comparison without fetching market data or making a recommendation.",
@@ -1611,7 +1713,8 @@ const messages = {
     loadingArtifact: "Loading artifact…",
     errorLoadingArtifact: "Failed to load artifact",
     artifactNotFound: "Artifact not found",
-    artifactNotFoundDescription: "The requested artifact could not be found. It may have been deleted or the ID is incorrect.",
+    artifactNotFoundDescription:
+      "The requested artifact could not be found. It may have been deleted or the ID is incorrect.",
     artifactWindowInvalidRoute: "Invalid artifact window route",
     artifactWindowInvalidRouteDescription:
       "The artifact ID or type in this window URL is not valid.",
@@ -1663,6 +1766,8 @@ const messages = {
     thesisUpdateFailed: "The thesis could not be updated.",
     evidenceRequired: "Evidence text is required.",
     deleteThesis: "Delete thesis",
+    deleteThesisConfirmMessage:
+      "Permanently delete the thesis “{title}” with its evidence and links? This cannot be undone.",
     confidence: "Confidence",
     saveConfidence: "Save confidence",
     activateThesis: "Activate thesis",
@@ -1695,7 +1800,8 @@ const messages = {
     assetLinkedBadge: "Linked Asset",
     // Agent Research & Evidence Loop
     agentResearchLoopTitle: "AI Evidence Harvesting & Thesis Falsification",
-    agentResearchLoopDesc: "Dispatch an autonomous Agent to investigate the thesis with supporting and counter-evidence, or harvest verified facts from Goose shadow analysis.",
+    agentResearchLoopDesc:
+      "Dispatch an autonomous Agent to investigate the thesis with supporting and counter-evidence, or harvest verified facts from Goose shadow analysis.",
     launchAgentEvidenceTask: "Launch Agent Evidence Hunt",
     launchingAgentEvidenceTask: "Dispatching evidence collection task…",
     agentEvidenceTaskStarted: "Evidence collection agent task queued and started",
@@ -1703,17 +1809,20 @@ const messages = {
     evidenceHarvestSuccess: "Successfully harvested {count} evidence records into thesis",
     // Goose Shadow Analysis
     shadowAnalysis: "Shadow Analysis",
-    shadowAnalysisDescription: "Run a read-only analysis of your workspace research data using Goose. Results will show claims, evidence, and risks without making any changes.",
+    shadowAnalysisDescription:
+      "Run a read-only analysis of your workspace research data using Goose. Results will show claims, evidence, and risks without making any changes.",
     shadowAnalysisUnavailable: "Shadow Analysis Unavailable",
     shadowAnalysisWorkspaceRequired: "Select a workspace before running an analysis.",
     gooseBinaryNotFound: "Goose binary not found.",
     shadowModeDisabled: "Shadow mode is disabled.",
-    runningShadowAnalysis: "Running shadow analysis. This may take a few minutes. No changes will be made to your data.",
+    runningShadowAnalysis:
+      "Running shadow analysis. This may take a few minutes. No changes will be made to your data.",
     cancelAnalysis: "Cancel Analysis",
     analysisFailed: "Analysis Failed",
     startShadowAnalysis: "Start Shadow Analysis",
     customInstructions: "Custom Instructions (Optional)",
-    customInstructionsPlaceholder: "E.g., 'Focus on financial metrics' or 'Ignore news older than 2024'",
+    customInstructionsPlaceholder:
+      "E.g., 'Focus on financial metrics' or 'Ignore news older than 2024'",
     analysisReadOnly: "This analysis is read-only. No data will be modified.",
     analysisComplete: "Analysis Complete",
     claims: "Claims",
@@ -1746,20 +1855,24 @@ const messages = {
     unknownError: "An unexpected error occurred. Please try again.",
     unknownErrorDescription: "If the problem persists, please check the application logs.",
     errorInternal: "Internal error",
-    errorInternalDescription: "An internal application error occurred. Please restart the application.",
+    errorInternalDescription:
+      "An internal application error occurred. Please restart the application.",
     errorNotFound: "Not found",
     errorNotFoundDescription: "The requested resource was not found.",
     errorValidation: "Validation error",
-    errorValidationDescription: "The provided data is invalid. Please check your input and try again.",
+    errorValidationDescription:
+      "The provided data is invalid. Please check your input and try again.",
     errorPermissionDenied: "Permission denied",
     errorPermissionDeniedDescription: "You do not have permission to perform this action.",
     errorTimeout: "Operation timed out",
     errorTimeoutDescription: "The operation took too long to complete. Please try again.",
     errorRecoverableHint: "This error can be recovered. Please try again.",
-    errorNonRecoverableHint: "This error requires application restart or administrator intervention.",
+    errorNonRecoverableHint:
+      "This error requires application restart or administrator intervention.",
     // Feature error boundary
     featureErrorTitle: "{feature} Error",
-    featureErrorDescription: "This feature encountered an error. You can try again or navigate to a different section.",
+    featureErrorDescription:
+      "This feature encountered an error. You can try again or navigate to a different section.",
     errorDetails: "Error details",
     retryFeature: "Try Again",
     portfolioFeature: "Portfolio",
@@ -1769,7 +1882,8 @@ const messages = {
     optionsTitle: "Options Analysis",
     optionsDescription: "Black-Scholes pricing, Greeks calculation, and strategy analysis.",
     demoOptionChainTitle: "Demo option chain",
-    demoOptionChainDescription: "Fetch a persisted demo chain, then select it to inspect its contracts.",
+    demoOptionChainDescription:
+      "Fetch a persisted demo chain, then select it to inspect its contracts.",
     fetchDemoChain: "Fetch demo chain",
     fetchingDemoChain: "Fetching…",
     optionSymbolPlaceholder: "AAPL",
@@ -1817,9 +1931,11 @@ const messages = {
     greeksRho: "Rho",
     optionStrategies: "Option strategies",
     createOptionStrategy: "Create option strategy",
-    selectContractsForStrategy: "Select at least one contract from the active chain to create a strategy.",
+    selectContractsForStrategy:
+      "Select at least one contract from the active chain to create a strategy.",
     failedToLoadOptionStrategies: "Failed to load option strategies",
-    failedToCreateOptionStrategy: "Unable to create the option strategy. Check the inputs and try again.",
+    failedToCreateOptionStrategy:
+      "Unable to create the option strategy. Check the inputs and try again.",
     failedToDeleteOptionStrategy: "Unable to delete the option strategy. Try again.",
     noOptionStrategies: "No option strategies",
     noOptionStrategiesDescription: "Select contracts and save a controlled multi-leg strategy.",
@@ -1890,12 +2006,14 @@ const messages = {
     toolDerivativesOverviewDescription: "Derivatives market overview",
     // Market Quotes Board
     quotesTitle: "Market Quotes",
-    quotesDescription: "Live and historical asset pricing dashboard with on-demand refresh, spread tracking, and thesis linkage.",
+    quotesDescription:
+      "Live and historical asset pricing dashboard with on-demand refresh, spread tracking, and thesis linkage.",
     refreshAllQuotes: "Refresh All Quotes",
     refreshingAllQuotes: "Syncing quotes across markets…",
     refreshSingleQuote: "Refresh Quote",
     noActiveAssetsForQuotes: "No Active Assets",
-    noActiveAssetsForQuotesDesc: "Create assets or import activity records in Portfolio to begin monitoring quotes.",
+    noActiveAssetsForQuotesDesc:
+      "Create assets or import activity records in Portfolio to begin monitoring quotes.",
     goToPortfolio: "Go to Portfolio",
     latestQuote: "Latest Quote",
     quoteDay: "Quote Date",
@@ -1928,7 +2046,8 @@ const messages = {
     chartModeOhlc: "OHLC Bars",
     // Taxonomy & Target Allocation
     taxonomyManagementTitle: "Asset Taxonomies & Allocation Targets",
-    taxonomyManagementDesc: "Construct multi-dimensional asset taxonomies (Asset Class, Strategy, Risk Profile) and monitor target weights with rebalancing drift bands.",
+    taxonomyManagementDesc:
+      "Construct multi-dimensional asset taxonomies (Asset Class, Strategy, Risk Profile) and monitor target weights with rebalancing drift bands.",
     taxonomiesLabel: "Taxonomies",
     taxonomyCategoriesLabel: "Categories",
     allocationTargetsLabel: "Allocation Targets",
@@ -1946,33 +2065,40 @@ const messages = {
     withinDriftStatus: "Within Tolerance",
     outOfDriftStatus: "Out of Tolerance",
     noTaxonomiesYet: "No Taxonomies Defined",
-    noTaxonomiesDesc: "Create multi-dimensional classification schemes (e.g. Asset Class, Geography, Factor) to structure your portfolio holdings.",
+    noTaxonomiesDesc:
+      "Create multi-dimensional classification schemes (e.g. Asset Class, Geography, Factor) to structure your portfolio holdings.",
     noAllocationTargetsYet: "No Allocation Targets",
-    noAllocationTargetsDesc: "Define model portfolio allocations (e.g. 60% Equities / 40% Fixed Income) with drift tolerances to monitor rebalancing needs.",
+    noAllocationTargetsDesc:
+      "Define model portfolio allocations (e.g. 60% Equities / 40% Fixed Income) with drift tolerances to monitor rebalancing needs.",
     rebalanceActionRecommended: "Rebalancing Action Recommended",
     rebalanceWithinLimits: "Allocation within tolerance bands",
     // Demo Data & Onboarding Wizard
     demoDataSectionTitle: "Demo Data Management",
-    demoDataSectionDesc: "Load a complete institutional-grade AI & Semiconductor investment portfolio (with workspace, theses, trade lots, 30-day historical quotes, and drift bands).",
+    demoDataSectionDesc:
+      "Load a complete institutional-grade AI & Semiconductor investment portfolio (with workspace, theses, trade lots, 30-day historical quotes, and drift bands).",
     loadDemoDataBtn: "Load Full Demo Portfolio",
     loadingDemoDataBtn: "Seeding Demo Data…",
-    demoDataLoadedSuccess: "Demo data loaded successfully! Switched to workspace \"{name}\".",
+    demoDataLoadedSuccess: 'Demo data loaded successfully! Switched to workspace "{name}".',
     demoDataLoadedError: "Failed to load demo data. Check application logs.",
     onboardingTitle: "Welcome to AlphaForge Investment Research OS",
-    onboardingDesc: "No existing research workspaces were detected. You can instantly load an institutional demo dataset or create your first workspace from scratch.",
+    onboardingDesc:
+      "No existing research workspaces were detected. You can instantly load an institutional demo dataset or create your first workspace from scratch.",
     onboardingLoadDemoOption: "Load Demo Dataset (Recommended)",
-    onboardingLoadDemoDesc: "Preloads AI & semiconductor theses, live holdings (NVDA, MSFT, TSM), 30 days of historical candlestick quotes, and target allocation models.",
+    onboardingLoadDemoDesc:
+      "Preloads AI & semiconductor theses, live holdings (NVDA, MSFT, TSM), 30 days of historical candlestick quotes, and target allocation models.",
     onboardingCustomOption: "Start from Scratch",
-    onboardingCustomDesc: "Create an empty research workspace to manually track your own custom tickers and investment theses.",
+    onboardingCustomDesc:
+      "Create an empty research workspace to manually track your own custom tickers and investment theses.",
     onboardingStartFreshBtn: "Create & Enter Workspace",
     onboardingWorkspaceNamePlaceholder: "Enter workspace name (e.g. US Core Tech & Quant)",
     // Status Bar & System Health
-    systemOperational: "All systems operational",
+    systemOperational: "Backend operational",
     systemDegraded: "Database degraded",
     systemChecking: "Checking system health…",
     systemOffline: "Offline",
     dbHealthy: "Database ready",
     dbUnhealthy: "Database error",
+    dbChecking: "Checking database",
   },
 } as const;
 
@@ -1995,5 +2121,5 @@ export function parseLocale(value: string | null | undefined): Locale {
 
 export { messages };
 
-// Note: Portfolio keys added to catalog files. For brevity in locale.ts, 
+// Note: Portfolio keys added to catalog files. For brevity in locale.ts,
 // using the catalog exports directly via t() in components.

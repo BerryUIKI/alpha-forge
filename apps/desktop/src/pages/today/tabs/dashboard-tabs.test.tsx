@@ -15,6 +15,17 @@ vi.mock("@/pages/today/hooks/useDashboardData", () => ({
   useDashboardActivity: vi.fn(),
 }));
 
+vi.mock("@/features/workspace/hooks/useActiveWorkspace.context", () => ({
+  useActiveWorkspaceId: () => "ws-1",
+  useActiveWorkspace: () => ({
+    workspaceId: "ws-1",
+    workspace: { id: "ws-1", name: "Workspace" },
+    workspaces: [{ id: "ws-1", name: "Workspace" }],
+    isLoading: false,
+    setActiveWorkspace: vi.fn(),
+  }),
+}));
+
 import { useDashboardSummary, useDashboardActivity } from "@/pages/today/hooks/useDashboardData";
 
 function renderTab(Component: () => ReactElement) {

@@ -165,7 +165,7 @@ React (AgentPanel)
           → Structured ResearchCompletion parsed via Zod & rendered in ResearchResultCard
 ```
 
-- **Startup Race Protection**: Rust emits `app:ready` upon `AppState` initialization; `useAppReady` gates frontend IPC.
+- **Startup Race Protection**: Rust records readiness in a managed `AppReadiness` state and emits `app:ready` / `app:init-failed`. `useAppReady` subscribes to the events and also reads `get_app_status`, so panels mounted after startup still receive the correct state; listener failure and prolonged initialization surface explicit states. Commands are gated on readiness.
 - **Failure Context**: Exact failure payloads are surfaced to users in `AgentPanel` with complete EN/ZH-CN i18n.
 - **Target Worker Boundary**: Rust will supervise ephemeral Agent workers while
   retaining provider credentials, network calls, tools, SQLite, domain writes,

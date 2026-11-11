@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, ArrowUpRight, ArrowDownRight, ExternalLink, Loader2 } from "lucide-react";
+import { FileText, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
 import { desktopApi } from "@/lib/desktop-api";
@@ -16,80 +16,43 @@ interface FilingDisplayItem {
   ticker: string;
   formType: string;
   filingDate: string;
+  companyName?: string;
+  accessionNumber?: string;
   summary: string;
-  linkedThesis: string;
-  impactType: "positive" | "contra";
-  confidenceDelta: number;
+  /** Only populated from a persisted thesis ↔ asset link. */
+  linkedThesis: string | null;
   filingUrl?: string;
 }
 
-const FALLBACK_FILINGS: FilingDisplayItem[] = [
-  {
-    id: "filing-fallback-1",
-    ticker: "NVDA",
-    formType: "SEC Form 10-Q",
-    filingDate: "2024-08-28",
-    summary:
-      "Data Center revenue grew 154% YoY with customer purchase obligations expanding 28% QoQ, confirming strong enterprise rack visibility.",
-    linkedThesis: "Blackwell Rack Ramp Ahead of Consensus",
-    impactType: "positive",
-    confidenceDelta: 4,
-  },
-  {
-    id: "filing-fallback-2",
-    ticker: "ASML",
-    formType: "SEC Form 6-K",
-    filingDate: "2024-07-17",
-    summary:
-      "Management confirmed selective High-NA EUV tool deliveries deferred into early 2026, though total order backlog remains solid at €36B.",
-    linkedThesis: "EUV Lithography Order Inflection",
-    impactType: "contra",
-    confidenceDelta: 3,
-  },
-];
-
 function mapSecFilingToDisplay(
   filing: SecFiling,
-  index: number,
   theses: InvestmentThesis[],
   assetMap: Map<string, Asset>,
-  t: (k: any) => string,
 ): FilingDisplayItem {
-  // Find if any thesis is linked to an asset matching this ticker
   const matchingAsset = Array.from(assetMap.values()).find(
-    (a) =>
-      a.display_code?.toUpperCase() === filing.ticker.toUpperCase() ||
-      a.instrument_symbol?.toUpperCase() === filing.ticker.toUpperCase(),
+    (asset) =>
+      asset.display_code?.toUpperCase() === filing.ticker.toUpperCase() ||
+      asset.instrument_symbol?.toUpperCase() === filing.ticker.toUpperCase(),
   );
 
+  // Thesis linkage comes from canonical records only; ticker/title heuristics
+  // and row-order sentiment are never presented as analysis.
   const matchedThesis = matchingAsset
-    ? theses.find((th) => th.portfolioAssetId === matchingAsset.id)
-    : theses.find((th) =>
-        th.title.toUpperCase().includes(filing.ticker.toUpperCase()),
-      );
-
-  const linkedThesis = matchedThesis
-    ? matchedThesis.title
-    : formatMessage(t("secGeneralTracking"), { ticker: filing.ticker });
-
-  // Use natural alternating or sentiment heuristic if available
-  const impactType: "positive" | "contra" = index % 2 === 0 ? "positive" : "contra";
-  const confidenceDelta = index % 2 === 0 ? 4 : 2;
-
-  const summary =
-    filing.primaryDocDescription ||
-    filing.summary ||
-    `${filing.formType} submission for period ending ${filing.reportDate ?? filing.filingDate}. Material disclosure archived on EDGAR.`;
+    ? theses.find((thesis) => thesis.portfolioAssetId === matchingAsset.id)
+    : undefined;
 
   return {
     id: filing.id,
     ticker: filing.ticker,
     formType: `SEC Form ${filing.formType}`,
     filingDate: filing.filingDate,
-    summary,
-    linkedThesis,
-    impactType,
-    confidenceDelta,
+    companyName: filing.companyName,
+    accessionNumber: filing.accessionNumber,
+    summary:
+      filing.primaryDocDescription ||
+      filing.summary ||
+      `${filing.formType} submission for period ending ${filing.reportDate ?? filing.filingDate}.`,
+    linkedThesis: matchedThesis?.title ?? null,
     filingUrl: filing.filingUrl,
   };
 }
@@ -100,63 +63,72 @@ export function SecFilingFeed() {
   const { data: assets = [] } = useListActiveAssets();
   const { data: theses = [] } = useTheses(workspaceId);
 
-  // Collect unique equity tickers from active assets (fallback to NVDA)
-  const equityAssets = assets.filter((a) => a.kind === "investment" || a.kind === ("equity" as any));
+  // Equity tickers come from the user's own assets; there is no demo fallback.
+  const equityAssets = assets.filter((asset) => asset.kind === "investment");
   const availableTickers = Array.from(
     new Set(
       equityAssets
-        .map((a) => a.display_code || a.instrument_symbol)
-        .filter((sym): sym is string => typeof sym === "string" && sym.trim().length > 0 && sym.length <= 5),
+        .map((asset) => asset.display_code || asset.instrument_symbol)
+        .filter(
+          (symbol): symbol is string =>
+            typeof symbol === "string" && symbol.trim().length > 0 && symbol.length <= 5,
+        ),
     ),
   );
 
-  const defaultTicker = availableTickers[0] || "NVDA";
-  const [selectedTicker, setSelectedTicker] = useState<string>(defaultTicker);
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
+  const activeTicker =
+    selectedTicker && availableTickers.includes(selectedTicker)
+      ? selectedTicker
+      : (availableTickers[0] ?? "");
 
-  const activeTicker = availableTickers.includes(selectedTicker)
-    ? selectedTicker
-    : defaultTicker;
-
-  const { data: filings, isLoading: loadingFilings } = useQuery({
+  const {
+    data: filings,
+    isLoading: loadingFilings,
+    isFetching: fetchingFilings,
+    dataUpdatedAt,
+    isError: filingsError,
+    refetch: refetchFilings,
+  } = useQuery({
     queryKey: ["sec-filings", activeTicker],
     queryFn: () => desktopApi.research.fetchSecCompanyFilings(activeTicker, 3),
+    enabled: Boolean(activeTicker),
     staleTime: 1000 * 60 * 15,
-    retry: 1,
+    retry: false,
   });
 
-  const assetMap = new Map<string, Asset>(assets.map((a) => [a.id, a]));
-
-  const liveItems: FilingDisplayItem[] =
-    filings && filings.length > 0
-      ? filings.map((f, i) => mapSecFilingToDisplay(f, i, theses, assetMap, t))
-      : FALLBACK_FILINGS;
+  const assetMap = new Map<string, Asset>(assets.map((asset) => [asset.id, asset]));
+  const items: FilingDisplayItem[] = (filings ?? []).map((filing) =>
+    mapSecFilingToDisplay(filing, theses, assetMap),
+  );
 
   return (
-    <div className="rounded-xl border border-white/10 bg-[#1c1e28] p-5 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-cyan-400" />
-            <h3 className="text-sm font-semibold text-white tracking-tight">
+            <FileText className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h3 className="text-sm font-semibold tracking-tight text-foreground">
               {t("secFilingFeed")}
             </h3>
           </div>
 
-          {/* Active Tickers Selector */}
+          {/* Ticker selector, driven by the user's active assets */}
           {availableTickers.length > 1 && (
-            <div className="flex items-center gap-1 rounded-lg bg-black/40 p-0.5 border border-white/5">
-              {availableTickers.slice(0, 4).map((sym) => (
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-0.5">
+              {availableTickers.slice(0, 4).map((symbol) => (
                 <button
-                  key={sym}
+                  key={symbol}
                   type="button"
-                  onClick={() => setSelectedTicker(sym)}
-                  className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
-                    activeTicker === sym
-                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
-                      : "text-neutral-400 hover:text-white"
-                  }`}
+                  onClick={() => setSelectedTicker(symbol)}
+                  aria-pressed={activeTicker === symbol}
+                  className={
+                    activeTicker === symbol
+                      ? "rounded border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold text-primary"
+                      : "rounded px-2 py-0.5 font-mono text-[10px] font-bold text-muted-foreground transition-colors hover:text-foreground"
+                  }
                 >
-                  {sym}
+                  {symbol}
                 </button>
               ))}
             </div>
@@ -164,91 +136,128 @@ export function SecFilingFeed() {
         </div>
 
         <div className="flex items-center gap-2">
-          {loadingFilings && (
-            <span className="flex items-center gap-1 text-[10px] text-neutral-400">
-              <Loader2 className="h-3 w-3 animate-spin text-cyan-400" />
+          {loadingFilings && activeTicker && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin text-primary" aria-hidden="true" />
               {t("secLoading")}
             </span>
           )}
-          <span className="rounded bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-300 border border-cyan-500/20">
-            {t("secLiveEdgar")}
-          </span>
+          {!loadingFilings && !filingsError && activeTicker && (
+            <span className="rounded border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              {t("secLiveEdgar")}
+            </span>
+          )}
+          {!loadingFilings && !filingsError && activeTicker && dataUpdatedAt > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              {formatMessage(t("secRetrievedAt"), {
+                time: new Date(dataUpdatedAt).toLocaleTimeString(),
+              })}
+            </span>
+          )}
+          {fetchingFilings && !loadingFilings && (
+            <span className="text-[10px] text-muted-foreground" role="status">
+              {t("refreshing")}
+            </span>
+          )}
+          {filingsError && (
+            <span className="rounded border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
+              {t("secUnavailable")}
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="space-y-3">
-        {liveItems.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-lg border border-white/5 bg-black/20 p-3 text-xs space-y-2 hover:border-white/10 transition-colors"
+      {/* No assets to follow */}
+      {availableTickers.length === 0 ? (
+        <p
+          className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground"
+          role="status"
+        >
+          {t("secNoAssets")}
+        </p>
+      ) : filingsError ? (
+        <div
+          className="flex flex-col items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive"
+          role="alert"
+        >
+          <p className="font-medium">{t("secErrorTitle")}</p>
+          <p className="text-destructive/80">{t("secErrorDescription")}</p>
+          <button
+            type="button"
+            onClick={() => void refetchFilings()}
+            className="inline-flex items-center gap-1 rounded border border-destructive/30 px-2 py-1 font-medium hover:bg-destructive/10"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-indigo-300 flex items-center gap-1.5">
-                <span className="font-mono text-white font-bold">{item.ticker}</span>
-                <span className="text-neutral-500">·</span>
-                <span>{item.formType}</span>
-              </span>
-              <span className="text-[10px] text-neutral-400 font-mono">
-                {item.filingDate}
-              </span>
-            </div>
-
-            {/* Extracted snippet */}
-            <p className="text-neutral-300 text-[11px] leading-relaxed">
-              {item.summary}
-            </p>
-
-            {/* Linked Thesis & Conviction Delta */}
-            <div className="flex flex-wrap items-center justify-between pt-1 border-t border-white/5 text-[10px]">
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400">
-                  {formatMessage(t("linkedThesis"), { title: item.linkedThesis })}
+            <RefreshCw className="h-3 w-3" aria-hidden="true" />
+            {t("retry")}
+          </button>
+        </div>
+      ) : loadingFilings ? (
+        <div className="space-y-3" aria-busy="true">
+          <div className="h-20 animate-pulse rounded-lg bg-muted" />
+          <div className="h-20 animate-pulse rounded-lg bg-muted" />
+        </div>
+      ) : items.length === 0 ? (
+        <p
+          className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground"
+          role="status"
+        >
+          {formatMessage(t("secNoFilings"), { ticker: activeTicker })}
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {items.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-lg border border-border bg-muted/30 p-3 text-xs space-y-2"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                  <span className="font-mono font-bold">{item.ticker}</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span>{item.formType}</span>
                 </span>
-                {item.filingUrl && (
-                  <a
-                    href={item.filingUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-0.5 text-cyan-400 hover:text-cyan-300 hover:underline text-[10px]"
-                  >
-                    <span>{t("secViewDocument")}</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                )}
+                <time
+                  dateTime={item.filingDate}
+                  className="text-[10px] font-mono text-muted-foreground"
+                >
+                  {item.filingDate}
+                </time>
               </div>
 
-              <div
-                className={`flex items-center gap-1 font-medium ${
-                  item.impactType === "positive"
-                    ? "text-emerald-400"
-                    : "text-rose-400"
-                }`}
-              >
-                {item.impactType === "positive" ? (
-                  <>
-                    <ArrowUpRight className="h-3 w-3" />
-                    <span>
-                      {formatMessage(t("evidencePositive"), {
-                        delta: String(item.confidenceDelta),
-                      })}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownRight className="h-3 w-3" />
-                    <span>
-                      {formatMessage(t("evidenceContra"), {
-                        delta: String(item.confidenceDelta),
-                      })}
-                    </span>
-                  </>
-                )}
+              <p className="text-muted-foreground text-[11px] leading-relaxed">{item.summary}</p>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-[10px]">
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+                  <span>
+                    {item.linkedThesis
+                      ? formatMessage(t("linkedThesis"), { title: item.linkedThesis })
+                      : t("secAnalysisUnavailable")}
+                  </span>
+                  <span className="text-muted-foreground/60">·</span>
+                  <span>{t("secSource")}</span>
+                  {item.accessionNumber && (
+                    <>
+                      <span className="text-muted-foreground/60">·</span>
+                      <span className="font-mono">{item.accessionNumber}</span>
+                    </>
+                  )}
+                  {item.filingUrl && (
+                    <a
+                      href={item.filingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-0.5 text-primary hover:underline"
+                    >
+                      <span>{t("secViewDocument")}</span>
+                      <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" />
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

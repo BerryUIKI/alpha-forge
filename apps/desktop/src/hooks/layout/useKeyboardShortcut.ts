@@ -22,6 +22,18 @@ interface KeyboardShortcutConfig {
   enabled?: boolean;
   /** Prevent default browser behavior */
   preventDefault?: boolean;
+  /**
+   * Ignore the shortcut while focus is in a text-editing control.
+   * Use for shortcuts that would otherwise interfere with typing.
+   */
+  ignoreEditable?: boolean;
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 
 /**
@@ -33,11 +45,18 @@ export function useKeyboardShortcut({
   callback,
   enabled = true,
   preventDefault = true,
+  ignoreEditable = false,
 }: KeyboardShortcutConfig) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       // Check if enabled
       if (!enabled) return;
+
+      // Never run during IME composition (e.g., Chinese input).
+      if (event.isComposing) return;
+
+      // Optionally stay out of the way of text editing.
+      if (ignoreEditable && isEditableTarget(event.target)) return;
 
       // Check if key matches
       if (event.key.toLowerCase() !== key.toLowerCase()) return;
@@ -60,9 +79,10 @@ export function useKeyboardShortcut({
 
       // Verify all required modifiers are pressed
       const modifiersPressed = modifiers.every(hasModifier);
-      
+
       // If no modifiers required, ensure no modifiers are pressed
-      const noModifiersPressed = !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;
+      const noModifiersPressed =
+        !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;
 
       if (modifiers.length > 0 && !modifiersPressed) return;
       if (modifiers.length === 0 && !noModifiersPressed) return;
@@ -75,7 +95,7 @@ export function useKeyboardShortcut({
       // Execute callback
       callback();
     },
-    [key, modifiers, callback, enabled, preventDefault]
+    [key, modifiers, callback, enabled, preventDefault, ignoreEditable],
   );
 
   useEffect(() => {

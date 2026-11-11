@@ -208,4 +208,65 @@ mod tests {
             _ => panic!("Expected NotFound error"),
         }
     }
+
+    #[tokio::test]
+    async fn test_compute_consolidated_treats_late_account_as_inflow() {
+        let pool = setup_test_db().await;
+        let account_a = create_account(&pool, "Account A").await;
+        let account_b = create_account(&pool, "Account B").await;
+
+        let aug12 = NaiveDate::from_ymd_opt(2026, 8, 12).expect("valid date");
+        let aug13 = NaiveDate::from_ymd_opt(2026, 8, 13).expect("valid date");
+        let aug15 = NaiveDate::from_ymd_opt(2026, 8, 15).expect("valid date");
+
+        // Account A is funded before the measured period and grows 10%.
+        upsert_valuation(&pool, &account_a, aug12, "10000").await;
+        upsert_valuation(&pool, &account_a, aug13, "10000").await;
+        upsert_valuation(&pool, &account_a, aug15, "11000").await;
+
+        // Account B first appears mid-period with 5,000: this is an external
+        // inflow, not investment return.
+        upsert_valuation(&pool, &account_b, aug15, "5000").await;
+
+        let service = create_performance_service(&pool);
+        let consolidated = service
+            .compute_consolidated(&[account_a, account_b], aug13, aug15, Some("USD"))
+            .await
+            .expect("compute_consolidated should succeed");
+
+        assert_eq!(consolidated.base_currency, "USD");
+        assert_eq!(consolidated.points.len(), 2);
+        assert_eq!(consolidated.points[0].total_value_base, dec("10000"));
+        assert_eq!(consolidated.points[0].covered_accounts, 1);
+        assert_eq!(consolidated.points[1].total_value_base, dec("16000"));
+        assert_eq!(consolidated.points[1].covered_accounts, 2);
+        assert_eq!(consolidated.points[1].net_contribution_base, dec("5000"));
+
+        assert_eq!(consolidated.net_contribution, dec("5000"));
+        assert_eq!(consolidated.total_gain, dec("1000"));
+        assert_eq!(consolidated.total_return_pct, Some(dec("10")));
+        assert_eq!(consolidated.twr_pct, Some(dec("10")));
+        assert_eq!(consolidated.data_quality, "partial");
+        assert_eq!(consolidated.account_count, 2);
+        assert_eq!(consolidated.covered_account_count, 2);
+        assert_eq!(consolidated.skipped_accounts, 0);
+    }
+
+    #[tokio::test]
+    async fn test_compute_consolidated_insufficient_data() {
+        let pool = setup_test_db().await;
+        let account_id = create_account(&pool, "Single Valuation").await;
+        let aug13 = NaiveDate::from_ymd_opt(2026, 8, 13).expect("valid date");
+        upsert_valuation(&pool, &account_id, aug13, "10000").await;
+
+        let service = create_performance_service(&pool);
+        let consolidated = service
+            .compute_consolidated(&[account_id], aug13, aug13, Some("USD"))
+            .await
+            .expect("compute_consolidated should succeed");
+
+        assert_eq!(consolidated.data_quality, "insufficient_data");
+        assert!(consolidated.points.is_empty());
+        assert_eq!(consolidated.total_return_pct, None);
+    }
 }

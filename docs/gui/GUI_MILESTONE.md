@@ -29,6 +29,7 @@ Information → Knowledge → Thesis → Decision → Validation → Review → 
 ```
 
 The new layout makes each step visible and accessible:
+
 - **Dashboard** surfaces key metrics and recent activity at a glance
 - **Research** takes center stage with dedicated navigation
 - **Theses/Journal** has its own nav item for easy access
@@ -132,16 +133,16 @@ App
 
 ## 3. Milestones
 
-| ID | Name | Status | Dependencies | Est. Effort |
-|----|------|--------|-------------|-------------|
-| GUI-M0 | Core Layout Shell | ✅ Done | None | 1 sprint |
-| GUI-M1 | Navigation & Routing | ✅ Done | GUI-M0 | 1 sprint |
-| GUI-M2 | UI Component System | ✅ Done | None (parallel with M1) | 1 sprint |
-| GUI-M3 | Dashboard Page | ✅ Done | GUI-M1, GUI-M2 | 1 sprint |
-| GUI-M4 | Agent Panel Refinement | ✅ Done | GUI-M0 | 1 sprint |
-| GUI-M5 | Polish & Cleanup | ✅ Done | GUI-M3, GUI-M4 | 1 sprint |
-| GUI-E1 | TopBar Action Buttons | ✅ Done | GUI-M0 | 1 sprint |
-| GUI-E2 | Dashboard Data Wiring | ✅ Done | GUI-M3 | 1 sprint |
+| ID     | Name                   | Status  | Dependencies            | Est. Effort |
+| ------ | ---------------------- | ------- | ----------------------- | ----------- |
+| GUI-M0 | Core Layout Shell      | ✅ Done | None                    | 1 sprint    |
+| GUI-M1 | Navigation & Routing   | ✅ Done | GUI-M0                  | 1 sprint    |
+| GUI-M2 | UI Component System    | ✅ Done | None (parallel with M1) | 1 sprint    |
+| GUI-M3 | Dashboard Page         | ✅ Done | GUI-M1, GUI-M2          | 1 sprint    |
+| GUI-M4 | Agent Panel Refinement | ✅ Done | GUI-M0                  | 1 sprint    |
+| GUI-M5 | Polish & Cleanup       | ✅ Done | GUI-M3, GUI-M4          | 1 sprint    |
+| GUI-E1 | TopBar Action Buttons  | ✅ Done | GUI-M0                  | 1 sprint    |
+| GUI-E2 | Dashboard Data Wiring  | ✅ Done | GUI-M3                  | 1 sprint    |
 
 ### Dependency Graph
 
@@ -161,26 +162,26 @@ GUI-M0 (Core Layout Shell)
 ```typescript
 interface NavItem {
   id: string;
-  label: string;         // i18n key
-  icon: LucideIcon;      // Lucide icon component
-  route: string;         // React Router path
-  keywords?: string[];   // For search/command palette
+  label: string; // i18n key
+  icon: LucideIcon; // Lucide icon component
+  route: string; // React Router path
+  keywords?: string[]; // For search/command palette
 }
 
 interface NavGroup {
   id: string;
-  label: string;         // i18n section label
+  label: string; // i18n section label
   items: NavItem[];
 }
 ```
 
 ### Navigation Groups
 
-| Group | ID | Label (EN) | Items |
-|-------|-----|-----------|-------|
+| Group     | ID          | Label (EN)      | Items                                                                                                                                 |
+| --------- | ----------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Workspace | `workspace` | `nav.workspace` | Dashboard (`/`), Research (`/research`), Theses (`/theses`), Portfolio (`/portfolio`), Knowledge (`/knowledge`), Journal (`/journal`) |
-| Tools | `tools` | `nav.tools` | Options (`/options`), Artifacts (`/artifacts`) |
-| Account | `account` | `nav.account` | Settings (`/settings`) |
+| Tools     | `tools`     | `nav.tools`     | Options (`/options`), Artifacts (`/artifacts`)                                                                                        |
+| Account   | `account`   | `nav.account`   | Settings (`/settings`)                                                                                                                |
 
 ---
 
@@ -228,25 +229,25 @@ The existing Tailwind CSS v4 theme with HSL-based CSS custom properties is prese
 
 ### GUI-M0 Components
 
-| Component | File | Key Props | Description |
-|-----------|------|-----------|-------------|
-| `MainLayout` | `components/layout/MainLayout.tsx` | — | Three-zone layout orchestrator |
-| `LeftSidebar` | `components/layout/LeftSidebar/LeftSidebar.tsx` | — | Collapsible, resizable nav sidebar |
-| `NavItem` | `components/layout/LeftSidebar/NavItem.tsx` | `{ item: NavItem; collapsed: boolean }` | Single navigation item |
-| `NavGroup` | `components/layout/LeftSidebar/NavGroup.tsx` | `{ label: string; children; collapsed: boolean }` | Named navigation section |
-| `TopBar` | `components/layout/TopBar/TopBar.tsx` | `{ isRightSidebarExpanded; onToggleRightSidebar }` | App header bar |
-| `MainContent` | `components/layout/MainContent/MainContent.tsx` | `{ children; isRightSidebarExpanded; onToggleRightSidebar }` | Center content stack |
-| `StatusBar` | `components/layout/MainContent/StatusBar.tsx` | — | Bottom status bar |
-| `RightSidebar` | `components/layout/RightSidebar/RightSidebar.tsx` | `{ state; onStateChange }` | Agent panel sidebar |
+| Component      | File                                              | Key Props                                                    | Description                        |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
+| `MainLayout`   | `components/layout/MainLayout.tsx`                | —                                                            | Three-zone layout orchestrator     |
+| `LeftSidebar`  | `components/layout/LeftSidebar/LeftSidebar.tsx`   | —                                                            | Collapsible, resizable nav sidebar |
+| `NavItem`      | `components/layout/LeftSidebar/NavItem.tsx`       | `{ item: NavItem; collapsed: boolean }`                      | Single navigation item             |
+| `NavGroup`     | `components/layout/LeftSidebar/NavGroup.tsx`      | `{ label: string; children; collapsed: boolean }`            | Named navigation section           |
+| `TopBar`       | `components/layout/TopBar/TopBar.tsx`             | `{ isRightSidebarExpanded; onToggleRightSidebar }`           | App header bar                     |
+| `MainContent`  | `components/layout/MainContent/MainContent.tsx`   | `{ children; isRightSidebarExpanded; onToggleRightSidebar }` | Center content stack               |
+| `StatusBar`    | `components/layout/MainContent/StatusBar.tsx`     | —                                                            | Bottom status bar                  |
+| `RightSidebar` | `components/layout/RightSidebar/RightSidebar.tsx` | `{ state; onStateChange }`                                   | Agent panel sidebar                |
 
 ### GUI-M2 Components
 
-| Component | File | Key Props | Description |
-|-----------|------|-----------|-------------|
+| Component       | File                              | Key Props                                                             | Description                  |
+| --------------- | --------------------------------- | --------------------------------------------------------------------- | ---------------------------- |
 | `DashboardCard` | `components/ui/DashboardCard.tsx` | `{ title, subtitle?, action?, meta?, padded?, elevated?, children? }` | Reusable glass-morphism card |
-| `StatCard` | `components/ui/StatCard.tsx` | `{ label, value, change?, changeDirection?, icon? }` | Metric display card |
-| `TabBar` | `components/ui/TabBar.tsx` | `{ tabs, activeTab, onTabChange }` | Segmented control tab bar |
-| `SearchBar` | `components/ui/SearchBar.tsx` | `{ placeholder?, value?, onChange? }` | Styled search input |
+| `StatCard`      | `components/ui/StatCard.tsx`      | `{ label, value, change?, changeDirection?, icon? }`                  | Metric display card          |
+| `TabBar`        | `components/ui/TabBar.tsx`        | `{ tabs, activeTab, onTabChange }`                                    | Segmented control tab bar    |
+| `SearchBar`     | `components/ui/SearchBar.tsx`     | `{ placeholder?, value?, onChange? }`                                 | Styled search input          |
 
 ---
 
@@ -264,25 +265,25 @@ The existing Tailwind CSS v4 theme with HSL-based CSS custom properties is prese
 
 ### What's Removed (GUI-M5)
 
-| File | Reason |
-|------|--------|
-| `FunctionalViewSelector.tsx` | Replaced by simplified NavItem-based sidebar |
-| `ToolsList.tsx` | Replaced by NavGroup(Tools) |
-| `ScrollableList.tsx` | Not used in current layout |
-| `WorkspaceSelector.tsx` | Not used in current layout |
-| `tools-config.tsx` | Replaced by navigation config |
-| `OperationBar.tsx` | Replaced by TopBar |
-| `WorkspaceDropdown.tsx` | Functionality moved to workspace selector in TopBar |
-| `navigation/Sidebar.tsx` | Old sidebar code, fully replaced |
+| File                         | Reason                                              |
+| ---------------------------- | --------------------------------------------------- |
+| `FunctionalViewSelector.tsx` | Replaced by simplified NavItem-based sidebar        |
+| `ToolsList.tsx`              | Replaced by NavGroup(Tools)                         |
+| `ScrollableList.tsx`         | Not used in current layout                          |
+| `WorkspaceSelector.tsx`      | Not used in current layout                          |
+| `tools-config.tsx`           | Replaced by navigation config                       |
+| `OperationBar.tsx`           | Replaced by TopBar                                  |
+| `WorkspaceDropdown.tsx`      | Functionality moved to workspace selector in TopBar |
+| `navigation/Sidebar.tsx`     | Old sidebar code, fully replaced                    |
 
 ### What's Refactored
 
-| File | Change |
-|------|--------|
-| `types.ts` | Remove `FunctionalView`, `ToolItem`, `VIEW_ROUTE_MAP`, etc. |
+| File                    | Change                                                              |
+| ----------------------- | ------------------------------------------------------------------- |
+| `types.ts`              | Remove `FunctionalView`, `ToolItem`, `VIEW_ROUTE_MAP`, etc.         |
 | `hooks/layout/index.ts` | Fix broken import paths for `useNetworkStatus` and `useAgentStatus` |
-| `router.tsx` | Add `/theses` route, add `/knowledge` route |
-| `navigation.ts` (i18n) | Add new keys: `theses`, `knowledge`, `options`, `dashboard` |
+| `router.tsx`            | Add `/theses` route, add `/knowledge` route                         |
+| `navigation.ts` (i18n)  | Add new keys: `theses`, `knowledge`, `options`, `dashboard`         |
 
 ---
 
@@ -305,7 +306,7 @@ The existing Tailwind CSS v4 theme with HSL-based CSS custom properties is prese
 - [ ] Right sidebar (Agent panel) collapses and expands
 - [ ] TopBar breadcrumb shows correct current page
 - [ ] Search input has proper focus styling
-- [ ] StatusBar shows system status, sync time, and version
+- [ ] StatusBar shows backend/database status, connectivity, Agent status, and version (no fabricated sync timestamp)
 - [ ] Keyboard shortcuts work: Ctrl+1 (left toggle), Ctrl+2 (right toggle)
 - [ ] Theme toggle works (light/dark/system)
 - [ ] i18n switches between English and Chinese
@@ -330,4 +331,4 @@ The existing Tailwind CSS v4 theme with HSL-based CSS custom properties is prese
 
 ---
 
-*End of document*
+_End of document_

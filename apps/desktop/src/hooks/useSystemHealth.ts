@@ -13,6 +13,8 @@ import { desktopApi } from "@/lib/desktop-api";
 interface SystemHealth {
   /** Whether the database is healthy */
   isHealthy: boolean;
+  /** Whether the health result is still unknown (initial load) */
+  isLoading: boolean;
   /** Whether there was an error checking health */
   hasError: boolean;
   /** Error message if any */
@@ -27,7 +29,7 @@ const HEALTH_CHECK_INTERVAL_MS = 30000; // 30 seconds
  * Hook for monitoring backend/database health status
  */
 export function useSystemHealth(): SystemHealth {
-  const { data, isError, error } = useQuery({
+  const { data, isError, error, isLoading } = useQuery({
     queryKey: ["system-health"],
     queryFn: () => desktopApi.system.checkDatabaseHealth(),
     refetchInterval: HEALTH_CHECK_INTERVAL_MS,
@@ -37,6 +39,7 @@ export function useSystemHealth(): SystemHealth {
 
   return {
     isHealthy: !isError && data === "healthy",
+    isLoading,
     hasError: isError,
     errorMessage: error?.message,
     status: data,

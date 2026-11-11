@@ -47,20 +47,25 @@ export function ResearchProjectsSection({
         className="flex gap-2"
         onSubmit={(event) => {
           event.preventDefault();
+          if (createPending) return;
           onCreateProject();
         }}
       >
         <input
+          id="new-research-project-title"
           aria-label={t("projectTitle")}
           className="flex-1 rounded border bg-background p-2"
           placeholder={t("projectTitle")}
           value={projectTitle}
           onChange={(event) => onProjectTitleChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              onProjectTitleChange("");
+            }
+          }}
         />
-        <button
-          className="rounded border px-3"
-          disabled={!projectTitle.trim() || createPending}
-        >
+        <button className="rounded border px-3" disabled={!projectTitle.trim() || createPending}>
           {t("create")}
         </button>
       </form>
@@ -73,9 +78,7 @@ export function ResearchProjectsSection({
             >
               {item.title}
             </button>
-            <span className="text-xs text-muted-foreground">
-              ({item.status})
-            </span>
+            <span className="text-xs text-muted-foreground">({item.status})</span>
             <div className="flex gap-1">
               {item.status === "active" && (
                 <>

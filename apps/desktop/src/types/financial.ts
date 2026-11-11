@@ -8,11 +8,7 @@
 
 // ── Enums ───────────────────────────────────────────────────────────────────
 
-export type AccountType =
-  | "securities"
-  | "cash"
-  | "credit_card"
-  | "cryptocurrency";
+export type AccountType = "securities" | "cash" | "credit_card" | "cryptocurrency";
 
 export type TrackingMode = "not_set" | "transactions" | "holdings";
 
@@ -29,12 +25,7 @@ export type AssetKind =
 
 export type QuoteMode = "market" | "manual";
 
-export type InstrumentType =
-  | "equity"
-  | "crypto"
-  | "fx"
-  | "option"
-  | "metal";
+export type InstrumentType = "equity" | "crypto" | "fx" | "option" | "metal";
 
 export type ActivityType =
   | "buy"
@@ -54,12 +45,7 @@ export type ActivityType =
 
 export type ActivityStatus = "posted" | "pending" | "canceled";
 
-export type ValuationStatus =
-  | "initial"
-  | "estimated"
-  | "calculated"
-  | "reviewed"
-  | "final";
+export type ValuationStatus = "initial" | "estimated" | "calculated" | "reviewed" | "final";
 
 export type BasisStatus = "filled" | "settled" | "partial";
 
@@ -312,6 +298,12 @@ export interface PerformancePoint {
   daily_return_pct: string | null;
 }
 
+/**
+ * Performance summary contract.
+ *
+ * `total_return_pct`, `xirr_pct`, and `twr_pct` are percentage points
+ * (`"5"` = 5%). The Rust `PerformanceService` already scales ratios by 100.
+ */
 export interface PerformanceSummary {
   account_id: string;
   start_date: string;

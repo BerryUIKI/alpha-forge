@@ -12,6 +12,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { desktopApi } from "@/lib/desktop-api";
+import type { MessageKey } from "@/lib/i18n/locale";
 import type { AgentConnectionStatus } from "@/components/layout/types";
 
 const AGENT_STATUS_KEY = ["agent", "status"];
@@ -65,7 +66,7 @@ export function useAgentStatus(workspaceId: string) {
     // Check for running/queued tasks
     const tasks = tasksQuery.data || [];
     const hasRunningTasks = tasks.some(
-      (task) => task.status === "running" || task.status === "queued"
+      (task) => task.status === "running" || task.status === "queued",
     );
 
     if (hasRunningTasks) {
@@ -123,4 +124,45 @@ export function useAgentGlobalStatus() {
     retry: false,
     staleTime: 10000, // Cache for 10 seconds
   });
+}
+
+/**
+ * Display status for shell indicators.
+ *
+ * `checking` and `unavailable` are explicit so a loading or failed keychain
+ * check never renders as a healthy idle Agent.
+ */
+export type AgentGlobalDisplayStatus = AgentConnectionStatus | "checking" | "unavailable";
+
+export function useAgentGlobalStatusDisplay(): {
+  status: AgentGlobalDisplayStatus;
+  isLoading: boolean;
+  isError: boolean;
+} {
+  const query = useAgentGlobalStatus();
+
+  return {
+    status: query.isError ? "unavailable" : query.isLoading ? "checking" : (query.data ?? "idle"),
+    isLoading: query.isLoading,
+    isError: query.isError,
+  };
+}
+
+/** Message key for a global Agent indicator label. */
+export function agentStatusLabelKey(status: AgentGlobalDisplayStatus): MessageKey {
+  switch (status) {
+    case "running":
+      return "statusRunning";
+    case "unconfigured":
+      return "statusUnconfigured";
+    case "error":
+      return "statusError";
+    case "checking":
+      return "statusChecking";
+    case "unavailable":
+      return "statusUnavailable";
+    case "idle":
+    default:
+      return "statusIdle";
+  }
 }

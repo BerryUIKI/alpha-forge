@@ -20,9 +20,13 @@
   --color-card-foreground: hsl(var(--card-foreground));
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-market-positive: hsl(var(--market-positive));
+  --color-market-negative: hsl(var(--market-negative));
   --radius: 0.625rem;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Inter",
+    ui-sans-serif, system-ui, sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -46,20 +50,32 @@
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
-  --market-positive: 142 71% 45%;
-  --market-negative: 0 72% 51%;
+  --market-positive: 142 71% 30%;
+  --market-negative: 0 72% 42%;
 }
 
+/* Gains/losses convention. Only colors are swapped; the token names keep
+   their financial meaning (positive = gain). */
 :root[data-market-colors="china"] {
-  --market-positive: 0 72% 51%;
-  --market-negative: 142 71% 45%;
+  --market-positive: 0 72% 42%;
+  --market-negative: 142 71% 30%;
 }
 
-.accent-swatch-indigo { background: hsl(239 84% 67%); }
-.accent-swatch-blue { background: hsl(217 91% 60%); }
-.accent-swatch-emerald { background: hsl(160 84% 39%); }
-.accent-swatch-amber { background: hsl(38 92% 50%); }
-.accent-swatch-rose { background: hsl(347 77% 50%); }
+.accent-swatch-indigo {
+  background: hsl(239 84% 67%);
+}
+.accent-swatch-blue {
+  background: hsl(217 91% 60%);
+}
+.accent-swatch-emerald {
+  background: hsl(160 84% 39%);
+}
+.accent-swatch-amber {
+  background: hsl(38 92% 50%);
+}
+.accent-swatch-rose {
+  background: hsl(347 77% 50%);
+}
 
 .dark {
   --background: 222.2 84% 4.9%;
@@ -81,6 +97,13 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 212.7 26.8% 83.9%;
+  --market-positive: 142 71% 55%;
+  --market-negative: 0 72% 60%;
+}
+
+:root.dark[data-market-colors="china"] {
+  --market-positive: 0 72% 60%;
+  --market-negative: 142 71% 55%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -104,6 +127,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --market-positive: 142 71% 55%;
+    --market-negative: 0 72% 60%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light)[data-market-colors="china"] {
+    --market-positive: 0 72% 60%;
+    --market-negative: 142 71% 55%;
   }
 }
 
@@ -120,8 +152,37 @@ body {
 }
 
 /* User accent preferences must win after light, dark, and system theme rules. */
-:root[data-accent="blue"] { --primary: 217 91% 60%; --ring: 217 91% 60%; }
-:root[data-accent="emerald"] { --primary: 160 84% 39%; --ring: 160 84% 39%; }
-:root[data-accent="amber"] { --primary: 38 92% 50%; --ring: 38 92% 50%; }
-:root[data-accent="rose"] { --primary: 347 77% 50%; --ring: 347 77% 50%; }
-:root[data-accent="indigo"] { --primary: 239 84% 67%; --ring: 239 84% 67%; }
+:root[data-accent="blue"] {
+  --primary: 217 91% 60%;
+  --ring: 217 91% 60%;
+}
+:root[data-accent="emerald"] {
+  --primary: 160 84% 39%;
+  --ring: 160 84% 39%;
+}
+:root[data-accent="amber"] {
+  --primary: 38 92% 50%;
+  --ring: 38 92% 50%;
+}
+:root[data-accent="rose"] {
+  --primary: 347 77% 50%;
+  --ring: 347 77% 50%;
+}
+:root[data-accent="indigo"] {
+  --primary: 239 84% 67%;
+  --ring: 239 84% 67%;
+}
+
+/* Respect the operating system's reduced-motion preference. Decorative
+   pulses/spinners and animated transitions collapse to a static frame while
+   textual loading and status feedback remain visible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

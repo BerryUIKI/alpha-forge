@@ -1264,6 +1264,42 @@ pub struct PerformanceSummary {
     pub data_quality: String,
 }
 
+/// One day in a consolidated (multi-account) performance series.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsolidatedPerformancePoint {
+    pub date: NaiveDate,
+    /// Sum of each covered account's last known base-currency valuation.
+    pub total_value_base: Decimal,
+    /// External flows recorded on this date, in the base currency.
+    pub net_contribution_base: Decimal,
+    /// Accounts with a valuation known on or before this date.
+    pub covered_accounts: usize,
+    /// Accounts included in the consolidation (same base currency).
+    pub total_accounts: usize,
+}
+
+/// Consolidated portfolio performance across accounts sharing one base currency.
+///
+/// Percentages are percentage points (`5` = 5%). `data_quality` is one of
+/// `complete`, `partial`, or `insufficient_data`; `skipped_accounts` counts
+/// requested accounts excluded because their base currency differs.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConsolidatedPerformance {
+    pub base_currency: String,
+    pub points: Vec<ConsolidatedPerformancePoint>,
+    pub total_return_pct: Option<Decimal>,
+    pub xirr_pct: Option<Decimal>,
+    pub twr_pct: Option<Decimal>,
+    pub start_value: Decimal,
+    pub end_value: Decimal,
+    pub net_contribution: Decimal,
+    pub total_gain: Decimal,
+    pub account_count: usize,
+    pub covered_account_count: usize,
+    pub skipped_accounts: usize,
+    pub data_quality: String,
+}
+
 /// A single allocation category with actual vs target.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AllocationCategory {

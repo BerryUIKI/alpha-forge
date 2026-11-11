@@ -2,7 +2,12 @@ import { useMemo, useState } from "react";
 import { BookOpen, Kanban, ListFilter } from "lucide-react";
 import { EmptyState, ErrorState, LoadingSpinner } from "@/components/common";
 import type { InvestmentThesis, ThesisStatus } from "@/lib/desktop-api/thesis";
-import { useTheses, useActivateThesis, useStartThesisValidation, useCompleteThesisValidation } from "../hooks/useTheses";
+import {
+  useTheses,
+  useActivateThesis,
+  useStartThesisValidation,
+  useCompleteThesisValidation,
+} from "../hooks/useTheses";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { ThesisCard } from "./ThesisCard";
 
@@ -12,7 +17,12 @@ interface ThesisPipelineBoardProps {
   onSelect: (thesis: InvestmentThesis) => void;
 }
 
-const STAGES: { status: ThesisStatus; titleKey: "statusDraft" | "statusActive" | "statusValidating" | "statusValidated" | "statusClosed"; dotColor: string }[] = [
+const STAGES: {
+  status: ThesisStatus;
+  titleKey:
+    "statusDraft" | "statusActive" | "statusValidating" | "statusValidated" | "statusClosed";
+  dotColor: string;
+}[] = [
   { status: "draft", titleKey: "statusDraft", dotColor: "bg-neutral-400" },
   { status: "active", titleKey: "statusActive", dotColor: "bg-indigo-400" },
   { status: "validating", titleKey: "statusValidating", dotColor: "bg-amber-400" },
@@ -92,26 +102,28 @@ export function ThesisPipelineBoard({
   return (
     <div className="space-y-4">
       {/* Board Controls & Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Kanban className="h-4 w-4 text-primary" />
-          <span className="text-xs font-semibold text-white tracking-tight">
+          <span className="text-xs font-semibold text-foreground tracking-tight">
             {t("thesesPipelineTitle")}
           </span>
-          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-mono text-neutral-300">
+          <span className="rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-mono text-muted-foreground">
             {filteredTheses.length}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <ListFilter className="h-3.5 w-3.5 text-neutral-400" />
-          <span className="text-xs text-neutral-400">{t("filterStatus")}:</span>
+          <ListFilter className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{t("filterStatus")}:</span>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-lg border border-white/10 bg-[#1c1e28] px-2.5 py-1 text-xs text-neutral-200 outline-none focus:border-primary"
+            className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-foreground outline-none focus:border-primary"
           >
-            <option value="all">{t("allStatuses")} ({data.length})</option>
+            <option value="all">
+              {t("allStatuses")} ({data.length})
+            </option>
             <option value="draft">{t("statusDraft")}</option>
             <option value="active">{t("statusActive")}</option>
             <option value="validating">{t("statusValidating")}</option>
@@ -134,17 +146,15 @@ export function ThesisPipelineBoard({
           return (
             <div
               key={status}
-              className="flex flex-col rounded-xl border border-white/5 bg-[#14161f]/80 p-3 shadow-inner"
+              className="flex flex-col rounded-xl border border-border bg-muted/40 p-3 shadow-inner"
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-3">
+              <div className="flex items-center justify-between border-b border-border pb-2 mb-3">
                 <div className="flex items-center gap-1.5">
                   <span className={`h-2 w-2 rounded-full ${dotColor}`} />
-                  <span className="text-xs font-semibold text-neutral-200">
-                    {t(titleKey)}
-                  </span>
+                  <span className="text-xs font-semibold text-foreground">{t(titleKey)}</span>
                 </div>
-                <span className="rounded bg-white/5 px-1.5 py-0.2 text-[10px] font-mono text-neutral-400">
+                <span className="rounded border border-border bg-background/60 px-1.5 py-0.2 text-[10px] font-mono text-muted-foreground">
                   {items.length}
                 </span>
               </div>
@@ -152,7 +162,7 @@ export function ThesisPipelineBoard({
               {/* Cards List in Column */}
               <div className="space-y-3 flex-1 overflow-y-auto max-h-[560px] pr-1">
                 {items.length === 0 ? (
-                  <div className="py-8 text-center text-[11px] text-neutral-400 border border-dashed border-white/5 rounded-lg">
+                  <div className="py-8 text-center text-[11px] text-muted-foreground border border-dashed border-border rounded-lg">
                     {t("noThesesInStage")}
                   </div>
                 ) : (

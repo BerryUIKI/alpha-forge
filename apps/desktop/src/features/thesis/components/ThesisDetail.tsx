@@ -1,21 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, Link2, Unlink, Bot, Sparkles, CheckCircle2 } from "lucide-react";
-import { ErrorState, LoadingSpinner } from "@/components/common";
+import { ConfirmDialog, ErrorState, LoadingSpinner } from "@/components/common";
 import type { EvidenceDirection, InvestmentThesis } from "@/lib/desktop-api/thesis";
 import type { StructuredResponse } from "@/lib/desktop-api/goose";
 import {
-  useActivateThesis, useAddThesisEvidence, useCloseThesis, useCompleteThesisValidation,
-  useDeleteThesis, useDeleteThesisEvidence, useLinkThesisAsset, useStartThesisValidation,
-  useThesisConfidenceHistory, useThesisEvidence, useUpdateThesisConfidence,
+  useActivateThesis,
+  useAddThesisEvidence,
+  useCloseThesis,
+  useCompleteThesisValidation,
+  useDeleteThesis,
+  useDeleteThesisEvidence,
+  useLinkThesisAsset,
+  useStartThesisValidation,
+  useThesisConfidenceHistory,
+  useThesisEvidence,
+  useUpdateThesisConfidence,
 } from "../hooks/useTheses";
-import { useKnowledgeEntities, useLinkThesisKnowledgeEntity, useThesisKnowledgeLinks } from "../hooks/useKnowledgeGraph";
+import {
+  useKnowledgeEntities,
+  useLinkThesisKnowledgeEntity,
+  useThesisKnowledgeLinks,
+} from "../hooks/useKnowledgeGraph";
 import { useCreateAgentTask, useRunAgentTask } from "@/features/agent/hooks/useAgentTasks";
 import { useListActiveAssets } from "@/features/portfolio/hooks/useFinancialData";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { formatMessage } from "@/lib/i18n/locale";
 import { ShadowAnalysis } from "@/features/goose";
 
-interface ThesisDetailProps { thesis: InvestmentThesis; onDeleted: () => void; }
+interface ThesisDetailProps {
+  thesis: InvestmentThesis;
+  onDeleted: () => void;
+}
 
 export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const { t } = useLocale();
@@ -28,6 +43,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [error, setError] = useState("");
   const [agentNotice, setAgentNotice] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const createAgentTaskMutation = useCreateAgentTask();
   const runAgentTaskMutation = useRunAgentTask();
   const evidenceQuery = useThesisEvidence(thesis.id);
@@ -46,9 +62,35 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
   const remove = useDeleteThesis();
   const addEvidence = useAddThesisEvidence();
   const deleteEvidence = useDeleteThesisEvidence();
-  const pending = activate.isPending || startValidation.isPending || completeValidation.isPending || updateConfidence.isPending || close.isPending || remove.isPending || addEvidence.isPending || linkThesisAsset.isPending || createAgentTaskMutation.isPending || runAgentTaskMutation.isPending;
+  const pending =
+    activate.isPending ||
+    startValidation.isPending ||
+    completeValidation.isPending ||
+    updateConfidence.isPending ||
+    close.isPending ||
+    remove.isPending ||
+    addEvidence.isPending ||
+    linkThesisAsset.isPending ||
+    createAgentTaskMutation.isPending ||
+    runAgentTaskMutation.isPending;
 
   const linkedAsset = activeAssetsQuery.data?.find((a) => a.id === thesis.portfolioAssetId);
+
+  // Drafts belong to one thesis identity. Switching records resets every
+  // editable field; a same-record refetch intentionally leaves active edits
+  // untouched.
+  useEffect(() => {
+    setConfidence(thesis.confidence);
+    setEvidence("");
+    setDirection("supporting");
+    setSourceId("");
+    setOutcome("");
+    setValidated(true);
+    setSelectedAssetId("");
+    setKnowledgeEntityId("");
+    setError("");
+    setAgentNotice(null);
+  }, [thesis.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLaunchAgentResearch() {
     try {
@@ -95,11 +137,43 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
     }
   }
 
-  async function run(action: () => Promise<unknown>) { try { setError(""); await action(); } catch (cause) { setError(cause instanceof Error ? cause.message : t("thesisUpdateFailed")); } }
+  async function run(action: () => Promise<unknown>) {
+    try {
+      setError("");
+      await action();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t("thesisUpdateFailed"));
+    }
+  }
   async function saveEvidence(event: React.FormEvent) {
     event.preventDefault();
-    if (!evidence.trim()) { setError(t("evidenceRequired")); return; }
-    await run(async () => { await addEvidence.mutateAsync({ thesisId: thesis.id, direction, evidence: evidence.trim(), sourceId: sourceId.trim() || undefined }); setEvidence(""); setSourceId(""); });
+    if (!evidence.trim()) {
+      setError(t("evidenceRequired"));
+      return;
+    }
+    await run(async () => {
+      await addEvidence.mutateAsync({
+        thesisId: thesis.id,
+        direction,
+        evidence: evidence.trim(),
+        sourceId: sourceId.trim() || undefined,
+      });
+      setEvidence("");
+      setSourceId("");
+    });
+  }
+
+  async function handleDeleteThesis() {
+    setError("");
+    try {
+      await remove.mutateAsync(thesis.id);
+      setShowDeleteConfirm(false);
+      onDeleted();
+    } catch (cause) {
+      // Deletion failed: keep the record selected and surface a recoverable error.
+      setShowDeleteConfirm(false);
+      setError(cause instanceof Error ? cause.message : t("thesisUpdateFailed"));
+    }
   }
 
   return (
@@ -109,35 +183,93 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
           <p className="text-sm text-muted-foreground capitalize">{thesis.status}</p>
           <h2 className="text-xl font-semibold">{thesis.title}</h2>
         </div>
-        <button onClick={() => run(async () => { await remove.mutateAsync(thesis.id); onDeleted(); })} aria-label={t("deleteThesis")} disabled={pending} className="rounded-md p-2 text-destructive hover:bg-destructive/10">
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          aria-label={t("deleteThesis")}
+          disabled={pending}
+          className="rounded-md p-2 text-destructive hover:bg-destructive/10"
+        >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
       <p className="whitespace-pre-wrap text-sm leading-6">{thesis.thesis}</p>
       <div>
-        <label htmlFor="thesis-confidence" className="mb-1 flex justify-between text-sm font-medium">
+        <label
+          htmlFor="thesis-confidence"
+          className="mb-1 flex justify-between text-sm font-medium"
+        >
           <span>{t("confidence")}</span>
           <span>{confidence}%</span>
         </label>
-        <input id="thesis-confidence" type="range" min="0" max="100" value={confidence} onChange={(event) => setConfidence(Number(event.target.value))} className="w-full" />
-        <button onClick={() => run(() => updateConfidence.mutateAsync({ thesisId: thesis.id, confidence }))} disabled={pending || confidence === thesis.confidence} className="mt-2 rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50">
+        <input
+          id="thesis-confidence"
+          type="range"
+          min="0"
+          max="100"
+          value={confidence}
+          onChange={(event) => setConfidence(Number(event.target.value))}
+          className="w-full"
+        />
+        <button
+          onClick={() =>
+            run(() => updateConfidence.mutateAsync({ thesisId: thesis.id, confidence }))
+          }
+          disabled={pending || confidence === thesis.confidence}
+          className="mt-2 rounded-md border border-input px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50"
+        >
           {t("saveConfidence")}
         </button>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-wrap gap-2">
-        {thesis.status === "draft" && <button onClick={() => run(() => activate.mutateAsync(thesis.id))} disabled={pending} className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">{t("activateThesis")}</button>}
-        {thesis.status === "active" && <button onClick={() => run(() => startValidation.mutateAsync(thesis.id))} disabled={pending} className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">{t("startValidation")}</button>}
-        {["draft", "active", "validating"].includes(thesis.status) && <button onClick={() => run(() => close.mutateAsync(thesis.id))} disabled={pending} className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent">{t("closeThesis")}</button>}
+        {thesis.status === "draft" && (
+          <button
+            onClick={() => run(() => activate.mutateAsync(thesis.id))}
+            disabled={pending}
+            className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          >
+            {t("activateThesis")}
+          </button>
+        )}
+        {thesis.status === "active" && (
+          <button
+            onClick={() => run(() => startValidation.mutateAsync(thesis.id))}
+            disabled={pending}
+            className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          >
+            {t("startValidation")}
+          </button>
+        )}
+        {["draft", "active", "validating"].includes(thesis.status) && (
+          <button
+            onClick={() => run(() => close.mutateAsync(thesis.id))}
+            disabled={pending}
+            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
+          >
+            {t("closeThesis")}
+          </button>
+        )}
       </div>
       <div className="border-t border-border pt-4">
         <h3 className="font-semibold">{t("confidenceHistory")}</h3>
-        {confidenceHistory.isLoading ? <LoadingSpinner className="p-4" /> : confidenceHistory.error ? <ErrorState message={t("failedToLoadConfidenceHistory")} onRetry={() => confidenceHistory.refetch()} /> : (
+        {confidenceHistory.isLoading ? (
+          <LoadingSpinner className="p-4" />
+        ) : confidenceHistory.error ? (
+          <ErrorState
+            message={t("failedToLoadConfidenceHistory")}
+            onRetry={() => confidenceHistory.refetch()}
+          />
+        ) : (
           <ol className="mt-3 space-y-2">
             {confidenceHistory.data?.map((snapshot) => (
-              <li key={snapshot.id} className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm">
+              <li
+                key={snapshot.id}
+                className="flex items-center justify-between rounded-md bg-muted px-3 py-2 text-sm"
+              >
                 <span className="font-medium">{snapshot.confidence}%</span>
-                <time className="text-muted-foreground">{new Date(snapshot.recordedAt).toLocaleString()}</time>
+                <time className="text-muted-foreground">
+                  {new Date(snapshot.recordedAt).toLocaleString()}
+                </time>
               </li>
             ))}
           </ol>
@@ -157,12 +289,16 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
               {linkedAsset.name && (
                 <span className="ml-2 text-muted-foreground">{linkedAsset.name}</span>
               )}
-              <span className="ml-2 text-xs uppercase px-1.5 py-0.5 rounded bg-white/10 text-neutral-300">
+              <span className="ml-2 text-xs uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                 {linkedAsset.kind}
               </span>
             </div>
             <button
-              onClick={() => run(() => linkThesisAsset.mutateAsync({ thesisId: thesis.id, portfolioAssetId: null }))}
+              onClick={() =>
+                run(() =>
+                  linkThesisAsset.mutateAsync({ thesisId: thesis.id, portfolioAssetId: null }),
+                )
+              }
               disabled={pending}
               className="flex items-center gap-1 text-xs text-destructive hover:underline"
             >
@@ -186,11 +322,16 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
               ))}
             </select>
             <button
-              onClick={() => run(async () => {
-                if (!selectedAssetId) return;
-                await linkThesisAsset.mutateAsync({ thesisId: thesis.id, portfolioAssetId: selectedAssetId });
-                setSelectedAssetId("");
-              })}
+              onClick={() =>
+                run(async () => {
+                  if (!selectedAssetId) return;
+                  await linkThesisAsset.mutateAsync({
+                    thesisId: thesis.id,
+                    portfolioAssetId: selectedAssetId,
+                  });
+                  setSelectedAssetId("");
+                })
+              }
               disabled={pending || !selectedAssetId}
               className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent disabled:opacity-50"
             >
@@ -202,52 +343,159 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
       <div className="border-t border-border pt-4">
         <h3 className="font-semibold">{t("knowledgeLinks")}</h3>
         <div className="mt-2 flex gap-2">
-          <select value={knowledgeEntityId} onChange={(event) => setKnowledgeEntityId(event.target.value)} className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm">
+          <select
+            value={knowledgeEntityId}
+            onChange={(event) => setKnowledgeEntityId(event.target.value)}
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-2 text-sm"
+          >
             <option value="">{t("linkEntity")}</option>
-            {knowledgeEntities.data?.filter((entity) => !knowledgeLinks.data?.some((link) => link.entityId === entity.id)).map((entity) => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
+            {knowledgeEntities.data
+              ?.filter(
+                (entity) => !knowledgeLinks.data?.some((link) => link.entityId === entity.id),
+              )
+              .map((entity) => (
+                <option key={entity.id} value={entity.id}>
+                  {entity.name}
+                </option>
+              ))}
           </select>
-          <button onClick={() => run(async () => { if (!knowledgeEntityId) throw new Error(t("selectEntityToLink")); await linkKnowledgeEntity.mutateAsync({ thesisId: thesis.id, entityId: knowledgeEntityId }); setKnowledgeEntityId(""); })} className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent">
+          <button
+            onClick={() =>
+              run(async () => {
+                if (!knowledgeEntityId) throw new Error(t("selectEntityToLink"));
+                await linkKnowledgeEntity.mutateAsync({
+                  thesisId: thesis.id,
+                  entityId: knowledgeEntityId,
+                });
+                setKnowledgeEntityId("");
+              })
+            }
+            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
+          >
             {t("link")}
           </button>
         </div>
         <ul className="mt-3 space-y-1 text-sm">
-          {knowledgeLinks.data?.map((link) => <li key={link.entityId} className="rounded bg-muted px-2 py-1">{knowledgeEntities.data?.find((entity) => entity.id === link.entityId)?.name ?? link.entityId}</li>)}
+          {knowledgeLinks.data?.map((link) => (
+            <li key={link.entityId} className="rounded bg-muted px-2 py-1">
+              {knowledgeEntities.data?.find((entity) => entity.id === link.entityId)?.name ??
+                link.entityId}
+            </li>
+          ))}
         </ul>
       </div>
       {thesis.status === "validating" && (
-        <form onSubmit={(event) => { event.preventDefault(); if (!outcome.trim()) { setError(t("validationOutcomeRequired")); return; } void run(() => completeValidation.mutateAsync({ id: thesis.id, outcome: outcome.trim(), validated })); }} className="rounded-md bg-muted/40 p-3">
-          <label htmlFor="validation-outcome" className="mb-1 block text-sm font-medium">{t("validationOutcome")}</label>
-          <textarea id="validation-outcome" value={outcome} onChange={(event) => setOutcome(event.target.value)} rows={2} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-          <label className="mt-2 flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={validated} onChange={(event) => setValidated(event.target.checked)} /> {t("thesisValidated")}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!outcome.trim()) {
+              setError(t("validationOutcomeRequired"));
+              return;
+            }
+            void run(() =>
+              completeValidation.mutateAsync({ id: thesis.id, outcome: outcome.trim(), validated }),
+            );
+          }}
+          className="rounded-md bg-muted/40 p-3"
+        >
+          <label htmlFor="validation-outcome" className="mb-1 block text-sm font-medium">
+            {t("validationOutcome")}
           </label>
-          <button type="submit" disabled={pending} className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground">{t("completeValidation")}</button>
+          <textarea
+            id="validation-outcome"
+            value={outcome}
+            onChange={(event) => setOutcome(event.target.value)}
+            rows={2}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <label className="mt-2 flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={validated}
+              onChange={(event) => setValidated(event.target.checked)}
+            />{" "}
+            {t("thesisValidated")}
+          </label>
+          <button
+            type="submit"
+            disabled={pending}
+            className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          >
+            {t("completeValidation")}
+          </button>
         </form>
       )}
-      {thesis.outcome && <div className="rounded-md bg-muted p-3 text-sm"><span className="font-medium">{t("outcome")}</span>{thesis.outcome}</div>}
+      {thesis.outcome && (
+        <div className="rounded-md bg-muted p-3 text-sm">
+          <span className="font-medium">{t("outcome")}</span>
+          {thesis.outcome}
+        </div>
+      )}
       <div className="border-t border-border pt-4">
         <h3 className="font-semibold">{t("evidence")}</h3>
         <form onSubmit={saveEvidence} className="mt-3 space-y-2">
           <div className="flex gap-2">
-            <select value={direction} onChange={(event) => setDirection(event.target.value as EvidenceDirection)} className="rounded-md border border-input bg-background px-2 text-sm">
+            <select
+              value={direction}
+              onChange={(event) => setDirection(event.target.value as EvidenceDirection)}
+              className="rounded-md border border-input bg-background px-2 text-sm"
+            >
               <option value="supporting">{t("supporting")}</option>
               <option value="contradicting">{t("contradicting")}</option>
             </select>
-            <input value={sourceId} onChange={(event) => setSourceId(event.target.value)} placeholder={t("sourceIdOptional")} className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <input
+              value={sourceId}
+              onChange={(event) => setSourceId(event.target.value)}
+              placeholder={t("sourceIdOptional")}
+              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
           </div>
-          <textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} rows={3} placeholder={t("evidencePlaceholder")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-          <button type="submit" disabled={pending} className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent">{t("addEvidence")}</button>
+          <textarea
+            value={evidence}
+            onChange={(event) => setEvidence(event.target.value)}
+            rows={3}
+            placeholder={t("evidencePlaceholder")}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-md border border-input px-3 py-2 text-sm hover:bg-accent"
+          >
+            {t("addEvidence")}
+          </button>
         </form>
-        {evidenceQuery.isLoading ? <LoadingSpinner className="p-4" /> : evidenceQuery.error ? <ErrorState message={t("failedToLoadEvidence")} onRetry={() => evidenceQuery.refetch()} /> : (
+        {evidenceQuery.isLoading ? (
+          <LoadingSpinner className="p-4" />
+        ) : evidenceQuery.error ? (
+          <ErrorState message={t("failedToLoadEvidence")} onRetry={() => evidenceQuery.refetch()} />
+        ) : (
           <ul className="mt-4 space-y-2">
             {evidenceQuery.data?.map((item) => (
               <li key={item.id} className="flex gap-3 rounded-md border border-border p-3 text-sm">
-                <span className={item.direction === "supporting" ? "text-green-600" : "text-destructive"}>{item.direction}</span>
+                <span
+                  className={
+                    item.direction === "supporting" ? "text-green-600" : "text-destructive"
+                  }
+                >
+                  {item.direction}
+                </span>
                 <p className="flex-1">
                   {item.evidence}
-                  {item.sourceId && <span className="block text-xs text-muted-foreground">{t("sourceLabel")}{item.sourceId}</span>}
+                  {item.sourceId && (
+                    <span className="block text-xs text-muted-foreground">
+                      {t("sourceLabel")}
+                      {item.sourceId}
+                    </span>
+                  )}
                 </p>
-                <button onClick={() => run(() => deleteEvidence.mutateAsync({ id: item.id, thesisId: thesis.id }))} aria-label={t("deleteEvidence")} className="text-muted-foreground hover:text-destructive">
+                <button
+                  onClick={() =>
+                    run(() => deleteEvidence.mutateAsync({ id: item.id, thesisId: thesis.id }))
+                  }
+                  aria-label={t("deleteEvidence")}
+                  className="text-muted-foreground hover:text-destructive"
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </li>
@@ -264,9 +512,7 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
               <Bot className="h-4 w-4 text-primary" />
               {t("agentResearchLoopTitle")}
             </h4>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t("agentResearchLoopDesc")}
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("agentResearchLoopDesc")}</p>
           </div>
           <button
             type="button"
@@ -297,6 +543,16 @@ export function ThesisDetail({ thesis, onDeleted }: ThesisDetailProps) {
           onComplete={handleHarvestShadowEvidence}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title={t("deleteThesis")}
+        message={formatMessage(t("deleteThesisConfirmMessage"), { title: thesis.title })}
+        confirmLabel={t("delete")}
+        isConfirming={remove.isPending}
+        onConfirm={handleDeleteThesis}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
     </section>
   );
 }

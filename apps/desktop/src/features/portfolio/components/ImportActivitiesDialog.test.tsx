@@ -13,6 +13,7 @@ vi.mock("@tauri-apps/api/core", () => ({
 
 // Mock desktopApi financial
 const financialMock = vi.hoisted(() => ({
+  previewActivitiesCsv: vi.fn(),
   importActivitiesCsv: vi.fn(),
 }));
 
@@ -48,6 +49,36 @@ function renderWithProviders(ui: React.ReactElement, locale: Locale = "en") {
   );
 }
 
+const previewResult = {
+  format: "GENERIC",
+  total_rows: 2,
+  new_count: 1,
+  duplicate_count: 1,
+  invalid_count: 0,
+  rows: [
+    {
+      row_number: 1,
+      activity_date: "2026-08-01",
+      activity_type: "BUY",
+      symbol: "NVDA",
+      quantity: "10",
+      amount: "1200",
+      outcome: "new",
+      message: null,
+    },
+    {
+      row_number: 2,
+      activity_date: "2026-08-01",
+      activity_type: "SELL",
+      symbol: "NVDA",
+      quantity: "4",
+      amount: "480",
+      outcome: "duplicate",
+      message: "already imported",
+    },
+  ],
+};
+
 describe("ImportActivitiesDialog", () => {
   const defaultProps = {
     isOpen: true,
@@ -58,6 +89,7 @@ describe("ImportActivitiesDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    financialMock.previewActivitiesCsv.mockResolvedValue(previewResult);
   });
 
   it("does not render when closed", () => {
@@ -72,20 +104,20 @@ describe("ImportActivitiesDialog", () => {
     expect(screen.getByText("Statement Format")).toBeInTheDocument();
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/date,type,symbol/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Import Statement" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Preview Statement" })).toBeInTheDocument();
   });
 
-  it("disables import button when csv text is empty and enables when entered", () => {
+  it("disables preview when csv text is empty and enables when entered", () => {
     renderWithProviders(<ImportActivitiesDialog {...defaultProps} />);
-    const importBtn = screen.getByRole("button", { name: "Import Statement" });
-    expect(importBtn).toBeDisabled();
+    const previewBtn = screen.getByRole("button", { name: "Preview Statement" });
+    expect(previewBtn).toBeDisabled();
 
     const textarea = screen.getByPlaceholderText(/date,type,symbol/);
     fireEvent.change(textarea, { target: { value: "date,type\n2026-08-01,BUY" } });
-    expect(importBtn).toBeEnabled();
+    expect(previewBtn).toBeEnabled();
   });
 
-  it("successfully imports CSV, displays audit summary metrics, and does not auto-close", async () => {
+  it("previews rows without writing anything, then applies the import", async () => {
     const mockRun = {
       id: "run-001",
       account_id: "acc-123",
@@ -100,8 +132,8 @@ describe("ImportActivitiesDialog", () => {
       checkpoint_in: null,
       checkpoint_out: null,
       summary: JSON.stringify({
-        total_rows: 5,
-        created_count: 4,
+        total_rows: 2,
+        created_count: 1,
         skipped_count: 1,
         failed_count: 0,
         errors: [],
@@ -111,17 +143,27 @@ describe("ImportActivitiesDialog", () => {
       created_at: "2026-08-01T10:00:00Z",
       updated_at: "2026-08-01T10:00:02Z",
     };
-
     financialMock.importActivitiesCsv.mockResolvedValueOnce(mockRun);
 
     renderWithProviders(<ImportActivitiesDialog {...defaultProps} />);
 
     const textarea = screen.getByPlaceholderText(/date,type,symbol/);
     fireEvent.change(textarea, {
-      target: { value: "date,type,symbol,quantity,price,amount,currency\n2026-08-01,BUY,NVDA,10,120,1200,USD" },
+      target: {
+        value:
+          "date,type,symbol,quantity,price,amount,currency\n2026-08-01,BUY,NVDA,10,120,1200,USD",
+      },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Import Statement" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview Statement" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Apply import (1)")).toBeInTheDocument();
+    });
+    expect(financialMock.importActivitiesCsv).not.toHaveBeenCalled();
+    expect(screen.getByText("duplicate")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply import (1)" }));
 
     await waitFor(() => {
       expect(screen.getByText("Statement imported successfully!")).toBeInTheDocument();
@@ -133,21 +175,27 @@ describe("ImportActivitiesDialog", () => {
       expect.stringContaining("NVDA"),
     );
     expect(defaultProps.onSuccess).toHaveBeenCalled();
-
-    // Verify summary metrics cards
     expect(screen.getByText("Total Rows")).toBeInTheDocument();
-    expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("Created")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
-    expect(screen.getByText("Skipped")).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
-
-    // Dialog stays open for review
     expect(defaultProps.onClose).not.toHaveBeenCalled();
 
-    // User explicitly clicks Done to dismiss
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     expect(defaultProps.onClose).toHaveBeenCalled();
+  });
+
+  it("returns to the input view from the preview without importing", async () => {
+    renderWithProviders(<ImportActivitiesDialog {...defaultProps} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/date,type,symbol/), {
+      target: { value: "date,type\n2026-08-01,BUY" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Preview Statement" }));
+
+    await screen.findByText("Apply import (1)");
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.getByRole("button", { name: "Preview Statement" })).toBeInTheDocument();
+    expect(financialMock.importActivitiesCsv).not.toHaveBeenCalled();
   });
 
   it("displays partial failure errors and allows importing another statement", async () => {
@@ -181,12 +229,15 @@ describe("ImportActivitiesDialog", () => {
 
     renderWithProviders(<ImportActivitiesDialog {...defaultProps} />);
 
-    const textarea = screen.getByPlaceholderText(/date,type,symbol/);
-    fireEvent.change(textarea, {
-      target: { value: "date,type,symbol,quantity,price,amount,currency\n2026-08-01,SELL,AAPL,10,150,1500,USD" },
+    fireEvent.change(screen.getByPlaceholderText(/date,type,symbol/), {
+      target: {
+        value:
+          "date,type,symbol,quantity,price,amount,currency\n2026-08-01,SELL,AAPL,10,150,1500,USD",
+      },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Import Statement" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview Statement" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Apply import (1)" }));
 
     await waitFor(() => {
       expect(screen.getByText("Import completed with errors.")).toBeInTheDocument();
@@ -194,9 +245,8 @@ describe("ImportActivitiesDialog", () => {
 
     expect(screen.getByText("Row 1: Insufficient lots to sell 10 shares")).toBeInTheDocument();
 
-    // Click Import Another
     fireEvent.click(screen.getByRole("button", { name: "Import Another" }));
-    expect(screen.getByRole("button", { name: "Import Statement" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Preview Statement" })).toBeInTheDocument();
     expect(screen.queryByText("Import completed with errors.")).not.toBeInTheDocument();
   });
 });

@@ -5,4 +5,5 @@
 export { DashboardCard } from "./DashboardCard";
 export { StatCard } from "./StatCard";
 export { TabBar } from "./TabBar";
+export { getTabId, getTabPanelId } from "./tab-ids";
 export { SearchBar } from "./SearchBar";

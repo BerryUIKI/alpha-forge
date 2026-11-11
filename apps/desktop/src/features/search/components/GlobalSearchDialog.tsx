@@ -21,13 +21,10 @@ import {
   Target,
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
-import type { MessageKey } from "@/lib/i18n/locale";
+import { formatMessage, type MessageKey } from "@/lib/i18n/locale";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import {
-  useGlobalSearch,
-  type SearchEntry,
-  type SearchSectionId,
-} from "../hooks/useGlobalSearch";
+import { useEscapeKey, useFocusTrap } from "@/lib/hooks";
+import { useGlobalSearch, type SearchEntry, type SearchSectionId } from "../hooks/useGlobalSearch";
 
 const SECTION_LABELS: Record<SearchSectionId, MessageKey> = {
   projects: "searchSectionProjects",
@@ -58,26 +55,27 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { workspaceId, isLoading, sections, total } = useGlobalSearch(query);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const { workspaceId, isLoading, sections, total, totalMatches, truncated, hasError, refetch } =
+    useGlobalSearch(query, isOpen);
+
+  // Trap focus inside the palette and restore it to the opening control.
+  const containerRef = useFocusTrap<HTMLDivElement>({
+    enabled: isOpen,
+    returnFocus: triggerRef.current,
+  });
 
   // Reset state and focus the input whenever the palette opens.
   useEffect(() => {
     if (isOpen) {
+      triggerRef.current = document.activeElement as HTMLElement;
       setQuery("");
       setActiveIndex(0);
       inputRef.current?.focus();
     }
   }, [isOpen]);
 
-  // Close on Escape.
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, onClose]);
+  useEscapeKey(onClose, isOpen);
 
   // Flatten sections so ArrowUp/ArrowDown and Enter move across groups.
   const flat = useMemo(() => sections.flatMap((section) => section.entries), [sections]);
@@ -100,6 +98,7 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.nativeEvent.isComposing) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setActiveIndex((index) => Math.min(index + 1, flat.length - 1));
@@ -124,6 +123,7 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
       onMouseDown={onClose}
     >
       <div
+        ref={containerRef}
         className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
@@ -140,6 +140,13 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
             onKeyDown={handleKeyDown}
             placeholder={t("globalSearchPlaceholder")}
             aria-label={t("globalSearchPlaceholder")}
+            role="combobox"
+            aria-expanded={total > 0}
+            aria-controls="global-search-results"
+            aria-autocomplete="list"
+            aria-activedescendant={
+              flat.length > 0 ? `global-search-result-${activeIndex}` : undefined
+            }
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
           />
           {isLoading && <LoadingSpinner size="sm" />}
@@ -149,7 +156,27 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         </div>
 
         {/* Results */}
-        <div className="max-h-[45vh] overflow-y-auto p-2">
+        <div
+          id="global-search-results"
+          role="listbox"
+          aria-label={t("globalSearchTitle")}
+          className="max-h-[45vh] overflow-y-auto p-2"
+        >
+          {hasError && query.trim() !== "" && (
+            <div
+              role="alert"
+              className="mx-1 mb-2 flex items-center justify-between gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400"
+            >
+              <span>{t("searchPartialError")}</span>
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                className="rounded border border-amber-500/30 px-2 py-0.5 font-medium hover:bg-amber-500/10"
+              >
+                {t("retry")}
+              </button>
+            </div>
+          )}
           {!workspaceId ? (
             <p className="p-6 text-center text-sm text-muted-foreground">
               {t("searchNoWorkspace")}
@@ -159,14 +186,17 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
               {t("globalSearchPlaceholder")}
             </p>
           ) : total === 0 && !isLoading ? (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              {t("searchNoResults")}
-            </p>
+            <p className="p-6 text-center text-sm text-muted-foreground">{t("searchNoResults")}</p>
           ) : (
             sections.map((section) => {
               const Icon = SECTION_ICONS[section.id];
               return (
-                <div key={section.id} className="mb-2 last:mb-0">
+                <div
+                  key={section.id}
+                  role="group"
+                  aria-label={t(SECTION_LABELS[section.id])}
+                  className="mb-2 last:mb-0"
+                >
                   <h3 className="flex items-center gap-1.5 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                     <Icon className="h-3 w-3" aria-hidden="true" />
                     {t(SECTION_LABELS[section.id])}
@@ -180,6 +210,9 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
                           <button
                             id={`global-search-result-${flatIndex}`}
                             type="button"
+                            role="option"
+                            aria-selected={active}
+                            tabIndex={-1}
                             onClick={() => goTo(entry)}
                             onMouseEnter={() => setActiveIndex(flatIndex)}
                             className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors ${
@@ -202,6 +235,14 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
                 </div>
               );
             })
+          )}
+          {truncated && (
+            <p className="px-2 pb-1 pt-2 text-center text-[10px] text-muted-foreground">
+              {formatMessage(t("searchShowingFirst"), {
+                shown: String(total),
+                total: String(totalMatches),
+              })}
+            </p>
           )}
         </div>
       </div>

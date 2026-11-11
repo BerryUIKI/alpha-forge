@@ -24,16 +24,16 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ## Milestone overview
 
-| Milestone | Status | Outcome |
-|---|---|---|
-| S0 — Baseline truth and build recovery | ✅ Complete (PR #151) | Repository checks run cleanly, React Fast Refresh clean, status documents aligned. |
-| S1 — Core Agent loop recovery | ✅ Complete (PR #152) | End-to-end task lifecycle operational: credential → create → queue → run → real-time progress → failure context / structured output. |
-| S2 — IPC contract normalization | ✅ Complete (PR #153-#156) | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked). |
-| S3 — Artifact and plugin vertical slice | ✅ Complete | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege. |
-| S4 — Research and portfolio workflow closure | ✅ Complete | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware. |
-| S5 — Option module re-acceptance | ✅ Complete | End-to-end chain acquisition, contract inspection, strategy persistence, and numerical pricing workflows verified. |
-| S6 — Release-readiness re-acceptance | ✅ Complete | Verification matrix, E2E flows, packaging, security, and English docs fully audited and accepted. |
-| M10 — Goose integration | ✅ Complete (PRs #161-#166) | Opt-in, supervised, pinned, workspace-scoped Goose integration passed its entry and acceptance gates. |
+| Milestone                                    | Status                      | Outcome                                                                                                                              |
+| -------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| S0 — Baseline truth and build recovery       | ✅ Complete (PR #151)       | Repository checks run cleanly, React Fast Refresh clean, status documents aligned.                                                   |
+| S1 — Core Agent loop recovery                | ✅ Complete (PR #152)       | End-to-end task lifecycle operational: credential → create → queue → run → real-time progress → failure context / structured output. |
+| S2 — IPC contract normalization              | ✅ Complete (PR #153-#156)  | Frontend and Rust exchange validated, versioned DTOs without naming ambiguity (176/176 commands checked).                            |
+| S3 — Artifact and plugin vertical slice      | ✅ Complete                 | Structured output opens safely in an isolated Artifact window and internal plugins are usable with least privilege.                  |
+| S4 — Research and portfolio workflow closure | ✅ Complete                 | Navigation, provenance, portfolio imports, allocations, risks, themes, and thesis alignment workflows are complete and state-aware.  |
+| S5 — Option module re-acceptance             | ✅ Complete                 | End-to-end chain acquisition, contract inspection, strategy persistence, and numerical pricing workflows verified.                   |
+| S6 — Release-readiness re-acceptance         | ✅ Complete                 | Verification matrix, E2E flows, packaging, security, and English docs fully audited and accepted.                                    |
+| M10 — Goose integration                      | ✅ Complete (PRs #161-#166) | Opt-in, supervised, pinned, workspace-scoped Goose integration passed its entry and acceptance gates.                                |
 
 ## S0 — Baseline truth and build recovery
 
@@ -62,7 +62,7 @@ See [Frontend-Backend Integration and Functional Completeness Audit](reviews/INT
 
 ### Scope & Completion Evidence
 
-- **Startup Race Condition Fix**: `lib.rs` emits `app:ready` / `app:init-failed` upon async `AppState` initialization; `useAppReady` hook gates frontend commands.
+- **Startup Race Condition Fix**: `lib.rs` records readiness in managed `AppReadiness` state and emits `app:ready` / `app:init-failed` upon async `AppState` initialization; `useAppReady` subscribes to events and probes `get_app_status` on mount, so late-mounted panels recover the correct state.
 - **Real-Time Event Streaming**: `useTaskEventStream` subscribes to `task:progress`, `task:completed`, `task:failed`, `task:cancelled` Tauri events, invalidating TanStack Query cache and maintaining a bounded 20-message real-time log.
 - **Failure Context Surfacing**: `AgentPanel` displays the exact failure reason payload from `TaskFailed` events (e.g. missing API key, provider error) with full EN/ZH-CN i18n support.
 - **Structured Research Output**: `ResearchCompletion` Zod schema and `ResearchResultCard` component render summary, key claims, evidence, risks, and colored confidence score badges.

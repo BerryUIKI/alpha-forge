@@ -63,6 +63,18 @@ function Harness({ initialOpen }: { initialOpen: boolean }) {
   );
 }
 
+function FocusHarness() {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setIsOpen(true)}>
+        Open palette
+      </button>
+      <GlobalSearchDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
+    </>
+  );
+}
+
 function renderDialog(initialOpen: boolean) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -83,9 +95,7 @@ function renderDialog(initialOpen: boolean) {
 describe("GlobalSearchDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.workspace.listWorkspaces.mockResolvedValue([
-      { id: "workspace-1", name: "Workspace" },
-    ]);
+    mocks.workspace.listWorkspaces.mockResolvedValue([{ id: "workspace-1", name: "Workspace" }]);
     mocks.research.listResearchProjects.mockResolvedValue([
       {
         id: "project-1",
@@ -120,12 +130,12 @@ describe("GlobalSearchDialog", () => {
 
   it("navigates to a project on Enter and closes", async () => {
     renderDialog(true);
-    const input = screen.getByRole("textbox") as HTMLInputElement;
+    const input = screen.getByRole("combobox") as HTMLInputElement;
 
     fireEvent.change(input, { target: { value: "AI Infra" } });
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /AI Infrastructure/ })).toBeInTheDocument(),
+      expect(screen.getByRole("option", { name: /AI Infrastructure/ })).toBeInTheDocument(),
     );
 
     fireEvent.keyDown(input, { key: "Enter" });
@@ -142,8 +152,39 @@ describe("GlobalSearchDialog", () => {
 
   it("closes on Escape", async () => {
     renderDialog(true);
-    await screen.findByRole("textbox");
-    fireEvent.keyDown(screen.getByRole("textbox"), { key: "Escape" });
+    await screen.findByRole("combobox");
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("traps focus inside the palette and restores it to the opener", async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={["/research"]}>
+          <ActiveWorkspaceProvider>
+            <EnLocaleProvider>
+              <FocusHarness />
+            </EnLocaleProvider>
+          </ActiveWorkspaceProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    const opener = screen.getByRole("button", { name: "Open palette" });
+    opener.focus();
+    fireEvent.click(opener);
+
+    const input = await screen.findByRole("combobox");
+    expect(input).toHaveFocus();
+
+    // Tab stays inside the dialog rather than reaching background controls.
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(input).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 });

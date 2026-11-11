@@ -6,6 +6,7 @@
  * highly ergonomic, 46px macOS-first toolbar (GUI-M4-MACOS).
  */
 
+import { useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Search,
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { isMacPlatform } from "@/lib/utils";
+import { useKeyboardShortcut } from "@/hooks/layout";
 import { desktopApi } from "@/lib/desktop-api";
 import { WorkspaceSwitcher } from "../TopBar/WorkspaceSwitcher";
 import type { UnifiedHeaderProps } from "../types";
@@ -62,6 +64,19 @@ export function UnifiedHeader({
   const pathname = location.pathname;
   const pageInfo = ROUTE_PAGE_NAMES[pathname] || { labelKey: "", groupKey: "" };
 
+  // Button and Cmd/Ctrl+N share the same create-intent navigation; the
+  // Research page focuses its project title field when `create=1` is present.
+  const openResearchCreation = useCallback(() => {
+    navigate("/research?create=1");
+  }, [navigate]);
+
+  useKeyboardShortcut({
+    key: "n",
+    modifiers: ["ctrl"],
+    callback: openResearchCreation,
+    ignoreEditable: true,
+  });
+
   return (
     <header
       className={`relative z-40 flex h-[46px] shrink-0 select-none items-center justify-between border-b border-border/80 bg-background/95 backdrop-blur-md px-3 text-foreground transition-colors ${
@@ -79,7 +94,11 @@ export function UnifiedHeader({
             onClick={onToggleLeftSidebar}
             className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label={isLeftSidebarExpanded ? t("collapseSidebar") : t("expandSidebar")}
-            title={isLeftSidebarExpanded ? `${t("collapseSidebar")} (${isMac ? "⌘1" : "Ctrl+1"})` : `${t("expandSidebar")} (${isMac ? "⌘1" : "Ctrl+1"})`}
+            title={
+              isLeftSidebarExpanded
+                ? `${t("collapseSidebar")} (${isMac ? "⌘1" : "Ctrl+1"})`
+                : `${t("expandSidebar")} (${isMac ? "⌘1" : "Ctrl+1"})`
+            }
             data-window-interactive
           >
             {isLeftSidebarExpanded ? (
@@ -127,7 +146,7 @@ export function UnifiedHeader({
         {/* Quick New Research Action */}
         <button
           type="button"
-          onClick={() => navigate("/research")}
+          onClick={openResearchCreation}
           className="flex h-7 items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           aria-label={t("newResearch")}
           title={`${t("newResearch")} (${isMac ? "⌘N" : "Ctrl+N"})`}
@@ -150,11 +169,17 @@ export function UnifiedHeader({
                 : "border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
             aria-label={isRightSidebarExpanded ? t("closeAgentPanel") : t("openAgentPanel")}
-            title={isRightSidebarExpanded ? `${t("closeAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})` : `${t("openAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`}
+            title={
+              isRightSidebarExpanded
+                ? `${t("closeAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`
+                : `${t("openAgentPanel")} (${isMac ? "⌘J" : "Ctrl+2"})`
+            }
             data-window-interactive
           >
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="hidden xl:inline">{isRightSidebarExpanded ? t("closeAgentPanel") : t("openAgentPanel")}</span>
+            <span className="hidden xl:inline">
+              {isRightSidebarExpanded ? t("closeAgentPanel") : t("openAgentPanel")}
+            </span>
             {isRightSidebarExpanded ? (
               <PanelRightClose className="h-3.5 w-3.5" />
             ) : (
@@ -165,7 +190,10 @@ export function UnifiedHeader({
 
         {/* Windows / Linux controls (only when not on macOS) */}
         {!isMac && (
-          <div className="ml-1 flex items-center gap-0.5 border-l border-border/60 pl-1" data-window-interactive>
+          <div
+            className="ml-1 flex items-center gap-0.5 border-l border-border/60 pl-1"
+            data-window-interactive
+          >
             <button
               type="button"
               onClick={() => runWindowAction("minimize", desktopApi.window.minimize)}

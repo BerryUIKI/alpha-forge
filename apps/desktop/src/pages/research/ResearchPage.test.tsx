@@ -333,4 +333,62 @@ describe("ResearchPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Project 2" }));
     await waitFor(() => expect(screen.queryByText("Notes")).not.toBeInTheDocument());
   });
+
+  it("opens the exact document named by the deep link", async () => {
+    workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
+    researchMock.listResearchProjects.mockResolvedValue([
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
+    ]);
+    researchMock.listResearchDocuments.mockResolvedValue([
+      { id: "d1", projectId: "p1", title: "Document 1" },
+      { id: "d2", projectId: "p1", title: "Document 2" },
+    ]);
+
+    renderResearchPage("en", "/research?workspace=w1&project=p1&document=d2");
+
+    await waitFor(() => {
+      expect(researchMock.listResearchNotes).toHaveBeenCalledWith("d2");
+      expect(researchMock.listResearchSources).toHaveBeenCalledWith("d2");
+    });
+  });
+
+  it("removes an invalid document deep link after the document list loads", async () => {
+    workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
+    researchMock.listResearchProjects.mockResolvedValue([
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
+    ]);
+    researchMock.listResearchDocuments.mockResolvedValue([
+      { id: "d1", projectId: "p1", title: "Document 1" },
+    ]);
+
+    const { routerState } = renderResearchPage(
+      "en",
+      "/research?workspace=w1&project=p1&document=missing",
+    );
+
+    await waitFor(() => expect(routerState.search).toBe("?project=p1"));
+    expect(researchMock.listResearchNotes).not.toHaveBeenCalledWith("missing");
+  });
+
+  it("highlights the report named by the deep link", async () => {
+    workspaceMock.listWorkspaces.mockResolvedValue([{ id: "w1", name: "Workspace 1" }]);
+    researchMock.listResearchProjects.mockResolvedValue([
+      { id: "p1", workspaceId: "w1", title: "Project 1", status: "active" },
+    ]);
+    researchMock.listResearchReports.mockResolvedValue([
+      {
+        id: "r1",
+        projectId: "p1",
+        title: "Report 1",
+        content: "Body",
+        reportType: "analysis",
+      },
+    ]);
+
+    renderResearchPage("en", "/research?workspace=w1&project=p1&report=r1");
+
+    await waitFor(() => {
+      expect(document.getElementById("research-report-r1")).toHaveAttribute("aria-current", "true");
+    });
+  });
 });

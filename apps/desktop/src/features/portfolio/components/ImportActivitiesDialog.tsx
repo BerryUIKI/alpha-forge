@@ -15,7 +15,8 @@ import { X, Upload, FileText, CheckCircle2, AlertCircle, AlertTriangle } from "l
 import { useLocale } from "@/lib/i18n/useLocale";
 import { useImportActivitiesCsv } from "../hooks/useFinancialData";
 import { useFocusTrap, useEscapeKey } from "@/lib/hooks";
-import type { ImportRun } from "@/lib/desktop-api/financial";
+import { desktopApi } from "@/lib/desktop-api";
+import type { ImportPreview, ImportRun } from "@/lib/desktop-api/financial";
 
 interface ImportActivitiesDialogProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ export function ImportActivitiesDialog({
   const [fileName, setFileName] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<ImportRun | null>(null);
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [isPreviewing, setIsPreviewing] = useState(false);
 
   const importMutation = useImportActivitiesCsv();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +56,7 @@ export function ImportActivitiesDialog({
 
   const handleClose = () => {
     setImportResult(null);
+    setPreview(null);
     setCsvText("");
     setFileName(null);
     setErrorMsg(null);
@@ -80,6 +84,25 @@ export function ImportActivitiesDialog({
     reader.readAsText(file);
   };
 
+  const handlePreview = async () => {
+    if (!csvText.trim()) {
+      setErrorMsg("Please select or paste a CSV statement.");
+      return;
+    }
+
+    setIsPreviewing(true);
+    setErrorMsg(null);
+    try {
+      const result = await desktopApi.financial.previewActivitiesCsv(accountId, format, csvText);
+      setPreview(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMsg(msg || "Failed to preview statement");
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
+
   const handleImport = async () => {
     if (!csvText.trim()) {
       setErrorMsg("Please select or paste a CSV statement.");
@@ -94,6 +117,7 @@ export function ImportActivitiesDialog({
         csvText,
       });
       setImportResult(run);
+      setPreview(null);
       if (onSuccess) {
         onSuccess();
       }
@@ -244,6 +268,109 @@ export function ImportActivitiesDialog({
               </button>
             </div>
           </div>
+        ) : preview ? (
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-4 gap-2.5 py-1">
+              {[
+                { label: "Total Rows", value: preview.total_rows, tone: "text-foreground" },
+                {
+                  label: "New",
+                  value: preview.new_count,
+                  tone: "text-green-600 dark:text-green-400",
+                },
+                {
+                  label: "Duplicates",
+                  value: preview.duplicate_count,
+                  tone: "text-blue-600 dark:text-blue-400",
+                },
+                { label: "Invalid", value: preview.invalid_count, tone: "text-destructive" },
+              ].map((metric) => (
+                <div key={metric.label} className="rounded-lg border bg-muted/40 p-2.5 text-center">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {metric.label}
+                  </div>
+                  <div className={`mt-1 text-base font-semibold ${metric.tone}`}>
+                    {metric.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="max-h-64 overflow-y-auto rounded-md border">
+              <table className="w-full text-left text-xs">
+                <thead className="sticky top-0 bg-muted text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-2 py-1.5">Row</th>
+                    <th className="px-2 py-1.5">Date</th>
+                    <th className="px-2 py-1.5">Type</th>
+                    <th className="px-2 py-1.5">Symbol</th>
+                    <th className="px-2 py-1.5">Qty</th>
+                    <th className="px-2 py-1.5">Outcome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.rows.map((row) => (
+                    <tr key={row.row_number} className="border-t border-border">
+                      <td className="px-2 py-1 font-mono">{row.row_number}</td>
+                      <td className="px-2 py-1 font-mono">{row.activity_date}</td>
+                      <td className="px-2 py-1">{row.activity_type}</td>
+                      <td className="px-2 py-1">{row.symbol ?? "—"}</td>
+                      <td className="px-2 py-1">{row.quantity ?? "—"}</td>
+                      <td className="px-2 py-1">
+                        <span
+                          className={
+                            row.outcome === "new"
+                              ? "font-medium text-green-600 dark:text-green-400"
+                              : row.outcome === "duplicate"
+                                ? "font-medium text-blue-600 dark:text-blue-400"
+                                : "font-medium text-destructive"
+                          }
+                        >
+                          {row.outcome}
+                        </span>
+                        {row.message && (
+                          <span className="block text-[10px] text-muted-foreground">
+                            {row.message}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Nothing has been written yet. Applying imports the new rows; duplicates are skipped
+              and invalid rows are reported.
+            </p>
+
+            {errorMsg && (
+              <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-2.5 text-xs text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPreview(null)}
+                disabled={importMutation.isPending}
+                className="rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted hover:text-foreground"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleImport}
+                disabled={importMutation.isPending || preview.new_count === 0}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {importMutation.isPending ? "Importing…" : `Apply import (${preview.new_count})`}
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="mt-4 space-y-4">
             <div>
@@ -324,11 +451,11 @@ export function ImportActivitiesDialog({
               </button>
               <button
                 type="button"
-                onClick={handleImport}
-                disabled={importMutation.isPending || !csvText.trim()}
+                onClick={handlePreview}
+                disabled={isPreviewing || !csvText.trim()}
                 className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
-                {importMutation.isPending ? "Importing…" : "Import Statement"}
+                {isPreviewing ? "Previewing…" : "Preview Statement"}
               </button>
             </div>
           </div>
