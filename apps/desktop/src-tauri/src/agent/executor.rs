@@ -6,12 +6,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use tauri::AppHandle;
 use tokio::sync::{oneshot, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
-use crate::agent::events;
+use crate::agent::events::{self, TaskEventEmitter};
 use crate::database::repositories::agent_task_repository::AgentTaskRepository;
 use crate::error::AppError;
 use domain::task::{AgentTask, TaskEventType, TaskStatus};
@@ -44,7 +43,7 @@ struct RunningTask {
 /// Agent task executor.
 pub struct TaskExecutor {
     repo: Arc<Mutex<AgentTaskRepository>>,
-    app: AppHandle,
+    emitter: Arc<dyn TaskEventEmitter>,
     config: ExecutorConfig,
     provider: Arc<dyn ResearchProvider>,
     running_tasks: Arc<RwLock<HashMap<String, RunningTask>>>,
@@ -52,15 +51,18 @@ pub struct TaskExecutor {
 
 impl TaskExecutor {
     /// Creates a new task executor.
+    ///
+    /// `emitter` forwards lifecycle events to the active presentation surface:
+    /// a Tauri `AppHandle` in the desktop app, or a terminal sink in the CLI.
     pub fn new(
         repo: AgentTaskRepository,
-        app: AppHandle,
+        emitter: Arc<dyn TaskEventEmitter>,
         config: ExecutorConfig,
         provider: Arc<dyn ResearchProvider>,
     ) -> Self {
         Self {
             repo: Arc::new(Mutex::new(repo)),
-            app,
+            emitter,
             config,
             provider,
             running_tasks: Arc::new(RwLock::new(HashMap::new())),
@@ -96,7 +98,7 @@ impl TaskExecutor {
         let task_id_for_insert = task_id.clone();
         let repo = self.repo.clone();
         let running_tasks = self.running_tasks.clone();
-        let app = self.app.clone();
+        let emitter = self.emitter.clone();
         let provider = self.provider.clone();
         let timeout = Duration::from_secs(self.config.default_timeout_secs);
         let (start_tx, start_rx) = oneshot::channel();
@@ -106,7 +108,7 @@ impl TaskExecutor {
         let cancel_token_clone = cancel_token.clone();
         let task_clone = task.clone();
         let repo_for_execution = repo.clone();
-        let app_for_execution = app.clone();
+        let emitter_for_execution = emitter.clone();
         let handle = tokio::spawn(async move {
             if start_rx.await.is_err() {
                 return Ok(());
@@ -115,7 +117,7 @@ impl TaskExecutor {
             let execution = tokio::spawn(Self::execute_task(
                 task_clone,
                 repo_for_execution,
-                app_for_execution,
+                emitter_for_execution,
                 provider,
                 timeout,
                 cancel_token_clone,
@@ -125,7 +127,7 @@ impl TaskExecutor {
                 Err(_) => {
                     Self::record_failure(
                         &repo,
-                        &app,
+                        emitter.as_ref(),
                         &task_id,
                         "The research task stopped unexpectedly. Retry the task later.",
                     )
@@ -161,7 +163,7 @@ impl TaskExecutor {
 
         if let Some(running_task) = running.get(task_id) {
             running_task.cancel_token.cancel();
-            events::emit_cancellation(&self.app, task_id);
+            self.emitter.emit(&events::cancellation_event(task_id));
             Ok(())
         } else {
             Err(AppError::NotFound(format!(
@@ -175,7 +177,7 @@ impl TaskExecutor {
     async fn execute_task(
         task: AgentTask,
         repo: Arc<Mutex<AgentTaskRepository>>,
-        app: AppHandle,
+        emitter: Arc<dyn TaskEventEmitter>,
         provider: Arc<dyn ResearchProvider>,
         timeout: Duration,
         cancel_token: CancellationToken,
@@ -184,7 +186,7 @@ impl TaskExecutor {
 
         Self::record_progress(
             &repo,
-            &app,
+            emitter.as_ref(),
             &task_id,
             "Preparing structured research request...",
         )
@@ -195,8 +197,8 @@ impl TaskExecutor {
             _ = cancel_token.cancelled() => return Ok(()),
             result = tokio::time::timeout(timeout, provider.complete_research(request)) => match result {
                 Ok(Ok(completion)) => completion,
-                Ok(Err(error)) => return Self::record_failure(&repo, &app, &task_id, provider_failure_message(error)).await,
-                Err(_) => return Self::record_failure(&repo, &app, &task_id, "The research task timed out before a result was returned.").await,
+                Ok(Err(error)) => return Self::record_failure(&repo, emitter.as_ref(), &task_id, provider_failure_message(error)).await,
+                Err(_) => return Self::record_failure(&repo, emitter.as_ref(), &task_id, "The research task timed out before a result was returned.").await,
             },
         };
 
@@ -216,14 +218,14 @@ impl TaskExecutor {
                 .create_event(&task_id, TaskEventType::TaskCompleted, Some(output.clone()))
                 .await?;
         }
-        events::emit_completion(&app, &task_id, Some(&output));
+        emitter.emit(&events::completion_event(&task_id, Some(&output)));
 
         Ok(())
     }
 
     async fn record_progress(
         repo: &Arc<Mutex<AgentTaskRepository>>,
-        app: &AppHandle,
+        emitter: &dyn TaskEventEmitter,
         task_id: &str,
         message: &str,
     ) -> Result<(), AppError> {
@@ -235,13 +237,13 @@ impl TaskExecutor {
                 Some(message.to_string()),
             )
             .await?;
-        events::emit_progress(app, task_id, message);
+        emitter.emit(&events::progress_event(task_id, message));
         Ok(())
     }
 
     async fn record_failure(
         repo: &Arc<Mutex<AgentTaskRepository>>,
-        app: &AppHandle,
+        emitter: &dyn TaskEventEmitter,
         task_id: &str,
         message: &str,
     ) -> Result<(), AppError> {
@@ -256,7 +258,7 @@ impl TaskExecutor {
                 Some(message.to_string()),
             )
             .await?;
-        events::emit_failure(app, task_id, message);
+        emitter.emit(&events::failure_event(task_id, message));
         Ok(())
     }
 

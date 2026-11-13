@@ -257,7 +257,7 @@ impl AppState {
             })?);
         let task_executor = Arc::new(TaskExecutor::new(
             agent_task_repo_for_executor,
-            app_handle.clone(),
+            Arc::new(app_handle.clone()),
             executor_config,
             provider,
         ));

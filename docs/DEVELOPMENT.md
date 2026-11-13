@@ -38,6 +38,7 @@ alpha-forge/
 │   ├── src/               React frontend
 │   ├── src-tauri/         Rust backend
 │   └── package.json
+├── apps/cli/              Headless `alphaforge` terminal front end
 ├── crates/                Rust workspace crates
 ├── packages/              TypeScript workspace packages
 ├── plugins/               Internal artifact plugins
@@ -69,6 +70,18 @@ cargo fmt                                    # Auto-format
 cargo clippy --all-targets --all-features    # Lint
 cargo test --workspace                       # Run tests
 ```
+
+### CLI
+
+```bash
+cargo build -p alphaforge-cli                 # Build the `alphaforge` binary
+cargo run -p alphaforge-cli -- --help         # Show commands
+cargo run -p alphaforge-cli -- workspace list # Run against the desktop database
+cargo test -p alphaforge-cli                  # CLI unit and integration tests
+```
+
+The CLI reuses the desktop Rust library without starting a Tauri runtime. See
+[`docs/CLI.md`](CLI.md) for commands and architecture notes.
 
 ### Tauri
 

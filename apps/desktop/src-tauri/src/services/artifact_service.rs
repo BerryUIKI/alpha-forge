@@ -61,6 +61,11 @@ impl ArtifactService {
         self.repo.list_by_task(task_id).await
     }
 
+    /// Lists every artifact, newest first.
+    pub async fn list_all_artifacts(&self) -> Result<Vec<Artifact>, AppError> {
+        self.repo.list_all().await
+    }
+
     /// Starts artifact generation.
     pub async fn start_generation(&self, id: &str) -> Result<Artifact, AppError> {
         let artifact = self

@@ -23,6 +23,7 @@ pub async fn run(pool: &SqlitePool) -> Result<(), AppError> {
     // to the shape required by the current repositories instead.
     apply_initial_migration(pool).await?;
     apply_schema_reconciliation(pool).await?;
+    apply_agent_task_status_constraint(pool).await?;
     apply_thesis_confidence_history(pool).await?;
     apply_knowledge_graph(pool).await?;
     apply_portfolio_management(pool).await?;
@@ -156,6 +157,81 @@ async fn add_column_if_missing(
     .execute(pool)
     .await
     .map_err(|e| AppError::Internal(format!("failed to add {table}.{column}: {e}")))?;
+
+    Ok(())
+}
+
+async fn apply_agent_task_status_constraint(pool: &SqlitePool) -> Result<(), AppError> {
+    const NAME: &str = "0024_agent_task_status_constraint";
+    const REBUILD_SQL: &str =
+        include_str!("../../migrations/0024_agent_task_status_constraint.sql");
+
+    let already = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM _migrations WHERE name = ?")
+        .bind(NAME)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("migration check failed for {NAME}: {e}")))?;
+
+    if already > 0 {
+        return Ok(());
+    }
+
+    let table_sql = sqlx::query_scalar::<_, String>(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'agent_tasks'",
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| AppError::Internal(format!("schema inspection failed for agent_tasks: {e}")))?;
+
+    // Databases upgraded through the legacy 0003 migration already accept the
+    // `created` state. Only rebuild when the current table still rejects it.
+    let needs_rebuild = table_sql
+        .as_deref()
+        .is_some_and(|sql| !sql.contains("'created'"));
+
+    if !needs_rebuild {
+        sqlx::query("INSERT INTO _migrations (name) VALUES (?)")
+            .bind(NAME)
+            .execute(pool)
+            .await
+            .map_err(|e| AppError::Internal(format!("migration record failed for {NAME}: {e}")))?;
+        return Ok(());
+    }
+
+    let mut connection = pool
+        .acquire()
+        .await
+        .map_err(|e| AppError::Internal(format!("migration transaction failed for {NAME}: {e}")))?;
+
+    // `agent_task_events.task_id` references agent_tasks. Foreign keys must be
+    // disabled on the rebuilding connection so the table swap keeps the history.
+    sqlx::query("PRAGMA foreign_keys = OFF")
+        .execute(&mut *connection)
+        .await
+        .map_err(|e| AppError::Internal(format!("migration pragma failed for {NAME}: {e}")))?;
+
+    let transaction_result: Result<(), sqlx::Error> =
+        Connection::transaction(&mut *connection, |transaction| {
+            Box::pin(async move {
+                (&mut **transaction).execute(REBUILD_SQL).await?;
+                sqlx::query("INSERT INTO _migrations (name) VALUES (?)")
+                    .bind(NAME)
+                    .execute(&mut **transaction)
+                    .await?;
+                Ok(())
+            })
+        })
+        .await;
+
+    // Restore the connection pragma even when the rebuild failed.
+    let pragma_result = sqlx::query("PRAGMA foreign_keys = ON")
+        .execute(&mut *connection)
+        .await;
+
+    transaction_result
+        .map_err(|e| AppError::Internal(format!("migration transaction failed for {NAME}: {e}")))?;
+    pragma_result
+        .map_err(|e| AppError::Internal(format!("migration pragma failed for {NAME}: {e}")))?;
 
     Ok(())
 }

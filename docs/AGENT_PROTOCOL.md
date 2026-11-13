@@ -126,8 +126,15 @@ state. A worker process exit is not itself a successful task result.
 Responsibilities:
 - Manages concurrent task execution
 - Handles cancellation via CancellationToken
-- Emits progress events to frontend
+- Emits progress events to the presentation surface
 - Enforces timeout limits
+
+The executor takes an `Arc<dyn TaskEventEmitter>`. The desktop passes an
+`AppHandle`, which forwards events to Tauri windows. Headless front ends — the
+`alphaforge` CLI — pass a channel-backed emitter and consume the events from the
+command that started the task. The executor itself has no Tauri runtime
+dependency, so both front ends share one execution, persistence, timeout, and
+cancellation path. See [`docs/CLI.md`](CLI.md).
 
 ### Event System
 

@@ -143,6 +143,25 @@ impl ArtifactRepository {
         Ok(rows.into_iter().map(|r| r.into()).collect())
     }
 
+    /// Lists every artifact, newest first.
+    ///
+    /// The desktop UI scopes artifacts to a workspace or task; the CLI exposes an
+    /// unscoped listing for inspection across workspaces.
+    pub async fn list_all(&self) -> Result<Vec<Artifact>, AppError> {
+        let rows = sqlx::query_as::<_, ArtifactRow>(
+            r#"
+            SELECT id, workspace_id, task_id, artifact_type, status, input, output, error, created_at, updated_at
+            FROM artifacts
+            ORDER BY created_at DESC
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| AppError::Internal(format!("Failed to list artifacts: {}", e)))?;
+
+        Ok(rows.into_iter().map(|r| r.into()).collect())
+    }
+
     /// Gets an artifact by ID.
     pub async fn get(&self, id: &str) -> Result<Option<Artifact>, AppError> {
         let row = sqlx::query_as::<_, ArtifactRow>(
