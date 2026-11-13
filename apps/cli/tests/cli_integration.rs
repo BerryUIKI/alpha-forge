@@ -114,7 +114,7 @@ async fn setup(mode: ProviderMode) -> TestContext {
 
 async fn create_workspace(services: &Services, name: &str) -> String {
     let mut out = Vec::new();
-    commands::workspace::run(
+    let exit_code = commands::workspace::run(
         services,
         WorkspaceCommand::Create {
             name: name.to_string(),
@@ -124,6 +124,7 @@ async fn create_workspace(services: &Services, name: &str) -> String {
     )
     .await
     .expect("workspace creation should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
 
     let value: Value = serde_json::from_slice(&out).expect("workspace JSON");
     value["id"].as_str().expect("workspace id").to_string()
@@ -131,7 +132,7 @@ async fn create_workspace(services: &Services, name: &str) -> String {
 
 async fn create_task(services: &Services, workspace_id: &str, title: &str) -> String {
     let mut out = Vec::new();
-    commands::task::run(
+    let exit_code = commands::task::run(
         services,
         TaskCommand::Create {
             workspace: workspace_id.to_string(),
@@ -143,6 +144,7 @@ async fn create_task(services: &Services, workspace_id: &str, title: &str) -> St
     )
     .await
     .expect("task creation should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
 
     let value: Value = serde_json::from_slice(&out).expect("task JSON");
     value["id"].as_str().expect("task id").to_string()
@@ -153,7 +155,7 @@ async fn workspace_create_and_list_return_json_records() {
     let context = setup(ProviderMode::Success).await;
 
     let mut out = Vec::new();
-    commands::workspace::run(
+    let exit_code = commands::workspace::run(
         &context.services,
         WorkspaceCommand::List,
         OutputFormat::Json,
@@ -161,13 +163,14 @@ async fn workspace_create_and_list_return_json_records() {
     )
     .await
     .expect("empty list should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let empty: Value = serde_json::from_slice(&out).expect("list JSON");
     assert_eq!(empty, Value::Array(Vec::new()));
 
     let workspace_id = create_workspace(&context.services, "Alpha Research").await;
 
     let mut out = Vec::new();
-    commands::workspace::run(
+    let exit_code = commands::workspace::run(
         &context.services,
         WorkspaceCommand::List,
         OutputFormat::Json,
@@ -175,12 +178,13 @@ async fn workspace_create_and_list_return_json_records() {
     )
     .await
     .expect("list should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let workspaces: Value = serde_json::from_slice(&out).expect("list JSON");
     assert_eq!(workspaces[0]["id"], workspace_id);
     assert_eq!(workspaces[0]["name"], "Alpha Research");
 
     let mut text = Vec::new();
-    commands::workspace::run(
+    let exit_code = commands::workspace::run(
         &context.services,
         WorkspaceCommand::List,
         OutputFormat::Text,
@@ -188,6 +192,7 @@ async fn workspace_create_and_list_return_json_records() {
     )
     .await
     .expect("text list should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let text = String::from_utf8(text).expect("utf-8 output");
     assert!(text.contains("Alpha Research"));
 }
@@ -222,7 +227,7 @@ async fn task_create_and_list_show_the_created_state() {
     let task_id = create_task(&context.services, &workspace_id, "Assess demand").await;
 
     let mut out = Vec::new();
-    commands::task::run(
+    let exit_code = commands::task::run(
         &context.services,
         TaskCommand::List {
             workspace: workspace_id,
@@ -232,6 +237,7 @@ async fn task_create_and_list_show_the_created_state() {
     )
     .await
     .expect("task list should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
 
     let tasks: Value = serde_json::from_slice(&out).expect("task list JSON");
     assert_eq!(tasks[0]["id"], task_id);
@@ -411,13 +417,14 @@ async fn provider_status_reflects_keychain_state_and_clear_key_removes_it() {
     let context = setup(ProviderMode::Success).await;
 
     let mut out = Vec::new();
-    commands::provider::run(
+    let exit_code = commands::provider::run(
         &context.services,
         ProviderCommand::Status,
         OutputFormat::Json,
         &mut out,
     )
     .expect("status should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let status: Value = serde_json::from_slice(&out).expect("status JSON");
     assert_eq!(status["provider"], "openai");
     assert_eq!(status["configured"], false);
@@ -426,24 +433,26 @@ async fn provider_status_reflects_keychain_state_and_clear_key_removes_it() {
         .expect("key should be saved");
 
     let mut out = Vec::new();
-    commands::provider::run(
+    let exit_code = commands::provider::run(
         &context.services,
         ProviderCommand::Status,
         OutputFormat::Text,
         &mut out,
     )
     .expect("status should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let text = String::from_utf8(out).expect("utf-8 output");
     assert!(text.contains("openai: configured"));
 
     let mut out = Vec::new();
-    commands::provider::run(
+    let exit_code = commands::provider::run(
         &context.services,
         ProviderCommand::ClearKey,
         OutputFormat::Json,
         &mut out,
     )
     .expect("clear should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let status: Value = serde_json::from_slice(&out).expect("status JSON");
     assert_eq!(status["configured"], false);
     assert!(
@@ -474,7 +483,7 @@ async fn artifact_list_supports_global_workspace_and_task_filters() {
         .expect("artifact creation should succeed");
 
     let mut out = Vec::new();
-    commands::artifact::run(
+    let exit_code = commands::artifact::run(
         &context.services,
         ArtifactCommand::List {
             workspace: None,
@@ -485,12 +494,13 @@ async fn artifact_list_supports_global_workspace_and_task_filters() {
     )
     .await
     .expect("global artifact list should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let artifacts: Value = serde_json::from_slice(&out).expect("artifact JSON");
     assert_eq!(artifacts.as_array().map(Vec::len), Some(1));
     assert_eq!(artifacts[0]["id"], artifact.id);
 
     let mut out = Vec::new();
-    commands::artifact::run(
+    let exit_code = commands::artifact::run(
         &context.services,
         ArtifactCommand::List {
             workspace: Some(other_workspace_id),
@@ -501,11 +511,12 @@ async fn artifact_list_supports_global_workspace_and_task_filters() {
     )
     .await
     .expect("workspace filter should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let artifacts: Value = serde_json::from_slice(&out).expect("artifact JSON");
     assert_eq!(artifacts.as_array().map(Vec::len), Some(0));
 
     let mut out = Vec::new();
-    commands::artifact::run(
+    let exit_code = commands::artifact::run(
         &context.services,
         ArtifactCommand::List {
             workspace: Some(workspace_id),
@@ -516,6 +527,7 @@ async fn artifact_list_supports_global_workspace_and_task_filters() {
     )
     .await
     .expect("task filter should succeed");
+    assert_eq!(exit_code, ExitCode::SUCCESS);
     let artifacts: Value = serde_json::from_slice(&out).expect("artifact JSON");
     assert_eq!(artifacts.as_array().map(Vec::len), Some(1));
 }
