@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **AlphaForge CLI (`alphaforge`):**
+  - Added `apps/cli`, a headless terminal front end that reuses the desktop Rust library, SQLite database, migrations, services, OS-keychain credential adapter, and agent task executor without starting a Tauri runtime.
+  - Added `workspace list/create`, `task list/create/start/cancel`, `provider status/set-key/clear-key` (hidden input), and `artifact list` commands with human-readable and `--json` output, `--db` database selection, and dedicated exit codes for failed or cancelled tasks.
+  - Added the `TaskEventEmitter` boundary so the desktop `TaskExecutor` forwards events to Tauri windows while the CLI forwards them to the terminal through one shared execution path.
+  - Added `ArtifactRepository::list_all` and `ArtifactService::list_all_artifacts` for unscoped artifact inspection.
+  - Added unit and integration tests and [`docs/CLI.md`](docs/CLI.md).
 - **Demo Data Orchestration & First-Run Onboarding Wizard (模拟演示数据与初始引导向导):**
   - Implemented `demoData.ts` providing institutional-grade seed data: Workspace ("AI & Semiconductor Alpha"), Knowledge Graph entities & linkages, investment theses with empirical evidence, prime brokerage financial account, portfolio assets (NVDA, AAPL, MSFT, TSM), cash deposits and lot activities, 30 days of historical daily OHLC/volume price quotes, asset taxonomy, and 70/30 target asset allocation with rebalancing drift bands.
   - Implemented `OnboardingWizardModal` automatically displaying on initial launch when 0 workspaces exist, offering a dual-path choice: 1-click loading the full institutional demo dataset or creating a custom workspace.
@@ -36,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added category filtering (`all`, `theses`, `research`, `tasks`), confidence progression markers, and validation outcome badges.
 
 ### Fixed
+- **Fresh-database agent task creation:**
+  - Added migration `0024_agent_task_status_constraint`, which rebuilds `agent_tasks` with the full domain status set. The base schema's CHECK constraint excluded `created`, so inserts through `AgentTaskRepository` failed on databases created by the current migration runner.
+  - The repair preserves existing tasks and their `agent_task_events` history and is idempotent for databases already upgraded through the legacy `0003` migration.
 - **Demo Data DB Constraint Compliance & Diagnostics (演示数据约束与诊断增强):**
   - Resolved SQLite foreign key constraint failure in thesis evidence creation by embedding source citations into evidence text and omitting invalid non-UUID `source_id` references.
   - Aligned allocation target creation parameters with schema CHECK constraints (`trigger_type: 'threshold'`, `rebalance_goal: 'nearest_band'`) and set category assignment weight to 10000 basis points (100.00%).

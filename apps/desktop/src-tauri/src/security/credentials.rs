@@ -49,12 +49,17 @@ impl OsKeychainCredentialStore {
     }
 }
 
-pub fn save_openai_api_key(store: &impl CredentialStore, api_key: &str) -> Result<(), AppError> {
+pub fn save_openai_api_key(
+    store: &(impl CredentialStore + ?Sized),
+    api_key: &str,
+) -> Result<(), AppError> {
     store.set(OPENAI_CREDENTIAL_NAME, api_key)?;
     store.delete(LEGACY_OPENAI_CREDENTIAL_NAME)
 }
 
-pub fn load_openai_api_key(store: &impl CredentialStore) -> Result<Option<String>, AppError> {
+pub fn load_openai_api_key(
+    store: &(impl CredentialStore + ?Sized),
+) -> Result<Option<String>, AppError> {
     if let Some(api_key) = store.get(OPENAI_CREDENTIAL_NAME)? {
         return Ok(Some(api_key));
     }
@@ -68,11 +73,11 @@ pub fn load_openai_api_key(store: &impl CredentialStore) -> Result<Option<String
     Ok(Some(api_key))
 }
 
-pub fn has_openai_api_key(store: &impl CredentialStore) -> Result<bool, AppError> {
+pub fn has_openai_api_key(store: &(impl CredentialStore + ?Sized)) -> Result<bool, AppError> {
     Ok(load_openai_api_key(store)?.is_some())
 }
 
-pub fn delete_openai_api_key(store: &impl CredentialStore) -> Result<(), AppError> {
+pub fn delete_openai_api_key(store: &(impl CredentialStore + ?Sized)) -> Result<(), AppError> {
     store.delete(LEGACY_OPENAI_CREDENTIAL_NAME)?;
     store.delete(OPENAI_CREDENTIAL_NAME)
 }

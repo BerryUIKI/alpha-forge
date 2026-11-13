@@ -13,7 +13,12 @@ use crate::security::credentials::{
 };
 
 const OPENAI_RESPONSES_URL: &str = "https://api.openai.com/v1/responses";
-const DEFAULT_MODEL: &str = "gpt-5.6-terra";
+
+/// Default model used for agent research requests.
+///
+/// Exposed so headless front ends (the CLI) can report the active model without
+/// duplicating the constant.
+pub const DEFAULT_OPENAI_MODEL: &str = "gpt-5.6-terra";
 
 pub struct OpenAiResearchProvider {
     client: Client,
@@ -30,7 +35,7 @@ impl OpenAiResearchProvider {
         Ok(Self {
             client,
             credential_store: OsKeychainCredentialStore,
-            model: DEFAULT_MODEL.into(),
+            model: DEFAULT_OPENAI_MODEL.into(),
         })
     }
 

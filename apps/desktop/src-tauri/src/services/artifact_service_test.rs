@@ -113,6 +113,11 @@ async fn test_artifact_service_lifecycle() {
     let list = service.list_artifacts(&workspace_id).await.unwrap();
     assert_eq!(list.len(), 1);
     assert_eq!(list[0].id, artifact.id);
+
+    // 9. List every artifact (unscoped CLI inspection)
+    let all = service.list_all_artifacts().await.unwrap();
+    assert_eq!(all.len(), 1);
+    assert_eq!(all[0].id, artifact.id);
 }
 
 #[tokio::test]

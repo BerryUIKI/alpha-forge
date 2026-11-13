@@ -73,6 +73,26 @@
 - Application lifecycle
 - Update and release infrastructure
 
+### Command-line front end (`apps/cli`)
+
+The `alphaforge` CLI is a second front end over the same Rust capability layer.
+It is not a separate backend and it is not an IPC client:
+
+- It links the `alpha-forge` library crate and calls the same repositories,
+  services, migrations, credential adapter, and agent executor.
+- It opens the desktop database through `database::connection` and
+  `database::migrations`; it never issues SQL or applies a migration itself.
+- It runs without a Tauri runtime. `TaskExecutor` emits lifecycle events through
+  `TaskEventEmitter`; the desktop implements it with `AppHandle`, while the CLI
+  implements it with a channel that prints progress.
+- It exposes workspace, task, provider-credential, and artifact inspection
+  commands only. Artifact generation and window management stay in the desktop
+  app.
+- It preserves the no-trading and human-decision boundaries: starting a task
+  produces research output, not an order or an autonomous decision.
+
+See [`docs/CLI.md`](CLI.md) for the command reference.
+
 ## Directory Structure (Actual)
 
 ```
@@ -105,6 +125,7 @@ alpha-forge/
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── vite.config.ts
+├── apps/cli/                     Headless terminal front end (`alphaforge`)
 ├── crates/                       Rust workspace crates
 │   ├── domain/                   Core domain models
 │   ├── agent-core/               Agent execution engine
@@ -166,6 +187,7 @@ React (AgentPanel)
 ```
 
 - **Startup Race Protection**: Rust records readiness in a managed `AppReadiness` state and emits `app:ready` / `app:init-failed`. `useAppReady` subscribes to the events and also reads `get_app_status`, so panels mounted after startup still receive the correct state; listener failure and prolonged initialization surface explicit states. Commands are gated on readiness.
+- **Headless Execution**: `TaskExecutor` receives a `TaskEventEmitter`. The desktop forwards events to Tauri windows; the `alphaforge` CLI forwards the same events to the terminal. Execution, persistence, timeout, and cancellation logic stay shared. See [`docs/CLI.md`](CLI.md).
 - **Failure Context**: Exact failure payloads are surfaced to users in `AgentPanel` with complete EN/ZH-CN i18n.
 - **Target Worker Boundary**: Rust will supervise ephemeral Agent workers while
   retaining provider credentials, network calls, tools, SQLite, domain writes,

@@ -161,6 +161,25 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --workspace
 ```
 
+### Command-line interface
+
+The `alphaforge` CLI drives the same local research database and Rust service
+layer as the desktop app:
+
+```bash
+cargo run -p alphaforge-cli -- workspace list
+cargo run -p alphaforge-cli -- workspace create "Alpha Research"
+cargo run -p alphaforge-cli -- task create --workspace <workspace-id> --title "Assess demand"
+cargo run -p alphaforge-cli -- task start <task-id>
+cargo run -p alphaforge-cli -- provider status
+cargo run -p alphaforge-cli -- artifact list
+```
+
+Use `--json` for machine-readable output and `--db <path>` to select another
+database. The CLI runs without a Tauri runtime, stores API keys in the OS
+keychain, and never executes trades. See [`docs/CLI.md`](docs/CLI.md) for the
+command reference, exit codes, and security model.
+
 ---
 
 ## Architecture
@@ -205,6 +224,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for full architecture details
 | [PRODUCT.md](docs/PRODUCT.md) | Product positioning and MVP scope |
 | [VISION.md](docs/VISION.md) | Long-term direction |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
+| [CLI.md](docs/CLI.md) | Command-line interface, commands, and exit codes |
 | [MILESTONE_ROADMAP.md](docs/MILESTONE_ROADMAP.md) | Product milestones |
 | [i18n](docs/i18n/README.md) | Localization architecture and delivery plan |
 | [Product experience redesign](docs/PRODUCT_EXPERIENCE_REDESIGN.md) | GUI feedback response, target information architecture, and phased delivery plan |

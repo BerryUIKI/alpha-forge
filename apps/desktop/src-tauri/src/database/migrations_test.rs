@@ -354,6 +354,64 @@ mod tests {
         assert!(option_table_names(&pool).await.is_empty());
     }
 
+    #[tokio::test]
+    async fn agent_task_status_constraint_is_repaired_without_data_loss() {
+        let pool = setup_test_db().await;
+
+        // Rows written by the initial schema, which does not allow `created`.
+        sqlx::query(
+            "INSERT INTO agent_tasks (id, status, input) VALUES ('legacy-task', 'queued', 'input')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert legacy task");
+        sqlx::query(
+            "INSERT INTO agent_task_events (id, task_id, event_type) VALUES ('legacy-event', 'legacy-task', 'task_created')",
+        )
+        .execute(&pool)
+        .await
+        .expect("Failed to insert legacy task event");
+
+        migrations::run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        // The table rebuild preserves tasks and their event history.
+        let task_exists: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM agent_tasks WHERE id = 'legacy-task'")
+                .fetch_one(&pool)
+                .await
+                .expect("Failed to read legacy task");
+        assert_eq!(task_exists, 1);
+        let event_exists: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM agent_task_events WHERE id = 'legacy-event'")
+                .fetch_one(&pool)
+                .await
+                .expect("Failed to read legacy task event");
+        assert_eq!(event_exists, 1);
+
+        // The domain's initial `created` state is now accepted.
+        sqlx::query(
+            "INSERT INTO agent_tasks (id, workspace_id, title, description, status, input, created_at, updated_at)
+             VALUES ('new-task', NULL, 'Title', NULL, 'created', 'Title', datetime('now'), datetime('now'))",
+        )
+        .execute(&pool)
+        .await
+        .expect("created task status must be accepted after the repair");
+
+        assert_eq!(
+            migration_count(&pool, "0024_agent_task_status_constraint").await,
+            1
+        );
+        migrations::run(&pool)
+            .await
+            .expect("Constraint repair must be idempotent");
+        assert_eq!(
+            migration_count(&pool, "0024_agent_task_status_constraint").await,
+            1
+        );
+    }
+
     const FINANCIAL_MIGRATIONS: &[&str] = &[
         "0015_financial_platforms_accounts",
         "0016_financial_assets_quotes",
