@@ -2,30 +2,30 @@
 
 ## Branch Protection Rules
 
-**Main branch is protected. Direct pushes are BLOCKED.**
+**The `dev` branch is the default and is protected. Direct pushes are BLOCKED.**
 
 | Rule | Status | Description |
 |------|--------|-------------|
 | 🔒 **Direct Push** | ❌ Blocked | All changes must use Pull Request |
 | ✅ **PR Required** | Mandatory | At least 1 approval needed |
-| 🔄 **Linear History** | Enforced | No merge commits allowed |
-| 💬 **Conversation Resolution** | Required | All discussions must be resolved |
-| ⚠️ **Admins Included** | Yes | Even repository admins must use PR |
+| 🔄 **Linear History** | Recommended | Squash or rebase preferred; not enforced on `dev` |
+| 💬 **Conversation Resolution** | Recommended | Resolve discussions before merge; not enforced on `dev` |
+| ⚠️ **Admin Bypass** | Emergencies | Admins can bypass only for critical situations |
 
 **What This Means**:
 
-- You CANNOT push directly to `main` branch
+- You CANNOT push directly to the `dev` branch
 - You MUST create a feature branch and submit a PR
 - All PRs need at least 1 approval before merging
-- GitHub will reject any direct push attempts
+- GitHub rejects direct pushes from contributors; administrators can bypass only in an emergency
 
 **Attempting Direct Push?**
 
 ```bash
-$ git push origin main
-remote: error: GH006: Protected branch update failed for refs/heads/main.
+$ git push origin dev
+remote: error: GH006: Protected branch update failed for refs/heads/dev.
 remote: - Changes must be made through a pull request.
-! [remote rejected] main -> main (protected branch hook declined)
+! [remote rejected] dev -> dev (protected branch hook declined)
 ```
 
 ✅ This is expected behavior. Use the PR process below.
@@ -113,7 +113,7 @@ feature/agent-runtime              (Parent branch)
 
 ```text
 Step 1: Create parent branch
-    git checkout main
+    git checkout dev
     git checkout -b feature/agent-runtime
 
 Step 2: Create sub-branch from parent
@@ -130,8 +130,8 @@ Step 4: Create PR from sub-branch to parent
 Step 5: After approval, merge sub-branch to parent
     (Maintains linear history on parent)
 
-Step 6: When all sub-branches merged, create PR from parent to main
-    gh pr create --base main
+Step 6: When all sub-branches merged, create PR from parent to dev
+    gh pr create --base dev
 ```
 
 ### Sub-Branch PR Rules
@@ -234,7 +234,7 @@ From `.github/pull_request_template.md`:
 ### For Authors
 
 **Before Creating PR**:
-1. Self-review your changes (`git diff main`)
+1. Self-review your changes (`git diff dev`)
 2. Run all checks locally
 3. Write clear PR description
 4. Keep PR focused (split if needed)
@@ -265,11 +265,11 @@ From `.github/pull_request_template.md`:
 ### Squash Merge Policy
 
 **When to Squash**:
-- Feature branches → main
+- Feature branches → dev
 - Sub-branches → parent branches
 
 **Why Squash**:
-- Clean history on main/parent
+- Clean history on dev/parent
 - Single commit per feature
 - Easier to revert if needed
 
@@ -337,7 +337,7 @@ Review: Self-approved or no review
 
 ✅ Good:
 Sub-branch PR: "feat: implement sub-component"
-Review: Requires same review process as main PRs
+Review: Requires same review process as dev PRs
 ```
 
 ### 4. Unclear Scope

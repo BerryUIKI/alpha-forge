@@ -16,7 +16,7 @@ The Milestone M11 Release Acceptance Gate has been formally executed against the
 ### Formal Release Decision: **ACCEPT (Release Candidate Approved)**
 
 - **Rationale:** All quality gates (type checking, linting, frontend tests, Rust workspace tests, Clippy with zero warnings, IPC parity, scale benchmarks, SBOM generation, packaged smoke tests, and security isolation) have passed with 100% success. Zero P0 or critical-security defects exist.
-- **Scope & Boundaries:** Release candidate packages are approved for operator verification and staged distribution. In accordance with Git safety rules, merging `dev` into `main` and publishing production-signed GitHub releases remain explicit manual release ceremonies.
+- **Scope & Boundaries:** Release candidate packages are approved for operator verification and staged distribution. Publishing production-signed GitHub releases remains an explicit manual release ceremony. The release-line policy has since changed; see the 2026-11-13 addendum in §8.
 
 ---
 
@@ -107,4 +107,10 @@ The Milestone M11 Release Acceptance Gate has been formally executed against the
 ## 7. Sign-Off & Release Authorization
 
 - **Evaluation Conclusion:** The AlphaForge desktop application candidate satisfies all release criteria.
-- **Authorized Next Step:** Merge `docs/m11-release-acceptance` into `dev`. Subsequent promotion to `main` and production signing/distribution to GitHub Releases may proceed upon explicit release-owner schedule.
+- **Authorized Next Step:** Merge `docs/m11-release-acceptance` into `dev`. Production signing and distribution to GitHub Releases may proceed upon the release owner's schedule; tags are created on `dev` (see §8).
+
+---
+
+## 8. Release-Line Addendum (2026-11-13)
+
+The repository default branch moved from `main` to `dev`. `main` is frozen as a historical snapshot and is no longer a merge or release target. Release tags are created on `dev`. The acceptance decision in this record is unchanged.

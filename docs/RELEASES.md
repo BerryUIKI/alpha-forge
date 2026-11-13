@@ -118,4 +118,4 @@ Prior to presenting any release candidate to the release acceptance gate, candid
 
 ## 7. Release Acceptance Gate (M11-07)
 
-Packaging a release candidate (M11-05) and completing packaged smoke verification (M11-06) produce candidate artifacts for final release-candidate acceptance (M11-07). Publishing to GitHub Releases or merging to `main` remains governed by the formal acceptance gate.
+Packaging a release candidate (M11-05) and completing packaged smoke verification (M11-06) produce candidate artifacts for final release-candidate acceptance (M11-07). Publishing to GitHub Releases remains governed by the formal acceptance gate. Release tags are created on `dev`, the default branch; `main` is frozen and is not a release target.

@@ -845,7 +845,7 @@ The task-level objective, acceptance criteria, involved files, branch type, and 
 - macOS and Windows packaged smoke matrices pass against the exact candidate artifacts.
 - English repository, user, operator, release, and milestone documentation agree.
 - No trading, brokerage order routing, autonomous investment decision, hidden cloud upload, or unapproved telemetry is introduced.
-- Publication, production signing, and promotion from `dev` to `main` remain separate explicit actions.
+- Publication and production signing remain separate explicit actions. `dev` is the default and release line; `main` is frozen and is not a release target.
 
 ### Deferred from M11
 

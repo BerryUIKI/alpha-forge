@@ -218,14 +218,16 @@ Ver [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) para el documento de arquitec
 
 ### 🔒 Aviso de Protección de Branch
 
-**La branch main está protegida. Los push directos están BLOQUEADOS.**
+**La branch dev es la branch por defecto y está protegida. Los push directos están BLOQUEADOS.**
 
 Todos los cambios deben pasar por Pull Request:
 1. Crear branch de feature
 2. Hacer cambios y commit
 3. Crear Pull Request
 4. Obtener al menos 1 aprobación
-5. Hacer merge a main
+5. Hacer merge a dev
+
+La branch `main` está congelada como una instantánea histórica; no recibe cambios ni releases.
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para el flujo de trabajo detallado.
 

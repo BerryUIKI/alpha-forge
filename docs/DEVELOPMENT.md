@@ -102,7 +102,7 @@ See [`docs/GIT_WORKFLOW.md`](GIT_WORKFLOW.md) for the full workflow.
 
 Summary:
 
-- Never develop on `main`.
+- Never develop on `dev` or `main`; branch from `origin/dev` and open PRs against `dev`.
 - Create `feature/<name>` branches for new work.
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, etc.
 - Run relevant checks before every commit.
