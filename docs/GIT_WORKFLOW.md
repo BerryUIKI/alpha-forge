@@ -2,68 +2,39 @@
 
 ## Branch Strategy
 
-AlphaForge follows a **triadic branching model** with three main branch types:
+AlphaForge uses a **two-tier branching model**. `dev` is the default branch, the integration branch, and the release line; `main` is a frozen historical snapshot.
 
 ```
-main (production)
+dev (default; integration and release line)
   ↑
-  │ PR (requires approval + testing)
-  │
-dev (integration)
-  ↑
-  │ PR (requires review)
+  │ PR (requires review + CI)
   │
 feature/* (development)
+
+main (frozen historical snapshot; no merges, PRs, or releases)
 ```
 
 ### Branch Types
 
-#### 1. `main` - Production Branch
+#### 1. `dev` - Default, Integration, and Release Branch
 
-`main` is the **stable production branch**.
-
-**Protected Branch Rules** (enforced by GitHub):
-
-- 🔒 **Direct pushes are BLOCKED** — All changes must go through Pull Request
-- ✅ **Pull Request required** — At least 1 approval needed
-- 🔄 **Linear history** — No merge commits, use squash or rebase
-- 🧪 **Status checks required** — All CI tests must pass
-- 💬 **Conversation resolution** — All discussions must be resolved before merge
-- ⚠️ **Administrators included** — Even admins must follow PR process
-
-**Additional Rules**:
-
-- Never commit feature work directly to `main`.
-- `main` should always represent a buildable, tested, and stable state.
-- Only merge completed, reviewed, and verified changes from `dev`.
-- Each merge to `main` should be a release candidate.
-
-**Why This Matters**:
-
-- Ensures production stability
-- Maintains clean release history
-- Protects against untested changes
-- Creates audit trail for all production deployments
-
----
-
-#### 2. `dev` - Integration Branch
-
-`dev` is the **development integration branch**.
+`dev` is the repository **default branch**, the integration branch, and the release line.
 
 **Purpose**:
 
-- Integrates completed features from multiple developers
-- Serves as the base branch for all new feature development
-- Allows testing and validation before production release
+- Integrates completed work from all contributors
+- Serves as the base branch for every feature branch
+- Is the source of every release tag and package
 - Aggregates changes for the next release
 
-**Protected Branch Rules** (enforced by GitHub):
+**Branch Rules** (configured in GitHub):
 
-- 🔒 **Direct pushes are BLOCKED** — All changes must go through Pull Request
-- ✅ **Pull Request required** — At least 1 approval recommended
-- 🔄 **Linear history** — No merge commits, use squash or rebase
-- 🧪 **Status checks recommended** — CI tests should pass
+- 🔒 **Direct pushes are BLOCKED** — All changes must go through a Pull Request
+- ✅ **Pull Request required** — At least 1 approval needed
+- 🔄 **Linear history** — Squash or rebase preferred; not enforced on `dev`
+- 🧪 **Status checks** — Quality Gates and CodeQL should pass before merge; not required rules on `dev`
+- 💬 **Conversation resolution** — Resolve discussions before merge; not enforced on `dev`
+- ⚠️ **Administrators can bypass** — For emergencies only
 
 **Workflow Rules**:
 
@@ -75,18 +46,13 @@ feature/* (development)
    ```
 
 2. **Feature branches PR back to `dev`**
-   - Not directly to `main`
+   - Never directly to `main`
    - Requires code review
-   - Should pass CI tests
+   - Must pass CI checks
 
-3. **`dev` is regularly merged to `main`**
-   - After a set of features is validated
-   - Before a release
-   - Requires full review and testing
-
-4. **Keep `dev` up-to-date with `main`**
-   - If hotfixes are applied to `main`, sync back to `dev`
-   - Avoid long-lived divergence
+3. **`dev` is the release line**
+   - Release candidates are cut and tagged from `dev`
+   - Publishing remains a separate release-owner action
 
 **What Goes in `dev`**:
 
@@ -102,6 +68,26 @@ feature/* (development)
 - ❌ Half-finished features
 - ❌ Unreviewed changes
 - ❌ Experimental work (use separate branches)
+
+---
+
+#### 2. `main` - Frozen Historical Branch
+
+`main` was the original production branch. On 2026-11-13 the repository default branch moved to `dev`; `main` is now frozen at commit `f3baf81` as a historical snapshot.
+
+**Rules**:
+
+- No new merges, pull requests, or releases target `main`.
+- Do not create feature branches from `main`; use `origin/dev`.
+- Branch protection remains in place so the frozen history cannot be rewritten.
+- Release packages and tags are produced from `dev`, not `main`.
+
+**Why the change**:
+
+- `dev` contains the complete product history and every completed milestone.
+- `main` had diverged into an older M1.5 line; keeping two release branches would duplicate code and confuse releases.
+
+See [ADR-0011](DECISIONS/0011-dev-default-release-line.md) for the full decision record.
 
 ---
 
@@ -200,12 +186,13 @@ git push origin feature/agent-runtime
 After approval:
 
 ```bash
-# Squash and merge via GitHub UI
-# Or command-line:
-git checkout dev
-git merge --squash feature/agent-runtime
-git push origin dev
+# Squash and merge through GitHub (recommended)
+gh pr merge <number> --squash
+
+# Or use the GitHub UI's "Squash and merge" button
 ```
+
+Do not push directly to `dev`; branch protection rejects it.
 
 ### Step 5: Delete Feature Branch
 
@@ -217,22 +204,19 @@ git branch -d feature/agent-runtime
 git push origin --delete feature/agent-runtime
 ```
 
-### Step 6: Release to `main`
+### Step 6: Release from `dev`
 
-When `dev` is stable and tested:
+When the release owner accepts a candidate:
 
 ```bash
-# Create PR: dev → main
-# Via GitHub UI with release notes
-
-# After approval and CI passes:
-# Squash and merge to main
-
-# Tag release
-git checkout main
+# Tag the accepted commit on dev
+git checkout dev
+git pull origin dev
 git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
+
+`main` is not updated by the release process.
 
 ---
 
@@ -240,11 +224,13 @@ git push origin v0.1.0
 
 | Branch    | Direct Push | PR Required | Approvals | CI Required | Target    |
 |-----------|-------------|-------------|-----------|-------------|-----------|
-| `main`    | ❌ Blocked  | ✅ Required | 1+        | ✅ Required | N/A       |
-| `dev`     | ❌ Blocked  | ✅ Required | 1+        | ⚠️ Recommended | N/A    |
+| `dev` (default) | ❌ Blocked | ✅ Required | 1+ | ⚠️ Recommended | N/A |
+| `main` (frozen) | ❌ Blocked | ✅ Required | 1+ | ✅ Required | No merges |
 | `feature/*` | ✅ Allowed | ❌ Optional | Optional  | ⚠️ Recommended | `dev`   |
 | `fix/*`     | ✅ Allowed | ❌ Optional | Optional  | ⚠️ Recommended | `dev`   |
 | `docs/*`    | ✅ Allowed | ❌ Optional | Optional  | ❌ Optional    | `dev`   |
+
+`main` is frozen; its protection rules are dormant because no PRs or merges should target it.
 
 ---
 
@@ -460,7 +446,7 @@ git push --force
 git push --force-with-lease
 git branch -D
 git rebase main
-git merge --no-ff main
+git merge main
 ```
 
 **Never**:
@@ -469,6 +455,7 @@ git merge --no-ff main
 - Overwrite uncommitted work
 - Push directly to `main` or `dev`
 - Skip code review
+- Merge the frozen `main` branch into `dev`
 
 ---
 
@@ -491,21 +478,24 @@ git rebase --continue
 git push --force-with-lease origin feature/my-feature
 ```
 
-### Hotfix Sync (When Main Has Urgent Fixes)
+### Hotfixes After a Release
 
-If `main` receives hotfixes:
+`main` is frozen and never receives hotfixes. Fix released issues on a branch from `dev`:
 
 ```bash
-# Sync dev with main
 git checkout dev
 git pull origin dev
-git pull origin main --rebase
-git push origin dev
+git checkout -b fix/critical-issue
+# Fix, commit, and open a PR to dev.
 
-# Then sync your feature branches
-git checkout feature/my-feature
-git rebase origin/dev
+# After the fix merges, tag a patch release on dev
+git checkout dev
+git pull origin dev
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
 ```
+
+Then rebase any open feature branch on `origin/dev`.
 
 ---
 
@@ -541,14 +531,14 @@ git rebase origin/dev
    │ dev  │ ← Run full test suite
    └──────┘   ← Validate integration
       ↓
-6. Release to main
+6. Release from dev
    ┌──────┐
-   │ main │ ← PR from dev
-   └──────┘   ← Requires approval + CI
+   │ dev  │ ← Release-owner acceptance
+   └──────┘
       ↓
 7. Tag Release
    ┌──────┐
-   │ main │ → git tag v1.0.0
+   │ dev  │ → git tag v1.0.0
    └──────┘
 ```
 

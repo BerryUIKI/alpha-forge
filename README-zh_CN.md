@@ -213,14 +213,16 @@ cargo test --workspace
 
 ### 🔒 分支保护说明
 
-**主分支受保护。直接推送被阻止。**
+**`dev` 分支是默认分支并受保护。直接推送被阻止。**
 
 所有变更必须通过 Pull Request：
 1. 创建功能分支
 2. 进行变更并提交
 3. 创建 Pull Request
 4. 获得至少 1 个批准
-5. 合并到 main
+5. 合并到 dev
+
+`main` 已冻结为历史快照，不再接收变更或发布。
 
 详细工作流程请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

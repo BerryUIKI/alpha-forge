@@ -14,7 +14,7 @@
 
 ## ⚠️ Branch Protection Notice
 
-**Main branch is protected. Direct pushes are blocked.**
+**`dev` is the default branch and is protected. Direct pushes are blocked.**
 
 This PR will be merged after:
 - ✅ At least 1 approval
@@ -79,7 +79,7 @@ pnpm test
 
 **Sub-branches** (if parent):
 - [ ] All sub-branches merged to parent
-- [ ] Parent PR created to main
+- [ ] Parent PR created to dev
 
 ---
 

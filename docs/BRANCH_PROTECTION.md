@@ -1,6 +1,7 @@
-# Branch Protection Rules Update
+# Branch Protection Rules
 
 **Date**: 2026-08-01
+**Updated**: 2026-11-13
 **Status**: Active
 **Author**: Berry Wahlberg
 
@@ -14,14 +15,29 @@ Branch protection rules have been configured for AlphaForge to ensure code quali
 
 ## Protected Branches
 
-### `main` Branch - Production
+### `dev` Branch - Default, Integration, and Release
 
-**Strict Protection** - All rules are enforced
+**Active protection** - enforced by GitHub
 
 | Rule | Status | Details |
 |------|--------|---------|
 | 🔒 **No Direct Pushes** | ✅ Enforced | All changes must go through Pull Request |
-| 🧪 **Required Status Checks** | ✅ Required | `CI` and `Code Quality` must pass |
+| 🧪 **Status Checks** | ⚠️ Recommended | Quality Gates and CodeQL run on every PR; not configured as required checks |
+| 👥 **Required Reviews** | ✅ Required | Minimum 1 approval required |
+| 💬 **Conversation Resolution** | ⚠️ Recommended | Resolve discussions before merge; not enforced on `dev` |
+| 📏 **Linear History** | ⚠️ Recommended | Squash or rebase preferred; not enforced on `dev` |
+| 🔐 **Admin Enforcement** | ❌ Optional | Admins can push directly in emergencies |
+| 🚫 **No Force Pushes** | ✅ Blocked | Cannot overwrite history |
+| 🗑️ **No Deletions** | ✅ Blocked | Branch cannot be deleted |
+
+### `main` Branch - Frozen Historical Snapshot
+
+`main` is frozen since 2026-11-13. It is not a development or release target. Protection remains so the historical snapshot cannot be rewritten.
+
+| Rule | Status | Details |
+|------|--------|---------|
+| 🔒 **No Direct Pushes** | ✅ Enforced | Branch is frozen |
+| 🧪 **Required Status Checks** | ✅ Required | `Analyze (javascript-typescript)` and `Analyze (rust)` |
 | 👥 **Required Reviews** | ✅ Required | Minimum 1 approval required |
 | 💬 **Conversation Resolution** | ✅ Required | All discussions must be resolved |
 | 📏 **Linear History** | ✅ Required | Squash merge or rebase only |
@@ -29,20 +45,7 @@ Branch protection rules have been configured for AlphaForge to ensure code quali
 | 🚫 **No Force Pushes** | ✅ Blocked | Cannot overwrite history |
 | 🗑️ **No Deletions** | ✅ Blocked | Branch cannot be deleted |
 
-### `dev` Branch - Integration
-
-**Recommended Protection** - Most rules enforced
-
-| Rule | Status | Details |
-|------|--------|---------|
-| 🔒 **No Direct Pushes** | ⚠️ Recommended | Should use PR, but admins can bypass |
-| 🧪 **Status Checks** | ⚠️ Recommended | `CI` check expected, but not required |
-| 👥 **Reviews** | ⚠️ Recommended | 1 approval suggested |
-| 💬 **Conversation Resolution** | ✅ Required | All discussions must be resolved |
-| 📏 **Linear History** | ✅ Required | Squash merge or rebase only |
-| 🔐 **Admin Enforcement** | ❌ Optional | Admins can push directly in emergencies |
-| 🚫 **No Force Pushes** | ✅ Blocked | Cannot overwrite history |
-| 🗑️ **No Deletions** | ✅ Blocked | Branch cannot be deleted |
+No pull requests, merges, or releases target `main`. The protection rules above remain configured to prevent history rewrites; they are otherwise dormant.
 
 ---
 
@@ -73,7 +76,9 @@ git push origin feature/my-feature
 git branch -d feature/my-feature
 git push origin --delete feature/my-feature
 
-# 7. When ready for release, create PR: dev → main
+# 7. When ready for release, tag the accepted commit on dev
+#    git tag -a v0.1.0 -m "Release v0.1.0"
+#    git push origin v0.1.0
 ```
 
 ### Branch Naming Convention
@@ -105,27 +110,31 @@ chore/<description>     - Maintenance tasks
 
 ## CI Status Checks
 
-### Required for `main`
+### Required for `main` (frozen)
 
-- **CI**: Build, test, and verify application
-- **Code Quality**: Lint, format check, and static analysis
+- `Analyze (javascript-typescript)`
+- `Analyze (rust)`
 
-### Expected for `dev`
+### Expected for `dev` (default)
 
-- **CI**: Recommended but not strictly required
+- **Quality Gates**: frontend and Rust quality gates
+- **CodeQL**: `Analyze (javascript-typescript)` and `Analyze (rust)`
+
+These checks run on every push and pull request but are not configured as required rules on `dev`; they should still pass before merge.
 
 ---
 
 ## Key Differences
 
-| Aspect | `main` | `dev` |
-|--------|--------|-------|
-| Purpose | Production releases | Development integration |
-| Protection Level | Strict | Recommended |
-| Direct Push | Blocked | Blocked (bypassable by admins) |
-| Status Checks | Required (2) | Expected (1) |
-| Review Required | Yes | Recommended |
-| Admin Override | No | Yes (emergency only) |
+| Aspect | `dev` | `main` |
+|--------|-------|--------|
+| Purpose | Default branch, integration, and releases | Frozen historical snapshot |
+| Protection Level | Active | Strict |
+| Direct Push | Blocked (admin bypass for emergencies) | Blocked |
+| Status Checks | Expected | Required (2) |
+| Review Required | Yes (1) | Yes (1) |
+| Admin Override | Yes (emergency only) | No |
+| Releases | Yes | No |
 
 ---
 
@@ -156,37 +165,32 @@ chore/<description>     - Maintenance tasks
 
 ## Emergency Procedures
 
-### Hotfix to `main`
+### Hotfix After a Release
 
 ```bash
-# Create hotfix branch from main
-git checkout main
-git pull origin main
+# Create a fix branch from dev
+git checkout dev
+git pull origin dev
 git checkout -b fix/critical-issue
 
-# Fix and commit
-git commit -m "fix: resolve critical issue"
-
-# Create PR to main
-# Get expedited review
-# Merge and release
-
-# Sync back to dev
+# Fix, commit, and open a PR to dev
+# After approval and merge, tag a patch release on dev
 git checkout dev
-git pull origin main
-git push origin dev
+git pull origin dev
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
 ```
 
-### Emergency Push to `dev`
+### Emergency Bypass on `dev`
 
-Administrators can bypass `dev` protection in emergencies:
+Administrators can bypass the review requirement for a critical fix:
 
 ```bash
-# Only for critical situations!
-git push origin dev --force-with-lease
+# Only for critical situations, with release-owner approval
+gh pr merge <number> --squash --admin
 ```
 
-**Note**: This will still trigger warnings. Use sparingly.
+Never rewrite `dev` history or force-push; open a PR and use the admin merge override instead.
 
 ---
 
@@ -195,6 +199,7 @@ git push origin dev --force-with-lease
 | Date | Change | Reason |
 |------|--------|--------|
 | 2026-08-01 | Initial branch protection setup | Establish code quality standards |
+| 2026-11-13 | Default branch moved from `main` to `dev`; `main` frozen as a historical snapshot ([ADR-0011](DECISIONS/0011-dev-default-release-line.md)) | `dev` is the complete product line; avoid two divergent release branches |
 
 ---
 

@@ -655,7 +655,7 @@ See [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) for the full branching model,
 
 Mandatory rules:
 
-- Never develop directly on `main`.
+- Never develop directly on `dev` or `main`; `dev` is the default branch and `main` is frozen.
 - Never commit or push unless explicitly requested.
 - Never merge branches without explicit instruction.
 - Do not run destructive Git commands (`git reset --hard`, `git clean -fd`, `git push --force`, `git branch -D`).

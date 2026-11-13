@@ -263,14 +263,16 @@ We welcome contributions!
 
 ### Branch Protection Notice
 
-**Main branch is protected. Direct pushes are BLOCKED.**
+**`dev` is the default branch and is protected. Direct pushes are BLOCKED.**
 
-All changes must go through Pull Request:
-1. Create a feature branch
+All changes must go through a Pull Request against `dev`:
+1. Create a feature branch from `dev`
 2. Make changes and commit
-3. Create Pull Request
+3. Create Pull Request to `dev`
 4. Get at least 1 approval
-5. Merge to main
+5. Merge to `dev`
+
+`main` is frozen as a historical snapshot; it receives no new changes or releases.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed workflow.
 

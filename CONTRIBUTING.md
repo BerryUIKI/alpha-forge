@@ -80,8 +80,9 @@ This project and everyone participating in it is governed by our [Code of Conduc
    - Review related modules and types
 
 2. **Choose the right branch**
-   - `main` - Stable production branch
-   - Create feature branches from `main`
+   - `dev` - Default integration and release branch
+   - Create feature branches from `dev`
+   - `main` is frozen as a historical snapshot; do not branch from it
    - Use descriptive branch names: `feat/agent-runtime`, `fix/ipc-error`, `docs/api-guide`
 
 ### Branch Naming Convention
@@ -220,12 +221,12 @@ chore(deps): update Tauri to 2.0.0
 
 ### Before Submitting
 
-1. **Update from main**
+1. **Update from dev**
    ```bash
-   git checkout main
-   git pull origin main
+   git checkout dev
+   git pull origin dev
    git checkout your-branch
-   git rebase main
+   git rebase dev
    ```
 
 2. **Run all checks**
@@ -264,7 +265,7 @@ Your PR should satisfy all items in our [PR template](.github/pull_request_templ
 ### After Merge
 
 - Delete your feature branch
-- Update local main branch
+- Update local `dev` branch
 - Start a new branch for your next contribution
 
 ## Testing Requirements
@@ -336,7 +337,7 @@ cargo test <module_name>
 
 `AGENTS.md` is the highest-priority document. Changes to workflow, architecture, or standards must update it:
 
-```markdown
+````markdown
 ## New Section
 
 ### Context
@@ -349,7 +350,7 @@ Why this section exists.
 ```rust
 // Good example
 ```
-```
+````
 
 ## Communication Channels
 

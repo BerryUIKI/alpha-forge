@@ -8,6 +8,8 @@
 
 **PR target for every task:** `dev`
 
+> **Release-line update (2026-11-13):** The repository default branch moved from `main` to `dev`; `main` is frozen at `f3baf81`. References below to promotion or merging to `main` describe the plan as originally accepted and are superseded by [ADR-0011](../DECISIONS/0011-dev-default-release-line.md). Releases are tagged on `dev`.
+
 ## 1. Purpose
 
 M11 turns the completed local product baseline into a reviewable release candidate. It closes the remaining Portfolio maintenance and scale risks, removes superseded integration paths only after an evidence-backed audit, and produces reproducible macOS and Windows packages with retained smoke-test evidence.

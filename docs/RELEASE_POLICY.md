@@ -467,7 +467,7 @@ Before a release is approved:
 **Platform**: GitHub Actions
 
 **Triggers**:
-- Push to `main` or `release/*` branches
+- Push to `dev` or `release/*` branches
 - Git tags (`v*`)
 
 **Stages**:
